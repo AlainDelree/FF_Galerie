@@ -12,6 +12,7 @@
     body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; --parquet-a:#b8845a; --parquet-b:#d4aa7a; }
     body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; --parquet-a:#0e0a06; --parquet-b:#201610; }
     body.theme-bois   { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; --parquet-a:#4a2e14; --parquet-b:#7a5030; }
+    /* ── LAYOUT GÉNÉRAL ── */
     .galerie-principale { display:flex; flex-direction:column; height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
     .barre-navigation { display:flex; align-items:center; justify-content:center; gap:2rem; padding:1.1rem 2rem 0.5rem; }
     .indicateur-salle { font-family:Lato,sans-serif; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-doux); min-width:7rem; text-align:center; }
@@ -25,80 +26,79 @@
     .conteneur-salles.salle-2 { transform:translateX(-25%); }
     .conteneur-salles.salle-3 { transform:translateX(-50%); }
     .conteneur-salles.salle-4 { transform:translateX(-75%); }
-    .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; }
-    .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:1.2rem; text-align:center; }
-    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; height:400px; flex:none; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:4rem 2.5rem 2.8rem; position:relative; box-shadow:inset 0 -80px 70px rgba(0,0,0,.10),inset 0 80px 80px rgba(0,0,0,.06),0 4px 24px rgba(0,0,0,.38); border-bottom:none; }
-    .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; margin-top:2.5rem; }
+    .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:.8rem; text-align:center; }
+    .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
     .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
     .tableau::before { content:''; position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:55%; height:22px; border-top:1px solid var(--fil); border-left:1px solid var(--fil); border-right:1px solid var(--fil); border-radius:0 0 50% 50%/0 0 100% 100%; }
     .cadre { border:13px solid var(--cadre); box-shadow:0 10px 35px rgba(0,0,0,.50),0 2px 8px rgba(0,0,0,.25),inset 0 0 0 1px var(--cadre-in),inset 0 0 0 4px rgba(0,0,0,.12); position:relative; }
     .cadre::after { content:''; position:absolute; inset:0; border:3px solid rgba(255,255,255,.07); pointer-events:none; }
-    .cadre img { display:block; width:210px; height:165px; object-fit:contain; background:var(--mur); }
-    .placeholder { width:210px; height:165px; background:linear-gradient(135deg,rgba(0,0,0,.07),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; }
+    .cadre img { display:block; object-fit:cover; }
+    .placeholder { background:linear-gradient(135deg,rgba(0,0,0,.07),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; }
     .placeholder-num { font-family:"Playfair Display",serif; font-style:italic; font-size:3rem; color:var(--text-doux); opacity:.35; }
     .placeholder-txt { font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-doux); opacity:.4; }
     .etiquette { margin-top:.9rem; text-align:center; max-width:100%; overflow:hidden; }
     .etiquette-titre { font-family:"Playfair Display",serif; font-style:italic; font-size:.84rem; color:var(--text); opacity:.82; }
     .etiquette-date { font-size:.7rem; color:var(--text-doux); margin-top:.15rem; letter-spacing:.06em; }
-    /* Plinthe au bas du mur — bande sombre solide */
-    .mur::after { content:''; position:absolute; bottom:0; left:0; right:0; height:13px; background:linear-gradient(to bottom, rgba(0,0,0,.28) 0%, rgba(0,0,0,.52) 100%); border-top:2px solid rgba(0,0,0,.38); pointer-events:none; z-index:1; }
-    /* Spot lumineux au plafond au-dessus de chaque toile */
-    .cadre::before { content:''; position:absolute; top:-95px; left:50%; transform:translateX(-50%); width:220%; height:115px; background:radial-gradient(ellipse at 50% 8%, rgba(255,245,190,.40) 0%, rgba(255,235,160,.16) 38%, transparent 65%); pointer-events:none; }
-    /* Ombre portée elliptique au sol */
-    .tableau::after { content:''; position:absolute; bottom:-18px; left:4%; width:92%; height:15px; background:radial-gradient(ellipse, rgba(0,0,0,.55) 0%, rgba(0,0,0,.22) 45%, transparent 70%); filter:blur(4px); pointer-events:none; }
-    /* Sol parquet sous la plinthe */
-    .parquet { width:100%; max-width:1080px; height:56px; background:repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent 70px),linear-gradient(to bottom,var(--parquet-a) 0%,var(--parquet-b) 100%); box-shadow:0 10px 28px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.06); border-radius:0 0 5px 5px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:9px; overflow:hidden; position:relative; }
-    /* Banc de musée centré sur le parquet */
-    .banc { color:var(--fil); opacity:.58; flex-shrink:0; }
 
     /* ============================================================
        MODES DE NAVIGATION A / C
        ============================================================ */
-
-    /* Masquer barre-navigation et dots dans les deux modes */
     [data-nav] .barre-navigation,
     [data-nav] .dots { display:none; }
 
     /* ---- VERSION A : flèches flottantes ---- */
-    .nav-float {
-      position:fixed; top:50%; transform:translateY(-50%); z-index:60;
-      width:52px; height:92px; background:rgba(0,0,0,.22); border:none;
-      color:rgba(255,255,255,.35); font-size:2.4rem; cursor:pointer;
-      display:none; align-items:center; justify-content:center;
-      transition:background .3s,color .3s; backdrop-filter:blur(4px);
-    }
+    .nav-float { position:fixed; top:50%; transform:translateY(-50%); z-index:60; width:52px; height:92px; background:rgba(0,0,0,.22); border:none; color:rgba(255,255,255,.35); font-size:2.4rem; cursor:pointer; display:none; align-items:center; justify-content:center; transition:background .3s,color .3s; backdrop-filter:blur(4px); }
     .nav-float-g { left:0; border-radius:0 8px 8px 0; }
     .nav-float-d { right:0; border-radius:8px 0 0 8px; }
     .nav-float:hover { background:rgba(0,0,0,.55); color:var(--accent); }
     .nav-float:disabled { opacity:.1; pointer-events:none; }
     [data-nav="a"] .nav-float { display:flex; }
-
-    /* Pastille */
-    .nav-pastille {
-      position:fixed; bottom:1.8rem; left:50%; transform:translateX(-50%);
-      background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.07);
-      border-radius:20px; padding:.3rem 1.15rem; font-family:Lato,sans-serif;
-      font-size:.68rem; letter-spacing:.22em; text-transform:uppercase;
-      color:var(--text-doux); display:none; white-space:nowrap;
-      backdrop-filter:blur(6px); z-index:60;
-    }
+    .nav-pastille { position:fixed; bottom:1.8rem; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.07); border-radius:20px; padding:.3rem 1.15rem; font-family:Lato,sans-serif; font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-doux); display:none; white-space:nowrap; backdrop-filter:blur(6px); z-index:60; }
     [data-nav="a"] .nav-pastille { display:block; }
-
-    /* Mini dots flottants */
     .nav-dots-float { position:fixed; bottom:.85rem; left:50%; transform:translateX(-50%); display:none; gap:.45rem; z-index:60; }
     [data-nav="a"] .nav-dots-float { display:flex; }
     .ndot { width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.18); transition:background .35s,transform .35s; }
     .ndot.actif { background:var(--accent); transform:scale(1.55); }
+    .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; position:relative; }
 
-    /* ---- VERSION C : portes dans le mur ---- */
+    /* ── MUR : overflow visible pour que rien ne soit coupé ── */
+    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; height:340px; flex:none; overflow:visible; display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
+
+    /* Ombres intérieures du mur séparées du mur lui-même */
+    .mur::before { content:''; position:absolute; inset:0; border-radius:3px 3px 0 0; background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, transparent 25%, transparent 75%, rgba(0,0,0,.12) 100%); pointer-events:none; z-index:0; }
+
+    /* Plinthe en bas du mur */
+    .mur::after { content:''; position:absolute; bottom:0; left:0; right:0; height:14px; background:linear-gradient(to bottom, rgba(0,0,0,.22), rgba(0,0,0,.45)); border-top:1px solid rgba(0,0,0,.30); pointer-events:none; z-index:1; }
+
+    /* Spot lumineux au plafond */
+    .cadre::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:200%; height:100px; background:radial-gradient(ellipse at 50% 5%, rgba(255,245,190,.35) 0%, rgba(255,235,160,.12) 40%, transparent 68%); pointer-events:none; z-index:0; }
+
+    /* Ombre portée au sol sous chaque tableau */
+    .tableau::after { content:''; position:absolute; bottom:-14px; left:8%; width:84%; height:12px; background:radial-gradient(ellipse, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 50%, transparent 72%); filter:blur(3px); pointer-events:none; }
+
+    /* ── PARQUET : simple, sans clip-path, sans overflow ── */
+    .parquet { width:100%; max-width:1080px; height:60px; flex:none;
+      background:
+        repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0, rgba(0,0,0,.06) 1px, transparent 1px, transparent 55px),
+        linear-gradient(to bottom, var(--parquet-a) 0%, var(--parquet-b) 100%);
+      border-radius:0 0 4px 4px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.18);
+      position:relative; overflow:hidden; }
+
+    /* Banc centré sur le parquet */
+    .banc { color:var(--fil); opacity:.35; position:absolute; bottom:7px; left:50%; transform:translateX(-50%); }
+
+    /* ── PORTES : positionnées sur .salle, flanquant le mur ── */
     .porte {
-      position:absolute; bottom:0; z-index:1;
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
+      position:absolute;
+      bottom:60px; /* hauteur parquet */
+      z-index:10;
     }
-    .porte-g { left:0; }
-    .porte-d { right:0; }
+    .porte-g { left:calc(2rem - 6px); }   /* 2rem = padding .salle */
+    .porte-d { right:calc(2rem - 6px); }
     .porte.invisible { opacity:0; pointer-events:none; }
     [data-nav="c"] .porte { display:flex; }
 
@@ -113,7 +113,7 @@
     .porte:hover .porte-nom { color:var(--accent); background:rgba(255,255,255,.11); }
 
     .porte-forme {
-      width:40px; height:80px; border-radius:2px 2px 0 0;
+      width:44px; height:110px; border-radius:2px 2px 0 0;
       background:var(--cadre); position:relative;
       border:1px solid rgba(255,255,255,.18); border-bottom:none;
       box-shadow:inset 0 -4px 10px rgba(0,0,0,.5);
@@ -304,9 +304,9 @@
     const dotsEl     = document.querySelectorAll('.dot');
     let navMode = 'a';
 
-    /* --- Portes mode C : injection dans chaque mur --- */
+    /* --- Portes mode C : injection dans chaque .salle --- */
     for (let i = 1; i <= TOTAL_SALLES; i++) {
-      const mur = document.getElementById('mur' + i);
+      const salle = document.getElementById('salle' + i);
       ['g', 'd'].forEach(cote => {
         const p = document.createElement('div');
         p.className = 'porte porte-' + cote + ' invisible';
@@ -323,7 +323,7 @@
           const n = parseInt(cible);
           if (n >= 1 && n <= TOTAL_SALLES) allerSalle(n);
         });
-        mur.appendChild(p);
+        salle.appendChild(p);
       });
     }
 
@@ -475,8 +475,7 @@
         img.src = toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
-        img.style.objectFit  = 'contain';
-        img.style.background = 'var(--mur)';
+        img.style.objectFit  = 'cover';
         img.style.display    = 'block';
         cadre.appendChild(img);
       } else {
