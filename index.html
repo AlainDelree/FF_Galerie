@@ -6,8 +6,20 @@
   <title>Frédérique Ferette — Peintures</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .signature-artiste {
+      font-family: 'Pinyon Script', cursive;
+      font-size: 3.5rem;
+      color: var(--accent);
+      opacity: .75;
+      line-height: 1;
+      margin-bottom: .2rem;
+      letter-spacing: .05em;
+    }
+    .pied { display: flex; flex-direction: column; align-items: center; gap: .1rem; }
+  </style>
 </head>
 <body class="theme-sombre">
 
@@ -116,6 +128,7 @@
     </main>
 
     <footer class="pied">
+      <div class="signature-artiste" aria-label="Signature de l'artiste">FF</div>
       <span class="mention">&copy; Frédérique Ferette</span>
     </footer>
 

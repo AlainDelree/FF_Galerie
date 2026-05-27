@@ -9,40 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; --parquet-a:#c8a870; --parquet-b:#c0a060; }
-    body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; --parquet-a:#0e0a06; --parquet-b:#201610; }
-    body.theme-bois     { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; --parquet-a:#4a2810; --parquet-b:#422210; }
-    body.theme-provence { --mur:#c8a96e; --cadre:#7a5c2e; --cadre-in:rgba(0,0,0,.15); --fil:#a07840; --parquet-a:#5c3a1e; --parquet-b:#8b5e2e; --accent:#c8860a; }
+    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; }
+    body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; }
+    body.theme-bois     { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; }
+    body.theme-provence { --mur:#c8a96e; --cadre:#7a5c2e; --cadre-in:rgba(0,0,0,.15); --fil:#a07840; --accent:#c8860a; }
     body.theme-provence .mur {
       background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwICAwIDAgMCAwIDAgIDAgMCAwIDAgMCAgMCAwIDAgMC4xMyAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=");
       background-repeat: repeat;
       background-size: 200px 200px;
-    }
-    /* ── SOLS PAR THÈME ── */
-    body.theme-clair .parquet, body.theme-bois .parquet {
-      background:
-        repeating-linear-gradient(45deg,  transparent, transparent 18px, rgba(0,0,0,.08) 18px, rgba(0,0,0,.08) 19px),
-        repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,.08) 18px, rgba(0,0,0,.08) 19px),
-        linear-gradient(to bottom, var(--parquet-a), var(--parquet-b));
-    }
-    body.theme-sombre .parquet {
-      background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMDgwODA4Ii8+PGNpcmNsZSBjeD0iNiIgIGN5PSIxMiIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMTgiIGN5PSI1IiAgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMzEiIGN5PSIxOCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iOCIgIGN5PSIyOSIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMjMiIGN5PSIzNCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMzUiIGN5PSI4IiAgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMTQiIGN5PSIyMiIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PGNpcmNsZSBjeD0iMzgiIGN5PSIyNyIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwuMzUpIi8+PC9zdmc+") repeat;
-      background-size: 40px 40px;
-    }
-    body.theme-provence .parquet {
-      background:
-        repeating-linear-gradient(0deg,
-          #d4a090 0px, #d4a090 2px,
-          transparent 2px, transparent 27px,
-          #d4a090 27px, #d4a090 29px,
-          transparent 29px, transparent 54px
-        ),
-        repeating-linear-gradient(90deg,
-          #d4a090 0px, #d4a090 2px,
-          #c45c30 2px, #c45c30 27px,
-          #d4a090 27px, #d4a090 29px,
-          #a84820 29px, #a84820 54px
-        );
     }
     /* ── LAYOUT GÉNÉRAL ── */
     .galerie-principale { display:flex; flex-direction:column; height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
@@ -110,23 +84,13 @@
     .tableau::after { content:''; position:absolute; bottom:-14px; left:8%; width:84%; height:12px; background:radial-gradient(ellipse, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 50%, transparent 72%); filter:blur(3px); pointer-events:none; }
 
     /* ── PARQUET : simple, sans clip-path, sans overflow ── */
-    .parquet { width:100%; max-width:1080px; height:40px; flex:none;
-      background:
-        repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0, rgba(0,0,0,.06) 1px, transparent 1px, transparent 55px),
-        linear-gradient(to bottom, var(--parquet-a) 0%, var(--parquet-b) 100%);
-      border-radius:0 0 4px 4px;
-      box-shadow: 0 3px 8px rgba(0,0,0,.18);
-      position:relative; overflow:hidden; }
-
-    /* Banc centré sur le parquet */
-    .banc { color:var(--fil); opacity:.35; position:absolute; bottom:7px; left:50%; transform:translateX(-50%); }
 
     /* ── PORTES : positionnées sur .salle, flanquant le mur ── */
     .porte {
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
       position:absolute;
-      bottom:40px; /* hauteur parquet */
+      bottom:0;
       z-index:10;
     }
     .porte-g { left:calc(2rem - 6px); }   /* 2rem = padding .salle */
@@ -244,50 +208,18 @@
       <div class="salle" id="salle1" aria-label="Salle 1">
         <p class="nom-salle">Salle I</p>
         <div class="mur" id="mur1"></div>
-        <div class="parquet" aria-hidden="true">
-          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
-            <rect x="0" y="6" width="160" height="8" rx="2"/>
-            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
-          </svg>
-        </div>
       </div>
       <div class="salle" id="salle2" aria-label="Salle 2">
         <p class="nom-salle">Salle II</p>
         <div class="mur" id="mur2"></div>
-        <div class="parquet" aria-hidden="true">
-          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
-            <rect x="0" y="6" width="160" height="8" rx="2"/>
-            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
-          </svg>
-        </div>
       </div>
       <div class="salle" id="salle3" aria-label="Salle 3">
         <p class="nom-salle">Salle III</p>
         <div class="mur" id="mur3"></div>
-        <div class="parquet" aria-hidden="true">
-          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
-            <rect x="0" y="6" width="160" height="8" rx="2"/>
-            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
-          </svg>
-        </div>
       </div>
       <div class="salle" id="salle4" aria-label="Salle 4">
         <p class="nom-salle">Salle IV</p>
         <div class="mur" id="mur4"></div>
-        <div class="parquet" aria-hidden="true">
-          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
-            <rect x="0" y="6" width="160" height="8" rx="2"/>
-            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
-            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
-          </svg>
-        </div>
       </div>
     </div>
   </main>
