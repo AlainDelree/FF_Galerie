@@ -1,120 +1,20 @@
 {
   "toiles": [
-    {
-      "id": 1,
-      "titre": "Lumière d'automne",
-      "description": "Paysage automnal",
-      "date": "2024",
-      "style": "Paysage",
-      "materiaux": [
-        "Huile"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F20",
-        "largeur": 73,
-        "hauteur": 60
-      },
-      "source_photo": "pc",
-      "photo": "https://picsum.photos/seed/1/600/500",
-      "visible": true
-    },
-    {
-      "id": 2,
-      "titre": "Abstraction bleue",
-      "description": "Composition abstraite",
-      "date": "2024",
-      "style": "Abstrait",
-      "materiaux": [
-        "Acrylique"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F10",
-        "largeur": 55,
-        "hauteur": 46
-      },
-      "source_photo": "gsm",
-      "photo": "https://picsum.photos/seed/2/550/460",
-      "visible": true
-    },
-    {
-      "id": 3,
-      "titre": "Portrait",
-      "description": "Portrait expressif",
-      "date": "2023",
-      "style": "Figuratif",
-      "materiaux": [
-        "Huile",
-        "Acrylique"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F4",
-        "largeur": 33,
-        "hauteur": 24
-      },
-      "source_photo": "pc",
-      "photo": "https://picsum.photos/seed/3/330/240",
-      "visible": true
-    },
-    {
-      "id": 4,
-      "titre": "Jardin secret",
-      "description": "Nature morte florale",
-      "date": "2023",
-      "style": "Nature morte",
-      "materiaux": [
-        "Aquarelle"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F30",
-        "largeur": 92,
-        "hauteur": 73
-      },
-      "source_photo": "pc",
-      "photo": "https://picsum.photos/seed/4/920/730",
-      "visible": true
-    },
-    {
-      "id": 5,
-      "titre": "Mer du Nord",
-      "description": "Marine abstraite",
-      "date": "2024",
-      "style": "Marine",
-      "materiaux": [
-        "Huile"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F20",
-        "largeur": 73,
-        "hauteur": 60
-      },
-      "source_photo": "gsm",
-      "photo": "https://picsum.photos/seed/5/600/500",
-      "visible": true
-    },
-    {
-      "id": 6,
-      "titre": "",
-      "description": "",
-      "date": "2024",
-      "style": "Abstrait",
-      "materiaux": [
-        "Acrylique",
-        "Bout de bois"
-      ],
-      "dimensions": {
-        "type": "standard",
-        "format": "F6",
-        "largeur": 41,
-        "hauteur": 33
-      },
-      "source_photo": "gsm",
-      "photo": "",
-      "visible": true
-    }
+    { "id":  1, "titre": "", "photo": "assets/images/toiles/toile-001.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id":  2, "titre": "", "photo": "assets/images/toiles/toile-002.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id":  3, "titre": "", "photo": "assets/images/toiles/toile-003.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id":  4, "titre": "", "photo": "assets/images/toiles/toile-004.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id":  5, "titre": "", "photo": "assets/images/toiles/toile-005.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id":  6, "titre": "", "photo": "assets/images/toiles/toile-006.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id":  7, "titre": "", "photo": "assets/images/toiles/toile-007.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id":  8, "titre": "", "photo": "assets/images/toiles/toile-008.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id":  9, "titre": "", "photo": "assets/images/toiles/toile-009.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id": 10, "titre": "", "photo": "assets/images/toiles/toile-010.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id": 11, "titre": "", "photo": "assets/images/toiles/toile-011.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id": 12, "titre": "", "photo": "assets/images/toiles/toile-012.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id": 13, "titre": "", "photo": "assets/images/toiles/toile-013.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id": 14, "titre": "", "photo": "assets/images/toiles/toile-014.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true },
+    { "id": 15, "titre": "", "photo": "assets/images/toiles/toile-015.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 55, "hauteur": 75 }, "source_photo": "gsm", "visible": true },
+    { "id": 16, "titre": "", "photo": "assets/images/toiles/toile-016.jpg", "date": "", "style": "", "materiaux": [], "dimensions": { "type": "portrait", "largeur": 40, "hauteur": 50 }, "source_photo": "gsm", "visible": true }
   ]
 }

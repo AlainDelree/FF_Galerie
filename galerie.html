@@ -9,10 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; }
-    body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; }
-    body.theme-bois   { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; }
-    .galerie-principale { display:flex; flex-direction:column; min-height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
+    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; --parquet-a:#b8845a; --parquet-b:#d4aa7a; }
+    body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; --parquet-a:#0e0a06; --parquet-b:#201610; }
+    body.theme-bois   { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; --parquet-a:#4a2e14; --parquet-b:#7a5030; }
+    .galerie-principale { display:flex; flex-direction:column; height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
     .barre-navigation { display:flex; align-items:center; justify-content:center; gap:2rem; padding:1.1rem 2rem 0.5rem; }
     .indicateur-salle { font-family:Lato,sans-serif; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-doux); min-width:7rem; text-align:center; }
     .btn-nav-salle { background:none; border:1px solid var(--sep); color:var(--text-doux); width:2.4rem; height:2.4rem; border-radius:50%; cursor:pointer; font-size:1.4rem; display:flex; align-items:center; justify-content:center; transition:border-color .3s,color .3s,opacity .3s; }
@@ -21,11 +21,13 @@
     .dots { display:flex; gap:.55rem; justify-content:center; padding:.3rem 0 .9rem; }
     .dot { width:5px; height:5px; border-radius:50%; background-color:var(--sep); transition:background-color .35s,transform .35s; }
     .dot.actif { background-color:var(--accent); transform:scale(1.4); }
-    .conteneur-salles { display:flex; flex:1; width:200%; transition:transform .65s cubic-bezier(.77,0,.175,1); }
-    .conteneur-salles.salle-2 { transform:translateX(-50%); }
-    .salle { width:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:.5rem 2rem 2rem; }
+    .conteneur-salles { display:flex; flex:1; width:400%; min-height:0; transition:transform .65s cubic-bezier(.77,0,.175,1); }
+    .conteneur-salles.salle-2 { transform:translateX(-25%); }
+    .conteneur-salles.salle-3 { transform:translateX(-50%); }
+    .conteneur-salles.salle-4 { transform:translateX(-75%); }
+    .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; }
     .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:1.2rem; text-align:center; }
-    .mur { background-color:var(--mur); border-radius:3px; width:100%; max-width:1080px; min-height:360px; display:flex; align-items:flex-end; justify-content:center; gap:3.5rem; flex-wrap:wrap; padding:4rem 3.5rem 2.8rem; position:relative; box-shadow:inset 0 -80px 70px rgba(0,0,0,.10),inset 0 80px 80px rgba(0,0,0,.06),0 10px 40px rgba(0,0,0,.30); border-bottom:10px solid rgba(0,0,0,.20); }
+    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; flex:1; min-height:0; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:4rem 2.5rem 2.8rem; position:relative; box-shadow:inset 0 -80px 70px rgba(0,0,0,.10),inset 0 80px 80px rgba(0,0,0,.06),0 4px 24px rgba(0,0,0,.38); border-bottom:none; }
     .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; transition:transform .3s ease,filter .3s ease; margin-top:2.5rem; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
     .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
@@ -39,6 +41,16 @@
     .etiquette { margin-top:.9rem; text-align:center; }
     .etiquette-titre { font-family:"Playfair Display",serif; font-style:italic; font-size:.84rem; color:var(--text); opacity:.82; }
     .etiquette-date { font-size:.7rem; color:var(--text-doux); margin-top:.15rem; letter-spacing:.06em; }
+    /* Plinthe au bas du mur — bande sombre solide */
+    .mur::after { content:''; position:absolute; bottom:0; left:0; right:0; height:13px; background:linear-gradient(to bottom, rgba(0,0,0,.28) 0%, rgba(0,0,0,.52) 100%); border-top:2px solid rgba(0,0,0,.38); pointer-events:none; z-index:1; }
+    /* Spot lumineux au plafond au-dessus de chaque toile */
+    .cadre::before { content:''; position:absolute; top:-95px; left:50%; transform:translateX(-50%); width:220%; height:115px; background:radial-gradient(ellipse at 50% 8%, rgba(255,245,190,.40) 0%, rgba(255,235,160,.16) 38%, transparent 65%); pointer-events:none; }
+    /* Ombre portée elliptique au sol */
+    .tableau::after { content:''; position:absolute; bottom:-18px; left:4%; width:92%; height:15px; background:radial-gradient(ellipse, rgba(0,0,0,.55) 0%, rgba(0,0,0,.22) 45%, transparent 70%); filter:blur(4px); pointer-events:none; }
+    /* Sol parquet sous la plinthe */
+    .parquet { width:100%; max-width:1080px; height:56px; background:repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent 70px),linear-gradient(to bottom,var(--parquet-a) 0%,var(--parquet-b) 100%); box-shadow:0 10px 28px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.06); border-radius:0 0 5px 5px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:9px; overflow:hidden; position:relative; }
+    /* Banc de musée centré sur le parquet */
+    .banc { color:var(--fil); opacity:.58; flex-shrink:0; }
   </style>
 </head>
   <style>
@@ -87,15 +99,57 @@
     <div class="dots" id="dotsNav" aria-hidden="true">
       <div class="dot actif"></div>
       <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
     </div>
     <div class="conteneur-salles" id="conteneurSalles">
       <div class="salle" id="salle1" aria-label="Salle 1">
         <p class="nom-salle">Salle I</p>
         <div class="mur" id="mur1"></div>
+        <div class="parquet" aria-hidden="true">
+          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
+            <rect x="0" y="6" width="160" height="8" rx="2"/>
+            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
+          </svg>
+        </div>
       </div>
       <div class="salle" id="salle2" aria-label="Salle 2">
         <p class="nom-salle">Salle II</p>
         <div class="mur" id="mur2"></div>
+        <div class="parquet" aria-hidden="true">
+          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
+            <rect x="0" y="6" width="160" height="8" rx="2"/>
+            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="salle" id="salle3" aria-label="Salle 3">
+        <p class="nom-salle">Salle III</p>
+        <div class="mur" id="mur3"></div>
+        <div class="parquet" aria-hidden="true">
+          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
+            <rect x="0" y="6" width="160" height="8" rx="2"/>
+            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="salle" id="salle4" aria-label="Salle 4">
+        <p class="nom-salle">Salle IV</p>
+        <div class="mur" id="mur4"></div>
+        <div class="parquet" aria-hidden="true">
+          <svg class="banc" viewBox="0 0 160 30" width="160" height="30" fill="currentColor">
+            <rect x="0" y="6" width="160" height="8" rx="2"/>
+            <rect x="12" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="143" y="14" width="5" height="14" rx="1.5"/>
+            <rect x="14" y="21" width="132" height="3" rx="1.5"/>
+          </svg>
+        </div>
       </div>
     </div>
   </main>
@@ -121,7 +175,7 @@
   <script src="assets/js/main.js"></script>
   <script>
     let salleCourante = 1;
-    const TOTAL_SALLES = 2;
+    const TOTAL_SALLES = 4;
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');
@@ -139,6 +193,16 @@
 
     btnPrev.addEventListener('click', () => allerSalle(salleCourante - 1));
     btnNext.addEventListener('click', () => allerSalle(salleCourante + 1));
+
+    const hashSalle = parseInt((window.location.hash.match(/^#salle-([2-4])$/) || [])[1]);
+    if (hashSalle) {
+      conteneur.style.transition = 'none';
+      allerSalle(hashSalle);
+      conteneur.getBoundingClientRect();
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        conteneur.style.transition = '';
+      }));
+    }
 
     document.addEventListener('keydown', e => {
       if (document.getElementById('modalOverlay').classList.contains('visible')) {
@@ -221,21 +285,28 @@
       return art;
     }
 
-    fetch('data/toiles.json')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(data => {
-        const toiles = (data.toiles || []).filter(t => t.visible !== false);
-        const mur1 = document.getElementById('mur1');
-        const mur2 = document.getElementById('mur2');
-        toiles.slice(0, 3).forEach(t => mur1.appendChild(creerTableau(t)));
-        toiles.slice(3, 6).forEach(t => mur2.appendChild(creerTableau(t)));
-      })
-      .catch(() => {
-        ['mur1', 'mur2'].forEach(id => {
-          document.getElementById(id).innerHTML =
-            '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
+    Promise.all([
+      fetch('data/toiles.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch('data/salles.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    ])
+    .then(([tData, sData]) => {
+      const toileMap = {};
+      (tData.toiles || []).filter(t => t.visible !== false).forEach(t => { toileMap[t.id] = t; });
+      (sData.salles || []).forEach(salle => {
+        const mur = document.getElementById('mur' + salle.id);
+        if (!mur) return;
+        (salle.toiles || []).forEach(id => {
+          if (toileMap[id]) mur.appendChild(creerTableau(toileMap[id]));
         });
       });
+    })
+    .catch(() => {
+      ['mur1', 'mur2', 'mur3', 'mur4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML =
+          '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
+      });
+    });
   </script>
 </body>
 </html>

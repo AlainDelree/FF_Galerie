@@ -233,25 +233,26 @@ body.theme-bois {
 }
 .plan-salle {
   fill: var(--accent);
-  fill-opacity: 0.08;
+  fill-opacity: 0.14;
   stroke: none;
   cursor: pointer;
   transition: fill-opacity 0.25s;
 }
 .plan-salle:hover {
-  fill-opacity: 0.22;
+  fill-opacity: 0.30;
 }
 .plan-couloir {
   fill: var(--accent);
-  fill-opacity: 0.04;
+  fill-opacity: 0.07;
+  stroke: none;
 }
 .plan-mur {
-  stroke: var(--sep);
+  stroke: var(--text-doux);
   stroke-width: 2;
   stroke-linecap: square;
 }
 .plan-porte {
-  stroke: var(--text-doux);
+  stroke: var(--accent);
   stroke-width: 1.5;
   fill: none;
 }
