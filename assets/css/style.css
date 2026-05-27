@@ -218,6 +218,66 @@ body.theme-bois {
   color: var(--text-doux);
 }
 
+/* Plan interactif de la galerie */
+.plan-galerie {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.plan-galerie svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.plan-salle {
+  fill: var(--accent);
+  fill-opacity: 0.08;
+  stroke: none;
+  cursor: pointer;
+  transition: fill-opacity 0.25s;
+}
+.plan-salle:hover {
+  fill-opacity: 0.22;
+}
+.plan-couloir {
+  fill: var(--accent);
+  fill-opacity: 0.04;
+}
+.plan-mur {
+  stroke: var(--sep);
+  stroke-width: 2;
+  stroke-linecap: square;
+}
+.plan-porte {
+  stroke: var(--text-doux);
+  stroke-width: 1.5;
+  fill: none;
+}
+.plan-toile {
+  fill: var(--accent);
+  stroke: var(--sep);
+  stroke-width: 1;
+}
+.plan-label {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 13px;
+  fill: var(--text-doux);
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+}
+.plan-legende {
+  margin-top: 0.7rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--text-doux);
+  text-align: center;
+  font-style: italic;
+}
+
 @media (max-width: 540px) {
   .entete {
     flex-direction: column;
