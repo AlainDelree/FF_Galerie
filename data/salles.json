@@ -1,0 +1,10 @@
+{
+  "salles": [
+    {
+      "id": 1,
+      "nom": "Salle 1",
+      "decor": "clair",
+      "toiles": []
+    }
+  ]
+}

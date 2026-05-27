@@ -1,0 +1,21 @@
+{
+  "toiles": [
+    {
+      "id": 1,
+      "titre": "",
+      "description": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "dimensions": {
+        "type": "standard",
+        "format": "F10",
+        "largeur": 55,
+        "hauteur": 46
+      },
+      "source_photo": "inconnu",
+      "photo": "",
+      "visible": true
+    }
+  ]
+}
