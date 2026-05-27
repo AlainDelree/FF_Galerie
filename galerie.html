@@ -9,24 +9,43 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; --parquet-a:#b8845a; --parquet-b:#d4aa7a; }
+    body.theme-clair  { --mur:#ddd5c0; --cadre:#8b7355; --cadre-in:rgba(0,0,0,.12); --fil:#b8a88a; --parquet-a:#c8a870; --parquet-b:#dfc090; }
     body.theme-sombre { --mur:#1c1c1c; --cadre:#3d3020; --cadre-in:rgba(255,255,255,.06); --fil:#5a4a30; --parquet-a:#0e0a06; --parquet-b:#201610; }
-    body.theme-bois     { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; --parquet-a:#4a2e14; --parquet-b:#7a5030; }
+    body.theme-bois     { --mur:#c4a87a; --cadre:#5a3e20; --cadre-in:rgba(0,0,0,.15); --fil:#8a6040; --parquet-a:#3d1f0a; --parquet-b:#5c3015; }
     body.theme-provence { --mur:#c8a96e; --cadre:#7a5c2e; --cadre-in:rgba(0,0,0,.15); --fil:#a07840; --parquet-a:#5c3a1e; --parquet-b:#8b5e2e; --accent:#c8860a; }
     body.theme-provence .mur {
       background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwICAwIDAgMCAwIDAgIDAgMCAwIDAgMCAgMCAwIDAgMC4xMyAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=");
       background-repeat: repeat;
       background-size: 200px 200px;
     }
-    body.theme-provence .parquet {
+    /* ── SOLS PAR THÈME ── */
+    body.theme-clair .parquet {
       background:
         repeating-linear-gradient(90deg,
-          var(--parquet-a) 0px, var(--parquet-a) 79px,
-          rgba(0,0,0,.28) 79px, rgba(0,0,0,.28) 80px,
-          var(--parquet-b) 80px, var(--parquet-b) 159px,
-          rgba(0,0,0,.28) 159px, rgba(0,0,0,.28) 160px
+          var(--parquet-a) 0px, var(--parquet-a) 39px,
+          rgba(0,0,0,.18) 39px, rgba(0,0,0,.18) 40px,
+          var(--parquet-b) 40px, var(--parquet-b) 79px,
+          rgba(0,0,0,.18) 79px, rgba(0,0,0,.18) 80px
         ),
         linear-gradient(to bottom, var(--parquet-a) 0%, var(--parquet-b) 100%);
+    }
+    body.theme-sombre .parquet {
+      background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCI+PHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjMGEwYTBhIi8+PHBhdGggZD0iTTE1IDZMMTcuMSAxMi45TDI0IDE1TDE3LjEgMTcuMUwxNSAyNEwxMi45IDE3LjFMNiAxNUwxMi45IDEyLjlaIiBmaWxsPSIjMmEyYTJhIi8+PC9zdmc+") repeat;
+      background-size: 30px 30px;
+    }
+    body.theme-bois .parquet {
+      background:
+        repeating-linear-gradient(90deg,
+          var(--parquet-a) 0px, var(--parquet-a) 39px,
+          rgba(0,0,0,.28) 39px, rgba(0,0,0,.28) 40px,
+          var(--parquet-b) 40px, var(--parquet-b) 79px,
+          rgba(0,0,0,.28) 79px, rgba(0,0,0,.28) 80px
+        ),
+        linear-gradient(to bottom, var(--parquet-a) 0%, var(--parquet-b) 100%);
+    }
+    body.theme-provence .parquet {
+      background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMy44NiIgaGVpZ2h0PSIyNCI+PHJlY3Qgd2lkdGg9IjEzLjg2IiBoZWlnaHQ9IjI0IiBmaWxsPSIjYjU0NTFiIi8+PHBvbHlnb24gcG9pbnRzPSI2LjkzLDQuNiAxMy4zNCw4LjMgMTMuMzQsMTUuNyA2LjkzLDE5LjQgMC41MiwxNS43IDAuNTIsOC4zIiBmaWxsPSIjOGIzMjE0IiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsLjUpIiBzdHJva2Utd2lkdGg9IjAuNyIvPjxwb2x5Z29uIHBvaW50cz0iMC4wLC03LjQgNi40MSwtMy43IDYuNDEsMy43IDAuMCw3LjQgLTYuNDEsMy43IC02LjQxLC0zLjciIGZpbGw9IiM4YjMyMTQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwuNSkiIHN0cm9rZS13aWR0aD0iMC43Ii8+PHBvbHlnb24gcG9pbnRzPSIxMy44NiwtNy40IDIwLjI3LC0zLjcgMjAuMjcsMy43IDEzLjg2LDcuNCA3LjQ1LDMuNyA3LjQ1LC0zLjciIGZpbGw9IiM4YjMyMTQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwuNSkiIHN0cm9rZS13aWR0aD0iMC43Ii8+PHBvbHlnb24gcG9pbnRzPSIwLjAsMTYuNiA2LjQxLDIwLjMgNi40MSwyNy43IDAuMCwzMS40IC02LjQxLDI3LjcgLTYuNDEsMjAuMyIgZmlsbD0iIzhiMzIxNCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LC41KSIgc3Ryb2tlLXdpZHRoPSIwLjciLz48cG9seWdvbiBwb2ludHM9IjEzLjg2LDE2LjYgMjAuMjcsMjAuMyAyMC4yNywyNy43IDEzLjg2LDMxLjQgNy40NSwyNy43IDcuNDUsMjAuMyIgZmlsbD0iIzhiMzIxNCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LC41KSIgc3Ryb2tlLXdpZHRoPSIwLjciLz48L3N2Zz4=") repeat;
+      background-size: 13.86px 24px;
     }
     /* ── LAYOUT GÉNÉRAL ── */
     .galerie-principale { display:flex; flex-direction:column; height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
@@ -94,7 +113,7 @@
     .tableau::after { content:''; position:absolute; bottom:-14px; left:8%; width:84%; height:12px; background:radial-gradient(ellipse, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 50%, transparent 72%); filter:blur(3px); pointer-events:none; }
 
     /* ── PARQUET : simple, sans clip-path, sans overflow ── */
-    .parquet { width:100%; max-width:1080px; height:60px; flex:none;
+    .parquet { width:100%; max-width:1080px; height:40px; flex:none;
       background:
         repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0, rgba(0,0,0,.06) 1px, transparent 1px, transparent 55px),
         linear-gradient(to bottom, var(--parquet-a) 0%, var(--parquet-b) 100%);
@@ -110,7 +129,7 @@
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
       position:absolute;
-      bottom:60px; /* hauteur parquet */
+      bottom:40px; /* hauteur parquet */
       z-index:10;
     }
     .porte-g { left:calc(2rem - 6px); }   /* 2rem = padding .salle */
