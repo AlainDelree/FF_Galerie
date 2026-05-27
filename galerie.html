@@ -36,7 +36,6 @@
     .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
     .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
-    .tableau::before { content:''; position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:55%; height:22px; border-top:1px solid var(--fil); border-left:1px solid var(--fil); border-right:1px solid var(--fil); border-radius:0 0 50% 50%/0 0 100% 100%; }
     .cadre { border:13px solid var(--cadre); box-shadow:0 10px 35px rgba(0,0,0,.50),0 2px 8px rgba(0,0,0,.25),inset 0 0 0 1px var(--cadre-in),inset 0 0 0 4px rgba(0,0,0,.12); position:relative; }
     .cadre::after { content:''; position:absolute; inset:0; border:3px solid rgba(255,255,255,.07); pointer-events:none; }
     .cadre img { display:block; object-fit:cover; }
@@ -69,23 +68,33 @@
     .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; position:relative; }
 
     /* ── MUR : overflow visible pour que rien ne soit coupé ── */
-    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; height:340px; flex:none; overflow:visible; display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
+    .mur { background-color:var(--mur); border-radius:3px; width:100%; max-width:1080px; height:420px; flex:none; overflow:visible; display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
 
     /* Ombres intérieures du mur séparées du mur lui-même */
-    .mur::before { content:''; position:absolute; inset:0; border-radius:3px 3px 0 0; background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, transparent 25%, transparent 75%, rgba(0,0,0,.12) 100%); pointer-events:none; z-index:0; }
+    .mur::before { content:''; position:absolute; inset:0; border-radius:3px; background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, transparent 25%, transparent 75%, rgba(0,0,0,.12) 100%); pointer-events:none; z-index:0; }
 
     /* Plinthe en bas du mur */
     .mur::after { content:''; position:absolute; bottom:0; left:0; right:0; height:14px; background:linear-gradient(to bottom, rgba(0,0,0,.22), rgba(0,0,0,.45)); border-top:1px solid rgba(0,0,0,.30); pointer-events:none; z-index:1; }
 
-    /* Spot lumineux au plafond */
-    .cadre::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:200%; height:100px; background:radial-gradient(ellipse at 50% 5%, rgba(255,245,190,.35) 0%, rgba(255,235,160,.12) 40%, transparent 68%); pointer-events:none; z-index:0; }
+    /* Spot lumineux — visible seulement en mode sombre */
+    .cadre::before { content:''; display:none; position:absolute; top:-85px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:rgba(255,250,210,1); box-shadow:0 0 8px 4px rgba(255,240,160,.7), 0 0 20px 10px rgba(255,230,120,.3); pointer-events:none; z-index:3; }
+    /* Halo de lumière diffus — pas de triangle */
+    .cadre::after { content:''; display:none; position:absolute; top:-85px; left:50%; transform:translateX(-50%); width:1px; height:1px; pointer-events:none; z-index:0;
+      box-shadow:
+        0 20px 40px 60px rgba(255,240,160,.06),
+        0 40px 80px 40px rgba(255,235,140,.04),
+        0 70px 100px 20px rgba(255,230,120,.02);
+    }
+    /* Activer spots uniquement en mode sombre */
+    body.theme-sombre .cadre::before,
+    body.theme-sombre .cadre::after { display:block; }
 
     /* Ombre portée au sol sous chaque tableau */
     .tableau::after { content:''; position:absolute; bottom:-14px; left:8%; width:84%; height:12px; background:radial-gradient(ellipse, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 50%, transparent 72%); filter:blur(3px); pointer-events:none; }
 
     /* ── PARQUET : simple, sans clip-path, sans overflow ── */
 
-    /* ── PORTES : positionnées sur .salle, flanquant le mur ── */
+    /* ── PORTES : collées à l'extérieur du mur, alignées en bas ── */
     .porte {
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
@@ -93,8 +102,8 @@
       bottom:0;
       z-index:10;
     }
-    .porte-g { left:calc(2rem - 6px); }   /* 2rem = padding .salle */
-    .porte-d { right:calc(2rem - 6px); }
+    .porte-g { right:100%; }
+    .porte-d { left:100%; }
     .porte.invisible { opacity:0; pointer-events:none; }
     [data-nav="c"] .porte { display:flex; }
 
@@ -109,19 +118,18 @@
     .porte:hover .porte-nom { color:var(--accent); background:rgba(255,255,255,.11); }
 
     .porte-forme {
-      width:44px; height:110px; border-radius:2px 2px 0 0;
+      width:44px; height:71px; border-radius:22px 22px 0 0;
       background:var(--cadre); position:relative;
       border:1px solid rgba(255,255,255,.18); border-bottom:none;
-      box-shadow:inset 0 -4px 10px rgba(0,0,0,.5);
-      transition:box-shadow .35s, border-color .35s;
+      transition:border-color .35s;
     }
     .porte-interieur {
-      position:absolute; inset:3px 3px 0; border-radius:0;
+      position:absolute; inset:3px 3px 0; border-radius:19px 19px 0 0;
       background:radial-gradient(ellipse at 50% 115%, rgba(255,238,160,.18) 0%, rgba(0,0,0,.88) 65%);
     }
     .porte:hover .porte-forme {
       border-color:rgba(255,255,255,.32);
-      box-shadow:inset 0 -4px 10px rgba(0,0,0,.5), 0 0 14px 4px var(--accent);
+      box-shadow:0 0 14px 4px var(--accent);
     }
     /* Chevron directionnel dans l'ouverture */
     .porte-fleche {
@@ -269,9 +277,9 @@
     const dotsEl     = document.querySelectorAll('.dot');
     let navMode = 'a';
 
-    /* --- Portes mode C : injection dans chaque .salle --- */
+    /* --- Portes mode C : injection dans chaque mur --- */
     for (let i = 1; i <= TOTAL_SALLES; i++) {
-      const salle = document.getElementById('salle' + i);
+      const cible = document.getElementById('mur' + i);
       ['g', 'd'].forEach(cote => {
         const p = document.createElement('div');
         p.className = 'porte porte-' + cote + ' invisible';
@@ -288,7 +296,7 @@
           const n = parseInt(cible);
           if (n >= 1 && n <= TOTAL_SALLES) allerSalle(n);
         });
-        salle.appendChild(p);
+        cible.appendChild(p);
       });
     }
 
