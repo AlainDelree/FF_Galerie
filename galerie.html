@@ -27,8 +27,8 @@
     .conteneur-salles.salle-4 { transform:translateX(-75%); }
     .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; }
     .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:1.2rem; text-align:center; }
-    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; flex:1; min-height:0; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:4rem 2.5rem 2.8rem; position:relative; box-shadow:inset 0 -80px 70px rgba(0,0,0,.10),inset 0 80px 80px rgba(0,0,0,.06),0 4px 24px rgba(0,0,0,.38); border-bottom:none; }
-    .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; transition:transform .3s ease,filter .3s ease; margin-top:2.5rem; }
+    .mur { background-color:var(--mur); border-radius:3px 3px 0 0; width:100%; max-width:1080px; height:400px; flex:none; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:4rem 2.5rem 2.8rem; position:relative; box-shadow:inset 0 -80px 70px rgba(0,0,0,.10),inset 0 80px 80px rgba(0,0,0,.06),0 4px 24px rgba(0,0,0,.38); border-bottom:none; }
+    .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; margin-top:2.5rem; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
     .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
     .tableau::before { content:''; position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:55%; height:22px; border-top:1px solid var(--fil); border-left:1px solid var(--fil); border-right:1px solid var(--fil); border-radius:0 0 50% 50%/0 0 100% 100%; }
@@ -93,7 +93,7 @@
 
     /* ---- VERSION C : portes dans le mur ---- */
     .porte {
-      position:absolute; bottom:0; z-index:3;
+      position:absolute; bottom:0; z-index:1;
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
     }
@@ -459,7 +459,7 @@
     modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) fermerModal(); });
 
     function creerTableau(toile, H) {
-      H = H || 220;
+      H = H || 200;
       const dim = toile.dimensions;
       const W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
       const art = document.createElement('article');
@@ -509,9 +509,21 @@
       (sData.salles || []).forEach(salle => {
         const mur = document.getElementById('mur' + salle.id);
         if (!mur) return;
-        (salle.toiles || []).forEach(id => {
-          if (toileMap[id]) mur.appendChild(creerTableau(toileMap[id], 220));
-        });
+        const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
+        if (!toilesSalle.length) return;
+        const H_PREF = 200, H_FALLBACK = 160, BORD = 26;
+        const N = toilesSalle.length;
+        const cs = getComputedStyle(mur);
+        const gapPx = parseFloat(cs.gap)         || 32;
+        const padL  = parseFloat(cs.paddingLeft)  || 40;
+        const padR  = parseFloat(cs.paddingRight) || 40;
+        const dispo  = mur.clientWidth - padL - padR - (N - 1) * gapPx - N * BORD;
+        const totalW = toilesSalle.reduce((s, t) => {
+          const d = t.dimensions;
+          return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF * d.largeur / d.hauteur) : H_PREF);
+        }, 0);
+        const H = totalW <= dispo ? H_PREF : H_FALLBACK;
+        toilesSalle.forEach(t => mur.appendChild(creerTableau(t, H)));
       });
     })
     .catch(() => {
