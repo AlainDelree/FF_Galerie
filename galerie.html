@@ -34,7 +34,7 @@
     .tableau::before { content:''; position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:55%; height:22px; border-top:1px solid var(--fil); border-left:1px solid var(--fil); border-right:1px solid var(--fil); border-radius:0 0 50% 50%/0 0 100% 100%; }
     .cadre { border:13px solid var(--cadre); box-shadow:0 10px 35px rgba(0,0,0,.50),0 2px 8px rgba(0,0,0,.25),inset 0 0 0 1px var(--cadre-in),inset 0 0 0 4px rgba(0,0,0,.12); position:relative; }
     .cadre::after { content:''; position:absolute; inset:0; border:3px solid rgba(255,255,255,.07); pointer-events:none; }
-    .cadre img { display:block; width:210px; height:165px; object-fit:cover; }
+    .cadre img { display:block; width:210px; height:165px; object-fit:contain; background:var(--mur); }
     .placeholder { width:210px; height:165px; background:linear-gradient(135deg,rgba(0,0,0,.07),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; }
     .placeholder-num { font-family:"Playfair Display",serif; font-style:italic; font-size:3rem; color:var(--text-doux); opacity:.35; }
     .placeholder-txt { font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-doux); opacity:.4; }
@@ -97,8 +97,8 @@
       display:none; flex-direction:column; align-items:center;
       cursor:pointer; user-select:none;
     }
-    .porte-g { left:36px; }
-    .porte-d { right:36px; }
+    .porte-g { left:0; }
+    .porte-d { right:0; }
     .porte.invisible { opacity:0; pointer-events:none; }
     [data-nav="c"] .porte { display:flex; }
 
@@ -113,27 +113,27 @@
     .porte:hover .porte-nom { color:var(--accent); background:rgba(255,255,255,.11); }
 
     .porte-forme {
-      width:50px; height:120px; border-radius:3px 3px 0 0;
+      width:40px; height:80px; border-radius:2px 2px 0 0;
       background:var(--cadre); position:relative;
       border:1px solid rgba(255,255,255,.18); border-bottom:none;
-      box-shadow:inset 0 -6px 14px rgba(0,0,0,.5);
+      box-shadow:inset 0 -4px 10px rgba(0,0,0,.5);
       transition:box-shadow .35s, border-color .35s;
     }
     .porte-interieur {
-      position:absolute; inset:4px 4px 0; border-radius:0;
-      background:radial-gradient(ellipse at 50% 110%, rgba(255,238,160,.18) 0%, rgba(0,0,0,.88) 62%);
+      position:absolute; inset:3px 3px 0; border-radius:0;
+      background:radial-gradient(ellipse at 50% 115%, rgba(255,238,160,.18) 0%, rgba(0,0,0,.88) 65%);
     }
     .porte:hover .porte-forme {
       border-color:rgba(255,255,255,.32);
-      box-shadow:inset 0 -6px 14px rgba(0,0,0,.5), 0 0 16px 5px var(--accent);
+      box-shadow:inset 0 -4px 10px rgba(0,0,0,.5), 0 0 14px 4px var(--accent);
     }
     /* Chevron directionnel dans l'ouverture */
     .porte-fleche {
-      position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
-      font-size:1.1rem; color:rgba(255,255,255,.18); transition:color .3s;
+      position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+      font-size:.9rem; color:rgba(255,255,255,.20); transition:color .3s;
       pointer-events:none;
     }
-    .porte:hover .porte-fleche { color:rgba(255,255,255,.5); }
+    .porte:hover .porte-fleche { color:rgba(255,255,255,.55); }
 
     /* ---- SWITCH BOUTON TEST ---- */
     .nav-test-switch {
@@ -318,8 +318,10 @@
           '<span class="porte-fleche">' + (cote === 'g' ? '&#8249;' : '&#8250;') + '</span>' +
           '</div>';
         p.addEventListener('click', () => {
-          const cible = parseInt(p.dataset.cible);
-          if (cible >= 1 && cible <= TOTAL_SALLES) allerSalle(cible);
+          const cible = p.dataset.cible;
+          if (cible === 'accueil') { window.location.href = 'index.html'; return; }
+          const n = parseInt(cible);
+          if (n >= 1 && n <= TOTAL_SALLES) allerSalle(n);
         });
         mur.appendChild(p);
       });
@@ -342,14 +344,24 @@
       /* Portes mode C */
       document.querySelectorAll('.porte').forEach(p => {
         const murId = parseInt(p.dataset.murId);
-        const cible = p.dataset.cote === 'g' ? murId - 1 : murId + 1;
+        const cote  = p.dataset.cote;
+
+        /* Porte de sortie : dernière salle côté droit → Accueil */
+        if (murId === TOTAL_SALLES && cote === 'd') {
+          p.classList.remove('invisible');
+          p.dataset.cible = 'accueil';
+          p.querySelector('.porte-nom').textContent = '← Accueil';
+          return;
+        }
+
+        const cible  = cote === 'g' ? murId - 1 : murId + 1;
         p.dataset.cible = cible;
         const visible = cible >= 1 && cible <= TOTAL_SALLES;
         p.classList.toggle('invisible', !visible);
         if (visible) {
           const nom = 'Salle ' + NOMS_ROMAINS[cible - 1];
           p.querySelector('.porte-nom').textContent =
-            p.dataset.cote === 'g' ? '← ' + nom : nom + ' →';
+            cote === 'g' ? '← ' + nom : nom + ' →';
         }
       });
     }
@@ -454,13 +466,22 @@
       art.setAttribute('aria-label', (toile.titre || 'Sans titre') + (toile.date ? ', ' + toile.date : ''));
       const cadre = document.createElement('div');
       cadre.className = 'cadre';
+      const dim = toile.dimensions;
+      const W = 140;
+      const H = (dim && dim.largeur && dim.hauteur) ? Math.round(W * dim.hauteur / dim.largeur) : 190;
       if (toile.photo) {
         const img = document.createElement('img');
         img.src = toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
+        img.style.width  = W + 'px';
+        img.style.height = H + 'px';
+        img.style.objectFit  = 'contain';
+        img.style.background = 'var(--mur)';
         cadre.appendChild(img);
       } else {
         const ph = document.createElement('div');
         ph.className = 'placeholder';
+        ph.style.width  = W + 'px';
+        ph.style.height = H + 'px';
         ph.innerHTML = '<span class="placeholder-num">' + toile.id + '</span><span class="placeholder-txt">Sans photo</span>';
         cadre.appendChild(ph);
       }
