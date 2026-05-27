@@ -51,6 +51,107 @@
     .parquet { width:100%; max-width:1080px; height:56px; background:repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent 70px),linear-gradient(to bottom,var(--parquet-a) 0%,var(--parquet-b) 100%); box-shadow:0 10px 28px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.06); border-radius:0 0 5px 5px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:9px; overflow:hidden; position:relative; }
     /* Banc de musée centré sur le parquet */
     .banc { color:var(--fil); opacity:.58; flex-shrink:0; }
+
+    /* ============================================================
+       MODES DE NAVIGATION A / C
+       ============================================================ */
+
+    /* Masquer barre-navigation et dots dans les deux modes */
+    [data-nav] .barre-navigation,
+    [data-nav] .dots { display:none; }
+
+    /* ---- VERSION A : flèches flottantes ---- */
+    .nav-float {
+      position:fixed; top:50%; transform:translateY(-50%); z-index:60;
+      width:52px; height:92px; background:rgba(0,0,0,.22); border:none;
+      color:rgba(255,255,255,.35); font-size:2.4rem; cursor:pointer;
+      display:none; align-items:center; justify-content:center;
+      transition:background .3s,color .3s; backdrop-filter:blur(4px);
+    }
+    .nav-float-g { left:0; border-radius:0 8px 8px 0; }
+    .nav-float-d { right:0; border-radius:8px 0 0 8px; }
+    .nav-float:hover { background:rgba(0,0,0,.55); color:var(--accent); }
+    .nav-float:disabled { opacity:.1; pointer-events:none; }
+    [data-nav="a"] .nav-float { display:flex; }
+
+    /* Pastille */
+    .nav-pastille {
+      position:fixed; bottom:1.8rem; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.07);
+      border-radius:20px; padding:.3rem 1.15rem; font-family:Lato,sans-serif;
+      font-size:.68rem; letter-spacing:.22em; text-transform:uppercase;
+      color:var(--text-doux); display:none; white-space:nowrap;
+      backdrop-filter:blur(6px); z-index:60;
+    }
+    [data-nav="a"] .nav-pastille { display:block; }
+
+    /* Mini dots flottants */
+    .nav-dots-float { position:fixed; bottom:.85rem; left:50%; transform:translateX(-50%); display:none; gap:.45rem; z-index:60; }
+    [data-nav="a"] .nav-dots-float { display:flex; }
+    .ndot { width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.18); transition:background .35s,transform .35s; }
+    .ndot.actif { background:var(--accent); transform:scale(1.55); }
+
+    /* ---- VERSION C : portes dans le mur ---- */
+    .porte {
+      position:absolute; bottom:0; z-index:3;
+      display:none; flex-direction:column; align-items:center;
+      cursor:pointer; user-select:none;
+    }
+    .porte-g { left:36px; }
+    .porte-d { right:36px; }
+    .porte.invisible { opacity:0; pointer-events:none; }
+    [data-nav="c"] .porte { display:flex; }
+
+    .porte-nom {
+      font-family:"Playfair Display",serif; font-style:italic;
+      font-size:.7rem; letter-spacing:.13em; color:var(--text-doux);
+      margin-bottom:.6rem; opacity:.65; transition:opacity .3s,transform .3s;
+      transform:translateY(4px);
+    }
+    .porte:hover .porte-nom { opacity:1; transform:translateY(0); }
+
+    .porte-forme {
+      width:76px; height:112px; border-radius:38px 38px 0 0;
+      background:var(--cadre); position:relative;
+      box-shadow: inset 0 -6px 14px rgba(0,0,0,.5);
+      transition:box-shadow .35s;
+    }
+    .porte-interieur {
+      position:absolute; inset:5px 5px 0; border-radius:33px 33px 0 0;
+      background:radial-gradient(ellipse at 50% 105%, rgba(255,238,160,.14) 0%, rgba(0,0,0,.84) 58%);
+    }
+    .porte:hover .porte-forme {
+      box-shadow:inset 0 -6px 14px rgba(0,0,0,.5), 0 0 28px 8px var(--accent);
+    }
+    /* Chevron directionnel dans l'ouverture */
+    .porte-fleche {
+      position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+      font-size:1.1rem; color:rgba(255,255,255,.18); transition:color .3s;
+      pointer-events:none;
+    }
+    .porte:hover .porte-fleche { color:rgba(255,255,255,.5); }
+
+    /* ---- SWITCH BOUTON TEST ---- */
+    .nav-test-switch {
+      position:fixed; bottom:1.5rem; right:1.2rem; z-index:300;
+      display:flex; gap:.35rem; align-items:center;
+    }
+    .btn-switch-mode {
+      background:transparent; border:1px solid var(--sep); color:var(--text-doux);
+      font-family:Lato,sans-serif; font-size:.65rem; letter-spacing:.14em;
+      text-transform:uppercase; padding:.3rem .8rem; cursor:pointer;
+      border-radius:2px; transition:background .25s,color .25s,border-color .25s;
+      opacity:.7;
+    }
+    .btn-switch-mode.actif {
+      background:var(--accent); border-color:var(--accent);
+      color:var(--bg); opacity:1;
+    }
+    .btn-switch-label {
+      font-family:Lato,sans-serif; font-size:.6rem; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--text-doux); opacity:.4;
+      margin-right:.2rem;
+    }
   </style>
 </head>
   <style>
@@ -172,15 +273,78 @@
 
   <footer class="pied"><span class="mention">&copy; Frédérique Ferette</span></footer>
 
+  <!-- Version A : flèches flottantes + pastille + mini dots -->
+  <button class="nav-float nav-float-g" id="navFloatG" aria-label="Salle précédente">&#8249;</button>
+  <button class="nav-float nav-float-d" id="navFloatD" aria-label="Salle suivante">&#8250;</button>
+  <div class="nav-pastille" id="navPastille"></div>
+  <div class="nav-dots-float" id="navDotsFloat">
+    <span class="ndot"></span><span class="ndot"></span><span class="ndot"></span><span class="ndot"></span>
+  </div>
+
+  <!-- Switch temporaire A / C -->
+  <div class="nav-test-switch" aria-label="Tester les modes de navigation">
+    <span class="btn-switch-label">Nav</span>
+    <button class="btn-switch-mode actif" id="btnModeA">A</button>
+    <button class="btn-switch-mode"       id="btnModeC">C</button>
+  </div>
+
   <script src="assets/js/main.js"></script>
   <script>
     let salleCourante = 1;
     const TOTAL_SALLES = 4;
+    const NOMS_ROMAINS = ['I', 'II', 'III', 'IV'];
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');
     const numSalleEl = document.getElementById('numSalle');
     const dotsEl     = document.querySelectorAll('.dot');
+    let navMode = 'a';
+
+    /* --- Portes mode C : injection dans chaque mur --- */
+    for (let i = 1; i <= TOTAL_SALLES; i++) {
+      const mur = document.getElementById('mur' + i);
+      ['g', 'd'].forEach(cote => {
+        const p = document.createElement('div');
+        p.className = 'porte porte-' + cote + ' invisible';
+        p.dataset.murId = i;
+        p.dataset.cote  = cote;
+        p.innerHTML =
+          '<span class="porte-nom"></span>' +
+          '<div class="porte-forme"><div class="porte-interieur"></div>' +
+          '<span class="porte-fleche">' + (cote === 'g' ? '&#8249;' : '&#8250;') + '</span>' +
+          '</div>';
+        p.addEventListener('click', () => {
+          const cible = parseInt(p.dataset.cible);
+          if (cible >= 1 && cible <= TOTAL_SALLES) allerSalle(cible);
+        });
+        mur.appendChild(p);
+      });
+    }
+
+    function mettreAJourNav() {
+      /* Flèches mode A */
+      const fg = document.getElementById('navFloatG');
+      const fd = document.getElementById('navFloatD');
+      if (fg) { fg.disabled = salleCourante === 1; fd.disabled = salleCourante === TOTAL_SALLES; }
+
+      /* Pastille */
+      const pastille = document.getElementById('navPastille');
+      if (pastille) pastille.textContent =
+        'Salle ' + NOMS_ROMAINS[salleCourante - 1] + ' / ' + NOMS_ROMAINS[TOTAL_SALLES - 1];
+
+      /* Mini dots */
+      document.querySelectorAll('.ndot').forEach((d, i) => d.classList.toggle('actif', i + 1 === salleCourante));
+
+      /* Portes mode C */
+      document.querySelectorAll('.porte').forEach(p => {
+        const murId = parseInt(p.dataset.murId);
+        const cible = p.dataset.cote === 'g' ? murId - 1 : murId + 1;
+        p.dataset.cible = cible;
+        const visible = cible >= 1 && cible <= TOTAL_SALLES;
+        p.classList.toggle('invisible', !visible);
+        if (visible) p.querySelector('.porte-nom').textContent = 'Salle ' + NOMS_ROMAINS[cible - 1];
+      });
+    }
 
     function allerSalle(n) {
       salleCourante = Math.max(1, Math.min(TOTAL_SALLES, n));
@@ -189,10 +353,29 @@
       btnPrev.disabled = salleCourante === 1;
       btnNext.disabled = salleCourante === TOTAL_SALLES;
       dotsEl.forEach((d, i) => d.classList.toggle('actif', i + 1 === salleCourante));
+      mettreAJourNav();
     }
 
     btnPrev.addEventListener('click', () => allerSalle(salleCourante - 1));
     btnNext.addEventListener('click', () => allerSalle(salleCourante + 1));
+
+    /* Flèches mode A */
+    document.getElementById('navFloatG').addEventListener('click', () => allerSalle(salleCourante - 1));
+    document.getElementById('navFloatD').addEventListener('click', () => allerSalle(salleCourante + 1));
+
+    /* Switch A / C */
+    function activerMode(mode) {
+      navMode = mode;
+      document.body.setAttribute('data-nav', mode);
+      document.getElementById('btnModeA').classList.toggle('actif', mode === 'a');
+      document.getElementById('btnModeC').classList.toggle('actif', mode === 'c');
+      mettreAJourNav();
+    }
+    document.getElementById('btnModeA').addEventListener('click', () => activerMode('a'));
+    document.getElementById('btnModeC').addEventListener('click', () => activerMode('c'));
+
+    /* Init mode A */
+    activerMode('a');
 
     const hashSalle = parseInt((window.location.hash.match(/^#salle-([2-4])$/) || [])[1]);
     if (hashSalle) {
