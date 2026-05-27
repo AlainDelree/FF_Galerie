@@ -458,7 +458,10 @@
     document.getElementById('modalFermer').addEventListener('click', fermerModal);
     modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) fermerModal(); });
 
-    function creerTableau(toile) {
+    function creerTableau(toile, H) {
+      H = H || 220;
+      const dim = toile.dimensions;
+      const W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
       const art = document.createElement('article');
       art.className = 'tableau';
       art.tabIndex  = 0;
@@ -466,16 +469,14 @@
       art.setAttribute('aria-label', (toile.titre || 'Sans titre') + (toile.date ? ', ' + toile.date : ''));
       const cadre = document.createElement('div');
       cadre.className = 'cadre';
-      const dim = toile.dimensions;
-      const W = 140;
-      const H = (dim && dim.largeur && dim.hauteur) ? Math.round(W * dim.hauteur / dim.largeur) : 190;
       if (toile.photo) {
         const img = document.createElement('img');
         img.src = toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
-        img.style.width  = W + 'px';
-        img.style.height = H + 'px';
+        img.style.width      = W + 'px';
+        img.style.height     = H + 'px';
         img.style.objectFit  = 'contain';
         img.style.background = 'var(--mur)';
+        img.style.display    = 'block';
         cadre.appendChild(img);
       } else {
         const ph = document.createElement('div');
@@ -507,9 +508,26 @@
       (sData.salles || []).forEach(salle => {
         const mur = document.getElementById('mur' + salle.id);
         if (!mur) return;
-        (salle.toiles || []).forEach(id => {
-          if (toileMap[id]) mur.appendChild(creerTableau(toileMap[id]));
-        });
+        const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
+        if (!toilesSalle.length) return;
+
+        /* Calcul de la hauteur d'affichage (H ≤ 220px) pour que
+           toutes les toiles tiennent sur une ligne dans ce mur. */
+        const H_REF  = 220;
+        const BORD   = 26;   // 2 × 13px de cadre
+        const N      = toilesSalle.length;
+        const cs     = getComputedStyle(mur);
+        const gapPx  = parseFloat(cs.gap)          || 32;
+        const padL   = parseFloat(cs.paddingLeft)   || 40;
+        const padR   = parseFloat(cs.paddingRight)  || 40;
+        const dispo  = mur.clientWidth - padL - padR - (N - 1) * gapPx - N * BORD;
+        const totalW = toilesSalle.reduce((s, t) => {
+          const d = t.dimensions;
+          return s + (d && d.largeur && d.hauteur ? Math.round(H_REF * d.largeur / d.hauteur) : H_REF);
+        }, 0);
+        const H = Math.round(H_REF * Math.min(1, dispo / totalW));
+
+        toilesSalle.forEach(t => mur.appendChild(creerTableau(t, H)));
       });
     })
     .catch(() => {
