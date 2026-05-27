@@ -3,11 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FF_Galerie — Accueil</title>
+  <title>Frédérique Ferette — Peintures</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
-  <h1>FF_Galerie — Accueil</h1>
+<body class="theme-sombre">
+
+  <div class="scene-entree">
+
+    <header class="entete">
+      <a href="contact.html" class="lien-contact">Contact</a>
+      <div class="controles">
+        <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
+          <span id="iconeMusique">&#9835;</span>
+        </button>
+        <div class="selecteur-theme" role="group" aria-label="Choisir le décor">
+          <button class="btn-theme" data-theme="theme-clair" title="Galerie claire">Clair</button>
+          <button class="btn-theme" data-theme="theme-sombre" title="Galerie contemporaine sombre">Sombre</button>
+          <button class="btn-theme" data-theme="theme-bois" title="Galerie traditionnelle bois">Bois</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="contenu-principal">
+      <div class="encadre-titre">
+        <h1 class="nom-artiste">Frédérique Ferette</h1>
+        <p class="sous-titre">Peintures</p>
+        <div class="separateur"></div>
+        <a href="galerie.html" class="btn-entrer">Entrer dans la galerie</a>
+      </div>
+    </main>
+
+    <footer class="pied">
+      <span class="mention">&copy; Frédérique Ferette</span>
+    </footer>
+
+  </div>
+
   <script src="assets/js/main.js"></script>
 </body>
 </html>

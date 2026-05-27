@@ -1,3 +1,229 @@
-/* FF_Galerie styles */
-* { box-sizing: border-box; }
-body { font-family: sans-serif; }
+/* =============================================================
+   FF_Galerie - style.css
+   Themes : theme-clair | theme-sombre | theme-bois
+   ============================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap");
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+/* Blanc casse, galerie traditionnelle lumineuse */
+body.theme-clair {
+  --bg:           #f9f6f0;
+  --text:         #2c2c2c;
+  --text-doux:    #6b6b6b;
+  --accent:       #8b7355;
+  --btn-border:   #8b7355;
+  --btn-hover-bg: #8b7355;
+  --btn-hover-tx: #f9f6f0;
+  --sep:          #c8b99a;
+  --controle-bg:  rgba(249,246,240,0.90);
+}
+
+/* Noir/gris, galerie contemporaine */
+body.theme-sombre {
+  --bg:           #111111;
+  --text:         #e8e2d9;
+  --text-doux:    #888880;
+  --accent:       #c9a96e;
+  --btn-border:   #c9a96e;
+  --btn-hover-bg: #c9a96e;
+  --btn-hover-tx: #111111;
+  --sep:          #333333;
+  --controle-bg:  rgba(20,20,20,0.90);
+}
+
+/* Beiges/bruns chauds, galerie traditionnelle */
+body.theme-bois {
+  --bg:           #e8dcc8;
+  --text:         #3a2e1e;
+  --text-doux:    #7a6248;
+  --accent:       #7a5c3a;
+  --btn-border:   #7a5c3a;
+  --btn-hover-bg: #7a5c3a;
+  --btn-hover-tx: #e8dcc8;
+  --sep:          #b89870;
+  --controle-bg:  rgba(230,215,195,0.90);
+}
+
+.scene-entree {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  animation: fonduEntree 1.4s ease both;
+}
+
+@keyframes fonduEntree {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.4rem 2.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--controle-bg);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--sep);
+}
+
+.lien-contact {
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-doux);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s, border-color 0.3s;
+}
+.lien-contact:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.controles {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-musique {
+  background: none;
+  border: 1px solid var(--sep);
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  cursor: pointer;
+  color: var(--text-doux);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, color 0.3s;
+}
+.btn-musique:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-musique.off { opacity: 0.42; }
+
+.selecteur-theme { display: flex; gap: 0.4rem; }
+
+.btn-theme {
+  background: transparent;
+  border: 1px solid var(--sep);
+  color: var(--text-doux);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 0.28rem 0.75rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.btn-theme:hover,
+.btn-theme.actif {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.contenu-principal {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.encadre-titre {
+  text-align: center;
+  animation: apparitionTitre 1.8s ease 0.3s both;
+}
+
+@keyframes apparitionTitre {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nom-artiste {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+
+.sous-titre {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--text-doux);
+  margin-bottom: 2rem;
+}
+
+.separateur {
+  width: 3rem;
+  height: 1px;
+  background-color: var(--sep);
+  margin: 0 auto 2.4rem;
+}
+
+.btn-entrer {
+  display: inline-block;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 0.88rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--btn-border);
+  border: 1px solid var(--btn-border);
+  padding: 0.85rem 2.4rem;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+.btn-entrer:hover {
+  background-color: var(--btn-hover-bg);
+  color: var(--btn-hover-tx);
+}
+
+.pied {
+  padding: 1rem 2.2rem;
+  text-align: center;
+  border-top: 1px solid var(--sep);
+}
+.mention {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--text-doux);
+}
+
+@media (max-width: 540px) {
+  .entete {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  .selecteur-theme { gap: 0.3rem; }
+  .btn-theme { padding: 0.25rem 0.55rem; font-size: 0.7rem; }
+}
