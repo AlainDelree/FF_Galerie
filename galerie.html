@@ -243,7 +243,7 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
       .salle { height:auto !important; min-height:unset !important; padding:.5rem .3rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
-      .mur { flex-wrap:wrap; justify-content:space-between; align-items:flex-start; align-content:space-evenly; gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
+      .mur { display:grid; grid-template-columns:1fr 1fr; justify-items:center; align-content:space-evenly; column-gap:.5rem; row-gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
       /* Cadre allégé mobile : shadow réduite, marges réduites */
       .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
       /* Spots désactivés sur mobile (perf + layout) */
