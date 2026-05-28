@@ -564,8 +564,8 @@
     }
 
     Promise.all([
-      fetch('data/toiles.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-      fetch('data/salles.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      fetch('data/toiles.json?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch('data/salles.json?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     ])
     .then(([tData, sData]) => {
       const toileMap = {};

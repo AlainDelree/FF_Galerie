@@ -615,14 +615,14 @@ async function lireFichierJSON(chemin){
 
 // Commit atomique multi-fichiers via Git Trees API
 async function commitMulti(fichiers, message){
-  // fichiers = [{chemin, contenu}] où contenu est déjà stringifié
+  // fichiers = [{chemin, contenu, encoding='utf-8'}]
   const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
   const commitSha = ref.object.sha;
   const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
 
   const blobs = await Promise.all(fichiers.map(async f => {
     const blob = await apiGH(`/repos/${REPO}/git/blobs`,'POST',{
-      content: f.contenu, encoding: 'utf-8'
+      content: f.contenu, encoding: f.encoding || 'utf-8'
     });
     return { path: f.chemin, mode:'100644', type:'blob', sha: blob.sha };
   }));
@@ -965,25 +965,25 @@ async function executerRestauration(){
   const btn = $('btn-restore-ok');
   btn.disabled=true; btn.textContent='⟳ Restauration…';
   try {
-    // Lire toiles.json et salles.json au commit cible
+    // Lire le contenu en base64 brut (évite les problèmes d'encodage UTF-8)
     const [tf, sf] = await Promise.all([
       apiGH(`/repos/${REPO}/contents/data/toiles.json?ref=${commitARestaurer}`),
       apiGH(`/repos/${REPO}/contents/data/salles.json?ref=${commitARestaurer}`)
     ]);
-    const tc = atob(tf.content.replace(/\n/g,''));
-    const sc = atob(sf.content.replace(/\n/g,''));
+    // Passer le base64 directement sans re-encoder
+    const tcB64 = tf.content.replace(/\n/g,'');
+    const scB64 = sf.content.replace(/\n/g,'');
+
     await commitMulti([
-      { chemin:'data/toiles.json', contenu: tc },
-      { chemin:'data/salles.json', contenu: sc }
+      { chemin:'data/toiles.json', contenu: tcB64, encoding: 'base64' },
+      { chemin:'data/salles.json', contenu: scB64, encoding: 'base64' }
     ], `Admin : Restauration vers ${commitARestaurer.substring(0,7)}`);
 
-    // Recharger l'état local
-    toiles = JSON.parse(decodeURIComponent(escape(tc))).toiles || [];
-    salles = JSON.parse(decodeURIComponent(escape(sc))).salles || [];
-    afficherToiles();
     $('overlay-restore').classList.remove('ouvert');
     syncBadge('ok');
-    toast('✓ Restauration effectuée');
+    toast('✓ Restauration effectuée — rechargement…');
+    // Re-lit les données depuis GitHub pour avoir l'état réel
+    await chargerTout();
   } catch(e){
     toast('Erreur : '+e.message,'err',4000);
     btn.disabled=false; btn.textContent='Restaurer';
