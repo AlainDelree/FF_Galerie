@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choix du cadre — FF Galerie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background:#111;
+      color:#e8e2d9;
+      font-family:'Lato', sans-serif;
+      font-weight:300;
+      min-height:100vh;
+      padding:2rem;
+    }
+    h1 {
+      font-family:'Playfair Display', serif;
+      font-style:italic;
+      font-size:1.6rem;
+      color:#c9a96e;
+      text-align:center;
+      margin-bottom:.5rem;
+    }
+    .sous-titre {
+      text-align:center;
+      font-size:.8rem;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:#666;
+      margin-bottom:2.5rem;
+    }
+    .grille {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+      gap:2.5rem;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    .section-cadre {
+      background:#1a1a1a;
+      border-radius:6px;
+      padding:1.5rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:1rem;
+      cursor:pointer;
+      border:2px solid transparent;
+      transition:border-color .3s;
+    }
+    .section-cadre:hover { border-color:#555; }
+    .section-cadre.selectionne { border-color:#c9a96e; }
+    .nom-cadre {
+      font-family:'Playfair Display', serif;
+      font-style:italic;
+      font-size:1rem;
+      color:#c9a96e;
+      text-align:center;
+    }
+    .toiles-row {
+      display:flex;
+      gap:1rem;
+      align-items:flex-end;
+    }
+    .cadre {
+      position:relative;
+      flex-shrink:0;
+    }
+    .cadre img {
+      display:block;
+      object-fit:cover;
+    }
+    /* Bouton de validation */
+    .btn-valider {
+      display:block;
+      margin:2.5rem auto 0;
+      padding:.8rem 3rem;
+      font-family:'Lato', sans-serif;
+      font-size:.9rem;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+      color:#c9a96e;
+      border:1px solid #c9a96e;
+      background:none;
+      cursor:pointer;
+      border-radius:2px;
+      transition:background .3s, color .3s;
+      opacity:.4;
+      pointer-events:none;
+    }
+    .btn-valider.actif {
+      opacity:1;
+      pointer-events:all;
+    }
+    .btn-valider.actif:hover {
+      background:#c9a96e;
+      color:#111;
+    }
+    #selection-label {
+      text-align:center;
+      margin-top:1rem;
+      font-size:.85rem;
+      color:#888;
+      min-height:1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Choisir la couleur du cadre</h1>
+  <p class="sous-titre">Cliquez sur votre préférence</p>
+
+  <div class="grille" id="grille"></div>
+
+  <p id="selection-label"></p>
+  <button class="btn-valider" id="btn-valider" onclick="valider()">Confirmer ce cadre</button>
+
+  <script>
+    const TOILES = [
+      { src:"assets/images/toiles/toile-008.jpg", w:130, h:163 }, // portrait
+      { src:"assets/images/toiles/toile-001.jpg", w:180, h:135 }, // paysage
+    ];
+
+    const CADRES = [
+      { nom:"Chêne clair",      bg:"linear-gradient(135deg,#d4a96a,#c49050,#b07840)", light:"rgba(255,200,120,.25)", dark:"rgba(0,0,0,.45)", border:16 },
+      { nom:"Chêne doré",       bg:"linear-gradient(135deg,#c8902a,#a87018,#c8902a)", light:"rgba(255,190,80,.25)",  dark:"rgba(0,0,0,.50)", border:16 },
+      { nom:"Noyer",            bg:"linear-gradient(135deg,#6b4226,#4a2c18,#6b4226)", light:"rgba(180,120,60,.20)", dark:"rgba(0,0,0,.55)", border:16 },
+      { nom:"Cerisier",         bg:"linear-gradient(135deg,#9b3a2a,#7a2618,#9b3a2a)", light:"rgba(200,80,60,.20)",  dark:"rgba(0,0,0,.55)", border:16 },
+      { nom:"Ébène",            bg:"linear-gradient(135deg,#2c2c2c,#1a1a1a,#2c2c2c)", light:"rgba(255,255,255,.12)",dark:"rgba(0,0,0,.65)", border:16 },
+      { nom:"Blanc ivoire",     bg:"linear-gradient(135deg,#f0ece0,#e0d8c8,#f0ece0)", light:"rgba(255,255,240,.50)",dark:"rgba(180,160,120,.45)", border:16 },
+      { nom:"Gris anthracite",  bg:"linear-gradient(135deg,#5a5a5a,#3a3a3a,#5a5a5a)", light:"rgba(200,200,200,.18)",dark:"rgba(0,0,0,.55)", border:16 },
+      { nom:"Or mat",           bg:"linear-gradient(135deg,#b8962a,#9a7818,#c8a830)", light:"rgba(255,220,80,.25)", dark:"rgba(0,0,0,.50)", border:16 },
+    ];
+
+    let selectionne = null;
+    const grille = document.getElementById('grille');
+
+    CADRES.forEach((c, i) => {
+      const section = document.createElement('div');
+      section.className = 'section-cadre';
+      section.id = 'section-' + i;
+
+      const shadow = `
+        0 8px 30px rgba(0,0,0,.6),
+        inset 4px 4px 0 ${c.light},
+        inset -4px -4px 0 ${c.dark},
+        inset 0 0 0 3px rgba(0,0,0,.50)
+      `;
+
+      const row = document.createElement('div');
+      row.className = 'toiles-row';
+
+      TOILES.forEach(t => {
+        const cadreEl = document.createElement('div');
+        cadreEl.className = 'cadre';
+        cadreEl.style.cssText = `
+          border:${c.border}px solid transparent;
+          background:${c.bg};
+          box-shadow:${shadow};
+        `;
+        const img = document.createElement('img');
+        img.src = t.src;
+        img.width = t.w;
+        img.height = t.h;
+        img.alt = '';
+        cadreEl.appendChild(img);
+        row.appendChild(cadreEl);
+      });
+
+      const nom = document.createElement('p');
+      nom.className = 'nom-cadre';
+      nom.textContent = c.nom;
+
+      section.appendChild(row);
+      section.appendChild(nom);
+
+      section.addEventListener('click', () => {
+        document.querySelectorAll('.section-cadre').forEach(s => s.classList.remove('selectionne'));
+        section.classList.add('selectionne');
+        selectionne = c.nom;
+        document.getElementById('selection-label').textContent = '✓ ' + c.nom + ' sélectionné';
+        document.getElementById('btn-valider').classList.add('actif');
+      });
+
+      grille.appendChild(section);
+    });
+
+    function valider() {
+      if (selectionne) {
+        alert('Cadre choisi : ' + selectionne + '\n\nCommuniquez ce choix pour l\'appliquer sur le site.');
+      }
+    }
+  </script>
+
+</body>
+</html>

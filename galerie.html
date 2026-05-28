@@ -9,7 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    body.theme-sombre { --mur:#1c1c1c; --cadre:#c8a878; --cadre-in:rgba(255,255,255,.12); --fil:#d4b888; }
+    body.theme-sombre { --mur:#1c1c1c; --cadre:#3a3a3a; --cadre-in:rgba(255,255,255,.12); --fil:#555; }
+    body.theme-provence .mur {
+      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwICAwIDAgMCAwIDAgIDAgMCAwIDAgMCAgMCAwIDAgMC4xMyAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=");
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
     /* ── LAYOUT GÉNÉRAL ── */
     .galerie-principale { display:flex; flex-direction:column; height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
     .barre-navigation { display:flex; align-items:center; justify-content:center; gap:2rem; padding:1.1rem 2rem 0.5rem; }
@@ -28,7 +33,14 @@
     .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
     .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
-    .cadre { border:13px solid var(--cadre); box-shadow:0 10px 35px rgba(0,0,0,.50),0 2px 8px rgba(0,0,0,.25),inset 0 0 0 1px var(--cadre-in),inset 0 0 0 4px rgba(0,0,0,.12); position:relative; }
+    .cadre { border:18px solid var(--cadre); position:relative;
+      background: linear-gradient(135deg, #5a5a5a 0%, #3a3a3a 35%, #2a2a2a 60%, #4a4a4a 100%);
+      box-shadow:
+        0 12px 40px rgba(0,0,0,.65), 0 3px 10px rgba(0,0,0,.35),
+        inset 5px 5px 0 rgba(200,200,200,.12),
+        inset -5px -5px 0 rgba(0,0,0,.50),
+        inset 0 0 0 4px rgba(0,0,0,.55);
+    }
     .cadre::after { content:''; position:absolute; inset:0; border:3px solid rgba(255,255,255,.07); pointer-events:none; }
     .cadre img { display:block; object-fit:cover; }
     .placeholder { background:linear-gradient(135deg,rgba(0,0,0,.07),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; }
@@ -184,7 +196,10 @@
         <span id="iconeMusique">&#9835;</span>
       </button>
       <div class="selecteur-theme" role="group" aria-label="Choisir le décor">
-        <button class="btn-theme actif" data-theme="theme-sombre" title="Galerie contemporaine sombre">Sombre</button>
+        <button class="btn-theme" data-theme="theme-clair" title="Galerie claire">Clair</button>
+        <button class="btn-theme" data-theme="theme-sombre" title="Galerie contemporaine sombre">Sombre</button>
+        <button class="btn-theme" data-theme="theme-bois" title="Galerie traditionnelle bois">Bois</button>
+        <button class="btn-theme" data-theme="theme-provence" title="Galerie provençale">Provence</button>
       </div>
     </div>
   </header>
