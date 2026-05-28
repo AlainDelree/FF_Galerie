@@ -261,9 +261,17 @@ body.theme-sombre {
 @media (max-width: 540px) {
   .entete {
     flex-direction: column;
-    gap: 0.8rem;
-    padding: 1rem;
+    gap: 0.6rem;
+    padding: .85rem 1rem;
+    padding-top: max(.85rem, env(safe-area-inset-top, .85rem));
   }
   .selecteur-theme { gap: 0.3rem; }
   .btn-theme { padding: 0.25rem 0.55rem; font-size: 0.7rem; }
+  .plan-galerie { max-width: 320px; }
+  .contenu-principal { padding: 2.5rem 1.2rem; }
+}
+
+@media (max-width: 360px) {
+  .nom-artiste { font-size: 2rem; }
+  .plan-galerie { max-width: 280px; }
 }

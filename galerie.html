@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Galerie — Frédérique Ferette</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -222,30 +222,38 @@
       text-align:center;
     }
     @media (max-width:700px) {
-      .mur { gap:1rem; padding:2.5rem 1rem 1.5rem; min-height:auto; flex-wrap:wrap; height:auto; }
-      .modal-contenu { flex-direction:column; }
-      .modal-image-wrap { flex:none; width:100%; max-height:48vw; }
+      .mur { gap:1rem; padding:2rem 1rem 1.5rem; min-height:auto; flex-wrap:wrap; height:auto; }
+      /* Modal en feuille remontante sur mobile */
+      .modal-overlay { padding:0; align-items:flex-end; }
+      .modal-contenu { flex-direction:column; border-radius:16px 16px 0 0; max-height:90vh; width:100%; }
+      /* Indicateur de glissement */
+      .modal-contenu::before { content:''; display:block; width:40px; height:4px; background:rgba(255,255,255,.18); border-radius:2px; margin:.75rem auto .25rem; flex-shrink:0; }
+      .modal-image-wrap { flex:none; width:100%; height:52vw; max-height:none; }
+      .modal-fiche { padding:1.2rem 1.2rem 1rem; gap:.7rem; }
+      /* Bouton fermer plus grand sur mobile */
+      .modal-fermer { width:2.8rem; height:2.8rem; font-size:1.3rem; }
       .etiquette { margin-top:.8rem; }
       .plaquette { padding:.25rem .5rem; }
-      .etiquette-titre { font-size:.6rem; letter-spacing:.04em; }
+      .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
       .galerie-principale { height:auto !important; min-height:unset !important; }
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
-      .salle { height:auto !important; min-height:unset !important; padding-bottom:3.5rem; }
-      .galerie-principale { height:auto !important; }
-      .conteneur-salles { height:auto !important; }
-      .mur { flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:.6rem; padding:1.5rem .6rem 1rem; height:auto !important; overflow:visible; }
-      /* Navigation mobile — flèches en bas */
-      .nav-mobile { display:flex !important; }
+      /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
+      .salle { height:auto !important; min-height:unset !important; padding:.5rem .3rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
+      .mur { flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:.5rem; padding:1rem .5rem .8rem; height:auto !important; overflow:visible; }
+      /* Cadre allégé mobile : shadow réduite, marges réduites */
+      .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
+      /* Spots désactivés sur mobile (perf + layout) */
+      .cadre::before, .cadre::after { display:none !important; }
+      /* Navigation mobile + safe area iOS home indicator */
+      .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
       .tableau { flex-shrink:0; }
-      .salle { padding:.5rem .3rem 1rem; }
-      .porte-g { left:-36px; }
-      .porte-d { right:-36px; }
-      .porte-forme { width:36px; height:58px; border-radius:18px 18px 0 0; }
-      .porte-interieur { inset:2px 2px 0; border-radius:16px 16px 0 0; }
-      .etiquette-titre { font-size:.55rem; }
-      .plaquette { padding:.2rem .4rem; }
+      /* Plaquettes lisibles */
+      .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
+      .plaquette { padding:.25rem .5rem; }
+      .etiquette { margin-top:.5rem; }
+      /* Portes cachées sur mobile */
       .porte { display:none !important; }
       body { overflow-x:hidden; }
     }
@@ -477,15 +485,26 @@
     document.getElementById('modalFermer').addEventListener('click', fermerModal);
     modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) fermerModal(); });
 
+    /* Swipe bas pour fermer le modal (mobile) */
+    let swipeStartY = null;
+    const modalContenu = document.querySelector('.modal-contenu');
+    modalContenu.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive:true });
+    modalContenu.addEventListener('touchend', e => {
+      if (swipeStartY === null) return;
+      const dy = e.changedTouches[0].clientY - swipeStartY;
+      if (dy > 80) fermerModal();
+      swipeStartY = null;
+    }, { passive:true });
+
     function creerTableau(toile, H) {
       H = H || 200;
       const dim = toile.dimensions;
       const isMob = window.innerWidth <= 600;
-      const maxW = isMob ? Math.floor((document.querySelector('.mur').clientWidth - 20) / 2) - 30 : 99999;
+      const maxW = isMob ? Math.floor((document.querySelector('.mur').clientWidth - 20) / 2) - 18 : 99999;
       let W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
       W = Math.min(W, maxW);
       const art = document.createElement('article');
-      art.style.width = (W + 26) + 'px';
+      art.style.width = (W + (isMob ? 16 : 26)) + 'px';
       art.className = 'tableau';
       art.tabIndex  = 0;
       art.setAttribute('role', 'button');
@@ -544,10 +563,10 @@
         const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
         if (!toilesSalle.length) return;
         const isMobile = window.innerWidth <= 600;
-        const maxW = isMobile ? Math.floor((mur.clientWidth - 20) / 2) - 30 : 99999;
+        const maxW = isMobile ? Math.floor((mur.clientWidth - 20) / 2) - 18 : 99999;
         const H_PREF = isMobile ? 130 : 200;
         const H_FALLBACK = isMobile ? 100 : 160;
-        const BORD = 26;
+        const BORD = isMobile ? 16 : 26;
         const N = isMobile ? 2 : toilesSalle.length; /* 2 toiles par rangée sur mobile */
         const cs = getComputedStyle(mur);
         const gapPx = parseFloat(cs.gap)         || (isMobile ? 6 : 32);
