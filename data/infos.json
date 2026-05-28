@@ -1,4 +1,21 @@
 {
-  "agenda": [],
-  "liens": []
+  "evenements": [
+    {
+      "id": 1,
+      "titre": "Exposition Montmartre à Dinant",
+      "dateAffichage": "Juin 2025",
+      "lieu": "Dinant, Belgique",
+      "description": "Participation à l'exposition collective dans l'esprit de Montmartre, au cœur de la vieille ville.",
+      "lien": ""
+    }
+  ],
+  "collegues": [
+    {
+      "id": 1,
+      "nom": "Exemple — Artiste Peintre",
+      "description": "Aquarelles et huiles sur toile",
+      "lien": "https://example.com",
+      "type": "site"
+    }
+  ]
 }
