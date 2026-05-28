@@ -1,6 +1,6 @@
 /* =============================================================
    FF_Galerie - style.css
-   Themes : theme-clair | theme-sombre | theme-bois | theme-provence
+   Theme : theme-sombre
    ============================================================= */
 
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap");
@@ -14,19 +14,6 @@ html, body {
   transition: background-color 0.6s ease, color 0.6s ease;
 }
 
-/* Blanc casse, galerie traditionnelle lumineuse */
-body.theme-clair {
-  --bg:           #f9f6f0;
-  --text:         #2c2c2c;
-  --text-doux:    #6b6b6b;
-  --accent:       #8b7355;
-  --btn-border:   #8b7355;
-  --btn-hover-bg: #8b7355;
-  --btn-hover-tx: #f9f6f0;
-  --sep:          #c8b99a;
-  --controle-bg:  rgba(249,246,240,0.90);
-}
-
 /* Noir/gris, galerie contemporaine */
 body.theme-sombre {
   --bg:           #111111;
@@ -38,32 +25,6 @@ body.theme-sombre {
   --btn-hover-tx: #111111;
   --sep:          #333333;
   --controle-bg:  rgba(20,20,20,0.90);
-}
-
-/* Beiges/bruns chauds, galerie traditionnelle */
-body.theme-bois {
-  --bg:           #e8dcc8;
-  --text:         #3a2e1e;
-  --text-doux:    #7a6248;
-  --accent:       #7a5c3a;
-  --btn-border:   #7a5c3a;
-  --btn-hover-bg: #7a5c3a;
-  --btn-hover-tx: #e8dcc8;
-  --sep:          #b89870;
-  --controle-bg:  rgba(230,215,195,0.90);
-}
-
-/* Ocre/lavande, galerie provençale */
-body.theme-provence {
-  --bg:           #f5ede0;
-  --text:         #3a2410;
-  --text-doux:    #8a6230;
-  --accent:       #c8860a;
-  --btn-border:   #c8860a;
-  --btn-hover-bg: #c8860a;
-  --btn-hover-tx: #f5ede0;
-  --sep:          #c4a060;
-  --controle-bg:  rgba(245,237,224,0.92);
 }
 
 .scene-entree {
