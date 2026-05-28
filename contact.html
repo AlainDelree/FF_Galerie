@@ -2,12 +2,170 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FF_Galerie — Contact</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Frédérique Ferette — Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Lato:wght@300;400&family=Cinzel:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .entete { display:flex; flex-direction:row; justify-content:space-between; align-items:center; transform:translateY(0); transition:transform .4s ease; }
+    .entete.cache { transform:translateY(-100%); }
+    .pied { display:flex; flex-direction:column; align-items:center; gap:.1rem; }
+    .signature-artiste { font-family:'Pinyon Script',cursive; font-size:3.5rem; background:linear-gradient(135deg,#c8a050 0%,#f0d080 50%,#c8a050 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; opacity:.85; line-height:1; margin-bottom:.2rem; letter-spacing:.05em; }
+
+    /* ── Page contact ── */
+    .contact-titre {
+      font-family: 'Cinzel', serif;
+      font-weight: 400;
+      font-size: 1.6rem;
+      letter-spacing: .38em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 40%, #c8a050 60%, #e8c060 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 1.2rem;
+    }
+    .contact-accroche {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: .92rem;
+      color: var(--text-doux, #888880);
+      letter-spacing: .06em;
+      margin-bottom: 2.4rem;
+    }
+    .contact-bloc {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.6rem;
+      margin-top: 2rem;
+    }
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .65rem;
+    }
+    .contact-label {
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: rgba(200,160,80,.45);
+    }
+    /* Email */
+    .lien-email {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: 1rem;
+      letter-spacing: .09em;
+      color: #c8a050;
+      text-decoration: none;
+      position: relative;
+      transition: color .25s;
+    }
+    .lien-email::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #c8a050 40%, #c8a050 60%, transparent);
+      opacity: .35;
+      transition: opacity .3s;
+    }
+    .lien-email:hover { color: #f0d080; }
+    .lien-email:hover::after { opacity: .85; }
+    /* Réseaux */
+    .contact-social {
+      display: flex;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+    .lien-social {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .55rem;
+      text-decoration: none;
+      color: rgba(200,160,80,.4);
+      transition: color .3s;
+    }
+    .lien-social:hover { color: #c8a050; }
+    .lien-social svg { width: 1.6rem; height: 1.6rem; }
+    .lien-social span {
+      font-family: 'Cinzel', serif;
+      font-size: .5rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
-<body>
-  <h1>FF_Galerie — Contact</h1>
+<body class="theme-sombre">
+
+  <div class="scene-entree">
+
+    <header class="entete">
+      <a href="galerie.html" class="lien-contact">← Galerie</a>
+      <div class="controles">
+        <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
+          <span id="iconeMusique">&#9835;</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="contenu-principal">
+      <div class="encadre-titre">
+
+        <h1 class="contact-titre">Contact</h1>
+        <p class="contact-accroche">Pour tout renseignement</p>
+        <div class="separateur"></div>
+
+        <div class="contact-bloc">
+
+          <!-- ✉ Email -->
+          <div class="contact-item">
+            <span class="contact-label">Courrier électronique</span>
+            <a class="lien-email" href="#"
+               data-u="ferette.frederique" data-d="gmail.com"
+               aria-label="Envoyer un email à Frédérique Ferette">
+              ferette.frederique&#64;gmail.com
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <footer class="pied">
+      <div class="signature-artiste" aria-label="Signature">FF</div>
+      <span class="mention">&copy; Frédérique Ferette</span>
+    </footer>
+
+  </div>
+
   <script src="assets/js/main.js"></script>
+  <script>
+    /* Anti-spam : reconstruit l'adresse mail depuis les data-attributes */
+    (function () {
+      document.querySelectorAll('.lien-email').forEach(function (a) {
+        var email = a.dataset.u + '\u0040' + a.dataset.d;
+        a.href = 'mailto:' + email;
+        a.textContent = email;
+      });
+    })();
+
+    /* Header auto-hide */
+    (function () {
+      var h = document.querySelector('.entete');
+      var t;
+      function show() { h.classList.remove('cache'); clearTimeout(t); t = setTimeout(function () { h.classList.add('cache'); }, 2500); }
+      document.addEventListener('mousemove', function (e) { if (e.clientY < 80) show(); });
+      document.addEventListener('touchstart', show, { passive: true });
+      t = setTimeout(function () { h.classList.add('cache'); }, 2500);
+    })();
+  </script>
+
 </body>
 </html>
