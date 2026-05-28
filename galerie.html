@@ -192,17 +192,17 @@
       .etiquette-titre { font-size:.6rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      /* 2 toiles par ligne sur mobile */
-      .mur { flex-wrap:wrap; justify-content:center; gap:.8rem; padding:2rem .8rem 1.5rem; height:auto; overflow:hidden; }
-      .tableau { width:calc(50% - 1rem); }
-      .cadre { width:100%; }
-      .cadre img, .placeholder { width:100% !important; height:auto !important; aspect-ratio:4/3; object-fit:cover; }
-      .salle { padding:.5rem .5rem 1rem; }
+      .mur { flex-wrap:wrap; justify-content:center; gap:.6rem; padding:1.5rem .6rem 1rem; height:auto !important; overflow:hidden; }
+      .tableau { width:calc(50vw - 1.5rem) !important; max-width:calc(50vw - 1.5rem) !important; }
+      .cadre { width:100% !important; }
+      .cadre img, .placeholder { width:100% !important; height:auto !important; aspect-ratio:4/3; object-fit:cover; display:block; }
+      .salle { padding:.5rem .3rem 1rem; }
       .porte-g { left:-36px; }
       .porte-d { right:-36px; }
       .porte-forme { width:36px; height:58px; border-radius:18px 18px 0 0; }
       .porte-interieur { inset:2px 2px 0; border-radius:16px 16px 0 0; }
-      .etiquette-titre { font-size:.58rem; }
+      .etiquette-titre { font-size:.55rem; }
+      .plaquette { padding:.2rem .4rem; max-width:calc(50vw - 1.5rem); }
     }
   </style>
 </head>
