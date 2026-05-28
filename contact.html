@@ -55,8 +55,39 @@
       text-transform: uppercase;
       color: rgba(200,160,80,.45);
     }
-    /* Email */
-    .lien-email {
+    .contact-email-wrap {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+    }
+    .btn-copier {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: .2rem;
+      color: rgba(200,160,80,.35);
+      transition: color .2s;
+      flex-shrink: 0;
+      position: relative;
+      line-height: 0;
+    }
+    .btn-copier:hover { color: #c8a050; }
+    .btn-copier svg { width: .85rem; height: .85rem; }
+    .btn-copier .copie-ok {
+      display: none;
+      position: absolute;
+      top: -1.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Cinzel', serif;
+      font-size: .45rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #c8a050;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .btn-copier.copie-active .copie-ok { display: block; }
       font-family: 'Lato', sans-serif;
       font-weight: 300;
       font-size: 1rem;
@@ -130,14 +161,22 @@
 
         <div class="contact-bloc">
 
-          <!-- ✉ Email -->
           <div class="contact-item">
             <span class="contact-label">Courrier électronique</span>
-            <a class="lien-email" href="#"
-               data-u="ferette.frederique" data-d="gmail.com"
-               aria-label="Envoyer un email à Frédérique Ferette">
-              ferette.frederique&#64;gmail.com
-            </a>
+            <div class="contact-email-wrap">
+              <a class="lien-email" href="#"
+                 data-u="ferette.frederique" data-d="gmail.com"
+                 aria-label="Envoyer un email à Frédérique Ferette">
+                ferette.frederique&#64;gmail.com
+              </a>
+              <button class="btn-copier" id="btnCopier" aria-label="Copier l'adresse email" title="Copier">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copie-ok">Copié !</span>
+              </button>
+            </div>
           </div>
 
         </div>
@@ -155,10 +194,29 @@
   <script>
     /* Anti-spam : reconstruit l'adresse mail depuis les data-attributes */
     (function () {
-      document.querySelectorAll('.lien-email').forEach(function (a) {
-        var email = a.dataset.u + '\u0040' + a.dataset.d;
-        a.href = 'mailto:' + email;
-        a.textContent = email;
+      var a = document.querySelector('.lien-email');
+      var email = a.dataset.u + '\u0040' + a.dataset.d;
+      a.href = 'mailto:' + email;
+      a.textContent = email;
+
+      /* Bouton copier */
+      var btn = document.getElementById('btnCopier');
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(email).then(function () {
+          btn.classList.add('copie-active');
+          setTimeout(function () { btn.classList.remove('copie-active'); }, 1800);
+        }).catch(function () {
+          /* Fallback si clipboard API indisponible */
+          var ta = document.createElement('textarea');
+          ta.value = email;
+          ta.style.cssText = 'position:fixed;opacity:0;';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.classList.add('copie-active');
+          setTimeout(function () { btn.classList.remove('copie-active'); }, 1800);
+        });
       });
     })();
 
