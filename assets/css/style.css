@@ -259,6 +259,12 @@ body.theme-sombre {
   font-style: italic;
 }
 
+/* ── Navigation multi-pages ── */
+.nav-pages { display:flex; align-items:center; gap:.5rem; }
+.nav-sep { color:rgba(255,255,255,.18); font-size:.75rem; user-select:none; }
+.lien-contact.actif { color:rgba(200,160,80,.3); pointer-events:none; cursor:default; }
+.lien-contact.actif:hover { color:rgba(200,160,80,.3); }
+
   .entete {
     padding: .75rem 1.2rem;
     padding-top: max(.75rem, env(safe-area-inset-top, .75rem));
