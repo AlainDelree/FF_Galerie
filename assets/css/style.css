@@ -260,10 +260,8 @@ body.theme-sombre {
 
 @media (max-width: 540px) {
   .entete {
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: .85rem 1rem;
-    padding-top: max(.85rem, env(safe-area-inset-top, .85rem));
+    padding: .75rem 1.2rem;
+    padding-top: max(.75rem, env(safe-area-inset-top, .75rem));
   }
   .selecteur-theme { gap: 0.3rem; }
   .btn-theme { padding: 0.25rem 0.55rem; font-size: 0.7rem; }
