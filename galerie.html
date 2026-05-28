@@ -47,7 +47,15 @@
     .placeholder-num { font-family:"Playfair Display",serif; font-style:italic; font-size:3rem; color:var(--text-doux); opacity:.35; }
     .placeholder-txt { font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-doux); opacity:.4; }
     .etiquette { margin-top:.9rem; text-align:center; max-width:100%; overflow:hidden; }
-    .etiquette-titre { font-family:"Playfair Display",serif; font-style:italic; font-size:.84rem; color:var(--text); opacity:.82; }
+    .etiquette { margin-top:0; text-align:center; max-width:100%; }
+    .plaquette {
+      display:inline-block;
+      background: linear-gradient(135deg, #c8a050 0%, #e8c060 40%, #c8a050 70%, #d4ac58 100%);
+      padding:.22rem .75rem;
+      border-radius:1px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,240,160,.4);
+    }
+    .etiquette-titre { font-family:"Playfair Display",serif; font-style:italic; font-size:.78rem; color:#1a1200; opacity:1; }
     .etiquette-date { font-size:.7rem; color:var(--text-doux); margin-top:.15rem; letter-spacing:.06em; }
 
     /* ============================================================
@@ -56,19 +64,9 @@
     [data-nav] .barre-navigation,
     [data-nav] .dots { display:none; }
 
-    /* ---- VERSION A : flèches flottantes ---- */
-    .nav-float { position:fixed; top:50%; transform:translateY(-50%); z-index:60; width:52px; height:92px; background:rgba(0,0,0,.22); border:none; color:rgba(255,255,255,.35); font-size:2.4rem; cursor:pointer; display:none; align-items:center; justify-content:center; transition:background .3s,color .3s; backdrop-filter:blur(4px); }
-    .nav-float-g { left:0; border-radius:0 8px 8px 0; }
-    .nav-float-d { right:0; border-radius:8px 0 0 8px; }
-    .nav-float:hover { background:rgba(0,0,0,.55); color:var(--accent); }
-    .nav-float:disabled { opacity:.1; pointer-events:none; }
-    [data-nav="a"] .nav-float { display:flex; }
-    .nav-pastille { position:fixed; bottom:1.8rem; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.07); border-radius:20px; padding:.3rem 1.15rem; font-family:Lato,sans-serif; font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-doux); display:none; white-space:nowrap; backdrop-filter:blur(6px); z-index:60; }
-    [data-nav="a"] .nav-pastille { display:block; }
-    .nav-dots-float { position:fixed; bottom:.85rem; left:50%; transform:translateX(-50%); display:none; gap:.45rem; z-index:60; }
-    [data-nav="a"] .nav-dots-float { display:flex; }
-    .ndot { width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.18); transition:background .35s,transform .35s; }
-    .ndot.actif { background:var(--accent); transform:scale(1.55); }
+    
+    
+    
     .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; position:relative; }
 
     /* ── MUR : overflow visible pour que rien ne soit coupé ── */
@@ -195,12 +193,7 @@
       <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
         <span id="iconeMusique">&#9835;</span>
       </button>
-      <div class="selecteur-theme" role="group" aria-label="Choisir le décor">
-        <button class="btn-theme" data-theme="theme-clair" title="Galerie claire">Clair</button>
-        <button class="btn-theme" data-theme="theme-sombre" title="Galerie contemporaine sombre">Sombre</button>
-        <button class="btn-theme" data-theme="theme-bois" title="Galerie traditionnelle bois">Bois</button>
-        <button class="btn-theme" data-theme="theme-provence" title="Galerie provençale">Provence</button>
-      </div>
+      
     </div>
   </header>
 
@@ -509,6 +502,17 @@
           '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
       });
     });
+  
+    (function(){
+      var h = document.querySelector('.entete-galerie') || document.querySelector('.entete') || document.querySelector('header');
+      if(!h) return;
+      var timer;
+      function show(){ h.style.transform='translateY(0)'; clearTimeout(timer); timer = setTimeout(function(){ h.style.transform='translateY(-100%)'; }, 2500); }
+      h.style.transition = 'transform .4s ease';
+      document.addEventListener('mousemove', function(e){ if(e.clientY < 80) show(); });
+      document.addEventListener('touchstart', show);
+      timer = setTimeout(function(){ h.style.transform='translateY(-100%)'; }, 2500);
+    })();
   </script>
 </body>
 </html>

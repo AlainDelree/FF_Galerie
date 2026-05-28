@@ -9,16 +9,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
+    .nom-artiste, .sous-titre, .titre-galerie {
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 40%, #c8a050 60%, #e8c060 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .titre-galerie {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-top: .5rem;
+      opacity: .9;
+    }
     .signature-artiste {
       font-family: 'Pinyon Script', cursive;
       font-size: 3.5rem;
-      color: var(--accent);
-      opacity: .75;
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 50%, #c8a050 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: .85;
       line-height: 1;
       margin-bottom: .2rem;
       letter-spacing: .05em;
     }
     .pied { display: flex; flex-direction: column; align-items: center; gap: .1rem; }
+    /* Header auto-hide */
+    .entete {
+      transform: translateY(0);
+      transition: transform .4s ease;
+    }
+    .entete.cache {
+      transform: translateY(-100%);
+    }
   </style>
 </head>
 <body class="theme-sombre">
@@ -31,9 +57,7 @@
         <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
           <span id="iconeMusique">&#9835;</span>
         </button>
-        <div class="selecteur-theme" role="group" aria-label="Choisir le décor">
-          <button class="btn-theme actif" data-theme="theme-sombre" title="Galerie contemporaine sombre">Sombre</button>
-        </div>
+
       </div>
     </header>
 
@@ -42,7 +66,7 @@
         <h1 class="nom-artiste">Frédérique Ferette</h1>
         <p class="sous-titre">Peintures</p>
         <div class="separateur"></div>
-        <a href="galerie.html" class="btn-entrer">Entrer dans la galerie</a>
+        <p class="titre-galerie">Galerie</p>
 
         <!-- Plan interactif de la galerie -->
         <div class="plan-galerie">
@@ -132,5 +156,16 @@
   </div>
 
   <script src="assets/js/main.js"></script>
+  <script>
+    (function(){
+      var h = document.querySelector('.entete');
+      var timer;
+      function show(){ h.classList.remove('cache'); clearTimeout(timer); timer = setTimeout(function(){ h.classList.add('cache'); }, 2500); }
+      document.addEventListener('mousemove', function(e){ if(e.clientY < 80) show(); });
+      document.addEventListener('touchstart', show);
+      timer = setTimeout(function(){ h.classList.add('cache'); }, 2500);
+    })();
+  </script>
+
 </body>
 </html>
