@@ -533,7 +533,7 @@
       plaq.className = 'plaquette';
       const titreDiv = document.createElement('div');
       titreDiv.className = 'etiquette-titre';
-      titreDiv.textContent = toile.titre || '-';
+      titreDiv.textContent = toile.titre || '';
       plaq.appendChild(titreDiv);
       if (toile.date) {
         const dateDiv = document.createElement('div');
@@ -541,9 +541,13 @@
         dateDiv.textContent = toile.date;
         plaq.appendChild(dateDiv);
       }
+      /* Plaquette : largeur max = largeur du cadre (évite la troncature sur mobile) */
+      plaq.style.maxWidth = (W + 2) + 'px';
       etiq.appendChild(plaq);
       art.appendChild(cadre);
       art.appendChild(etiq);
+      /* Masque la plaquette si ni titre ni date */
+      if (!toile.titre && !toile.date) etiq.style.visibility = 'hidden';
       const ouvrir = () => ouvrirModal(toile);
       art.addEventListener('click', ouvrir);
       art.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); } });
