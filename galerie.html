@@ -243,7 +243,7 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
       .salle { height:auto !important; min-height:unset !important; padding:.5rem .3rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
-      .mur { flex-wrap:wrap; justify-content:space-between; align-items:flex-end; align-content:space-evenly; gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
+      .mur { flex-wrap:wrap; justify-content:space-between; align-items:flex-start; align-content:space-evenly; gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
       /* Cadre allégé mobile : shadow réduite, marges réduites */
       .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
       /* Spots désactivés sur mobile (perf + layout) */
@@ -251,10 +251,11 @@
       /* Navigation mobile + safe area iOS home indicator */
       .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
       .tableau { flex-shrink:0; }
-      /* Plaquettes lisibles */
+      /* Plaquettes absolues : n'affectent plus l'alignement des cadres */
+      .tableau { padding-bottom:3rem; }
+      .etiquette { position:absolute; bottom:0; left:0; right:0; margin-top:0; display:flex; justify-content:center; }
       .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
       .plaquette { padding:.25rem .5rem; }
-      .etiquette { margin-top:.5rem; }
       /* Portes cachées sur mobile */
       .porte { display:none !important; }
       body { overflow-x:hidden; }
@@ -549,7 +550,7 @@
       art.appendChild(cadre);
       art.appendChild(etiq);
       /* Masque la plaquette si ni titre ni date */
-      if (!toile.titre && !toile.date) etiq.style.visibility = 'hidden';
+      if (!toile.titre && !toile.date) etiq.style.display = 'none';
       const ouvrir = () => ouvrirModal(toile);
       art.addEventListener('click', ouvrir);
       art.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); } });
