@@ -621,8 +621,12 @@ async function commitMulti(fichiers, message){
   const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
 
   const blobs = await Promise.all(fichiers.map(async f => {
+    // Toujours encoder en base64 pour garantir un UTF-8 propre
+    const contenuB64 = f.encoding === 'base64'
+      ? f.contenu
+      : btoa(unescape(encodeURIComponent(f.contenu)));
     const blob = await apiGH(`/repos/${REPO}/git/blobs`,'POST',{
-      content: f.contenu, encoding: f.encoding || 'utf-8'
+      content: contenuB64, encoding: 'base64'
     });
     return { path: f.chemin, mode:'100644', type:'blob', sha: blob.sha };
   }));
