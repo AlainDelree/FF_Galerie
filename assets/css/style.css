@@ -93,13 +93,23 @@ body.theme-sombre {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.3s, color 0.3s;
+  transition: border-color 0.3s, color 0.3s, opacity 0.3s;
 }
 .btn-musique:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
 .btn-musique.off { opacity: 0.42; }
+/* Respiration douce quand la musique joue */
+.btn-musique:not(.off) {
+  animation: musique-pulse 3s ease-in-out infinite;
+  border-color: rgba(200,160,80,.4);
+  color: var(--accent);
+}
+@keyframes musique-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .55; }
+}
 
 .selecteur-theme { display: flex; gap: 0.4rem; }
 
