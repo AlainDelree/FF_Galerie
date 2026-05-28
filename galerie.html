@@ -241,7 +241,7 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
       .salle { height:auto !important; min-height:unset !important; padding:.5rem .3rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
-      .mur { flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:.5rem; padding:1rem .5rem .8rem; height:auto !important; overflow:visible; }
+      .mur { flex-wrap:wrap; justify-content:space-between; align-items:flex-end; align-content:space-evenly; gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
       /* Cadre allégé mobile : shadow réduite, marges réduites */
       .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
       /* Spots désactivés sur mobile (perf + layout) */
@@ -500,7 +500,7 @@
       H = H || 200;
       const dim = toile.dimensions;
       const isMob = window.innerWidth <= 600;
-      const maxW = isMob ? Math.floor((document.querySelector('.mur').clientWidth - 20) / 2) - 18 : 99999;
+      const maxW = isMob ? Math.floor((document.querySelector('.mur').clientWidth - 44) / 2) - 16 : 99999;
       let W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
       W = Math.min(W, maxW);
       const art = document.createElement('article');
@@ -563,9 +563,9 @@
         const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
         if (!toilesSalle.length) return;
         const isMobile = window.innerWidth <= 600;
-        const maxW = isMobile ? Math.floor((mur.clientWidth - 20) / 2) - 18 : 99999;
-        const H_PREF = isMobile ? 130 : 200;
-        const H_FALLBACK = isMobile ? 100 : 160;
+        const maxW = isMobile ? Math.floor((mur.clientWidth - 44) / 2) - 16 : 99999;
+        const H_PREF = isMobile ? 155 : 200;
+        const H_FALLBACK = isMobile ? 120 : 160;
         const BORD = isMobile ? 16 : 26;
         const N = isMobile ? 2 : toilesSalle.length; /* 2 toiles par rangée sur mobile */
         const cs = getComputedStyle(mur);
