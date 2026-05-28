@@ -100,6 +100,16 @@ body.theme-sombre {
   color: var(--accent);
 }
 .btn-musique.off { opacity: 0.42; }
+/* Croche barrée quand music off */
+.btn-musique.off #iconeMusique { position:relative; display:inline-block; }
+.btn-musique.off #iconeMusique::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: -15%;
+  width: 130%; height: 1.5px;
+  background: currentColor;
+  transform: translateY(-50%) rotate(-45deg);
+}
 /* Respiration douce quand la musique joue */
 .btn-musique:not(.off) {
   animation: musique-pulse 3s ease-in-out infinite;

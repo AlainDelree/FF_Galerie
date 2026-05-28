@@ -6,9 +6,9 @@ const DEFAULT_THEME = 'theme-sombre';
 
 /* ── Fichier audio ──────────────────────────────────────────────
    Pour changer la musique : remplacer le fichier MP3 dans
-   assets/audio/ et mettre son nom ici.
+   assets/music/ et mettre son nom ici.
    ─────────────────────────────────────────────────────────────── */
-const MUSIC_SRC    = 'assets/audio/musique.mp3';
+const MUSIC_SRC    = 'assets/music/musique.mp3';
 const MUSIC_VOLUME = 0.55;   // volume cible (0 à 1)
 const FADE_MS      = 1800;   // durée du fondu en ms
 
@@ -92,7 +92,7 @@ function majIconeMusique() {
   const icone = document.getElementById('iconeMusique');
   const btn   = document.getElementById('btnMusique');
   if (!icone || !btn) return;
-  icone.innerHTML = musiqueActive ? '&#9834;' : '&#9835;';
+  icone.textContent = '♪';
   btn.classList.toggle('off', !musiqueActive);
   btn.title = musiqueActive ? 'Couper la musique' : 'Activer la musique';
 }
