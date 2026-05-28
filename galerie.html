@@ -93,7 +93,7 @@
     .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; position:relative; }
 
     /* ── MUR : overflow visible pour que rien ne soit coupé ── */
-    .mur { background-color:var(--mur); border-radius:3px; width:100%; max-width:1080px; height:420px; flex:none; overflow:visible; display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
+    .mur { background-color:var(--mur); border-radius:3px; width:100%; max-width:1080px; height:420px; flex:none; overflow:visible; display:flex; align-items:flex-end; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
 
     /* Ombres intérieures du mur séparées du mur lui-même */
     .mur::before { content:''; position:absolute; inset:0; border-radius:3px; background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, transparent 25%, transparent 75%, rgba(0,0,0,.12) 100%); pointer-events:none; z-index:0; }
@@ -254,7 +254,7 @@
       /* Plaquettes absolues : n'affectent plus l'alignement des cadres */
       .tableau { padding-bottom:3rem; }
       .tableau::after { bottom:calc(3rem + 2px); }
-      .etiquette { position:absolute; bottom:0; left:0; right:0; margin-top:0; display:flex; justify-content:center; }
+      .etiquette { position:absolute; bottom:0; left:0; right:0; margin-top:0; transform:none; display:flex; justify-content:center; }
       .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
       .plaquette { padding:.25rem .5rem; }
       /* Portes cachées sur mobile */
