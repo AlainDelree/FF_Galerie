@@ -183,6 +183,40 @@
     .modal-fermer { position:absolute; top:.85rem; right:.85rem; background:none; border:1px solid var(--sep); color:var(--text-doux); width:2rem; height:2rem; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:1; transition:border-color .3s,color .3s; }
     .modal-fermer:hover { border-color:var(--accent); color:var(--accent); }
     @media (max-width:900px) { .mur { gap:1.5rem; padding:3rem 1.5rem 2rem; } }
+    /* Navigation mobile flèches */
+    .nav-mobile {
+      display:none;
+      position:fixed;
+      bottom:1.2rem;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:50;
+      gap:.8rem;
+      align-items:center;
+    }
+    .nav-mobile-btn {
+      background:rgba(20,20,20,.85);
+      border:1px solid var(--sep);
+      color:var(--accent);
+      width:3rem; height:3rem;
+      border-radius:50%;
+      font-size:1.4rem;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(6px);
+      transition:background .3s, border-color .3s;
+    }
+    .nav-mobile-btn:disabled { opacity:.2; pointer-events:none; }
+    .nav-mobile-btn:hover { background:rgba(40,40,40,.95); border-color:var(--accent); }
+    .nav-mobile-info {
+      font-family:"Playfair Display",serif;
+      font-style:italic;
+      font-size:.75rem;
+      color:var(--text-doux);
+      letter-spacing:.1em;
+      min-width:4rem;
+      text-align:center;
+    }
     @media (max-width:700px) {
       .mur { gap:1rem; padding:2.5rem 1rem 1.5rem; min-height:auto; flex-wrap:wrap; height:auto; }
       .modal-contenu { flex-direction:column; }
@@ -192,8 +226,12 @@
       .etiquette-titre { font-size:.6rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      .galerie-principale { height:auto !important; min-height:100vh; }
+      .galerie-principale { height:auto !important; min-height:unset !important; }
+      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
+      .salle { height:auto !important; min-height:unset !important; padding-bottom:4rem; }
       .mur { flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:.6rem; padding:1.5rem .6rem 1rem; height:auto !important; overflow:visible; }
+      /* Navigation mobile — flèches en bas */
+      .nav-mobile { display:flex !important; }
       .tableau { flex-shrink:0; }
       .salle { padding:.5rem .3rem 1rem; }
       .porte-g { left:-36px; }
@@ -247,7 +285,13 @@
         <div class="mur" id="mur4"></div>
       </div>
     </div>
-  </main>
+    <!-- Navigation mobile -->
+  <div class="nav-mobile" id="navMobile">
+    <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)">&#8249;</button>
+    <span class="nav-mobile-info" id="navMobInfo"></span>
+    <button class="nav-mobile-btn" id="navMobD" onclick="allerSalle(salleCourante+1)">&#8250;</button>
+  </div>
+</main>
 
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitre">
     <div class="modal-contenu">
@@ -305,6 +349,13 @@
     }
 
     function mettreAJourNav() {
+      /* Navigation mobile */
+      const mobG = document.getElementById('navMobG');
+      const mobD = document.getElementById('navMobD');
+      const mobInfo = document.getElementById('navMobInfo');
+      if (mobG) mobG.disabled = salleCourante === 1;
+      if (mobD) mobD.disabled = salleCourante === TOTAL_SALLES;
+      if (mobInfo) mobInfo.textContent = NOMS_ROMAINS[salleCourante-1] + ' / ' + NOMS_ROMAINS[TOTAL_SALLES-1];
       /* Flèches mode A */
 
       /* Pastille */
@@ -421,7 +472,10 @@
     function creerTableau(toile, H) {
       H = H || 200;
       const dim = toile.dimensions;
-      const W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
+      const isMob = window.innerWidth <= 600;
+      const maxW = isMob ? Math.floor((document.querySelector('.mur').clientWidth - 20) / 2) - 30 : 99999;
+      let W = (dim && dim.largeur && dim.hauteur) ? Math.round(H * dim.largeur / dim.hauteur) : H;
+      W = Math.min(W, maxW);
       const art = document.createElement('article');
       art.style.width = (W + 26) + 'px';
       art.className = 'tableau';
@@ -482,6 +536,7 @@
         const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
         if (!toilesSalle.length) return;
         const isMobile = window.innerWidth <= 600;
+        const maxW = isMobile ? Math.floor((mur.clientWidth - 20) / 2) - 30 : 99999;
         const H_PREF = isMobile ? 130 : 200;
         const H_FALLBACK = isMobile ? 100 : 160;
         const BORD = 26;
