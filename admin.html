@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FF Galerie — Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
 :root {
   --bg:       #0e0e0e;
@@ -118,10 +119,33 @@ input, select, textarea, button { font-family: var(--font); font-size: 15px; }
 .toiles-grille { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; }
 .toile-carte {
   background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; cursor: pointer; transition: border-color .2s;
+  overflow: hidden; cursor: grab; transition: border-color .2s, transform .15s, box-shadow .15s;
   display: flex; flex-direction: column;
 }
+.toile-carte:active { cursor: grabbing; }
 .toile-carte:hover, .toile-carte:focus { border-color: rgba(200,160,80,.3); outline: none; }
+/* Drag states */
+.sortable-ghost  { opacity: .25; border: 2px dashed rgba(200,160,80,.5) !important; }
+.sortable-chosen { transform: scale(1.04); box-shadow: 0 8px 28px rgba(0,0,0,.55); z-index: 10; border-color: rgba(200,160,80,.5) !important; }
+.sortable-drag   { cursor: grabbing; }
+/* Handle discret en haut de la carte */
+.toile-carte::before {
+  content: '⠿'; display: block; text-align: center;
+  font-size: .7rem; color: rgba(255,255,255,.15); padding: .25rem 0 0;
+  letter-spacing: .2em; flex-shrink: 0;
+}
+/* Bouton flottant sauvegarder ordre */
+.btn-sauver-ordre {
+  display: none; position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  padding: .85rem 1.8rem; background: var(--gold); color: #111;
+  border: none; border-radius: 25px; font-weight: 600; font-size: .9rem;
+  cursor: pointer; box-shadow: 0 4px 24px rgba(200,160,80,.45);
+  z-index: 150; white-space: nowrap; transition: opacity .2s, transform .2s;
+  animation: pop-in .25s ease;
+}
+.btn-sauver-ordre.visible { display: block; }
+.btn-sauver-ordre:active { transform: translateX(-50%) scale(.96); }
+@keyframes pop-in { from { transform: translateX(-50%) scale(.85); opacity:0; } to { transform: translateX(-50%) scale(1); opacity:1; } }
 .toile-carte img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg3); }
 .toile-info { padding: .5rem .6rem; }
 .toile-nom { font-size: .8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -480,6 +504,11 @@ textarea.champ-input { resize: vertical; min-height: 70px; }
 <!-- Toast -->
 <div id="toast"></div>
 
+<!-- Bouton flottant sauvegarder ordre -->
+<button class="btn-sauver-ordre" id="btn-sauver-ordre">
+  ↕ Sauvegarder l'ordre
+</button>
+
 <script>
 // ═══════════════════════════════════════════════════════
 //  CONFIGURATION
@@ -714,12 +743,14 @@ function afficherToiles(){
 
     const grille = document.createElement('div');
     grille.className = 'toiles-grille';
+    grille.dataset.salle = s.id;
 
     s.toiles.forEach(id=>{
       const t = toiles.find(x=>x.id===id);
       if(!t) return;
       const carte = document.createElement('div');
       carte.className = 'toile-carte';
+      carte.dataset.id = t.id;
       carte.tabIndex = 0;
       carte.setAttribute('role','button');
       carte.setAttribute('aria-label', t.titre || 'Sans titre');
@@ -735,6 +766,23 @@ function afficherToiles(){
     });
     bloc.appendChild(grille);
     cont.appendChild(bloc);
+
+    // Drag & drop réorganisation
+    new Sortable(grille, {
+      animation: 180,
+      delay: 250,            // appui long sur mobile
+      delayOnTouchOnly: true,
+      ghostClass:  'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass:   'sortable-drag',
+      onEnd: () => {
+        // Relit l'ordre affiché et met à jour salles[]
+        const salle = salles.find(x => x.id === s.id);
+        salle.toiles = [...grille.querySelectorAll('.toile-carte')]
+          .map(el => parseInt(el.dataset.id));
+        $('btn-sauver-ordre').classList.add('visible');
+      }
+    });
   });
 }
 
@@ -1021,6 +1069,22 @@ async function validerToken(){
 // ═══════════════════════════════════════════════════════
 //  INITIALISATION & ÉVÉNEMENTS
 // ═══════════════════════════════════════════════════════
+// Sauvegarder ordre drag & drop
+$('btn-sauver-ordre').addEventListener('click', async () => {
+  const btn = $('btn-sauver-ordre');
+  btn.textContent = '⟳ Sauvegarde…';
+  btn.disabled = true;
+  try {
+    await sauvegarder('Réorganisation des toiles');
+    btn.classList.remove('visible');
+    btn.textContent = '↕ Sauvegarder l\'ordre';
+    btn.disabled = false;
+  } catch(e) {
+    btn.textContent = '↕ Sauvegarder l\'ordre';
+    btn.disabled = false;
+  }
+});
+
 // Toggle œil mot de passe
 $('btn-oeil-mdp').addEventListener('click', () => {
   const inp = $('inp-mdp');
