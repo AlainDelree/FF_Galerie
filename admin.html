@@ -778,19 +778,27 @@ function afficherToiles(){
     bloc.appendChild(grille);
     cont.appendChild(bloc);
 
-    // Drag & drop réorganisation
+    // Drag & drop — réorganisation intra et inter salles
     new Sortable(grille, {
+      group: 'toiles',           // même groupe = drag entre salles autorisé
       animation: 180,
-      delay: 250,            // appui long sur mobile
+      delay: 250,
       delayOnTouchOnly: true,
       ghostClass:  'sortable-ghost',
       chosenClass: 'sortable-chosen',
       dragClass:   'sortable-drag',
-      onEnd: () => {
-        // Relit l'ordre affiché et met à jour salles[]
-        const salle = salles.find(x => x.id === s.id);
-        salle.toiles = [...grille.querySelectorAll('.toile-carte')]
+      onEnd: (evt) => {
+        const fromId = parseInt(evt.from.dataset.salle);
+        const toId   = parseInt(evt.to.dataset.salle);
+        // Relit l'ordre depuis le DOM pour les deux salles touchées
+        const sFrom = salles.find(x => x.id === fromId);
+        sFrom.toiles = [...evt.from.querySelectorAll('.toile-carte')]
           .map(el => parseInt(el.dataset.id));
+        if (fromId !== toId) {
+          const sTo = salles.find(x => x.id === toId);
+          sTo.toiles = [...evt.to.querySelectorAll('.toile-carte')]
+            .map(el => parseInt(el.dataset.id));
+        }
         $('btn-sauver-ordre').classList.add('visible');
       }
     });
