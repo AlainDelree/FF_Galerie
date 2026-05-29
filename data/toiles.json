@@ -16,21 +16,6 @@
       "visible": true
     },
     {
-      "id": 5,
-      "titre": "Météorite",
-      "photo": "assets/images/toiles/toile-005.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 80,
-        "hauteur": 60
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 6,
       "titre": "Explosion des émotions",
       "photo": "assets/images/toiles/toile-006.jpg",
