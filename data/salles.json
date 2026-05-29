@@ -22,9 +22,7 @@
     {
       "id": 4,
       "nom": "Salle IV",
-      "toiles": [
-        16
-      ]
+      "toiles": []
     }
   ]
 }

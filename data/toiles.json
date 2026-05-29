@@ -29,21 +29,6 @@
       },
       "source_photo": "gsm",
       "visible": true
-    },
-    {
-      "id": 16,
-      "titre": "",
-      "photo": "assets/images/toiles/toile-016.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 100,
-        "hauteur": 80
-      },
-      "source_photo": "gsm",
-      "visible": true
     }
   ]
 }
