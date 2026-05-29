@@ -46,21 +46,6 @@
       "visible": true
     },
     {
-      "id": 12,
-      "titre": "",
-      "photo": "assets/images/toiles/toile-012.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 45,
-        "hauteur": 80
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 13,
       "titre": "Seul",
       "photo": "assets/images/toiles/toile-013.jpg",
