@@ -146,7 +146,18 @@ input, select, textarea, button { font-family: var(--font); font-size: 15px; }
 .btn-sauver-ordre.visible { display: block; }
 .btn-sauver-ordre:active { transform: translateX(-50%) scale(.96); }
 @keyframes pop-in { from { transform: translateX(-50%) scale(.85); opacity:0; } to { transform: translateX(-50%) scale(1); opacity:1; } }
-.toile-carte img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg3); }
+.toile-carte img {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg3);
+  pointer-events: none;          /* empêche le menu contextuel image sur mobile */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;   /* désactive "Enregistrer l'image" iOS/Android */
+  draggable: false;
+}
+.toile-carte {
+  user-select: none;
+  -webkit-user-select: none;
+}
 .toile-info { padding: .5rem .6rem; }
 .toile-nom { font-size: .8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .toile-dim { font-size: .68rem; color: var(--muted); margin-top: .15rem; }
@@ -755,7 +766,7 @@ function afficherToiles(){
       carte.setAttribute('role','button');
       carte.setAttribute('aria-label', t.titre || 'Sans titre');
       carte.innerHTML = `
-        <img src="${t.photo||''}" alt="${t.titre||''}" loading="lazy">
+        <img src="${t.photo||''}" alt="${t.titre||''}" loading="lazy" draggable="false">
         <div class="toile-info">
           <div class="toile-nom ${t.titre?'':'toile-sans-titre'}">${t.titre||'Sans titre'}</div>
           <div class="toile-dim">${t.dimensions?t.dimensions.largeur+'×'+t.dimensions.hauteur+' cm':''}</div>
