@@ -1,21 +1,6 @@
 {
   "toiles": [
     {
-      "id": 1,
-      "titre": "",
-      "photo": "assets/images/toiles/toile-001.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 80,
-        "hauteur": 60
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 2,
       "titre": "Black Hole",
       "photo": "assets/images/toiles/toile-002.jpg",
