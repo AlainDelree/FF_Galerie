@@ -29,6 +29,18 @@
       },
       "source_photo": "gsm",
       "visible": true
+    },
+    {
+      "id": 9,
+      "photo": "",
+      "source_photo": "admin",
+      "titre": "Le pêcheur",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": null,
+      "visible": true
     }
   ]
 }
