@@ -16,21 +16,6 @@
       "visible": true
     },
     {
-      "id": 6,
-      "titre": "Explosion des émotions",
-      "photo": "assets/images/toiles/toile-006.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 60,
-        "hauteur": 80
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 7,
       "titre": "Le pêcheur",
       "photo": "assets/images/toiles/toile-007.jpg",
