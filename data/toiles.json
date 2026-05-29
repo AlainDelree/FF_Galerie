@@ -29,22 +29,6 @@
       },
       "source_photo": "gsm",
       "visible": true
-    },
-    {
-      "id": 9,
-      "photo": "assets/images/toiles/toile-009.jpg",
-      "source_photo": "admin",
-      "titre": "Le pêcheur",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 92,
-        "hauteur": 73
-      },
-      "visible": true
     }
   ]
 }
