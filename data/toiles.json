@@ -31,21 +31,6 @@
       "visible": true
     },
     {
-      "id": 10,
-      "titre": "",
-      "photo": "assets/images/toiles/toile-010.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 60,
-        "hauteur": 80
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 11,
       "titre": "",
       "photo": "assets/images/toiles/toile-011.jpg",
