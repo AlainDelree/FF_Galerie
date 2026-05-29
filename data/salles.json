@@ -17,9 +17,7 @@
     {
       "id": 3,
       "nom": "Salle III",
-      "toiles": [
-        11
-      ]
+      "toiles": []
     },
     {
       "id": 4,
