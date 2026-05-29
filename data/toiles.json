@@ -31,21 +31,6 @@
       "visible": true
     },
     {
-      "id": 14,
-      "titre": "",
-      "photo": "assets/images/toiles/toile-014.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 80,
-        "hauteur": 60
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 15,
       "titre": "Stonehenge",
       "photo": "assets/images/toiles/toile-015.jpg",
