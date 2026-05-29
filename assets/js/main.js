@@ -30,21 +30,25 @@ document.querySelectorAll('.btn-theme').forEach(btn => {
   btn.addEventListener('click', () => appliquerTheme(btn.dataset.theme));
 });
 
-// ── Musique ────────────────────────────────────────────────────
+/* ── Musique ────────────────────────────────────────────────────
+   Active par défaut — l'utilisateur peut couper via le bouton ♪
+   ────────────────────────────────────────────────────────────── */
 let audio       = null;
 let fadeTicker  = null;
-let musiqueActive = localStorage.getItem(MUSIC_KEY) === 'on';
+let musiqueActive = localStorage.getItem(MUSIC_KEY) !== 'off'; // on par défaut
 
 function creerAudio() {
-  if (audio) return;
+  if (audio && audio.readyState > 0 && !audio.error) return;
   audio       = new Audio(MUSIC_SRC);
   audio.loop  = true;
   audio.volume = 0;
-  // Si le fichier est introuvable, on désactive silencieusement
   audio.addEventListener('error', () => {
+    console.error('FF Galerie — Audio introuvable :', MUSIC_SRC);
     musiqueActive = false;
     localStorage.setItem(MUSIC_KEY, 'off');
     majIconeMusique();
+    audio = null; // permet de réessayer
+    alert('Musique introuvable : ' + MUSIC_SRC + '\nVérifiez le nom du fichier et son emplacement.');
   });
 }
 
@@ -100,12 +104,11 @@ function majIconeMusique() {
 const btnMusique = document.getElementById('btnMusique');
 btnMusique?.addEventListener('click', toggleMusique);
 
-// Reprise automatique si la musique était active
-if (musiqueActive) {
-  // Tente de jouer dès le chargement (fonctionne si le visiteur a déjà interagi)
+// Auto-démarrage musique sur la galerie uniquement
+if (musiqueActive && document.body.dataset.page === 'galerie') {
   window.addEventListener('load', () => {
     demarrerMusique();
-    // Si l'autoplay est bloqué, on relance au premier clic sur la page
+    // Fallback si autoplay bloqué : relance au premier clic
     const reprise = () => {
       if (musiqueActive && audio && audio.paused) demarrerMusique();
       document.removeEventListener('click',      reprise);
