@@ -16,21 +16,6 @@
       "visible": true
     },
     {
-      "id": 7,
-      "titre": "Le pêcheur",
-      "photo": "assets/images/toiles/toile-007.jpg",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 100,
-        "hauteur": 40
-      },
-      "source_photo": "gsm",
-      "visible": true
-    },
-    {
       "id": 8,
       "titre": "la Pensée du coeur",
       "photo": "assets/images/toiles/toile-008.jpg",
