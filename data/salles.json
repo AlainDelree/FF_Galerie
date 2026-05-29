@@ -4,8 +4,6 @@
       "id": 1,
       "nom": "Salle I",
       "toiles": [
-        2,
-        3,
         4
       ]
     },
