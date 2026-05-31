@@ -85,8 +85,26 @@
       "couleur_cadres": "#3a3a3a",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        3,
+        29
+      ],
+      "positions": [
+        {
+          "id": 3,
+          "col": 2,
+          "row": 3,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 29,
+          "col": 8,
+          "row": 4,
+          "w": 4,
+          "h": 5
+        }
+      ]
     },
     {
       "id": 4,
