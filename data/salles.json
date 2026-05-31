@@ -3,28 +3,95 @@
     {
       "id": 1,
       "nom": "Salle I",
+      "theme": "",
+      "couleur_mur": "#1c1c1c",
+      "couleur_cadres": "#f0f0f0",
+      "texture": "none",
+      "visible": true,
       "toiles": [
-        4
+        4,
+        2,
+        3,
+        8
+      ],
+      "positions": [
+        {
+          "id": 3,
+          "col": 3,
+          "row": 4,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 8,
+          "col": 8,
+          "row": 3,
+          "w": 4,
+          "h": 5
+        }
       ]
     },
     {
       "id": 2,
       "nom": "Salle II",
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
       "toiles": [
-        8
+        8,
+        9,
+        20,
+        24
+      ],
+      "positions": [
+        {
+          "id": 9,
+          "col": 6,
+          "row": 2,
+          "w": 7,
+          "h": 3
+        },
+        {
+          "id": 24,
+          "col": 3,
+          "row": 5,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 20,
+          "col": 2,
+          "row": 2,
+          "w": 3,
+          "h": 3
+        }
       ]
     },
     {
       "id": 3,
       "nom": "Salle III",
-      "toiles": []
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 4,
       "nom": "Salle IV",
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
       "toiles": [
         9
-      ]
+      ],
+      "positions": []
     }
   ]
 }
