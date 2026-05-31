@@ -115,9 +115,26 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        9
+        9,
+        10,
+        26
       ],
-      "positions": []
+      "positions": [
+        {
+          "id": 10,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 26,
+          "col": 8,
+          "row": 3,
+          "w": 5,
+          "h": 4
+        }
+      ]
     }
   ]
 }
