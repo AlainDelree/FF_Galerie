@@ -590,20 +590,24 @@
         // ── MODE GRILLE (positions définies dans l'admin) ──────────
         if (positions.length > 0) {
           const isMobile = window.innerWidth <= 600;
+          // Uniquement les toiles ayant une position dans cette salle
+          const toilesPosees = positions.map(p => toileMap[p.id]).filter(Boolean);
+          if (!toilesPosees.length) return;
+
           if (isMobile) {
-            // Mobile : layout 2 colonnes classique
+            // Mobile : layout 2 colonnes classique avec les toiles posées
             const H_PREF = 155, H_FALLBACK = 120, BORD = 16, N = 2;
             const cs = getComputedStyle(mur);
             const gapPx = parseFloat(cs.gap) || 6;
             const padL  = parseFloat(cs.paddingLeft)  || 8;
             const padR  = parseFloat(cs.paddingRight) || 8;
             const dispo  = mur.clientWidth - padL - padR - (N-1)*gapPx - N*BORD;
-            const totalW = toilesSalle.slice(0,N).reduce((s,t) => {
+            const totalW = toilesPosees.slice(0,N).reduce((s,t) => {
               const d = t.dimensions;
               return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF*d.largeur/d.hauteur) : H_PREF);
             }, 0);
             const H = totalW <= dispo ? H_PREF : H_FALLBACK;
-            toilesSalle.forEach(t => {
+            toilesPosees.forEach(t => {
               const el = creerTableau(t, H);
               el.style.borderColor = couleurCadres;
               mur.appendChild(el);

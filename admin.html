@@ -1066,15 +1066,16 @@ function placerToile(col, row) {
   if (!selectedToile || !salleActive) return;
   const { w, h } = calcCases(selectedToile.dimensions);
   if (!canPlace(col, row, w, h, null)) { toast('Emplacement occupé', 'err'); return; }
-  // Retire de positions si déjà posée
-  salleActive.positions = (salleActive.positions || []).filter(p => p.id !== selectedToile.id);
-  // Ajoute
+  // Retire de TOUTES les salles (toiles + positions) avant de placer
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== selectedToile.id);
+    s.positions = (s.positions || []).filter(p => p.id !== selectedToile.id);
+  });
+  // Ajoute à la salle active
   salleActive.positions.push({ id: selectedToile.id, col, row, w, h });
-  // Met à jour toiles de la salle
-  if (!salleActive.toiles.includes(selectedToile.id)) salleActive.toiles.push(selectedToile.id);
+  salleActive.toiles.push(selectedToile.id);
   buildOccupancy();
-  afficherMur();
-  afficherStock();
+  afficherMur(); afficherStock();
   selectedToile = null;
   marquerChangement();
   toast('✓ Toile placée');
@@ -1291,9 +1292,13 @@ function placerToilePl(col, row) {
   if (!selectedToilePl || !salleActive) return;
   const {w,h} = calcCases(selectedToilePl.dimensions);
   if (!canPlace(col,row,w,h,null)) { toast('Emplacement occupé','err'); return; }
-  salleActive.positions = (salleActive.positions||[]).filter(p=>p.id!==selectedToilePl.id);
+  // Retire de TOUTES les salles avant de placer
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== selectedToilePl.id);
+    s.positions = (s.positions || []).filter(p => p.id !== selectedToilePl.id);
+  });
   salleActive.positions.push({id:selectedToilePl.id,col,row,w,h});
-  if (!salleActive.toiles.includes(selectedToilePl.id)) salleActive.toiles.push(selectedToilePl.id);
+  salleActive.toiles.push(selectedToilePl.id);
   buildOccupancy();
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
