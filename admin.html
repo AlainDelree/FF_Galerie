@@ -155,62 +155,73 @@ button{cursor:pointer;}
 /* Corps éditeur */
 .edit-corps{display:flex;flex:1;min-height:0;overflow:hidden;}
 
-/* Stock toiles */
-.stock-col{width:100px;flex-shrink:0;border-right:1px solid var(--brd);
-  display:flex;flex-direction:column;overflow:hidden;}
-.stock-hdr{padding:.4rem .45rem;border-bottom:0.5px solid var(--brd);
-  font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
-.stock-list{flex:1;overflow-y:auto;padding:.35rem;display:flex;flex-direction:column;gap:3px;}
-.stock-item{border-radius:4px;overflow:hidden;cursor:pointer;
-  border:1.5px solid var(--brd);background:var(--bg2);transition:border-color .15s;}
+/* ── Stock ── */
+.stock-col{width:115px;flex-shrink:0;border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
+.stock-hdr{padding:.4rem .45rem;border-bottom:0.5px solid var(--brd);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.stock-list{flex:1;overflow-y:auto;padding:.35rem;display:flex;flex-direction:column;gap:4px;}
+.stock-item{border-radius:5px;overflow:hidden;cursor:pointer;border:1.5px solid var(--brd);background:var(--bg2);transition:border-color .15s;position:relative;}
 .stock-item:hover{border-color:var(--muted);}
 .stock-item.sel{border-color:var(--gold);box-shadow:0 0 6px rgba(200,160,80,.3);}
-.stock-item.pose{border-color:var(--success);opacity:.5;}
+.stock-item.coche{border-color:var(--gold);}
+.stock-item.pose{border-color:var(--success);opacity:.55;}
 .stock-item.autre{border-color:rgba(192,57,43,.5);}
-.stock-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none;}
-.stock-item .snom{font-size:7.5px;padding:2px 3px;color:var(--muted);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stock-leg{padding:.3rem .45rem;border-top:0.5px solid var(--brd);
-  display:flex;flex-direction:column;gap:3px;}
+.stock-item .simg{width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;}
+.stock-item .simg img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+.stock-item .simg .sph{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);}
+.stock-item .snom{font-size:7.5px;padding:2px 4px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stock-size{font-size:7px;padding:0 4px 3px;color:rgba(200,160,80,.5);line-height:1.2;}
+.stock-item .check-ov{display:none;position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:var(--gold);align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;}
+.stock-item.coche .check-ov{display:flex;}
+.btn-placer-mur{margin:.35rem;padding:.45rem;border-radius:6px;background:rgba(200,160,80,.15);border:0.5px solid rgba(200,160,80,.4);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;display:none;text-align:center;line-height:1.4;}
+.btn-placer-mur.visible{display:block;}
+.stock-leg{padding:.3rem .45rem;border-top:0.5px solid var(--brd);display:flex;flex-direction:column;gap:3px;}
 .leg-li{display:flex;align-items:center;gap:3px;font-size:8px;color:var(--muted);}
 .leg-sq{width:8px;height:8px;border-radius:1px;border:1.5px solid currentColor;flex-shrink:0;}
 
-/* Zone mur */
+/* ── Zone mur ── */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
 .mur-bg{border-radius:6px;display:grid;
-  grid-template-columns:repeat(12,minmax(30px,1fr));
-  grid-template-rows:repeat(8,minmax(30px,1fr));
-  gap:2px;min-width:400px;min-height:268px;width:100%;aspect-ratio:12/8;
+  grid-template-columns:repeat(12,minmax(28px,1fr));
+  grid-template-rows:repeat(8,minmax(28px,1fr));
+  gap:2px;width:100%;aspect-ratio:12/8;min-width:340px;min-height:230px;
   position:relative;transition:background .3s;}
 .mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
-.cellule{border:0.5px solid rgba(255,255,255,.06);border-radius:2px;
-  transition:background .1s;cursor:crosshair;}
+.cellule{border:0.5px solid rgba(255,255,255,.06);border-radius:2px;transition:background .1s;cursor:crosshair;}
 .cellule.survol{background:rgba(200,160,80,.18)!important;}
 .cellule.survol-ko{background:rgba(192,57,43,.18)!important;}
 /* Toiles posées */
-.toile-posee{border-radius:3px;cursor:pointer;overflow:hidden;position:relative;
-  border:2px solid rgba(255,255,255,.2);transition:border-color .15s;}
+.toile-posee{border-radius:3px;cursor:pointer;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,.2);transition:border-color .15s;}
 .toile-posee:hover{border-color:var(--gold);}
-.toile-posee.sel-mur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+.toile-posee.sel-mur{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);}
 .toile-posee img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
-.toile-posee .tp-lbl{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
-  font-size:7px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.6);
-  padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;max-width:90%;
-  overflow:hidden;text-overflow:ellipsis;}
+.toile-posee .tp-lbl{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:7px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.6);padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;max-width:90%;overflow:hidden;text-overflow:ellipsis;}
 .toile-posee.reserve-posee{border-color:rgba(192,57,43,.5);opacity:.65;}
-/* Overlay flèches */
-.tp-arrows{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:2px;
-  background:rgba(0,0,0,.55);border-radius:2px;}
-.tp-arrows-mid{display:flex;gap:2px;align-items:center;}
-.tp-arr{background:rgba(200,160,80,.25);border:0.5px solid rgba(200,160,80,.5);
-  color:var(--gold);border-radius:3px;width:20px;height:20px;font-size:12px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  flex-shrink:0;transition:background .15s;}
-.tp-arr:hover{background:rgba(200,160,80,.5);}
-.tp-arr.suppr{background:rgba(192,57,43,.2);border-color:rgba(192,57,43,.4);color:var(--danger);}
-/* Taille dans stock */
-.stock-size{font-size:7px;padding:0 3px 2px;color:rgba(200,160,80,.55);line-height:1.2;}
+
+/* ── Flèches déplacement (grandes) ── */
+.tp-arrows{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(0,0,0,.65);border-radius:2px;}
+.tp-arrows-mid{display:flex;gap:8px;align-items:center;}
+.tp-arr{background:rgba(200,160,80,.3);border:1.5px solid rgba(200,160,80,.6);color:var(--gold);border-radius:6px;width:36px;height:36px;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.tp-arr:active{background:rgba(200,160,80,.65);}
+.tp-arr.suppr{width:28px;height:28px;font-size:14px;background:rgba(192,57,43,.25);border-color:rgba(192,57,43,.5);color:var(--danger);}
+
+/* ══ OVERLAY MODE PLACEMENT PLEIN ÉCRAN ══ */
+.placement-overlay{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;}
+.placement-overlay.ouvert{display:flex;}
+.placement-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--brd);flex-shrink:0;padding-top:max(.55rem,env(safe-area-inset-top));}
+.pl-titre{font-size:12px;color:var(--muted);}
+.pl-titre strong{color:var(--text);}
+.placement-mur-zone{flex:1;overflow:auto;padding:.5rem;min-height:0;display:flex;flex-direction:column;}
+.placement-mur-bg{border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(26px,1fr));grid-template-rows:repeat(8,minmax(26px,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
+.placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
+.placement-aide{padding:.3rem;font-size:11px;color:var(--muted);text-align:center;flex-shrink:0;}
+/* Strip toiles sélectionnées */
+.placement-strip{height:96px;flex-shrink:0;border-top:1px solid var(--brd);background:var(--bg2);display:flex;align-items:center;gap:6px;padding:.4rem .7rem;overflow-x:auto;overflow-y:hidden;}
+.pl-item{flex-shrink:0;width:68px;border-radius:5px;overflow:hidden;border:1.5px solid var(--brd);cursor:pointer;background:var(--bg3);transition:border-color .15s;}
+.pl-item.sel{border-color:var(--gold);box-shadow:0 0 6px rgba(200,160,80,.4);}
+.pl-item.pose{border-color:var(--success);opacity:.5;}
+.pl-item .simg{width:100%;height:54px;overflow:hidden;}
+.pl-item .simg img{width:100%;height:100%;object-fit:cover;display:block;}
+.pl-item .snom{font-size:7px;padding:2px 3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* Barre basse */
 .bas-barre{border-top:1px solid var(--brd);padding:.6rem .75rem;
@@ -462,14 +473,8 @@ textarea.champ{resize:vertical;min-height:65px;}
         <!-- Stock -->
         <div class="stock-col">
           <div class="stock-hdr">Stock</div>
-          <div class="stock-list" id="stock-list">
-            <div class="chargement" style="flex-direction:column;font-size:11px;">
-              <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-              </svg>
-              Chargement
-            </div>
-          </div>
+          <div class="stock-list" id="stock-list"></div>
+          <button class="btn-placer-mur" id="btn-placer-mur">▶ Placer<br><span id="placer-count">0</span> toile(s)</button>
           <div class="stock-leg">
             <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
             <div class="leg-li"><div class="leg-sq" style="color:rgba(192,57,43,.6);"></div>Autre salle</div>
@@ -663,6 +668,20 @@ textarea.champ{resize:vertical;min-height:65px;}
 <!-- Flottant sauvegarder -->
 <button class="btn-sauver-flottant" id="btn-sauver-flottant">💾 Sauvegarder</button>
 
+<!-- ══ OVERLAY MODE PLACEMENT ══ -->
+<div class="placement-overlay" id="overlay-placement">
+  <div class="placement-hdr">
+    <button class="btn btn-outline btn-sm" id="btn-fin-placement">← Retour</button>
+    <span class="pl-titre">Clique une toile puis une cellule — <strong id="pl-salle-nom">Salle</strong></span>
+    <button class="ctrl-btn" id="btn-grille-pl">⊞ Grille</button>
+  </div>
+  <div class="placement-mur-zone">
+    <div class="placement-mur-bg" id="mur-placement" style="background:#2e2e2e;"></div>
+    <div class="placement-aide" id="pl-aide">Sélectionne une toile dans le bas, puis clique sur le mur pour la placer</div>
+  </div>
+  <div class="placement-strip" id="pl-strip"></div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -685,7 +704,8 @@ let token = '';
 let toiles = [], salles = [];
 let salleActive = null;
 let selectedToile = null;
-let peintureSurMurSel = null;   // id de la toile sélectionnée sur le mur pour déplacement
+let peintureSurMurSel = null;
+let toilesSelectionnees = new Set(); // Multi-sélection pour mode placement
 let occupancy = {};
 let pendingChanges = false;
 let toileEnEdition = null;
@@ -1021,7 +1041,7 @@ function afficherMur() {
       cell.style.gridRow = r;
       cell.dataset.col = c;
       cell.dataset.row = r;
-      cell.addEventListener('mouseenter', () => survolCellule(c, r));
+      cell.addEventListener('mouseenter', () => survolCelluleMur(c, r));
       cell.addEventListener('mouseleave', () => nettoyerSurvol());
       cell.addEventListener('click', () => placerToile(c, r));
       bg.appendChild(cell);
@@ -1029,24 +1049,18 @@ function afficherMur() {
   }
 }
 
-function survolCellule(col, row) {
-  if (!selectedToile) return;
-  const { w, h } = calcCases(selectedToile.dimensions);
-  const ok = canPlace(col, row, w, h, null);
-  nettoyerSurvol();
-  for (let c = col; c < col + w; c++) {
-    for (let r = row; r < row + h; r++) {
-      const cell = $('mur-bg').querySelector(`[data-col="${c}"][data-row="${r}"]`);
-      if (cell) cell.classList.add(ok ? 'survol' : 'survol-ko');
-    }
+function survolCelluleMur(col, row) {
+  const t = selectedToile; if (!t) return;
+  const {w,h} = calcCases(t.dimensions);
+  const ok = canPlace(col,row,w,h,null);
+  nettoyerSurvolBg('mur-bg');
+  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
+    const cell = $('mur-bg').querySelector(`[data-col="${c}"][data-row="${r}"]`);
+    if (cell) cell.classList.add(ok?'survol':'survol-ko');
   }
 }
 
-function nettoyerSurvol() {
-  $('mur-bg').querySelectorAll('.survol,.survol-ko').forEach(c => {
-    c.classList.remove('survol', 'survol-ko');
-  });
-}
+function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
 
 function placerToile(col, row) {
   if (!selectedToile || !salleActive) return;
@@ -1121,54 +1135,185 @@ function afficherStock() {
     item.className = 'stock-item';
     if (poseesDansCetteSalle.has(t.id)) item.classList.add('pose');
     else if (poseesDansAutres.has(t.id)) item.classList.add('autre');
+    if (toilesSelectionnees.has(t.id)) item.classList.add('coche');
     if (selectedToile && selectedToile.id === t.id) item.classList.add('sel');
 
+    // Image carrée (conteneur fixe 72px)
+    const simgDiv = document.createElement('div'); simgDiv.className = 'simg';
     if (t.photo) {
       const img = document.createElement('img');
-      img.src = t.photo;
-      img.alt = t.titre || '';
-      img.draggable = false;
-      item.appendChild(img);
+      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
+      simgDiv.appendChild(img);
     } else {
-      const ph = document.createElement('div');
-      ph.style.cssText = 'width:100%;aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);';
-      ph.textContent = '?';
-      item.appendChild(ph);
+      const ph = document.createElement('div'); ph.className = 'sph';
+      ph.textContent = '?'; simgDiv.appendChild(ph);
     }
+    item.appendChild(simgDiv);
 
-    const nom = document.createElement('div');
-    nom.className = 'snom';
-    nom.textContent = t.titre || '—';
-    item.appendChild(nom);
+    // Checkmark overlay
+    const chk = document.createElement('div'); chk.className = 'check-ov'; chk.textContent = '✓';
+    item.appendChild(chk);
 
-    // Indicateur taille
+    const nom = document.createElement('div'); nom.className = 'snom';
+    nom.textContent = t.titre || '—'; item.appendChild(nom);
+
+    // Taille
     if (t.dimensions) {
       const { w, h } = calcCases(t.dimensions);
       const d = t.dimensions;
-      const sz = document.createElement('div');
-      sz.className = 'stock-size';
-      sz.textContent = d.type === 'ronde'
-        ? `⌀${d.largeur}cm · ${w}×${h}`
-        : `${d.largeur}×${d.hauteur}cm · ${w}×${h}`;
+      const sz = document.createElement('div'); sz.className = 'stock-size';
+      sz.textContent = d.type === 'ronde' ? `⌀${d.largeur}cm · ${w}×${h}` : `${d.largeur}×${d.hauteur}cm · ${w}×${h}`;
       item.appendChild(sz);
     }
 
     item.addEventListener('click', () => {
-      if (item.classList.contains('pose')) { retirerToile(t.id); return; }
-      selectedToile = selectedToile?.id === t.id ? null : t;
+      if (item.classList.contains('pose')) {
+        // Déjà sur le mur → sélectionne pour déplacement
+        selectionnerPeintureMur(t.id); return;
+      }
+      // Bascule sélection multiple
+      if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
+      else toilesSelectionnees.add(t.id);
+      // Met à jour selectedToile pour placement direct
+      selectedToile = toilesSelectionnees.size === 0 ? null : t;
       afficherStock();
-      $('mur-aide').textContent = selectedToile
-        ? `"${selectedToile.titre || 'Sans titre'}" sélectionnée — clique sur le mur pour placer`
-        : 'Sélectionne une toile dans le stock, puis clique sur le mur pour la placer';
+      majBtnPlacer();
     });
     item.addEventListener('dblclick', () => ouvrirFormulaireEdition(t.id));
     list.appendChild(item);
   });
 }
 
+function majBtnPlacer() {
+  const btn = $('btn-placer-mur');
+  const n = toilesSelectionnees.size;
+  $('placer-count').textContent = n;
+  btn.classList.toggle('visible', n > 0);
+}
+
+
 // ═══════════════════════════════════════════════
-// MODAL TOILE (add/edit)
+// MODE PLACEMENT PLEIN ÉCRAN
 // ═══════════════════════════════════════════════
+let grilleVisiblePl = false;
+let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
+
+function entrerModePlacement() {
+  if (!salleActive || toilesSelectionnees.size === 0) return;
+  $('pl-salle-nom').textContent = salleActive.nom;
+  $('overlay-placement').classList.add('ouvert');
+  grilleVisiblePl = false;
+  selectedToilePl = null;
+  afficherMurPlacement();
+  afficherStripPlacement();
+}
+
+function quitterModePlacement() {
+  $('overlay-placement').classList.remove('ouvert');
+  toilesSelectionnees.clear();
+  selectedToilePl = null;
+  selectedToile = null;
+  afficherStock(); majBtnPlacer();
+  buildOccupancy(); afficherMur();
+}
+
+function afficherMurPlacement() {
+  const bg = $('mur-placement');
+  bg.innerHTML = '';
+  bg.style.background = couleurMurActuel;
+  const texStr = TEXTURES[textureActuelle] || '';
+  if (texStr) bg.style.background = `${texStr}, ${couleurMurActuel}`;
+  bg.classList.toggle('grille-on', grilleVisiblePl);
+
+  // Toiles déjà posées
+  (salleActive.positions || []).forEach(p => {
+    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const estSel = peintureSurMurSel === p.id;
+    const el = document.createElement('div');
+    el.className = 'toile-posee' + (estSel ? ' sel-mur' : '');
+    el.style.gridColumn = `${p.col} / span ${p.w}`;
+    el.style.gridRow    = `${p.row} / span ${p.h}`;
+    el.style.borderColor = couleurCadresActuel;
+    if (t.photo) { const img = document.createElement('img'); img.src = t.photo; img.alt=''; img.draggable=false; el.appendChild(img); }
+    if (estSel) {
+      const ov = document.createElement('div'); ov.className = 'tp-arrows';
+      ov.innerHTML = `<button class="tp-arr" data-d="0,-1">↑</button><div class="tp-arrows-mid"><button class="tp-arr" data-d="-1,0">←</button><button class="tp-arr suppr" data-rm="1">✕</button><button class="tp-arr" data-d="1,0">→</button></div><button class="tp-arr" data-d="0,1">↓</button>`;
+      ov.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const [dc,dr]=b.dataset.d.split(',').map(Number); deplacerPeinture(p.id,dc,dr); afficherMurPlacement(); }));
+      ov.querySelector('[data-rm]').addEventListener('click', e => { e.stopPropagation(); retirerToile(p.id); afficherMurPlacement(); afficherStripPlacement(); });
+      el.appendChild(ov);
+    } else {
+      const lbl = document.createElement('div'); lbl.className = 'tp-lbl'; lbl.textContent = t.titre||'—'; el.appendChild(lbl);
+    }
+    el.addEventListener('click', () => { peintureSurMurSel = peintureSurMurSel===p.id?null:p.id; afficherMurPlacement(); });
+    bg.appendChild(el);
+  });
+
+  // Cellules vides
+  for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
+    if (occupancy[`${c},${r}`]) continue;
+    const cell = document.createElement('div'); cell.className='cellule';
+    cell.style.gridColumn=c; cell.style.gridRow=r;
+    cell.dataset.col=c; cell.dataset.row=r;
+    cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
+    cell.addEventListener('mouseleave', () => nettoyerSurvolBg('mur-placement'));
+    cell.addEventListener('click', () => placerToilePl(c,r));
+    bg.appendChild(cell);
+  }
+}
+
+function afficherStripPlacement() {
+  const strip = $('pl-strip'); strip.innerHTML = '';
+  const poseesDansCetteSalle = new Set((salleActive.positions||[]).map(p=>p.id));
+  toilesSelectionnees.forEach(id => {
+    const t = toiles.find(x=>x.id===id); if(!t) return;
+    const item = document.createElement('div');
+    item.className = 'pl-item' + (poseesDansCetteSalle.has(id)?' pose':'') + (selectedToilePl?.id===id?' sel':'');
+    const si = document.createElement('div'); si.className='simg';
+    if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
+    item.appendChild(si);
+    const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
+    item.addEventListener('click', () => {
+      selectedToilePl = selectedToilePl?.id===id ? null : t;
+      selectedToile = selectedToilePl;
+      peintureSurMurSel = null;
+      afficherMurPlacement(); afficherStripPlacement();
+      $('pl-aide').textContent = selectedToilePl
+        ? `"${selectedToilePl.titre||'Sans titre'}" → clique sur le mur`
+        : 'Sélectionne une toile puis clique sur le mur';
+    });
+    strip.appendChild(item);
+  });
+}
+
+function placerToilePl(col, row) {
+  if (!selectedToilePl || !salleActive) return;
+  const {w,h} = calcCases(selectedToilePl.dimensions);
+  if (!canPlace(col,row,w,h,null)) { toast('Emplacement occupé','err'); return; }
+  salleActive.positions = (salleActive.positions||[]).filter(p=>p.id!==selectedToilePl.id);
+  salleActive.positions.push({id:selectedToilePl.id,col,row,w,h});
+  if (!salleActive.toiles.includes(selectedToilePl.id)) salleActive.toiles.push(selectedToilePl.id);
+  buildOccupancy();
+  selectedToilePl = null; selectedToile = null;
+  afficherMurPlacement(); afficherStripPlacement();
+  marquerChangement(); toast('✓ Placée');
+  $('pl-aide').textContent = 'Toile placée — continue ou clique ← Retour';
+}
+
+function survolCellule(col, row, bgId) {
+  const t = selectedToilePl || selectedToile; if (!t) return;
+  const {w,h} = calcCases(t.dimensions);
+  const ok = canPlace(col,row,w,h,null);
+  nettoyerSurvolBg(bgId);
+  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
+    const cell = $(bgId).querySelector(`[data-col="${c}"][data-row="${r}"]`);
+    if (cell) cell.classList.add(ok?'survol':'survol-ko');
+  }
+}
+
+function nettoyerSurvolBg(bgId) {
+  $(bgId).querySelectorAll('.survol,.survol-ko').forEach(c=>c.classList.remove('survol','survol-ko'));
+}
+
 function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
   $('modal-toile-tit').textContent = 'Nouvelle toile';
@@ -1628,7 +1773,14 @@ $('btn-rename').addEventListener('click', async () => {
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
 
-// Bouton sauvegarder flottant
+// Bouton placer sur le mur
+$('btn-placer-mur').addEventListener('click', entrerModePlacement);
+$('btn-fin-placement').addEventListener('click', quitterModePlacement);
+$('btn-grille-pl').addEventListener('click', () => {
+  grilleVisiblePl = !grilleVisiblePl;
+  $('mur-placement').classList.toggle('grille-on', grilleVisiblePl);
+  $('btn-grille-pl').classList.toggle('on', grilleVisiblePl);
+});
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
   btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
