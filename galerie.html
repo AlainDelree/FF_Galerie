@@ -572,28 +572,91 @@
     .then(([tData, sData]) => {
       const toileMap = {};
       (tData.toiles || []).filter(t => t.visible !== false).forEach(t => { toileMap[t.id] = t; });
+
       (sData.salles || []).forEach(salle => {
         const mur = document.getElementById('mur' + salle.id);
         if (!mur) return;
+
+        // Applique couleur/texture du mur depuis l'admin
+        if (salle.couleur_mur) mur.style.backgroundColor = salle.couleur_mur;
+
+        // Détermine la couleur des cadres
+        const couleurCadres = salle.couleur_cadres || '#3a3a3a';
+
+        const positions = salle.positions || [];
         const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
         if (!toilesSalle.length) return;
-        const isMobile = window.innerWidth <= 600;
-        const maxW = isMobile ? Math.floor((mur.clientWidth - 44) / 2) - 16 : 99999;
-        const H_PREF = isMobile ? 155 : 200;
-        const H_FALLBACK = isMobile ? 120 : 160;
-        const BORD = isMobile ? 16 : 26;
-        const N = isMobile ? 2 : toilesSalle.length; /* 2 toiles par rangée sur mobile */
-        const cs = getComputedStyle(mur);
-        const gapPx = parseFloat(cs.gap)         || (isMobile ? 6 : 32);
-        const padL  = parseFloat(cs.paddingLeft)  || (isMobile ? 8 : 40);
-        const padR  = parseFloat(cs.paddingRight) || (isMobile ? 8 : 40);
-        const dispo  = mur.clientWidth - padL - padR - (N - 1) * gapPx - N * BORD;
-        const totalW = toilesSalle.slice(0, N).reduce((s, t) => {
-          const d = t.dimensions;
-          return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF * d.largeur / d.hauteur) : H_PREF);
-        }, 0);
-        const H = totalW <= dispo ? H_PREF : H_FALLBACK;
-        toilesSalle.forEach(t => mur.appendChild(creerTableau(t, H)));
+
+        // ── MODE GRILLE (positions définies dans l'admin) ──────────
+        if (positions.length > 0) {
+          const isMobile = window.innerWidth <= 600;
+          if (isMobile) {
+            // Mobile : layout 2 colonnes classique
+            const H_PREF = 155, H_FALLBACK = 120, BORD = 16, N = 2;
+            const cs = getComputedStyle(mur);
+            const gapPx = parseFloat(cs.gap) || 6;
+            const padL  = parseFloat(cs.paddingLeft)  || 8;
+            const padR  = parseFloat(cs.paddingRight) || 8;
+            const dispo  = mur.clientWidth - padL - padR - (N-1)*gapPx - N*BORD;
+            const totalW = toilesSalle.slice(0,N).reduce((s,t) => {
+              const d = t.dimensions;
+              return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF*d.largeur/d.hauteur) : H_PREF);
+            }, 0);
+            const H = totalW <= dispo ? H_PREF : H_FALLBACK;
+            toilesSalle.forEach(t => {
+              const el = creerTableau(t, H);
+              el.style.borderColor = couleurCadres;
+              mur.appendChild(el);
+            });
+          } else {
+            // Desktop : grille 12 colonnes respectant les positions admin
+            const COLS = 12;
+            const maxRow = Math.max(...positions.map(p => p.row + p.h - 1), 4);
+            mur.style.display = 'grid';
+            mur.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+            mur.style.gridTemplateRows = `repeat(${maxRow}, 1fr)`;
+            mur.style.height = Math.max(300, maxRow * 60) + 'px';
+            mur.style.gap = '8px';
+            mur.style.padding = '1.5rem 2rem';
+            mur.style.alignItems = 'stretch';
+            mur.style.justifyItems = 'stretch';
+
+            positions.forEach(p => {
+              const t = toileMap[p.id];
+              if (!t) return;
+              const el = creerTableau(t, 9999); // hauteur gérée par la grille
+              el.style.gridColumn = `${p.col} / span ${p.w}`;
+              el.style.gridRow    = `${p.row} / span ${p.h}`;
+              el.style.width  = '100%';
+              el.style.height = '100%';
+              el.style.borderColor = couleurCadres;
+              // Force l'image à couvrir la cellule
+              const img = el.querySelector('img');
+              if (img) { img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; }
+              mur.appendChild(el);
+            });
+          }
+        } else {
+          // ── MODE FLUX (pas de positions → comportement original) ──
+          const isMobile = window.innerWidth <= 600;
+          const H_PREF = isMobile ? 155 : 200, H_FALLBACK = isMobile ? 120 : 160;
+          const BORD = isMobile ? 16 : 26, N = isMobile ? 2 : toilesSalle.length;
+          const cs = getComputedStyle(mur);
+          const gapPx = parseFloat(cs.gap) || (isMobile ? 6 : 32);
+          const padL  = parseFloat(cs.paddingLeft)  || (isMobile ? 8 : 40);
+          const padR  = parseFloat(cs.paddingRight) || (isMobile ? 8 : 40);
+          const dispo  = mur.clientWidth - padL - padR - (N-1)*gapPx - N*BORD;
+          const totalW = toilesSalle.slice(0,N).reduce((s,t) => {
+            const d = t.dimensions;
+            return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF*d.largeur/d.hauteur) : H_PREF);
+          }, 0);
+          const H = totalW <= dispo ? H_PREF : H_FALLBACK;
+          toilesSalle.forEach(t => {
+            const el = creerTableau(t, H);
+            el.style.borderColor = couleurCadres;
+            mur.appendChild(el);
+          });
+        }
       });
     })
     .catch(() => {
