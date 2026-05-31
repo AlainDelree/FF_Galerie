@@ -62,7 +62,7 @@ button{cursor:pointer;}
 .steps code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:12px;color:var(--gold2);}
 
 /* ══ PRINCIPAL ══ */
-#ecran-principal{flex-direction:column;}
+#ecran-principal{flex-direction:column;height:100dvh;overflow:hidden;}
 
 /* Header */
 .adm-hdr{position:sticky;top:0;z-index:100;
@@ -88,8 +88,8 @@ button{cursor:pointer;}
 .onglet.actif{color:var(--gold);border-bottom-color:var(--gold);}
 
 /* Vue */
-.vue{display:none;flex-direction:column;flex:1;}
-.vue.active{display:flex;}
+.vue{display:none;flex-direction:column;flex:1;min-height:0;}
+.vue.active{display:flex;overflow:hidden;}
 
 /* ══ PLAN DES SALLES ══ */
 .plan-section{display:flex;gap:.75rem;padding:.65rem .9rem;
@@ -156,7 +156,7 @@ button{cursor:pointer;}
 .edit-corps{display:flex;flex:1;min-height:0;overflow:hidden;}
 
 /* Stock toiles */
-.stock-col{width:88px;flex-shrink:0;border-right:1px solid var(--brd);
+.stock-col{width:100px;flex-shrink:0;border-right:1px solid var(--brd);
   display:flex;flex-direction:column;overflow:hidden;}
 .stock-hdr{padding:.4rem .45rem;border-bottom:0.5px solid var(--brd);
   font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
@@ -178,9 +178,9 @@ button{cursor:pointer;}
 /* Zone mur */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
 .mur-bg{border-radius:6px;display:grid;
-  grid-template-columns:repeat(12,1fr);
-  grid-template-rows:repeat(8,1fr);
-  gap:2px;aspect-ratio:12/8;
+  grid-template-columns:repeat(12,minmax(30px,1fr));
+  grid-template-rows:repeat(8,minmax(30px,1fr));
+  gap:2px;min-width:400px;min-height:268px;width:100%;aspect-ratio:12/8;
   position:relative;transition:background .3s;}
 .mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
 .cellule{border:0.5px solid rgba(255,255,255,.06);border-radius:2px;
@@ -191,12 +191,26 @@ button{cursor:pointer;}
 .toile-posee{border-radius:3px;cursor:pointer;overflow:hidden;position:relative;
   border:2px solid rgba(255,255,255,.2);transition:border-color .15s;}
 .toile-posee:hover{border-color:var(--gold);}
+.toile-posee.sel-mur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
 .toile-posee img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
 .toile-posee .tp-lbl{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
   font-size:7px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.6);
   padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;max-width:90%;
   overflow:hidden;text-overflow:ellipsis;}
 .toile-posee.reserve-posee{border-color:rgba(192,57,43,.5);opacity:.65;}
+/* Overlay flèches */
+.tp-arrows{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+  background:rgba(0,0,0,.55);border-radius:2px;}
+.tp-arrows-mid{display:flex;gap:2px;align-items:center;}
+.tp-arr{background:rgba(200,160,80,.25);border:0.5px solid rgba(200,160,80,.5);
+  color:var(--gold);border-radius:3px;width:20px;height:20px;font-size:12px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:background .15s;}
+.tp-arr:hover{background:rgba(200,160,80,.5);}
+.tp-arr.suppr{background:rgba(192,57,43,.2);border-color:rgba(192,57,43,.4);color:var(--danger);}
+/* Taille dans stock */
+.stock-size{font-size:7px;padding:0 3px 2px;color:rgba(200,160,80,.55);line-height:1.2;}
 
 /* Barre basse */
 .bas-barre{border-top:1px solid var(--brd);padding:.6rem .75rem;
@@ -424,6 +438,16 @@ textarea.champ{resize:vertical;min-height:65px;}
             <div class="sw" style="background:#f0f0f0" data-val="#f0f0f0"></div>
             <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
             <div class="sw" style="background:#5c3d2e" data-val="#5c3d2e"></div>
+          </div>
+        </div>
+        <div class="coul-row">
+          <span class="coul-lbl">Texture</span>
+          <div class="swatches" id="sw-texture">
+            <div class="sw sel" style="background:var(--bg3);" data-val="none" title="Uni"></div>
+            <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
+            <div class="sw" style="background:repeating-linear-gradient(#555 0,#555 1px,#444 0,#444 3px);" data-val="bois" title="Bois"></div>
+            <div class="sw" style="background:repeating-linear-gradient(135deg,#555 0,#555 1px,#444 0,#444 6px);" data-val="pierre" title="Pierre"></div>
+            <div class="sw" style="background:repeating-conic-gradient(#555 0% 25%,#444 0% 50%) 0 0/6px 6px;" data-val="damier" title="Damier discret"></div>
           </div>
         </div>
         <div class="coul-actions">
@@ -659,16 +683,18 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 // ═══════════════════════════════════════════════
 let token = '';
 let toiles = [], salles = [];
-let salleActive = null;        // salle sélectionnée
-let selectedToile = null;      // toile en cours de placement
-let occupancy = {};            // "col,row" → toile_id
+let salleActive = null;
+let selectedToile = null;
+let peintureSurMurSel = null;   // id de la toile sélectionnée sur le mur pour déplacement
+let occupancy = {};
 let pendingChanges = false;
-let toileEnEdition = null;     // null = new, id = edit
-let salleCibleToile = null;    // salle cible dans le form toile
+let toileEnEdition = null;
+let salleCibleToile = null;
 let photoB64 = null;
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
 let couleurCadresActuel = '#3a3a3a';
+let textureActuelle = 'none';
 
 // ═══════════════════════════════════════════════
 // UTILITAIRES
@@ -884,10 +910,8 @@ function selectSalle(id) {
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurCadresActuel = salleActive.couleur_cadres;
-  $('mur-bg').style.background = couleurMurActuel;
-  // Sélectionne le bon swatch
-  document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurMurActuel));
-  document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurCadresActuel));
+  textureActuelle = salleActive.texture || 'none';
+  appliquerApparence();
   // Affiche mur + stock
   buildOccupancy();
   afficherMur();
@@ -935,25 +959,47 @@ function afficherMur() {
   (salleActive.positions || []).forEach(p => {
     const t = toiles.find(x => x.id === p.id);
     if (!t) return;
+    const estSel = peintureSurMurSel === p.id;
     const el = document.createElement('div');
-    el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '');
+    el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '') + (estSel ? ' sel-mur' : '');
     el.style.gridColumn = `${p.col} / span ${p.w}`;
-    el.style.gridRow = `${p.row} / span ${p.h}`;
-    el.style.border = `2px solid ${couleurCadresActuel}`;
+    el.style.gridRow    = `${p.row} / span ${p.h}`;
+    el.style.borderColor = t.visible === false ? '' : couleurCadresActuel;
     if (t.photo) {
       const img = document.createElement('img');
-      img.src = t.photo;
-      img.alt = t.titre || '';
-      img.draggable = false;
+      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
       el.appendChild(img);
+    } else { el.style.background = 'rgba(255,255,255,.05)'; }
+
+    if (estSel) {
+      // Overlay flèches
+      const ov = document.createElement('div'); ov.className = 'tp-arrows';
+      ov.innerHTML = `
+        <button class="tp-arr" data-d="0,-1" title="Haut">↑</button>
+        <div class="tp-arrows-mid">
+          <button class="tp-arr" data-d="-1,0" title="Gauche">←</button>
+          <button class="tp-arr suppr" data-rm="1" title="Retirer">✕</button>
+          <button class="tp-arr" data-d="1,0" title="Droite">→</button>
+        </div>
+        <button class="tp-arr" data-d="0,1" title="Bas">↓</button>`;
+      ov.querySelectorAll('[data-d]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const [dc, dr] = btn.dataset.d.split(',').map(Number);
+          deplacerPeinture(p.id, dc, dr);
+        });
+      });
+      ov.querySelector('[data-rm]').addEventListener('click', e => {
+        e.stopPropagation(); retirerToile(p.id);
+      });
+      el.appendChild(ov);
     } else {
-      el.style.background = 'rgba(255,255,255,.05)';
+      const lbl = document.createElement('div');
+      lbl.className = 'tp-lbl'; lbl.textContent = t.titre || '—';
+      el.appendChild(lbl);
     }
-    const lbl = document.createElement('div');
-    lbl.className = 'tp-lbl';
-    lbl.textContent = t.titre || '—';
-    el.appendChild(lbl);
-    el.addEventListener('click', () => retirerToile(p.id));
+
+    el.addEventListener('click', () => selectionnerPeintureMur(p.id));
     bg.appendChild(el);
   });
 
@@ -1022,12 +1068,38 @@ function placerToile(col, row) {
 
 function retirerToile(toileId) {
   if (!salleActive) return;
-  if (!confirm('Retirer cette toile du mur ? Elle restera dans le stock.')) return;
   salleActive.positions = (salleActive.positions || []).filter(p => p.id !== toileId);
-  buildOccupancy();
-  afficherMur();
-  afficherStock();
-  marquerChangement();
+  peintureSurMurSel = null;
+  buildOccupancy(); afficherMur(); afficherStock(); marquerChangement();
+  toast('Toile retirée du mur');
+}
+
+function selectionnerPeintureMur(toileId) {
+  peintureSurMurSel = peintureSurMurSel === toileId ? null : toileId;
+  selectedToile = null; // désélectionne le stock
+  afficherMur(); afficherStock();
+  $('mur-aide').textContent = peintureSurMurSel
+    ? 'Utilise les flèches pour déplacer · ✕ pour retirer'
+    : 'Sélectionne une toile dans le stock, puis clique sur le mur pour la placer';
+}
+
+function deplacerPeinture(toileId, dCol, dRow) {
+  const pos = salleActive.positions.find(p => p.id === toileId);
+  if (!pos) return;
+  const newCol = pos.col + dCol, newRow = pos.row + dRow;
+  // Retire temporairement de l'occupancy
+  for (let c = pos.col; c < pos.col + pos.w; c++)
+    for (let r = pos.row; r < pos.row + pos.h; r++)
+      delete occupancy[`${c},${r}`];
+  if (!canPlace(newCol, newRow, pos.w, pos.h, null)) {
+    // Restaure
+    for (let c = pos.col; c < pos.col + pos.w; c++)
+      for (let r = pos.row; r < pos.row + pos.h; r++)
+        occupancy[`${c},${r}`] = toileId;
+    toast('Impossible — bord ou emplacement occupé', 'err'); return;
+  }
+  pos.col = newCol; pos.row = newRow;
+  buildOccupancy(); afficherMur(); marquerChangement();
 }
 
 // ═══════════════════════════════════════════════
@@ -1068,6 +1140,18 @@ function afficherStock() {
     nom.className = 'snom';
     nom.textContent = t.titre || '—';
     item.appendChild(nom);
+
+    // Indicateur taille
+    if (t.dimensions) {
+      const { w, h } = calcCases(t.dimensions);
+      const d = t.dimensions;
+      const sz = document.createElement('div');
+      sz.className = 'stock-size';
+      sz.textContent = d.type === 'ronde'
+        ? `⌀${d.largeur}cm · ${w}×${h}`
+        : `${d.largeur}×${d.hauteur}cm · ${w}×${h}`;
+      item.appendChild(sz);
+    }
 
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) { retirerToile(t.id); return; }
@@ -1344,8 +1428,66 @@ async function executerRestauration() {
 }
 
 // ═══════════════════════════════════════════════
-// COULEURS
+// APPARENCE (couleurs + textures)
 // ═══════════════════════════════════════════════
+const TEXTURES = {
+  none:   '',
+  tissu:  'repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 4px)',
+  bois:   'repeating-linear-gradient(rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 3px)',
+  pierre: 'repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 6px)',
+  damier: 'repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%) 0 0/8px 8px'
+};
+
+function appliquerApparence() {
+  const bg = $('mur-bg');
+  const tex = TEXTURES[textureActuelle] || '';
+  bg.style.background = tex
+    ? `${tex}, ${couleurMurActuel}`
+    : couleurMurActuel;
+  // Swatches
+  document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurMurActuel));
+  document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurCadresActuel));
+  document.querySelectorAll('#sw-texture .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
+  // Met à jour les cadres affichés
+  document.querySelectorAll('.toile-posee').forEach(el => {
+    if (!el.classList.contains('reserve-posee')) el.style.borderColor = couleurCadresActuel;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════════════
+function sauverPreset() {
+  const nom = prompt('Nom du preset (ex : Cosmos sombre, Galerie blanche) :');
+  if (!nom) return;
+  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, texture: textureActuelle };
+  localStorage.setItem('ff_presets', JSON.stringify(presets));
+  toast(`✓ Preset "${nom}" sauvegardé`);
+}
+
+function chargerPreset() {
+  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  const noms = Object.keys(presets);
+  if (!noms.length) { toast('Aucun preset sauvegardé — créez-en un d\'abord', 'err'); return; }
+  const choix = noms.length === 1 ? noms[0] : prompt(`Presets disponibles :\n${noms.map((n,i) => `${i+1}. ${n}`).join('\n')}\n\nEntrez le nom du preset :`);
+  if (!choix || !presets[choix]) { toast('Preset non trouvé', 'err'); return; }
+  const p = presets[choix];
+  couleurMurActuel = p.couleur_mur;
+  couleurCadresActuel = p.couleur_cadres;
+  textureActuelle = p.texture || 'none';
+  if (salleActive) {
+    salleActive.couleur_mur = couleurMurActuel;
+    salleActive.couleur_cadres = couleurCadresActuel;
+    salleActive.texture = textureActuelle;
+    marquerChangement();
+  }
+  appliquerApparence();
+  afficherMur();
+  toast(`✓ Preset "${choix}" appliqué`);
+}
+
+
 function swSelect(el, groupe) {
   el.closest('.swatches').querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
   el.classList.add('sel');
@@ -1353,32 +1495,39 @@ function swSelect(el, groupe) {
 
 function initSwatches() {
   document.querySelectorAll('#sw-mur .sw').forEach(sw => {
-    sw.addEventListener('click', () => {
-      swSelect(sw, 'mur');
-      setCouleurMur(sw.dataset.val);
-    });
+    sw.addEventListener('click', () => { swSelect(sw, 'mur'); setCouleurMur(sw.dataset.val); });
   });
   document.querySelectorAll('#sw-cadres .sw').forEach(sw => {
-    sw.addEventListener('click', () => {
-      swSelect(sw, 'cadres');
-      setCouleurCadres(sw.dataset.val);
-    });
+    sw.addEventListener('click', () => { swSelect(sw, 'cadres'); setCouleurCadres(sw.dataset.val); });
+  });
+  document.querySelectorAll('#sw-texture .sw').forEach(sw => {
+    sw.addEventListener('click', () => { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
   });
   $('mur-custom').addEventListener('change', e => {
     document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.remove('sel'));
     setCouleurMur(e.target.value);
   });
+  $('btn-preset-sauver').addEventListener('click', sauverPreset);
+  $('btn-preset-charger').addEventListener('click', chargerPreset);
 }
 
 function setCouleurMur(col) {
   couleurMurActuel = col;
-  $('mur-bg').style.background = col;
   if (salleActive) { salleActive.couleur_mur = col; marquerChangement(); }
+  appliquerApparence();
 }
 
 function setCouleurCadres(col) {
   couleurCadresActuel = col;
-  if (salleActive) { salleActive.couleur_cadres = col; afficherMur(); marquerChangement(); }
+  if (salleActive) { salleActive.couleur_cadres = col; marquerChangement(); }
+  appliquerApparence();
+  afficherMur();
+}
+
+function setTexture(val) {
+  textureActuelle = val;
+  if (salleActive) { salleActive.texture = val; marquerChangement(); }
+  appliquerApparence();
 }
 
 // ═══════════════════════════════════════════════
