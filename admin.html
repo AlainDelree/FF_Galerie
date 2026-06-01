@@ -485,7 +485,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 
         <!-- Stock -->
         <div class="stock-col">
-          <div class="stock-hdr">Stock</div>
+          <div class="stock-hdr" id="stock-hdr">Stock</div>
           <div class="stock-list" id="stock-list"></div>
           <button class="btn-placer-mur" id="btn-placer-mur">▶ Placer<br><span id="placer-count">0</span> toile(s)</button>
           <div class="stock-leg">
@@ -924,6 +924,8 @@ async function chargerTout() {
 
 async function sauvegarder(message) {
   syncBadge('...');
+  // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
+  salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   try {
     await commitMulti([
       { chemin: 'data/toiles.json', contenu: JSON.stringify({ toiles }, null, 2) },
@@ -1175,6 +1177,9 @@ function deplacerPeinture(toileId, dCol, dRow) {
 function afficherStock() {
   const list = $('stock-list');
   list.innerHTML = '';
+  // Met à jour le compteur
+  const hdr = $('stock-hdr');
+  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ')';
   if (!salleActive) return;
 
   const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
@@ -1318,6 +1323,9 @@ function quitterModePlacement() {
   toilesSelectionnees.clear();
   selectedToilePl = null;
   selectedToile = null;
+  // Synchronise toiles[] depuis positions[] pour que le chip soit exact
+  salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+  afficherPlan();
   afficherStock(); majBtnPlacer();
   buildOccupancy(); afficherMur();
 }
