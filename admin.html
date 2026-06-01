@@ -496,8 +496,9 @@ textarea.champ{resize:vertical;min-height:65px;}
 
       <!-- Barre basse -->
       <div class="bas-barre">
+        <button class="bas-btn" id="btn-arranger-mur">🔧 Arranger</button>
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajouter</button>
-        <button class="bas-btn" id="btn-uploader">⬆ Uploader photos</button>
+        <button class="bas-btn" id="btn-uploader">⬆ Uploader</button>
         <button class="bas-btn" id="btn-telecharger">⬇ Télécharger</button>
       </div>
 
@@ -1201,14 +1202,20 @@ function majBtnPlacer() {
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
 
-function entrerModePlacement() {
-  if (!salleActive || toilesSelectionnees.size === 0) return;
+function entrerModePlacement(arrangementSeul = false) {
+  if (!salleActive) return;
+  if (!arrangementSeul && toilesSelectionnees.size === 0) return;
+
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
   grilleVisiblePl = false;
   selectedToilePl = null;
+  peintureSurMurSel = null;
   afficherMurPlacement();
-  afficherStripPlacement();
+  afficherStripPlacement(arrangementSeul);
+  $('pl-aide').textContent = arrangementSeul
+    ? 'Clique une toile sur le mur pour la sélectionner, puis utilise les flèches'
+    : 'Sélectionne une toile en bas, puis clique sur le mur pour la placer';
 }
 
 function quitterModePlacement() {
@@ -1264,9 +1271,38 @@ function afficherMurPlacement() {
   }
 }
 
-function afficherStripPlacement() {
+function afficherStripPlacement(arrangementSeul = false) {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const poseesDansCetteSalle = new Set((salleActive.positions||[]).map(p=>p.id));
+
+  if (arrangementSeul) {
+    // Mode arrangement : montre les toiles déjà sur le mur
+    if (poseesDansCetteSalle.size === 0) {
+      strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucune toile sur le mur — place-en depuis le stock</div>';
+      return;
+    }
+    (salleActive.positions||[]).forEach(p => {
+      const t = toiles.find(x=>x.id===p.id); if(!t) return;
+      const item = document.createElement('div');
+      item.className = 'pl-item' + (selectedToilePl?.id===p.id?' sel':'');
+      const si = document.createElement('div'); si.className='simg';
+      if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
+      item.appendChild(si);
+      const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
+      item.addEventListener('click', () => {
+        peintureSurMurSel = peintureSurMurSel===p.id ? null : p.id;
+        selectedToilePl = null;
+        afficherMurPlacement(); afficherStripPlacement(true);
+        $('pl-aide').textContent = peintureSurMurSel
+          ? `"${t.titre||'—'}" sélectionnée → utilise les flèches`
+          : 'Clique une toile sur le mur ou dans le bas';
+      });
+      strip.appendChild(item);
+    });
+    return;
+  }
+
+  // Mode placement : montre les toiles sélectionnées depuis le stock
   toilesSelectionnees.forEach(id => {
     const t = toiles.find(x=>x.id===id); if(!t) return;
     const item = document.createElement('div');
@@ -1279,7 +1315,7 @@ function afficherStripPlacement() {
       selectedToilePl = selectedToilePl?.id===id ? null : t;
       selectedToile = selectedToilePl;
       peintureSurMurSel = null;
-      afficherMurPlacement(); afficherStripPlacement();
+      afficherMurPlacement(); afficherStripPlacement(false);
       $('pl-aide').textContent = selectedToilePl
         ? `"${selectedToilePl.titre||'Sans titre'}" → clique sur le mur`
         : 'Sélectionne une toile puis clique sur le mur';
@@ -1781,7 +1817,8 @@ $('btn-rename').addEventListener('click', async () => {
 });
 
 // Bouton placer sur le mur
-$('btn-placer-mur').addEventListener('click', entrerModePlacement);
+$('btn-arranger-mur').addEventListener('click', () => entrerModePlacement(true));
+$('btn-placer-mur').addEventListener('click', () => entrerModePlacement(false));
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-grille-pl').addEventListener('click', () => {
   grilleVisiblePl = !grilleVisiblePl;
