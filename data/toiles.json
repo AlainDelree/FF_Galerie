@@ -1,4 +1,30 @@
 {
+  "tailles": [
+    {
+      "code": "XXS",
+      "label": "Très petite"
+    },
+    {
+      "code": "XS",
+      "label": "Petite"
+    },
+    {
+      "code": "M",
+      "label": "Moyenne"
+    },
+    {
+      "code": "XL",
+      "label": "Grande"
+    },
+    {
+      "code": "XXL",
+      "label": "Très grande"
+    },
+    {
+      "code": "E",
+      "label": "Étirée"
+    }
+  ],
   "toiles": [
     {
       "id": 2,
@@ -13,7 +39,8 @@
         "largeur": 80,
         "hauteur": 45
       },
-      "visible": true
+      "visible": true,
+      "taille": "XL"
     },
     {
       "id": 3,
@@ -28,7 +55,8 @@
         "largeur": 60,
         "hauteur": 80
       },
-      "visible": true
+      "visible": true,
+      "taille": "XL"
     },
     {
       "id": 4,
@@ -43,7 +71,8 @@
         "hauteur": 75
       },
       "source_photo": "gsm",
-      "visible": true
+      "visible": true,
+      "taille": "XXL"
     },
     {
       "id": 8,
@@ -58,7 +87,8 @@
         "hauteur": 80
       },
       "source_photo": "gsm",
-      "visible": true
+      "visible": true,
+      "taille": "XL"
     },
     {
       "id": 9,
@@ -73,7 +103,8 @@
         "largeur": 100,
         "hauteur": 40
       },
-      "visible": true
+      "visible": true,
+      "taille": "E"
     },
     {
       "id": 10,
@@ -88,7 +119,8 @@
         "largeur": 80,
         "hauteur": 60
       },
-      "visible": true
+      "visible": true,
+      "taille": "XL"
     },
     {
       "id": 11,
@@ -103,7 +135,8 @@
         "largeur": 75,
         "hauteur": 55
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 12,
@@ -118,7 +151,8 @@
         "largeur": 40,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 13,
@@ -133,7 +167,8 @@
         "largeur": 115,
         "hauteur": 75
       },
-      "visible": true
+      "visible": true,
+      "taille": "XXL"
     },
     {
       "id": 14,
@@ -148,7 +183,8 @@
         "largeur": 115,
         "hauteur": 75
       },
-      "visible": true
+      "visible": true,
+      "taille": "XXL"
     },
     {
       "id": 15,
@@ -163,7 +199,8 @@
         "largeur": 40,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 16,
@@ -178,7 +215,8 @@
         "largeur": 40,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 17,
@@ -193,7 +231,8 @@
         "largeur": 70,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 18,
@@ -208,7 +247,8 @@
         "largeur": 40,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 19,
@@ -223,7 +263,8 @@
         "largeur": 40,
         "hauteur": 50
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 20,
@@ -238,7 +279,8 @@
         "largeur": 50,
         "hauteur": 40
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 21,
@@ -253,7 +295,8 @@
         "largeur": 115,
         "hauteur": 75
       },
-      "visible": true
+      "visible": true,
+      "taille": "XXL"
     },
     {
       "id": 22,
@@ -268,7 +311,8 @@
         "largeur": 40,
         "hauteur": 30
       },
-      "visible": true
+      "visible": true,
+      "taille": "XXS"
     },
     {
       "id": 23,
@@ -283,7 +327,8 @@
         "largeur": 80,
         "hauteur": 60
       },
-      "visible": true
+      "visible": true,
+      "taille": "XL"
     },
     {
       "id": 24,
@@ -298,7 +343,8 @@
         "largeur": 75,
         "hauteur": 55
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 25,
@@ -313,7 +359,8 @@
         "largeur": 50,
         "hauteur": 40
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 26,
@@ -328,7 +375,8 @@
         "largeur": 75,
         "hauteur": 55
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 27,
@@ -343,7 +391,8 @@
         "largeur": 115,
         "hauteur": 75
       },
-      "visible": true
+      "visible": true,
+      "taille": "XXL"
     },
     {
       "id": 28,
@@ -358,7 +407,8 @@
         "largeur": 50,
         "hauteur": 40
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 29,
@@ -373,7 +423,8 @@
         "largeur": 55,
         "hauteur": 75
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 30,
@@ -388,7 +439,8 @@
         "largeur": 50,
         "hauteur": 40
       },
-      "visible": true
+      "visible": true,
+      "taille": "XS"
     },
     {
       "id": 31,
@@ -403,7 +455,8 @@
         "largeur": 75,
         "hauteur": 55
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     },
     {
       "id": 32,
@@ -418,7 +471,8 @@
         "largeur": 75,
         "hauteur": 55
       },
-      "visible": true
+      "visible": true,
+      "taille": "M"
     }
   ]
 }

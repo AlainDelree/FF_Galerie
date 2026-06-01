@@ -596,6 +596,23 @@ textarea.champ{resize:vertical;min-height:65px;}
         <div class="salles-pills" id="salle-pills"></div>
       </div>
       <div class="grp">
+        <label class="lbl">Code taille</label>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <select class="champ" id="sel-taille" style="flex:1;">
+            <option value="">— Choisir —</option>
+          </select>
+          <button type="button" id="btn-new-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;" title="Créer un nouveau code">＋</button>
+        </div>
+      </div>
+      <div class="grp" id="new-taille-wrap" style="display:none;">
+        <label class="lbl">Nouveau code (ex: XS, M, XL…)</label>
+        <div style="display:flex;gap:.5rem;">
+          <input class="champ" type="text" id="inp-new-taille-code" placeholder="Code" style="width:80px;">
+          <input class="champ" type="text" id="inp-new-taille-label" placeholder="Libellé (ex: Petite)">
+          <button type="button" id="btn-confirm-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;cursor:pointer;font-weight:600;">✓</button>
+        </div>
+      </div>
+      <div class="grp">
         <label class="lbl" for="inp-style">Style pictural</label>
         <input class="champ" type="text" id="inp-style" placeholder="Abstrait, figuratif…">
       </div>
@@ -768,6 +785,7 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 // ÉTAT
 // ═══════════════════════════════════════════════
 let token = '';
+let tailles = []; // codes de taille {code, label}
 let toiles = [], salles = [];
 let salleActive = null;
 let selectedToile = null;
@@ -917,6 +935,7 @@ async function chargerTout() {
       lireFichierJSON('data/salles.json?v=' + Date.now())
     ]);
     toiles = tRes.data.toiles || [];
+    tailles = tRes.data.tailles || [];
     // Migre l'ancien format salles → nouveau format
     salles = (sRes.data.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -943,7 +962,7 @@ async function sauvegarder(message) {
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   try {
     await commitMulti([
-      { chemin: 'data/toiles.json', contenu: JSON.stringify({ toiles }, null, 2) },
+      { chemin: 'data/toiles.json', contenu: JSON.stringify({ tailles, toiles }, null, 2) },
       { chemin: 'data/salles.json', contenu: JSON.stringify({ salles }, null, 2) }
     ], 'Admin : ' + message);
     syncBadge('ok');
@@ -1249,13 +1268,16 @@ function afficherStock() {
     const nom = document.createElement('div'); nom.className = 'snom';
     nom.textContent = t.titre || '—'; item.appendChild(nom);
 
-    if (t.dimensions) {
-      const { w, h } = calcCases(t.dimensions);
+    // Code taille
+    const sz = document.createElement('div'); sz.className = 'stock-size';
+    if (t.taille) {
+      const tDef = tailles.find(x => x.code === t.taille);
+      sz.textContent = t.taille + (tDef ? ' — ' + tDef.label : '');
+    } else if (t.dimensions) {
       const d = t.dimensions;
-      const sz = document.createElement('div'); sz.className = 'stock-size';
-      sz.textContent = d.type === 'ronde' ? `⌀${d.largeur}cm · ${w}×${h}` : `${d.largeur}×${d.hauteur}cm · ${w}×${h}`;
-      item.appendChild(sz);
+      sz.textContent = d.type === 'ronde' ? `⌀${d.largeur}cm` : `${d.largeur}×${d.hauteur}cm`;
     }
+    item.appendChild(sz);
 
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) {
@@ -1493,6 +1515,46 @@ function nettoyerSurvolBg(bgId) {
   $(bgId).querySelectorAll('.survol,.survol-ko').forEach(c=>c.classList.remove('survol','survol-ko'));
 }
 
+// ═══════════════════════════════════════════════
+// CODES TAILLE
+// ═══════════════════════════════════════════════
+function remplirSelectTaille() {
+  const sel = $('sel-taille'); if (!sel) return;
+  sel.innerHTML = '<option value="">— Choisir —</option>';
+  tailles.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.code;
+    opt.textContent = `${t.code} — ${t.label}`;
+    sel.appendChild(opt);
+  });
+}
+
+function afficherNouveauTaille() {
+  const wrap = $('new-taille-wrap');
+  const visible = wrap.style.display === 'none' || wrap.style.display === '';
+  wrap.style.display = visible ? 'flex' : 'none';
+  if (visible) { wrap.style.flexDirection = 'column'; $('inp-new-taille-code').focus(); }
+}
+
+function confirmerNouveauTaille() {
+  const code  = $('inp-new-taille-code').value.trim().toUpperCase();
+  const label = $('inp-new-taille-label').value.trim();
+  if (!code || !label) { toast('Code et libellé requis', 'err'); return; }
+  if (tailles.find(t => t.code === code)) { toast(`Code "${code}" existe déjà`, 'err'); return; }
+  tailles.push({ code, label });
+  remplirSelectTaille();
+  $('sel-taille').value = code;
+  $('new-taille-wrap').style.display = 'none';
+  $('inp-new-taille-code').value = ''; $('inp-new-taille-label').value = '';
+  toast(`✓ Code "${code}" — ${label} créé`);
+}
+
+function initTailleForm() {
+  $('btn-new-taille').addEventListener('click', afficherNouveauTaille);
+  $('btn-confirm-taille').addEventListener('click', confirmerNouveauTaille);
+  $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
+}
+
 function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
   $('modal-toile-tit').textContent = 'Nouvelle toile';
@@ -1518,6 +1580,8 @@ function viderFormToile() {
   $('inp-visible').checked = true;
   $('sel-format').value = '';
   $('dims-custom').classList.add('hidden');
+  remplirSelectTaille();
+  $('sel-taille').value = '';
   $('inp-larg').value = ''; $('inp-haut').value = '';
   $('photo-prev').style.display = 'none';
   $('photo-ph').style.display = '';
@@ -1543,6 +1607,8 @@ function remplirFormToile(t) {
     else if (preset) { $('sel-format').value = `${l}x${h}`; $('dims-custom').classList.add('hidden'); }
     else { $('sel-format').value = 'custom'; $('dims-custom').classList.remove('hidden'); $('inp-larg').value = l; $('inp-haut').value = h; }
   }
+  remplirSelectTaille();
+  $('sel-taille').value = t.taille || '';
   if (t.photo) { $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none'; }
   salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
   document.querySelectorAll('.salle-pill').forEach(p => {
@@ -1569,6 +1635,7 @@ function lireFormToile() {
     prix: $('inp-prix').value ? parseInt($('inp-prix').value) : undefined,
     description: $('inp-desc').value.trim(),
     dimensions: dim,
+    taille: $('sel-taille').value || undefined,
     visible: $('inp-visible').checked
   };
 }
@@ -2118,6 +2185,7 @@ $('overlay-restore').addEventListener('click', e => { if (e.target === $('overla
 
 // Init swatches couleurs
 initSwatches();
+initTailleForm();
 
 // ═══════════════════════════════════════════════
 // DÉMARRAGE
