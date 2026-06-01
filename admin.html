@@ -1294,20 +1294,23 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
 
-function entrerModePlacement(arrangementSeul = false) {
+function entrerModePlacement() {
   if (!salleActive) return;
-  if (!arrangementSeul && toilesSelectionnees.size === 0) return;
-
+  const nbPlacees = (salleActive.positions||[]).length;
+  const nbSelec = toilesSelectionnees.size;
+  if (nbPlacees === 0 && nbSelec === 0) {
+    toast('Sélectionne des toiles dans le stock ou place-en d'abord', 'err'); return;
+  }
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
   grilleVisiblePl = false;
   selectedToilePl = null;
   peintureSurMurSel = null;
   afficherMurPlacement();
-  afficherStripPlacement(arrangementSeul);
-  $('pl-aide').textContent = arrangementSeul
-    ? 'Clique une toile sur le mur pour la sélectionner, puis utilise les flèches'
-    : 'Sélectionne une toile en bas, puis clique sur le mur pour la placer';
+  afficherStripPlacement();
+  $('pl-aide').textContent = nbPlacees > 0
+    ? 'Clique une toile du bas pour la placer ou la déplacer'
+    : 'Sélectionne une toile en bas, puis clique sur le mur';
 }
 
 function quitterModePlacement() {
@@ -1341,7 +1344,17 @@ function afficherMurPlacement() {
       const ov = document.createElement('div'); ov.className = 'tp-arrows';
       ov.innerHTML = `<button class="tp-arr" data-d="0,-1">↑</button><div class="tp-arrows-mid"><button class="tp-arr" data-d="-1,0">←</button><button class="tp-arr suppr" data-rm="1">✕</button><button class="tp-arr" data-d="1,0">→</button></div><button class="tp-arr" data-d="0,1">↓</button>`;
       ov.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const [dc,dr]=b.dataset.d.split(',').map(Number); deplacerPeinture(p.id,dc,dr); afficherMurPlacement(); }));
-      ov.querySelector('[data-rm]').addEventListener('click', e => { e.stopPropagation(); retirerToile(p.id); afficherMurPlacement(); afficherStripPlacement(); });
+      ov.querySelector('[data-rm]').addEventListener('click', e => {
+        e.stopPropagation();
+        // Retire du mur MAIS reste dans le strip (ajout à toilesSelectionnees)
+        salleActive.positions = (salleActive.positions||[]).filter(x=>x.id!==p.id);
+        salleActive.toiles = salleActive.toiles.filter(id=>id!==p.id);
+        toilesSelectionnees.add(p.id); // reste visible dans le strip
+        peintureSurMurSel = null; selectedToilePl = null;
+        buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
+        marquerChangement();
+        $('pl-aide').textContent = '"' + (toiles.find(x=>x.id===p.id)?.titre||'—') + '" retirée — clique sur le mur pour la replacer';
+      });
       el.appendChild(ov);
     } else {
       const lbl = document.createElement('div'); lbl.className = 'tp-lbl'; lbl.textContent = t.titre||'—'; el.appendChild(lbl);
@@ -1363,54 +1376,59 @@ function afficherMurPlacement() {
   }
 }
 
-function afficherStripPlacement(arrangementSeul = false) {
+function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
-  const poseesDansCetteSalle = new Set((salleActive.positions||[]).map(p=>p.id));
+  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
 
-  if (arrangementSeul) {
-    // Mode arrangement : montre les toiles déjà sur le mur
-    if (poseesDansCetteSalle.size === 0) {
-      strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucune toile sur le mur — place-en depuis le stock</div>';
-      return;
-    }
-    (salleActive.positions||[]).forEach(p => {
-      const t = toiles.find(x=>x.id===p.id); if(!t) return;
-      const item = document.createElement('div');
-      item.className = 'pl-item' + (selectedToilePl?.id===p.id?' sel':'');
-      const si = document.createElement('div'); si.className='simg';
-      if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
-      item.appendChild(si);
-      const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
-      item.addEventListener('click', () => {
-        peintureSurMurSel = peintureSurMurSel===p.id ? null : p.id;
-        selectedToilePl = null;
-        afficherMurPlacement(); afficherStripPlacement(true);
-        $('pl-aide').textContent = peintureSurMurSel
-          ? `"${t.titre||'—'}" sélectionnée → utilise les flèches`
-          : 'Clique une toile sur le mur ou dans le bas';
-      });
-      strip.appendChild(item);
-    });
+  // UNION : toiles placées sur le mur + toiles sélectionnées depuis le stock
+  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees])];
+
+  if (tousIds.length === 0) {
+    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucune toile</div>';
     return;
   }
 
-  // Mode placement : montre les toiles sélectionnées depuis le stock
-  toilesSelectionnees.forEach(id => {
+  tousIds.forEach(id => {
     const t = toiles.find(x=>x.id===id); if(!t) return;
+    const estPlace = poseeIds.has(id);
+    const estSelMur = peintureSurMurSel === id;
+    const estSelPlace = selectedToilePl?.id === id;
+
     const item = document.createElement('div');
-    item.className = 'pl-item' + (poseesDansCetteSalle.has(id)?' pose':'') + (selectedToilePl?.id===id?' sel':'');
+    item.className = 'pl-item'
+      + (estPlace ? ' pose' : '')
+      + (estSelMur || estSelPlace ? ' sel' : '');
+
     const si = document.createElement('div'); si.className='simg';
     if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
     item.appendChild(si);
+
+    // Badge état
+    const badge = document.createElement('div');
+    badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
+    badge.textContent = estPlace ? '🔒 sur le mur' : '+ à placer';
+    item.appendChild(badge);
+
     const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
+
     item.addEventListener('click', () => {
-      selectedToilePl = selectedToilePl?.id===id ? null : t;
-      selectedToile = selectedToilePl;
-      peintureSurMurSel = null;
-      afficherMurPlacement(); afficherStripPlacement(false);
-      $('pl-aide').textContent = selectedToilePl
-        ? `"${selectedToilePl.titre||'Sans titre'}" → clique sur le mur`
-        : 'Sélectionne une toile puis clique sur le mur';
+      if (estPlace) {
+        // Sélection pour déplacer avec flèches
+        peintureSurMurSel = peintureSurMurSel===id ? null : id;
+        selectedToilePl = null; selectedToile = null;
+        $('pl-aide').textContent = peintureSurMurSel
+          ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
+          : 'Clique une toile pour la déplacer ou en placer une nouvelle';
+      } else {
+        // Sélection pour placer
+        selectedToilePl = selectedToilePl?.id===id ? null : t;
+        selectedToile = selectedToilePl;
+        peintureSurMurSel = null;
+        $('pl-aide').textContent = selectedToilePl
+          ? `"${t.titre||'—'}" → clique sur le mur pour placer`
+          : 'Sélectionne une toile à placer';
+      }
+      afficherMurPlacement(); afficherStripPlacement();
     });
     strip.appendChild(item);
   });
@@ -1972,8 +1990,8 @@ $('btn-rename').addEventListener('click', async () => {
 });
 
 // Bouton placer sur le mur
-$('btn-arranger-mur').addEventListener('click', () => entrerModePlacement(true));
-$('btn-placer-mur').addEventListener('click', () => entrerModePlacement(false));
+$('btn-arranger-mur').addEventListener('click', entrerModePlacement);
+$('btn-placer-mur').addEventListener('click', entrerModePlacement);
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
