@@ -101,7 +101,7 @@ button{cursor:pointer;}
   display:flex;align-items:center;gap:5px;transition:border-color .2s;}
 .plan-btn:hover{border-color:var(--gold);}
 /* Chips salles */
-.salles-chips{flex:1;display:flex;align-items:center;flex-wrap:wrap;gap:6px;}
+.salles-chips{flex:1;display:flex;align-items:center;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding-bottom:2px;}
 .chip{padding:.35rem .7rem;border-radius:8px;cursor:pointer;text-align:center;
   border:2px solid transparent;transition:all .15s;min-width:72px;background:var(--bg3);}
 .chip .cn{font-size:11px;font-weight:600;color:var(--text);}
@@ -142,8 +142,14 @@ button{cursor:pointer;}
   background:rgba(200,160,80,.15);color:var(--gold);border:0.5px solid rgba(200,160,80,.3);}
 
 /* Panneau couleurs */
-.coul-panel{padding:.6rem .9rem;border-bottom:1px solid var(--brd);
-  background:var(--bg2);display:flex;flex-direction:column;gap:.45rem;}
+.coul-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:250;
+  background:var(--bg2);border-top:2px solid var(--brd);border-radius:16px 16px 0 0;
+  padding:.7rem 1rem max(.8rem,env(safe-area-inset-bottom));flex-direction:column;gap:.5rem;
+  max-height:55vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.15);}
+.coul-panel.ouvert{display:flex;}
+/* Overlay fond semi-transparent derrière le panel */
+.coul-overlay{display:none;position:fixed;inset:0;z-index:249;background:rgba(0,0,0,.3);}
+.coul-overlay.ouvert{display:block;}
 .coul-titre{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
 .coul-row{display:flex;align-items:center;gap:.5rem;}
 .coul-lbl{font-size:11px;color:var(--muted);width:52px;flex-shrink:0;}
@@ -408,9 +414,12 @@ textarea.champ{resize:vertical;min-height:65px;}
   <div id="vue-galerie" class="vue active">
 
     <!-- Plan des salles -->
-    <div class="plan-section">
+    <div class="plan-section" id="plan-section">
       <div class="plan-actions">
-        <span class="plan-act-lbl">Salles</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
+          <span class="plan-act-lbl">Salles</span>
+          <button id="btn-toggle-plan" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:0 2px;" title="Replier/Déplier">▲</button>
+        </div>
         <button class="plan-btn" id="btn-ajouter-salle">＋ Ajouter</button>
         <button class="plan-btn" id="btn-supprimer-salle">✕ Supprimer</button>
         <button class="plan-btn" id="btn-toggle-visible">◑ Visible / Caché</button>
@@ -430,8 +439,13 @@ textarea.champ{resize:vertical;min-height:65px;}
       </div>
 
       <!-- Panneau couleurs (caché par défaut) -->
-      <div class="coul-panel hidden" id="coul-panel">
-        <span class="coul-titre">Apparence de la salle</span>
+      <div class="coul-overlay" id="coul-overlay"></div>
+<div class="coul-panel" id="coul-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
+          <span class="coul-titre">Apparence de la salle</span>
+          <button id="btn-close-coul" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+        </div>
+        <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .3rem;flex-shrink:0;"></div>
         <div class="coul-row">
           <span class="coul-lbl">Mur</span>
           <div class="swatches" id="sw-mur">
@@ -454,6 +468,7 @@ textarea.champ{resize:vertical;min-height:65px;}
             <div class="sw" style="background:#f0f0f0" data-val="#f0f0f0"></div>
             <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
             <div class="sw" style="background:#5c3d2e" data-val="#5c3d2e"></div>
+            <div class="sw-plus"><input type="color" id="cadres-custom" value="#3a3a3a"><span style="pointer-events:none;">+</span></div>
           </div>
         </div>
         <div class="coul-row">
@@ -1097,7 +1112,10 @@ function afficherMur() {
       cell.dataset.row = r;
       cell.addEventListener('mouseenter', () => survolCelluleMur(c, r));
       cell.addEventListener('mouseleave', () => nettoyerSurvol());
-      cell.addEventListener('click', () => placerToile(c, r));
+      // Mur en lecture seule → placement uniquement via "Arranger"
+      cell.addEventListener('click', () => {
+        if (selectedToile) toast('Utilise "🔧 Arranger" pour placer les toiles', 'err');
+      });
       bg.appendChild(cell);
     }
   }
@@ -1877,7 +1895,10 @@ function initSwatches() {
   $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
   $('inp-preset-nom').addEventListener('keydown', e => { if(e.key==='Enter') confirmerPreset(); });
   $('overlay-preset').addEventListener('click', e => { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
-  $('inp-texture-custom').addEventListener('change', e => gererTextureCustom(e.target.files[0]));
+  $('cadres-custom').addEventListener('change', e => {
+    document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.remove('sel'));
+    setCouleurCadres(e.target.value);
+  });
   afficherTexturesCustom();
 }
 
@@ -1984,8 +2005,30 @@ $('btn-toggle-visible').addEventListener('click', async () => {
 
 // Contrôles mur
 $('btn-coul-toggle').addEventListener('click', () => {
-  $('coul-panel').classList.toggle('hidden');
-  $('btn-coul-toggle').classList.toggle('on');
+  const ouvert = $('coul-panel').classList.toggle('ouvert');
+  $('coul-overlay').classList.toggle('ouvert', ouvert);
+  $('btn-coul-toggle').classList.toggle('on', ouvert);
+});
+$('btn-close-coul').addEventListener('click', () => {
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
+});
+$('coul-overlay').addEventListener('click', () => {
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
+});
+// Plan repliable
+let planOuvert = true;
+$('btn-toggle-plan').addEventListener('click', () => {
+  planOuvert = !planOuvert;
+  const chips = $('chips-salles');
+  const btns = document.querySelector('.plan-actions').querySelectorAll('.plan-btn');
+  chips.style.display = planOuvert ? '' : 'none';
+  btns.forEach(b => b.style.display = planOuvert ? '' : 'none');
+  $('btn-toggle-plan').textContent = planOuvert ? '▲' : '▼';
+  $('plan-section').style.minHeight = planOuvert ? '' : '0';
 });
 $('btn-rename').addEventListener('click', async () => {
   const nom = $('inp-rename').value.trim();
