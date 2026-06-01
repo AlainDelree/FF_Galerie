@@ -1357,6 +1357,8 @@ function entrerModePlacement() {
   }
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
+  // Pousse un état pour intercepter le bouton retour Android
+  history.pushState({ ff: 'arrangement' }, '');
   grilleVisiblePl = false;
   selectedToilePl = null;
   peintureSurMurSel = null;
@@ -2162,6 +2164,13 @@ $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
 $('btn-placer-mur').addEventListener('click', entrerModePlacement);
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
+
+// Intercepte le bouton retour Android quand le mode arrangement est ouvert
+window.addEventListener('popstate', () => {
+  if ($('overlay-placement').classList.contains('ouvert')) {
+    quitterModePlacement();
+  }
+});
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
   btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
