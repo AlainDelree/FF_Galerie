@@ -1299,7 +1299,7 @@ function entrerModePlacement() {
   const nbPlacees = (salleActive.positions||[]).length;
   const nbSelec = toilesSelectionnees.size;
   if (nbPlacees === 0 && nbSelec === 0) {
-    toast('Sélectionne des toiles dans le stock ou place-en d'abord', 'err'); return;
+    toast("Sélectionne des toiles dans le stock ou place-en d'abord", 'err'); return;
   }
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
