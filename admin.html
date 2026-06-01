@@ -1409,7 +1409,7 @@ function quitterModePlacement() {
   toilesSelectionnees.clear();
   selectedToilePl = null;
   selectedToile = null;
-  // Synchronise toiles[] depuis positions[] pour que le chip soit exact
+  peintureSurMurSel = null; // efface la sélection avant de revenir en vue normale
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   afficherPlan();
   afficherStock(); majBtnPlacer();
