@@ -8,11 +8,11 @@
 <style>
 /* ── Variables & reset ── */
 :root {
-  --bg:#0e0e0e; --bg2:#161616; --bg3:#1e1e1e;
-  --brd:rgba(255,255,255,.08); --brd2:rgba(255,255,255,.14);
-  --gold:#c8a050; --gold2:#f0d080;
-  --text:#e0d8cc; --muted:#666;
-  --danger:#c0392b; --success:#27ae60;
+  --bg:#f5f0e8; --bg2:#ede7da; --bg3:#e2dace;
+  --brd:rgba(0,0,0,.12); --brd2:rgba(0,0,0,.2);
+  --gold:#a07830; --gold2:#c8a050;
+  --text:#1c1208; --muted:#8a7a60;
+  --danger:#c0392b; --success:#1e8a4a;
   --r:10px; --font:system-ui,-apple-system,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -151,7 +151,7 @@ button{cursor:pointer;}
 .sw-plus{width:20px;height:20px;border-radius:3px;cursor:pointer;
   border:0.5px dashed var(--brd);display:flex;align-items:center;justify-content:center;
   font-size:14px;color:var(--muted);position:relative;}
-.sw-plus input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.sw-plus input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .coul-actions{display:flex;gap:.4rem;margin-top:.1rem;}
 
 /* Corps éditeur */
@@ -1179,7 +1179,23 @@ function afficherStock() {
           .flatMap(s => (s.positions || []).map(p => p.id))
   );
 
-  toiles.forEach(t => {
+  // Tri : sur ce mur (0) → disponible (1) → autre salle (2)
+  const grpOf = t => poseesDansCetteSalle.has(t.id) ? 0 : poseesDansAutres.has(t.id) ? 2 : 1;
+  const toilesTri = [...toiles].sort((a, b) => grpOf(a) - grpOf(b));
+  const labelsGrp = ['Sur ce mur', 'Disponibles', 'Autre salle'];
+  let dernierGrp = -1;
+
+  toilesTri.forEach(t => {
+    const grp = grpOf(t);
+    if (grp !== dernierGrp) {
+      const sep = document.createElement('div');
+      sep.style.cssText = 'font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:5px 3px 2px;flex-shrink:0;border-top:0.5px solid var(--brd);margin-top:2px;';
+      if (dernierGrp === -1) sep.style.borderTop = 'none';
+      sep.textContent = labelsGrp[grp];
+      list.appendChild(sep);
+      dernierGrp = grp;
+    }
+
     const item = document.createElement('div');
     item.className = 'stock-item';
     if (poseesDansCetteSalle.has(t.id)) item.classList.add('pose');
@@ -1187,7 +1203,6 @@ function afficherStock() {
     if (toilesSelectionnees.has(t.id)) item.classList.add('coche');
     if (selectedToile && selectedToile.id === t.id) item.classList.add('sel');
 
-    // Image carrée (conteneur fixe 72px)
     const simgDiv = document.createElement('div');
     simgDiv.className = 'simg';
     simgDiv.style.cssText = 'width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;';
@@ -1201,14 +1216,12 @@ function afficherStock() {
     }
     item.appendChild(simgDiv);
 
-    // Checkmark overlay
     const chk = document.createElement('div'); chk.className = 'check-ov'; chk.textContent = '✓';
     item.appendChild(chk);
 
     const nom = document.createElement('div'); nom.className = 'snom';
     nom.textContent = t.titre || '—'; item.appendChild(nom);
 
-    // Taille
     if (t.dimensions) {
       const { w, h } = calcCases(t.dimensions);
       const d = t.dimensions;
@@ -1219,13 +1232,15 @@ function afficherStock() {
 
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) {
-        // Déjà sur le mur → sélectionne pour déplacement
         selectionnerPeintureMur(t.id); return;
       }
-      // Bascule sélection multiple
+      if (item.classList.contains('autre')) {
+        const autreSalle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(t.id));
+        afficherConfirmAutreSalle(t, autreSalle ? autreSalle.nom : 'une autre salle');
+        return;
+      }
       if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
       else toilesSelectionnees.add(t.id);
-      // Met à jour selectedToile pour placement direct
       selectedToile = toilesSelectionnees.size === 0 ? null : t;
       afficherStock();
       majBtnPlacer();
@@ -1240,6 +1255,32 @@ function majBtnPlacer() {
   const n = toilesSelectionnees.size;
   $('placer-count').textContent = n;
   btn.classList.toggle('visible', n > 0);
+}
+
+function afficherConfirmAutreSalle(toile, nomAutre) {
+  const ancien = document.getElementById('confirm-autre-salle');
+  if (ancien) ancien.remove();
+  const div = document.createElement('div');
+  div.id = 'confirm-autre-salle';
+  div.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:400;background:var(--bg2);border:1.5px solid var(--gold);border-radius:14px;padding:.9rem 1rem;max-width:310px;width:88%;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  div.innerHTML = `<p style="font-size:13px;margin-bottom:.75rem;line-height:1.5;"><strong style="color:var(--gold);">"${toile.titre||'Sans titre'}"</strong> est dans <strong>${nomAutre}</strong>.<br>Que faire ?</p>
+    <div style="display:flex;gap:.5rem;">
+      <button id="conf-ann" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:12px;cursor:pointer;">Autre toile</button>
+      <button id="conf-ok" style="flex:1;padding:.5rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-size:12px;font-weight:600;cursor:pointer;">Retirer et placer ici</button>
+    </div>`;
+  document.body.appendChild(div);
+  document.getElementById('conf-ann').addEventListener('click', () => div.remove());
+  document.getElementById('conf-ok').addEventListener('click', () => {
+    div.remove();
+    toilesSelectionnees.add(toile.id);
+    selectedToile = toile;
+    afficherStock(); majBtnPlacer();
+    toast(`"${toile.titre||'—'}" prête — sera retirée de ${nomAutre} à la sauvegarde`);
+  });
+  setTimeout(() => {
+    const fermer = e => { if (!div.contains(e.target)) { div.remove(); document.removeEventListener('click', fermer); } };
+    document.addEventListener('click', fermer);
+  }, 150);
 }
 
 
@@ -1607,7 +1648,11 @@ async function chargerCommits() {
   const cont = $('commits-contenu');
   cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
   try {
-    const commits = await apiGH(`/repos/${REPO}/commits?path=data/toiles.json&per_page=15`);
+    const tousCommits = await apiGH(`/repos/${REPO}/commits?path=data/toiles.json&per_page=50`);
+    // Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit
+    const commits = tousCommits.filter((c, i) => 
+      i === 0 || c.commit.message.toLowerCase().startsWith('admin :')
+    );
     if (!commits.length) { cont.innerHTML = '<div class="chargement" style="color:var(--muted)">Aucun historique.</div>'; return; }
     cont.innerHTML = '';
     const liste = document.createElement('div'); liste.className = 'commits-liste';
