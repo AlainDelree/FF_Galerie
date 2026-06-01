@@ -4,7 +4,7 @@
       "id": 1,
       "nom": "Salle I",
       "theme": "",
-      "couleur_mur": "#2c2535",
+      "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#f0f0f0",
       "texture": "damier",
       "visible": true,
