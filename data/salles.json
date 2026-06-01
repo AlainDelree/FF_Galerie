@@ -9,10 +9,6 @@
       "texture": "damier",
       "visible": true,
       "toiles": [
-        4,
-        2,
-        3,
-        8,
         17,
         22,
         30,
@@ -58,10 +54,9 @@
       "texture": "none",
       "visible": false,
       "toiles": [
-        8,
         9,
-        20,
         24,
+        20,
         25
       ],
       "positions": [
@@ -125,6 +120,17 @@
       ]
     },
     {
+      "id": 6,
+      "nom": "Salle F",
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
+    },
+    {
       "id": 4,
       "nom": "Salle IV",
       "theme": "",
@@ -133,7 +139,6 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        9,
         10,
         26
       ],
