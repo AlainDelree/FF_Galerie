@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FF Galerie — Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<style>
+/* ── Variables & reset ── */
+:root {
+  --bg:#f5f0e8; --bg2:#ede7da; --bg3:#e2dace;
+  --brd:rgba(0,0,0,.12); --brd2:rgba(0,0,0,.2);
+  --gold:#a07830; --gold2:#c8a050;
+  --text:#1c1208; --muted:#8a7a60;
+  --danger:#c0392b; --success:#1e8a4a;
+  --r:10px; --font:system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100dvh;}
+input,select,textarea,button{font-family:var(--font);font-size:14px;}
+button{cursor:pointer;}
+.hidden{display:none!important;}
+
+/* ── Écrans ── */
+.ecran{display:none;min-height:100dvh;flex-direction:column;}
+.ecran.actif{display:flex;}
+
+/* ══ LOGIN ══ */
+#ecran-login{align-items:center;justify-content:center;padding:2rem;
+  background:radial-gradient(ellipse at 50% 30%,#1a1408 0%,#0e0e0e 65%);}
+.login-logo{font-size:3.5rem;font-weight:200;letter-spacing:.25em;color:var(--gold);margin-bottom:.2rem;opacity:.8;}
+.login-sous{font-size:.7rem;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);margin-bottom:2.5rem;}
+.login-card{width:100%;max-width:340px;display:flex;flex-direction:column;gap:1rem;}
+.lbl{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;display:block;}
+.inp{width:100%;padding:.85rem 1rem;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r);
+  color:var(--text);outline:none;transition:border-color .2s;}
+.inp:focus{border-color:rgba(200,160,80,.4);}
+.mdp-wrap{position:relative;}
+.mdp-wrap .inp{padding-right:3rem;}
+.btn-oeil{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);padding:.3rem;line-height:0;transition:color .2s;}
+.btn-oeil:hover{color:var(--text);}
+.btn{padding:.85rem 1.5rem;border:none;border-radius:var(--r);font-weight:500;
+  transition:opacity .2s,transform .1s;letter-spacing:.04em;}
+.btn:active{transform:scale(.97);}
+.btn-or{background:var(--gold);color:#111;width:100%;}
+.btn-or:hover{opacity:.9;}
+.btn-sm{padding:.5rem .9rem;font-size:13px;}
+.btn-outline{background:transparent;border:1px solid var(--brd);color:var(--text);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-danger{background:var(--danger);color:#fff;}
+.err-txt{color:var(--danger);font-size:13px;text-align:center;min-height:1.2em;}
+.aide-txt{font-size:12px;color:var(--muted);text-align:center;margin-top:.5rem;}
+
+/* ══ TOKEN SETUP ══ */
+#ecran-token{padding:2rem 1.2rem;justify-content:center;align-items:center;}
+.token-card{width:100%;max-width:460px;display:flex;flex-direction:column;gap:1.2rem;}
+.token-titre{font-size:1.1rem;color:var(--gold);font-weight:500;}
+.steps{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r);padding:1rem 1.2rem;}
+.steps ol{padding-left:1.2rem;display:flex;flex-direction:column;gap:.6rem;}
+.steps li{font-size:13px;color:var(--muted);line-height:1.6;}
+.steps code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:12px;color:var(--gold2);}
+
+/* ══ PRINCIPAL ══ */
+#ecran-principal{flex-direction:column;height:100dvh;overflow:hidden;}
+
+/* Header */
+.adm-hdr{position:sticky;top:0;z-index:100;
+  background:var(--bg2);border-bottom:1px solid var(--brd);
+  padding:.65rem 1rem;
+  padding-top:max(.65rem,env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;}
+.adm-logo{font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-weight:500;}
+.hdr-droite{display:flex;align-items:center;gap:.6rem;}
+.sync-badge{font-size:11px;padding:.25rem .6rem;border-radius:20px;font-weight:500;}
+.sync-ok{background:rgba(39,174,96,.15);color:var(--success);}
+.sync-ko{background:rgba(192,57,43,.15);color:var(--danger);}
+.sync-enc{background:rgba(200,160,80,.1);color:var(--gold);}
+.btn-logout{background:none;border:none;color:var(--muted);font-size:18px;padding:.3rem;}
+.btn-logout:hover{color:var(--danger);}
+
+/* Onglets */
+.onglets{display:flex;border-bottom:1px solid var(--brd);background:var(--bg2);
+  position:sticky;top:48px;z-index:90;}
+.onglet{flex:1;padding:.7rem;text-align:center;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;cursor:pointer;color:var(--muted);
+  border:none;background:none;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;}
+.onglet.actif{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* Vue */
+.vue{display:none;flex-direction:column;flex:1;min-height:0;}
+.vue.active{display:flex;overflow:hidden;}
+
+/* ══ PLAN DES SALLES ══ */
+.plan-section{display:flex;gap:.75rem;padding:.65rem .9rem;
+  border-bottom:1px solid var(--brd);background:var(--bg2);}
+.plan-actions{display:flex;flex-direction:column;gap:.35rem;min-width:130px;flex-shrink:0;}
+.plan-act-lbl{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.1rem;}
+.plan-btn{font-size:11px;padding:.32rem .6rem;border-radius:6px;
+  border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);text-align:left;
+  display:flex;align-items:center;gap:5px;transition:border-color .2s;}
+.plan-btn:hover{border-color:var(--gold);}
+/* Chips salles */
+.salles-chips{flex:1;display:flex;align-items:center;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.chip{padding:.35rem .7rem;border-radius:8px;cursor:pointer;text-align:center;
+  border:2px solid transparent;transition:all .15s;min-width:72px;background:var(--bg3);}
+.chip .cn{font-size:11px;font-weight:600;color:var(--text);}
+.chip .cb{font-size:10px;color:var(--muted);margin-top:1px;}
+.chip.sel{border-color:var(--gold);background:rgba(200,160,80,.08);}
+.chip.sel .cn{color:var(--gold);}
+.chip.vide{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);}
+.chip.vide .cn{color:#ef9fa0;}
+.chip.invisible{
+  background:rgba(0,0,0,.06)!important;
+  border:2px dashed rgba(0,0,0,.3)!important;
+  opacity:.55;
+}
+.chip.invisible .cn::after{content:' ◑';font-size:9px;opacity:.7;}
+.chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
+  border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;
+  display:flex;align-items:center;gap:3px;transition:border-color .2s,color .2s;}
+.chip-add:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ══ ÉDITEUR MUR ══ */
+.edit-section{display:flex;flex-direction:column;flex:1;min-height:0;}
+
+/* Barre contrôle mur */
+.mur-ctrl{display:flex;align-items:center;gap:.5rem;
+  padding:.5rem .75rem;border-bottom:1px solid var(--brd);
+  background:var(--bg2);flex-wrap:wrap;}
+.salle-badge{font-size:12px;font-weight:700;padding:.2rem .75rem;
+  border-radius:20px;background:rgba(200,160,80,.18);color:var(--gold);flex-shrink:0;}
+.ctrl-btn{font-size:10px;padding:.28rem .6rem;border-radius:6px;
+  border:0.5px solid var(--brd);background:transparent;color:var(--muted);
+  transition:border-color .2s,color .2s;}
+.ctrl-btn:hover,.ctrl-btn.on{border-color:var(--gold);color:var(--gold);}
+.rename-wrap{display:flex;align-items:center;gap:.3rem;margin-left:auto;}
+.rename-inp{font-size:11px;padding:.26rem .55rem;border-radius:6px;
+  border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);width:90px;}
+.rename-inp:focus{outline:none;border-color:rgba(200,160,80,.4);}
+.ok-btn{font-size:11px;padding:.26rem .6rem;border-radius:6px;
+  background:rgba(200,160,80,.15);color:var(--gold);border:0.5px solid rgba(200,160,80,.3);}
+
+/* Panneau couleurs */
+.coul-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:250;
+  background:var(--bg2);border-top:2px solid var(--brd);border-radius:16px 16px 0 0;
+  padding:.7rem 1rem max(.8rem,env(safe-area-inset-bottom));flex-direction:column;gap:.5rem;
+  max-height:55vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.15);}
+.coul-panel.ouvert{display:flex;}
+/* Overlay fond semi-transparent derrière le panel */
+.coul-overlay{display:none;position:fixed;inset:0;z-index:249;background:rgba(0,0,0,.3);}
+.coul-overlay.ouvert{display:block;}
+.coul-titre{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.coul-row{display:flex;align-items:center;gap:.5rem;}
+.coul-lbl{font-size:11px;color:var(--muted);width:52px;flex-shrink:0;}
+.swatches{display:flex;gap:4px;flex-wrap:wrap;}
+.sw{width:20px;height:20px;border-radius:3px;cursor:pointer;
+  border:2px solid transparent;transition:transform .1s,border-color .1s;}
+.sw:hover{transform:scale(1.15);}
+.sw.sel{border-color:var(--text);}
+.sw-plus{width:20px;height:20px;border-radius:3px;cursor:pointer;
+  border:0.5px dashed var(--brd);display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--muted);position:relative;}
+.sw-plus input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.coul-actions{display:flex;gap:.4rem;margin-top:.1rem;}
+
+/* Corps éditeur */
+.edit-corps{display:flex;flex:1;min-height:0;overflow:hidden;}
+
+/* ── Stock ── */
+.stock-col{width:115px;flex-shrink:0;border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
+.stock-hdr{padding:.4rem .45rem;border-bottom:0.5px solid var(--brd);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.stock-list{flex:1;overflow-y:auto;padding:.35rem;display:flex;flex-direction:column;gap:4px;}
+.stock-item{border-radius:5px;overflow:hidden;cursor:pointer;border:2.5px solid var(--brd);background:var(--bg2);transition:border-color .15s;position:relative;flex-shrink:0;}
+.stock-item:hover{border-color:var(--muted);}
+.stock-item.sel{border-color:var(--gold);border-width:3px;box-shadow:0 0 6px rgba(200,160,80,.3);}
+.stock-item.coche{border-color:var(--gold);border-width:3px;}
+.stock-item.pose{border-color:var(--success);border-width:3px;opacity:.55;}
+.stock-item.autre{border-color:rgba(192,57,43,.7);border-width:3px;}
+.stock-item .simg{width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;}
+.stock-item .simg img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+.stock-item .simg .sph{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);}
+.stock-item .snom{font-size:7.5px;padding:2px 4px;color:#fff;background:rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stock-size{display:none;} /* remplacé par badge */
+.taille-badge{position:absolute;top:4px;right:4px;
+  font-size:11px;font-weight:700;letter-spacing:.05em;
+  color:#fff;background:rgba(0,0,0,.65);
+  padding:2px 5px;border-radius:4px;
+  border:1px solid rgba(255,255,255,.25);
+  pointer-events:none;line-height:1.3;}
+.stock-item .check-ov{display:none;position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:var(--gold);align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;}
+.stock-item.coche .check-ov{display:flex;}
+.btn-placer-mur{margin:.35rem;padding:.45rem;border-radius:6px;background:rgba(200,160,80,.15);border:0.5px solid rgba(200,160,80,.4);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;display:none;text-align:center;line-height:1.4;}
+.btn-placer-mur.visible{display:block;}
+.stock-leg{padding:.3rem .45rem;border-top:0.5px solid var(--brd);display:flex;flex-direction:column;gap:3px;}
+.leg-li{display:flex;align-items:center;gap:3px;font-size:8px;color:var(--muted);}
+.leg-sq{width:8px;height:8px;border-radius:1px;border:1.5px solid currentColor;flex-shrink:0;}
+
+/* ── Zone mur ── */
+.mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
+.mur-bg{border-radius:6px;display:grid;
+  grid-template-columns:repeat(12,1fr);
+  grid-template-rows:repeat(8,1fr);
+  gap:2px;width:100%;aspect-ratio:12/8;
+  position:relative;transition:background .3s;}
+.mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
+.cellule{border:0.5px solid rgba(255,255,255,.06);border-radius:2px;transition:background .1s;cursor:crosshair;}
+.cellule.survol{background:rgba(200,160,80,.18)!important;}
+.cellule.survol-ko{background:rgba(192,57,43,.18)!important;}
+/* Toiles posées */
+.toile-posee{border-radius:3px;cursor:pointer;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,.2);transition:border-color .15s;}
+.toile-posee:hover{border-color:var(--gold);}
+.toile-posee.sel-mur{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);}
+.toile-posee img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+.toile-posee .tp-lbl{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:7px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.6);padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;max-width:90%;overflow:hidden;text-overflow:ellipsis;}
+.toile-posee.reserve-posee{border-color:rgba(192,57,43,.5);opacity:.65;}
+
+/* ── Flèches déplacement (grandes) ── */
+.tp-arrows{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(0,0,0,.65);border-radius:2px;}
+.tp-arrows-mid{display:flex;gap:8px;align-items:center;}
+.tp-arr{background:rgba(200,160,80,.3);border:1.5px solid rgba(200,160,80,.6);color:var(--gold);border-radius:6px;width:36px;height:36px;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.tp-arr:active{background:rgba(200,160,80,.65);}
+.tp-arr.suppr{width:28px;height:28px;font-size:14px;background:rgba(192,57,43,.25);border-color:rgba(192,57,43,.5);color:var(--danger);}
+
+/* ══ OVERLAY MODE PLACEMENT PLEIN ÉCRAN ══ */
+.placement-overlay{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;}
+.placement-overlay.ouvert{display:flex;}
+.placement-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--brd);flex-shrink:0;padding-top:max(.55rem,env(safe-area-inset-top));}
+.pl-titre{font-size:12px;color:var(--muted);}
+.pl-titre strong{color:var(--text);}
+.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;}
+.placement-mur-bg{border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(26px,1fr));grid-template-rows:repeat(8,minmax(26px,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
+.placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
+.placement-aide{padding:.3rem;font-size:11px;color:var(--muted);text-align:center;flex-shrink:0;}
+/* Strip toiles sélectionnées */
+.placement-strip{height:96px;flex-shrink:0;border-top:1px solid var(--brd);background:var(--bg2);display:flex;align-items:center;gap:6px;padding:.4rem .7rem;overflow-x:auto;overflow-y:hidden;}
+.pl-item{flex-shrink:0;width:68px;border-radius:5px;overflow:hidden;border:1.5px solid var(--brd);cursor:pointer;background:var(--bg3);transition:border-color .15s;}
+.pl-item.sel{border-color:var(--gold);box-shadow:0 0 6px rgba(200,160,80,.4);}
+.pl-item.pose{border-color:var(--success);opacity:.5;}
+.pl-item .simg{width:100%;height:54px;overflow:hidden;}
+.pl-item .simg img{width:100%;height:100%;object-fit:cover;display:block;}
+.pl-item .snom{font-size:7px;padding:2px 3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pl-item{position:relative;}
+.pl-item .taille-badge{position:absolute;top:3px;right:3px;font-size:10px;font-weight:700;
+  color:#fff;background:rgba(0,0,0,.65);padding:1px 4px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.25);pointer-events:none;line-height:1.4;}
+
+/* Barre basse */
+.bas-barre{border-top:1px solid var(--brd);padding:.6rem .75rem;
+  padding-bottom:max(.6rem,env(safe-area-inset-bottom));
+  background:var(--bg2);display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
+.bas-btn{display:flex;align-items:center;gap:5px;font-size:12px;
+  padding:.4rem .85rem;border:0.5px solid var(--brd);
+  border-radius:8px;background:var(--bg3);color:var(--text);transition:border-color .2s;}
+.bas-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ══ BACKUP ══ */
+.backup-hdr{padding:1rem 1rem .7rem;border-bottom:1px solid var(--brd);}
+.backup-titre{font-size:.9rem;font-weight:600;margin-bottom:.3rem;}
+.backup-desc{font-size:.78rem;color:var(--muted);line-height:1.6;}
+.commits-liste{display:flex;flex-direction:column;}
+.commit-item{padding:.9rem 1rem;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;gap:.8rem;}
+.commit-corps{flex:1;min-width:0;}
+.commit-msg{font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.commit-date{font-size:.72rem;color:var(--muted);margin-top:.15rem;}
+.commit-actuel{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--success);background:rgba(39,174,96,.12);padding:.15rem .5rem;border-radius:20px;}
+
+/* ══ MODALS ══ */
+.overlay{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;}
+.overlay.ouvert{display:flex;}
+.modal{background:var(--bg2);border-radius:16px 16px 0 0;
+  width:100%;max-width:520px;max-height:92dvh;
+  display:flex;flex-direction:column;overflow:hidden;}
+.modal-handle{width:36px;height:4px;background:var(--brd);border-radius:2px;margin:.65rem auto .25rem;flex-shrink:0;}
+.modal-hdr{padding:.6rem 1.2rem .9rem;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--brd);}
+.modal-tit{font-size:1rem;font-weight:600;}
+.btn-close{background:none;border:none;color:var(--muted);font-size:22px;line-height:1;padding:.2rem;}
+.modal-body{flex:1;overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1rem;}
+.modal-foot{padding:.9rem 1.2rem;border-top:1px solid var(--brd);
+  display:flex;gap:.6rem;flex-shrink:0;
+  padding-bottom:max(.9rem,env(safe-area-inset-bottom));}
+.modal-foot .btn{flex:1;}
+/* Champs form */
+.grp{display:flex;flex-direction:column;gap:.4rem;}
+.grp-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.champ{width:100%;padding:.8rem 1rem;background:var(--bg3);
+  border:1px solid var(--brd);border-radius:var(--r);color:var(--text);outline:none;}
+.champ:focus{border-color:rgba(200,160,80,.4);}
+select.champ{appearance:none;}
+textarea.champ{resize:vertical;min-height:65px;}
+.pos-grille{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;}
+.pos-opt{padding:.35rem .5rem;border-radius:6px;border:0.5px solid var(--brd);
+  cursor:pointer;text-align:center;font-size:11px;color:var(--muted);background:var(--bg3);}
+.pos-opt.sel{border-color:var(--gold);background:rgba(200,160,80,.1);color:var(--gold);}
+/* Photo upload */
+.photo-zone{border:1px dashed rgba(200,160,80,.3);border-radius:var(--r);
+  padding:1rem;text-align:center;cursor:pointer;position:relative;overflow:hidden;}
+.photo-zone:hover{background:rgba(200,160,80,.04);}
+.photo-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.photo-preview{width:100%;max-height:140px;object-fit:contain;border-radius:6px;display:none;}
+.photo-ph{color:var(--muted);font-size:.85rem;}
+/* Prix */
+.prix-wrap{position:relative;}
+.prix-icone{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);
+  font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);pointer-events:none;}
+
+/* Salle pills (formulaire toile) */
+.salles-pills{display:flex;flex-wrap:wrap;gap:.5rem;}
+.salle-pill{padding:.38rem .85rem;border-radius:20px;
+  border:1px solid var(--brd);cursor:pointer;font-size:.8rem;color:var(--muted);
+  background:none;transition:all .2s;}
+.salle-pill.sel{background:rgba(200,160,80,.15);border-color:var(--gold);color:var(--gold);}
+/* Suppression */
+.zone-suppr{display:flex;flex-direction:column;gap:.5rem;}
+.btn-suppr-toile{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);
+  color:var(--danger);border-radius:var(--r);padding:.8rem;font-size:.85rem;}
+
+/* ══ RESTORE MODAL ══ */
+#overlay-restore{align-items:center;padding:1rem;}
+#overlay-restore .modal{border-radius:16px;max-width:380px;}
+.restore-step{display:none;flex-direction:column;gap:1rem;padding:1.2rem;}
+.restore-step.active{display:flex;}
+.restore-avert{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);
+  border-radius:var(--r);padding:1rem;font-size:.85rem;line-height:1.7;}
+.restore-hint{font-size:.78rem;color:var(--muted);text-align:center;}
+
+/* ══ FLOTTANT SAUVEGARDER ══ */
+.btn-sauver-flottant{display:none;position:fixed;
+  bottom:max(4.5rem,calc(4.5rem + env(safe-area-inset-bottom)));
+  left:50%;transform:translateX(-50%);
+  padding:.8rem 1.8rem;background:var(--gold);color:#111;
+  border:none;border-radius:25px;font-weight:600;font-size:.88rem;
+  box-shadow:0 4px 24px rgba(200,160,80,.4);z-index:150;white-space:nowrap;
+  animation:pop-in .25s ease;}
+.btn-sauver-flottant.visible{display:block;}
+@keyframes pop-in{from{transform:translateX(-50%) scale(.85);opacity:0;}
+  to{transform:translateX(-50%) scale(1);opacity:1;}}
+
+/* ══ TOAST & LOADER ══ */
+#toast{position:fixed;bottom:max(1.5rem,env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--brd);border-radius:20px;
+  padding:.6rem 1.2rem;font-size:.8rem;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:999;}
+#toast.visible{opacity:1;}
+#toast.ok{border-color:rgba(39,174,96,.4);color:var(--success);}
+#toast.err{border-color:rgba(192,57,43,.4);color:var(--danger);}
+.chargement{display:flex;align-items:center;justify-content:center;
+  flex:1;gap:.8rem;color:var(--muted);font-size:.85rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite;}
+</style>
+</head>
+<body>
+
+<!-- ══ ÉCRAN LOGIN ══ -->
+<div id="ecran-login" class="ecran actif">
+  <div class="login-logo">FF</div>
+  <div class="login-sous">Administration</div>
+  <div class="login-card">
+    <div>
+      <label class="lbl" for="inp-mdp">Mot de passe</label>
+      <div class="mdp-wrap">
+        <input class="inp" type="password" id="inp-mdp" autocomplete="current-password" placeholder="••••••••">
+        <button class="btn-oeil" id="btn-oeil" type="button" aria-label="Voir/masquer">
+          <svg id="oeil-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="err-txt" id="login-err"></div>
+    <button class="btn btn-or" id="btn-login">Entrer</button>
+    <p class="aide-txt" id="login-aide">Premier accès ? <a href="#" id="lien-creer" style="color:var(--gold)">Créer un mot de passe</a></p>
+  </div>
+</div>
+
+<!-- ══ ÉCRAN TOKEN ══ -->
+<div id="ecran-token" class="ecran">
+  <div class="token-card">
+    <div class="token-titre">Connexion à GitHub</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;">Un token GitHub permet de sauvegarder directement sur le site. Il reste sur cet appareil uniquement.</p>
+    <div class="steps">
+      <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Obtenir un token</p>
+      <ol>
+        <li>github.com → ton avatar → <code>Settings</code></li>
+        <li>Bas de page → <code>Developer settings</code></li>
+        <li><code>Personal access tokens</code> → <code>Tokens (classic)</code></li>
+        <li><code>Generate new token (classic)</code></li>
+        <li>Note : <em>FF Galerie admin</em> — coche <code>repo</code></li>
+        <li>Génère et <strong>copie immédiatement</strong></li>
+      </ol>
+    </div>
+    <div>
+      <label class="lbl" for="inp-token">Token GitHub</label>
+      <input class="inp" type="password" id="inp-token" placeholder="ghp_xxxxxxxxxxxx">
+    </div>
+    <div class="err-txt" id="token-err"></div>
+    <button class="btn btn-or" id="btn-token">Vérifier et enregistrer</button>
+  </div>
+</div>
+
+<!-- ══ ÉCRAN PRINCIPAL ══ -->
+<div id="ecran-principal" class="ecran">
+
+  <header class="adm-hdr">
+    <span class="adm-logo">FF Galerie</span>
+    <div class="hdr-droite">
+      <span class="sync-badge hidden" id="badge-sync"></span>
+      <button class="btn-logout" id="btn-logout" title="Déconnexion">⏻</button>
+    </div>
+  </header>
+
+  <nav class="onglets">
+    <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
+    <button class="onglet" data-vue="vue-backup">Backup</button>
+  </nav>
+
+  <!-- ── VUE GALERIE ── -->
+  <div id="vue-galerie" class="vue active">
+
+    <!-- Plan des salles -->
+    <div class="plan-section" id="plan-section">
+      <div class="plan-actions">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
+          <span class="plan-act-lbl">Salles</span>
+          <button id="btn-toggle-plan" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:0 2px;" title="Replier/Déplier">▲</button>
+        </div>
+        <button class="plan-btn" id="btn-ajouter-salle">＋ Ajouter</button>
+        <button class="plan-btn" id="btn-supprimer-salle">✕ Supprimer</button>
+        <button class="plan-btn" id="btn-toggle-visible">◑ Visible / Caché</button>
+      </div>
+      <div class="salles-chips" id="chips-salles"></div>
+    </div>
+
+    <!-- Barre contrôle mur -->
+    <div class="edit-section">
+      <div class="mur-ctrl">
+        <span class="salle-badge" id="badge-salle">—</span>
+        <button class="ctrl-btn" id="btn-coul-toggle">🎨 Couleurs/Textures</button>
+        <div class="rename-wrap">
+          <input class="rename-inp" type="text" id="inp-rename" placeholder="Nouveau nom…">
+          <button class="ok-btn" id="btn-rename">OK</button>
+        </div>
+      </div>
+
+      <!-- Panneau couleurs (caché par défaut) -->
+      <div class="coul-overlay" id="coul-overlay"></div>
+<div class="coul-panel" id="coul-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
+          <span class="coul-titre">Apparence de la salle</span>
+          <button id="btn-close-coul" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+        </div>
+        <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .3rem;flex-shrink:0;"></div>
+        <div class="coul-row">
+          <span class="coul-lbl">Mur</span>
+          <div class="swatches" id="sw-mur">
+            <div class="sw sel" style="background:#2e2e2e" data-val="#2e2e2e"></div>
+            <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
+            <div class="sw" style="background:#2a2420" data-val="#2a2420"></div>
+            <div class="sw" style="background:#2c2535" data-val="#2c2535"></div>
+            <div class="sw" style="background:#1e3a2a" data-val="#1e3a2a"></div>
+            <div class="sw" style="background:#3a2a1e" data-val="#3a2a1e"></div>
+            <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc"></div>
+            <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5"></div>
+            <div class="sw-plus"><input type="color" id="mur-custom"><span style="pointer-events:none;">+</span></div>
+          </div>
+        </div>
+        <div class="coul-row">
+          <span class="coul-lbl">Cadres</span>
+          <div class="swatches" id="sw-cadres">
+            <div class="sw sel" style="background:#3a3a3a" data-val="#3a3a3a"></div>
+            <div class="sw" style="background:#c8a050" data-val="#c8a050"></div>
+            <div class="sw" style="background:#f0f0f0" data-val="#f0f0f0"></div>
+            <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
+            <div class="sw" style="background:#5c3d2e" data-val="#5c3d2e"></div>
+            <div class="sw-plus"><input type="color" id="cadres-custom" value="#3a3a3a"><span style="pointer-events:none;">+</span></div>
+          </div>
+        </div>
+        <div class="coul-row">
+          <span class="coul-lbl">Texture</span>
+          <div class="swatches" id="sw-texture">
+            <div class="sw sel" style="background:var(--bg3);" data-val="none" title="Uni"></div>
+            <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
+            <div class="sw" style="background:repeating-linear-gradient(#555 0,#555 1px,#444 0,#444 3px);" data-val="bois" title="Bois clair"></div>
+            <div class="sw" style="background:repeating-linear-gradient(90deg,#4a3828 0,#4a3828 2px,#3a2818 0,#3a2818 8px);" data-val="parquet" title="Parquet"></div>
+            <div class="sw" style="background:repeating-linear-gradient(135deg,#555 0,#555 1px,#444 0,#444 6px);" data-val="pierre" title="Pierre"></div>
+            <div class="sw" style="background:repeating-conic-gradient(#555 0% 25%,#444 0% 50%) 0 0/6px 6px;" data-val="damier" title="Damier"></div>
+            <div class="sw" style="background:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/5px 5px;" data-val="velours" title="Velours"></div>
+            <div class="sw" style="background:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%23444%22/%3E%3Crect x=%220%22 y=%220%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3Crect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3C/svg%3E') 0 0/8px 8px;" data-val="brique" title="Béton/Brique"></div>
+            <div class="sw-plus" title="Uploader une texture perso">
+              <input type="file" id="inp-texture-custom" accept="image/*">
+              <span style="pointer-events:none;font-size:13px;">+</span>
+            </div>
+          </div>
+          <div id="textures-custom" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;"></div>
+        </div>
+        <div class="coul-actions">
+          <button class="ctrl-btn" id="btn-preset-sauver" style="font-size:11px;">⊙ Sauver preset</button>
+          <button class="ctrl-btn" id="btn-preset-charger" style="font-size:11px;">▾ Preset…</button>
+        </div>
+      </div>
+
+      <!-- Corps : stock + mur -->
+      <div class="edit-corps">
+
+        <!-- Stock -->
+        <div class="stock-col">
+          <div class="stock-hdr" id="stock-hdr">Stock</div>
+          <div class="stock-list" id="stock-list"></div>
+          <button class="btn-placer-mur" id="btn-placer-mur">▶ Placer<br><span id="placer-count">0</span> toile(s)</button>
+          <div class="stock-leg">
+            <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
+            <div class="leg-li"><div class="leg-sq" style="color:rgba(192,57,43,.6);"></div>Autre salle</div>
+            <div class="leg-li"><div class="leg-sq" style="color:var(--brd2);"></div>Réserve</div>
+          </div>
+        </div>
+
+        <!-- Mur grille 12×8 -->
+        <div class="mur-zone">
+          <div class="mur-bg" id="mur-bg" style="background:#2e2e2e;" aria-label="Mur de la galerie">
+            <!-- Généré par JS -->
+          </div>
+          <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:.2rem;" id="mur-aide">
+            Sélectionne une toile dans le stock, puis clique sur le mur pour la placer
+          </div>
+        </div>
+
+      </div><!-- /edit-corps -->
+
+      <!-- Barre basse -->
+      <div class="bas-barre">
+        <button class="bas-btn" id="btn-arranger-mur">🔧 Arranger</button>
+        <button class="bas-btn" id="btn-ajouter-toile">＋ Ajouter</button>
+        <button class="bas-btn" id="btn-uploader">⬆ Uploader</button>
+        <button class="bas-btn" id="btn-telecharger">⬇ Télécharger</button>
+      </div>
+
+    </div><!-- /edit-section -->
+  </div><!-- /vue-galerie -->
+
+  <!-- ── VUE BACKUP ── -->
+  <div id="vue-backup" class="vue">
+    <div class="backup-hdr">
+      <div class="backup-titre">Historique des modifications</div>
+      <div class="backup-desc">Chaque sauvegarde crée une version. Vous pouvez revenir à n'importe quelle version précédente.</div>
+    </div>
+    <div id="commits-contenu" style="flex:1;overflow-y:auto;"><div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div></div>
+  </div>
+
+</div><!-- /ecran-principal -->
+
+<!-- ══ MODAL TOILE ══ -->
+<div class="overlay" id="overlay-toile">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-tit" id="modal-toile-tit">Nouvelle toile</span>
+      <button class="btn-close" id="btn-close-toile">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="grp">
+        <label class="lbl">Photo</label>
+        <div class="photo-zone" id="zone-photo" tabindex="0">
+          <input type="file" accept="image/*" id="inp-photo">
+          <img class="photo-preview" id="photo-prev" alt="">
+          <div class="photo-ph" id="photo-ph">Appuyer pour choisir une photo</div>
+        </div>
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-titre">Titre <span style="color:var(--muted)">(optionnel)</span></label>
+        <input class="champ" type="text" id="inp-titre" placeholder="Sans titre">
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-date">Date</label>
+        <input class="champ" type="text" id="inp-date" placeholder="AAAA ou MM/AAAA">
+      </div>
+      <div class="grp">
+        <label class="lbl">Dimensions</label>
+        <select class="champ" id="sel-format">
+          <option value="">Choisir un format standard…</option>
+          <option value="35x27">F5 — 35×27 cm</option>
+          <option value="55x46">F10 — 55×46 cm</option>
+          <option value="65x54">F15 — 65×54 cm</option>
+          <option value="73x60">F20 — 73×60 cm</option>
+          <option value="81x65">F25 — 81×65 cm</option>
+          <option value="92x73">F30 — 92×73 cm</option>
+          <option value="73x50">P20 — 73×50 cm</option>
+          <option value="92x60">P30 — 92×60 cm</option>
+          <option value="50x50">Carré 50 — 50×50 cm</option>
+          <option value="60x60">Carré 60 — 60×60 cm</option>
+          <option value="ronde50">Ronde ⌀50 cm</option>
+          <option value="custom">Personnalisé…</option>
+        </select>
+        <div class="grp-row hidden" id="dims-custom">
+          <div class="grp"><label class="lbl">Largeur (cm)</label><input class="champ" type="number" id="inp-larg" min="1" max="500"></div>
+          <div class="grp"><label class="lbl">Hauteur (cm)</label><input class="champ" type="number" id="inp-haut" min="1" max="500"></div>
+        </div>
+      </div>
+      <div class="grp">
+        <label class="lbl">Salle</label>
+        <div class="salles-pills" id="salle-pills"></div>
+      </div>
+      <div class="grp">
+        <label class="lbl">Code taille</label>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <select class="champ" id="sel-taille" style="flex:1;">
+            <option value="">— Choisir —</option>
+          </select>
+          <button type="button" id="btn-new-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;" title="Créer un nouveau code">＋</button>
+        </div>
+      </div>
+      <div class="grp" id="new-taille-wrap" style="display:none;">
+        <label class="lbl">Nouveau code (ex: XS, M, XL…)</label>
+        <div style="display:flex;gap:.5rem;">
+          <input class="champ" type="text" id="inp-new-taille-code" placeholder="Code" style="width:80px;">
+          <input class="champ" type="text" id="inp-new-taille-label" placeholder="Libellé (ex: Petite)">
+          <button type="button" id="btn-confirm-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;cursor:pointer;font-weight:600;">✓</button>
+        </div>
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-style">Style pictural</label>
+        <input class="champ" type="text" id="inp-style" placeholder="Abstrait, figuratif…">
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-mat">Matériaux</label>
+        <input class="champ" type="text" id="inp-mat" placeholder="Acrylique, toile…">
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-prix">Prix estimé <span style="font-size:.58rem;color:rgba(200,160,80,.5);letter-spacing:.1em;text-transform:uppercase;">admin uniquement</span></label>
+        <div class="prix-wrap"><input class="champ" type="number" id="inp-prix"><span class="prix-icone">€</span></div>
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-desc">Description</label>
+        <textarea class="champ" id="inp-desc" rows="3" placeholder="Notes…"></textarea>
+      </div>
+      <div class="grp" style="flex-direction:row;align-items:center;justify-content:space-between;">
+        <label class="lbl" style="margin:0">Visible sur le site</label>
+        <input type="checkbox" id="inp-visible" checked style="width:1.2rem;height:1.2rem;accent-color:var(--gold);">
+      </div>
+      <div class="zone-suppr hidden" id="zone-suppr">
+        <hr style="border:none;border-top:1px solid var(--brd);">
+        <button class="btn-suppr-toile" id="btn-suppr-toile">🗑 Supprimer cette toile</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" id="btn-annuler-toile">Annuler</button>
+      <button class="btn btn-or" id="btn-sauver-toile"><span id="sauver-lbl">Enregistrer</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL AJOUTER SALLE ══ -->
+<div class="overlay" id="overlay-salle">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-tit">Nouvelle salle</span>
+      <button class="btn-close" id="btn-close-salle">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="grp">
+        <label class="lbl" for="inp-salle-nom">Nom</label>
+        <input class="champ" type="text" id="inp-salle-nom" placeholder="Salle V">
+      </div>
+      <div class="grp">
+        <label class="lbl" for="inp-salle-theme">Thème <span style="color:var(--muted)">(optionnel)</span></label>
+        <input class="champ" type="text" id="inp-salle-theme" placeholder="ex : Nature, Cosmos…">
+      </div>
+      <div class="grp">
+        <label class="lbl">Position</label>
+        <div class="pos-grille" id="pos-grille"></div>
+      </div>
+      <div class="grp">
+        <label class="lbl">Couleur du mur</label>
+        <div class="swatches">
+          <div class="sw sel" style="background:#2e2e2e" data-val="#2e2e2e" onclick="swSelect(this,'salle')"></div>
+          <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c" onclick="swSelect(this,'salle')"></div>
+          <div class="sw" style="background:#2c2535" data-val="#2c2535" onclick="swSelect(this,'salle')"></div>
+          <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc" onclick="swSelect(this,'salle')"></div>
+          <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5" onclick="swSelect(this,'salle')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" id="btn-annuler-salle">Annuler</button>
+      <button class="btn btn-or" id="btn-creer-salle">Créer la salle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL RESTORE ══ -->
+<div class="overlay" id="overlay-restore" style="align-items:center;padding:1rem;">
+  <div class="modal" style="border-radius:16px;max-width:380px;">
+    <div class="modal-handle"></div>
+    <div class="restore-step active" id="restore-s1">
+      <p style="font-size:1rem;font-weight:600;">Restaurer une version</p>
+      <div class="restore-avert" id="restore-txt1"></div>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">Cette opération est elle-même réversible depuis l'historique.</p>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-outline" id="btn-restore-ann1">Annuler</button>
+        <button class="btn btn-or" id="btn-restore-suite" style="flex:1;">Continuer →</button>
+      </div>
+    </div>
+    <div class="restore-step" id="restore-s2">
+      <p style="font-size:1rem;font-weight:600;color:var(--danger);">⚠ Confirmation requise</p>
+      <div class="restore-avert" id="restore-txt2"></div>
+      <div class="grp">
+        <p class="restore-hint">Tapez <strong style="color:var(--gold);">RESTAURER</strong> pour confirmer</p>
+        <input class="champ" type="text" id="inp-restore" placeholder="RESTAURER" autocomplete="off" autocorrect="off">
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-outline" id="btn-restore-ann2">Annuler</button>
+        <button class="btn btn-danger" id="btn-restore-ok" disabled style="flex:1;">Restaurer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Flottant sauvegarder -->
+<button class="btn-sauver-flottant" id="btn-sauver-flottant">💾 Sauvegarder</button>
+
+<!-- ══ MODAL PRESET ══ -->
+<div class="overlay" id="overlay-preset">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-tit">Sauvegarder le preset</span>
+      <button class="btn-close" id="btn-close-preset">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="grp">
+        <label class="lbl" for="inp-preset-nom">Nom du preset</label>
+        <input class="champ" type="text" id="inp-preset-nom" placeholder="ex : Cosmos sombre, Galerie blanche…">
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r);padding:.9rem;display:flex;flex-direction:column;gap:.6rem;">
+        <p style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);">Éléments sauvegardés</p>
+        <div style="display:flex;align-items:center;gap:.7rem;">
+          <div id="preset-prev-mur" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;"></div>
+          <span style="font-size:13px;color:var(--text);">Couleur du mur</span>
+          <span id="preset-prev-mur-val" style="font-size:11px;color:var(--muted);margin-left:auto;font-family:monospace;"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.7rem;">
+          <div id="preset-prev-cadres" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;border:2px solid var(--brd);"></div>
+          <span style="font-size:13px;color:var(--text);">Couleur des cadres</span>
+          <span id="preset-prev-cadres-val" style="font-size:11px;color:var(--muted);margin-left:auto;font-family:monospace;"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.7rem;">
+          <div id="preset-prev-texture" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;background:var(--bg2);border:1px solid var(--brd);"></div>
+          <span style="font-size:13px;color:var(--text);">Texture</span>
+          <span id="preset-prev-texture-val" style="font-size:11px;color:var(--muted);margin-left:auto;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" id="btn-annuler-preset">Annuler</button>
+      <button class="btn btn-or" id="btn-confirmer-preset">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OVERLAY MODE PLACEMENT ══ -->
+<div class="placement-overlay" id="overlay-placement">
+  <div class="placement-hdr">
+    <button class="btn btn-outline btn-sm" id="btn-fin-placement">← Retour</button>
+    <span class="pl-titre">Clique une toile puis une cellule — <strong id="pl-salle-nom">Salle</strong></span>
+    <button id="btn-tout-mettre" style="font-size:11px;padding:.28rem .6rem;border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;" title="Place automatiquement toutes les toiles sélectionnées">↳ Tout mettre</button>
+    </div>
+  <div class="placement-mur-zone">
+    <div class="placement-mur-bg" id="mur-placement" style="background:#2e2e2e;"></div>
+    <div class="placement-aide" id="pl-aide">Sélectionne une toile dans le bas, puis clique sur le mur pour la placer</div>
+  </div>
+  <div class="placement-strip" id="pl-strip"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+const REPO   = 'AlainDelree/FF_Galerie';
+const BRANCH = 'main';
+const API    = 'https://api.github.com';
+const MAX_PX = 1400;
+const JPEG_Q = 0.83;
+const COLS = 12, ROWS = 8; // grille magnétique
+const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
+
+// ═══════════════════════════════════════════════
+// ÉTAT
+// ═══════════════════════════════════════════════
+let token = '';
+let tailles = []; // codes de taille {code, label}
+let toiles = [], salles = [];
+let salleActive = null;
+let selectedToile = null;
+let peintureSurMurSel = null;
+let toilesSelectionnees = new Set(); // Multi-sélection pour mode placement
+let occupancy = {};
+let pendingChanges = false;
+let toileEnEdition = null;
+let salleCibleToile = null;
+let photoB64 = null;
+let commitARestaurer = null;
+let couleurMurActuel = '#2e2e2e';
+let couleurCadresActuel = '#3a3a3a';
+let textureActuelle = 'none';
+
+// ═══════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+function toast(msg, type='ok', ms=2400) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'visible ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = ''; }, ms);
+}
+
+function syncBadge(etat) {
+  const b = $('badge-sync');
+  b.className = 'sync-badge';
+  if (!etat) { b.classList.add('hidden'); return; }
+  b.classList.remove('hidden');
+  if (etat === 'ok')  { b.classList.add('sync-ok');  b.textContent = '✓ Synchronisé'; }
+  if (etat === 'err') { b.classList.add('sync-ko');  b.textContent = '✗ Erreur'; }
+  if (etat === '...')  { b.classList.add('sync-enc'); b.textContent = '⟳ Sauvegarde…'; }
+}
+
+function afficherEcran(id) {
+  document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+  $(id).classList.add('actif');
+}
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function formaterDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-BE', { day:'numeric', month:'long', year:'numeric' })
+       + ' à ' + d.toLocaleTimeString('fr-BE', { hour:'2-digit', minute:'2-digit' });
+}
+
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+async function verifierLogin() {
+  const mdp = $('inp-mdp').value.trim();
+  if (!mdp) { $('login-err').textContent = 'Entrez un mot de passe.'; return; }
+  const hash = await sha256(mdp);
+  const stocke = localStorage.getItem('ff_pw_hash');
+  if (!stocke) { $('login-err').textContent = 'Aucun mot de passe configuré. Cliquez sur "Créer un mot de passe".'; return; }
+  if (hash !== stocke) { $('login-err').textContent = 'Mot de passe incorrect.'; $('inp-mdp').value = ''; return; }
+  sessionStorage.setItem('ff_auth', '1');
+  apresLogin();
+}
+
+async function creerMotDePasse() {
+  const mdp = $('inp-mdp').value.trim();
+  if (mdp.length < 6) { $('login-err').textContent = 'Minimum 6 caractères.'; return; }
+  if (localStorage.getItem('ff_pw_hash')) { $('login-err').textContent = 'Un mot de passe existe déjà.'; return; }
+  localStorage.setItem('ff_pw_hash', await sha256(mdp));
+  sessionStorage.setItem('ff_auth', '1');
+  apresLogin();
+}
+
+function apresLogin() {
+  token = localStorage.getItem('ff_gh_token') || '';
+  if (!token) { afficherEcran('ecran-token'); return; }
+  afficherEcran('ecran-principal');
+  chargerTout();
+}
+
+function deconnecter() {
+  sessionStorage.removeItem('ff_auth');
+  afficherEcran('ecran-login');
+  $('inp-mdp').value = '';
+}
+
+// ═══════════════════════════════════════════════
+// GITHUB API
+// ═══════════════════════════════════════════════
+async function apiGH(url, methode = 'GET', corps = null) {
+  const opts = {
+    method: methode,
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  };
+  if (corps) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(corps); }
+  const rep = await fetch(API + url, opts);
+  if (!rep.ok) { const e = await rep.json().catch(() => ({ message: rep.statusText })); throw new Error(e.message); }
+  return methode === 'DELETE' ? null : rep.json();
+}
+
+async function lireFichierJSON(chemin) {
+  const rep = await apiGH(`/repos/${REPO}/contents/${chemin}`);
+  const bytes = Uint8Array.from(atob(rep.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+  const contenu = new TextDecoder('utf-8').decode(bytes);
+  return { data: JSON.parse(contenu), sha: rep.sha };
+}
+
+async function commitMulti(fichiers, message) {
+  const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
+  const commitSha = ref.object.sha;
+  const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
+  const blobs = await Promise.all(fichiers.map(async f => {
+    const b64 = f.encoding === 'base64' ? f.contenu : btoa(unescape(encodeURIComponent(f.contenu)));
+    const blob = await apiGH(`/repos/${REPO}/git/blobs`, 'POST', { content: b64, encoding: 'base64' });
+    return { path: f.chemin, mode: '100644', type: 'blob', sha: blob.sha };
+  }));
+  const tree = await apiGH(`/repos/${REPO}/git/trees`, 'POST', { base_tree: baseCommit.tree.sha, tree: blobs });
+  const commit = await apiGH(`/repos/${REPO}/git/commits`, 'POST', { message, tree: tree.sha, parents: [commitSha] });
+  await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha });
+}
+
+async function uploaderPhoto(id, b64) {
+  const chemin = `assets/images/toiles/toile-${String(id).padStart(3, '0')}.jpg`;
+  let sha = null;
+  try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}`); sha = r.sha; } catch (_) {}
+  const corps = { message: `Admin : Photo toile #${id}`, content: b64, branch: BRANCH };
+  if (sha) corps.sha = sha;
+  await apiGH(`/repos/${REPO}/contents/${chemin}`, 'PUT', corps);
+  return chemin;
+}
+
+// ═══════════════════════════════════════════════
+// DONNÉES
+// ═══════════════════════════════════════════════
+async function chargerTout() {
+  try {
+    const [tRes, sRes] = await Promise.all([
+      lireFichierJSON('data/toiles.json?v=' + Date.now()),
+      lireFichierJSON('data/salles.json?v=' + Date.now())
+    ]);
+    toiles = tRes.data.toiles || [];
+    tailles = tRes.data.tailles || [];
+    // Migre l'ancien format salles → nouveau format
+    salles = (sRes.data.salles || []).map(s => ({
+      id: s.id, nom: s.nom,
+      theme: s.theme || '',
+      couleur_mur: s.couleur_mur || '#2e2e2e',
+      couleur_cadres: s.couleur_cadres || '#3a3a3a',
+      texture: s.texture || 'none',
+      visible: s.visible !== false,
+      toiles: s.toiles || [],
+      positions: s.positions || []
+    }));
+    afficherPlan();
+    if (salles.length > 0) selectSalle(salles[0].id);
+    syncBadge('ok');
+  } catch (e) {
+    toast('Erreur chargement : ' + e.message, 'err', 4000);
+    syncBadge('err');
+  }
+}
+
+async function sauvegarder(message) {
+  syncBadge('...');
+  // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
+  salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+  try {
+    await commitMulti([
+      { chemin: 'data/toiles.json', contenu: JSON.stringify({ tailles, toiles }, null, 2) },
+      { chemin: 'data/salles.json', contenu: JSON.stringify({ salles }, null, 2) }
+    ], 'Admin : ' + message);
+    syncBadge('ok');
+    toast('✓ Sauvegardé');
+    pendingChanges = false;
+    $('btn-sauver-flottant').classList.remove('visible');
+  } catch (e) {
+    syncBadge('err');
+    toast('Erreur : ' + e.message, 'err', 4000);
+    throw e;
+  }
+}
+
+function marquerChangement() {
+  pendingChanges = true;
+  $('btn-sauver-flottant').classList.add('visible');
+}
+
+function prochainId() {
+  return toiles.length ? Math.max(...toiles.map(t => t.id)) + 1 : 1;
+}
+
+// ═══════════════════════════════════════════════
+// PLAN DES SALLES
+// ═══════════════════════════════════════════════
+function afficherPlan() {
+  const cont = $('chips-salles');
+  cont.innerHTML = '';
+  salles.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '') + (!s.visible ? ' invisible' : '');
+    if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
+    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} toile${s.toiles.length > 1 ? 's' : ''}</div>`;
+    chip.addEventListener('click', () => selectSalle(s.id));
+    cont.appendChild(chip);
+  });
+  // Bouton ajouter
+  const add = document.createElement('button');
+  add.className = 'chip-add';
+  add.innerHTML = '＋ Salle';
+  add.addEventListener('click', () => ouvrirModalSalle());
+  cont.appendChild(add);
+}
+
+function selectSalle(id) {
+  salleActive = salles.find(s => s.id === id);
+  if (!salleActive) return;
+  // Met à jour badge et plan
+  $('badge-salle').textContent = salleActive.nom;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+  const chips = $('chips-salles').querySelectorAll('.chip');
+  chips.forEach((c, i) => { if (salles[i]?.id === id) c.classList.add('sel'); });
+  // Applique couleurs
+  couleurMurActuel = salleActive.couleur_mur;
+  couleurCadresActuel = salleActive.couleur_cadres;
+  textureActuelle = salleActive.texture || 'none';
+  appliquerApparence();
+  // Affiche mur + stock
+  buildOccupancy();
+  afficherMur();
+  afficherStock();
+  selectedToile = null;
+}
+
+// ═══════════════════════════════════════════════
+// GRILLE MAGNÉTIQUE 12×8
+// ═══════════════════════════════════════════════
+function calcCases(dim) {
+  if (!dim) return { w: 2, h: 2 };
+  const w = Math.max(1, Math.min(COLS, Math.round(dim.largeur / CM_PAR_CASE)));
+  const h = Math.max(1, Math.min(ROWS, Math.round(dim.hauteur / CM_PAR_CASE)));
+  return { w, h };
+}
+
+function buildOccupancy() {
+  occupancy = {};
+  if (!salleActive) return;
+  (salleActive.positions || []).forEach(p => {
+    for (let c = p.col; c < p.col + p.w; c++)
+      for (let r = p.row; r < p.row + p.h; r++)
+        occupancy[`${c},${r}`] = p.id;
+  });
+}
+
+function canPlace(col, row, w, h, excludeId) {
+  if (col < 1 || row < 1 || col + w - 1 > COLS || row + h - 1 > ROWS) return false;
+  for (let c = col; c < col + w; c++)
+    for (let r = row; r < row + h; r++) {
+      const occ = occupancy[`${c},${r}`];
+      if (occ && occ !== excludeId) return false;
+    }
+  return true;
+}
+
+function afficherMur() {
+  const bg = $('mur-bg');
+  bg.innerHTML = '';
+  if (!salleActive) return;
+  bg.classList.toggle('grille-on', grilleVisible);
+
+  // Toiles posées
+  (salleActive.positions || []).forEach(p => {
+    const t = toiles.find(x => x.id === p.id);
+    if (!t) return;
+    const estSel = peintureSurMurSel === p.id;
+    const el = document.createElement('div');
+    el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '') + (estSel ? ' sel-mur' : '');
+    el.style.gridColumn = `${p.col} / span ${p.w}`;
+    el.style.gridRow    = `${p.row} / span ${p.h}`;
+    el.style.borderColor = t.visible === false ? '' : couleurCadresActuel;
+    if (t.photo) {
+      const img = document.createElement('img');
+      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
+      el.appendChild(img);
+    } else { el.style.background = 'rgba(255,255,255,.05)'; }
+
+    if (estSel) {
+      // Overlay flèches
+      const ov = document.createElement('div'); ov.className = 'tp-arrows';
+      ov.innerHTML = `
+        <button class="tp-arr" data-d="0,-1" title="Haut">↑</button>
+        <div class="tp-arrows-mid">
+          <button class="tp-arr" data-d="-1,0" title="Gauche">←</button>
+          <button class="tp-arr suppr" data-rm="1" title="Retirer">✕</button>
+          <button class="tp-arr" data-d="1,0" title="Droite">→</button>
+        </div>
+        <button class="tp-arr" data-d="0,1" title="Bas">↓</button>`;
+      ov.querySelectorAll('[data-d]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const [dc, dr] = btn.dataset.d.split(',').map(Number);
+          deplacerPeinture(p.id, dc, dr);
+        });
+      });
+      ov.querySelector('[data-rm]').addEventListener('click', e => {
+        e.stopPropagation(); retirerToile(p.id);
+      });
+      el.appendChild(ov);
+    } else {
+      const lbl = document.createElement('div');
+      lbl.className = 'tp-lbl'; lbl.textContent = t.titre || '—';
+      el.appendChild(lbl);
+    }
+
+    el.addEventListener('click', () => {
+      toast('Utilise "🔧 Arranger" pour déplacer ou retirer les toiles', 'err');
+    });
+    bg.appendChild(el);
+  });
+
+  // Cellules vides
+  const placees = new Set((salleActive.positions || []).map(p => {
+    const cells = [];
+    for (let c = p.col; c < p.col + p.w; c++)
+      for (let r = p.row; r < p.row + p.h; r++)
+        cells.push(`${c},${r}`);
+    return cells;
+  }).flat());
+
+  for (let r = 1; r <= ROWS; r++) {
+    for (let c = 1; c <= COLS; c++) {
+      if (occupancy[`${c},${r}`]) continue;
+      const cell = document.createElement('div');
+      cell.className = 'cellule';
+      cell.style.gridColumn = c;
+      cell.style.gridRow = r;
+      cell.dataset.col = c;
+      cell.dataset.row = r;
+      cell.addEventListener('mouseenter', () => survolCelluleMur(c, r));
+      cell.addEventListener('mouseleave', () => nettoyerSurvol());
+      // Mur en lecture seule → placement uniquement via "Arranger"
+      cell.addEventListener('click', () => {
+        if (selectedToile) toast('Utilise "🔧 Arranger" pour placer les toiles', 'err');
+      });
+      bg.appendChild(cell);
+    }
+  }
+}
+
+function survolCelluleMur(col, row) {
+  const t = selectedToile; if (!t) return;
+  const {w,h} = calcCases(t.dimensions);
+  const ok = canPlace(col,row,w,h,null);
+  nettoyerSurvolBg('mur-bg');
+  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
+    const cell = $('mur-bg').querySelector(`[data-col="${c}"][data-row="${r}"]`);
+    if (cell) cell.classList.add(ok?'survol':'survol-ko');
+  }
+}
+
+function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
+
+function placerToile(col, row) {
+  if (!selectedToile || !salleActive) return;
+  const { w, h } = calcCases(selectedToile.dimensions);
+  if (!canPlace(col, row, w, h, null)) { toast('Emplacement occupé', 'err'); return; }
+  // Retire de TOUTES les salles (toiles + positions) avant de placer
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== selectedToile.id);
+    s.positions = (s.positions || []).filter(p => p.id !== selectedToile.id);
+  });
+  // Ajoute à la salle active
+  salleActive.positions.push({ id: selectedToile.id, col, row, w, h });
+  salleActive.toiles.push(selectedToile.id);
+  buildOccupancy();
+  afficherMur(); afficherStock();
+  selectedToile = null;
+  marquerChangement();
+  toast('✓ Toile placée');
+}
+
+function retirerToile(toileId) {
+  if (!salleActive) return;
+  salleActive.positions = (salleActive.positions || []).filter(p => p.id !== toileId);
+  peintureSurMurSel = null;
+  buildOccupancy(); afficherMur(); afficherStock(); marquerChangement();
+  toast('Toile retirée du mur');
+}
+
+function selectionnerPeintureMur(toileId) {
+  peintureSurMurSel = peintureSurMurSel === toileId ? null : toileId;
+  selectedToile = null; // désélectionne le stock
+  afficherMur(); afficherStock();
+  $('mur-aide').textContent = peintureSurMurSel
+    ? 'Utilise les flèches pour déplacer · ✕ pour retirer'
+    : 'Sélectionne une toile dans le stock, puis clique sur le mur pour la placer';
+}
+
+function deplacerPeinture(toileId, dCol, dRow) {
+  const pos = salleActive.positions.find(p => p.id === toileId);
+  if (!pos) return;
+  const newCol = pos.col + dCol, newRow = pos.row + dRow;
+  // Retire temporairement de l'occupancy
+  for (let c = pos.col; c < pos.col + pos.w; c++)
+    for (let r = pos.row; r < pos.row + pos.h; r++)
+      delete occupancy[`${c},${r}`];
+  if (!canPlace(newCol, newRow, pos.w, pos.h, null)) {
+    // Restaure
+    for (let c = pos.col; c < pos.col + pos.w; c++)
+      for (let r = pos.row; r < pos.row + pos.h; r++)
+        occupancy[`${c},${r}`] = toileId;
+    toast('Impossible — bord ou emplacement occupé', 'err'); return;
+  }
+  pos.col = newCol; pos.row = newRow;
+  buildOccupancy(); afficherMur(); marquerChangement();
+}
+
+// ═══════════════════════════════════════════════
+// STOCK
+// ═══════════════════════════════════════════════
+function afficherStock() {
+  const list = $('stock-list');
+  list.innerHTML = '';
+  // Met à jour le compteur
+  const hdr = $('stock-hdr');
+  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ')';
+  if (!salleActive) return;
+
+  const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
+  const poseesDansAutres = new Set(
+    salles.filter(s => s.id !== salleActive.id)
+          .flatMap(s => (s.positions || []).map(p => p.id))
+  );
+
+  // Tri : sur ce mur (0) → disponible (1) → autre salle (2)
+  const grpOf = t => poseesDansCetteSalle.has(t.id) ? 0 : poseesDansAutres.has(t.id) ? 2 : 1;
+  const toilesTri = [...toiles].sort((a, b) => grpOf(a) - grpOf(b));
+  const labelsGrp = ['Sur ce mur', 'Disponibles', 'Autre salle'];
+  let dernierGrp = -1;
+
+  toilesTri.forEach(t => {
+    const grp = grpOf(t);
+    if (grp !== dernierGrp) {
+      const sep = document.createElement('div');
+      sep.style.cssText = 'font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:5px 3px 2px;flex-shrink:0;border-top:0.5px solid var(--brd);margin-top:2px;';
+      if (dernierGrp === -1) sep.style.borderTop = 'none';
+      sep.textContent = labelsGrp[grp];
+      list.appendChild(sep);
+      dernierGrp = grp;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'stock-item';
+    if (poseesDansCetteSalle.has(t.id)) item.classList.add('pose');
+    else if (poseesDansAutres.has(t.id)) item.classList.add('autre');
+    if (toilesSelectionnees.has(t.id)) item.classList.add('coche');
+    if (selectedToile && selectedToile.id === t.id) item.classList.add('sel');
+
+    const simgDiv = document.createElement('div');
+    simgDiv.className = 'simg';
+    simgDiv.style.cssText = 'width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;';
+    if (t.photo) {
+      const img = document.createElement('img');
+      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
+      simgDiv.appendChild(img);
+    } else {
+      const ph = document.createElement('div'); ph.className = 'sph';
+      ph.textContent = '?'; simgDiv.appendChild(ph);
+    }
+    item.appendChild(simgDiv);
+
+    const chk = document.createElement('div'); chk.className = 'check-ov'; chk.textContent = '✓';
+    item.appendChild(chk);
+
+    const nom = document.createElement('div'); nom.className = 'snom';
+    nom.textContent = t.titre || '—'; item.appendChild(nom);
+
+    // Badge taille en haut à droite
+    if (t.taille || t.dimensions) {
+      const badge = document.createElement('div'); badge.className = 'taille-badge';
+      badge.textContent = t.taille || (t.dimensions ? `${t.dimensions.largeur}×${t.dimensions.hauteur}` : '');
+      item.appendChild(badge);
+    }
+
+    item.addEventListener('click', () => {
+      if (item.classList.contains('pose')) {
+        selectionnerPeintureMur(t.id); return;
+      }
+      if (item.classList.contains('autre')) {
+        const autreSalle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(t.id));
+        afficherConfirmAutreSalle(t, autreSalle ? autreSalle.nom : 'une autre salle');
+        return;
+      }
+      if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
+      else toilesSelectionnees.add(t.id);
+      selectedToile = toilesSelectionnees.size === 0 ? null : t;
+      afficherStock();
+      majBtnPlacer();
+    });
+    item.addEventListener('dblclick', () => ouvrirFormulaireEdition(t.id));
+    list.appendChild(item);
+  });
+}
+
+function majBtnPlacer() {
+  const btn = $('btn-placer-mur');
+  const n = toilesSelectionnees.size;
+  $('placer-count').textContent = n;
+  btn.classList.toggle('visible', n > 0);
+}
+
+function afficherConfirmAutreSalle(toile, nomAutre) {
+  const ancien = document.getElementById('confirm-autre-salle');
+  if (ancien) ancien.remove();
+  const div = document.createElement('div');
+  div.id = 'confirm-autre-salle';
+  div.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:400;background:var(--bg2);border:1.5px solid var(--gold);border-radius:14px;padding:.9rem 1rem;max-width:310px;width:88%;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  div.innerHTML = `<p style="font-size:13px;margin-bottom:.75rem;line-height:1.5;"><strong style="color:var(--gold);">"${toile.titre||'Sans titre'}"</strong> est dans <strong>${nomAutre}</strong>.<br>Que faire ?</p>
+    <div style="display:flex;gap:.5rem;">
+      <button id="conf-ann" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:12px;cursor:pointer;">Autre toile</button>
+      <button id="conf-ok" style="flex:1;padding:.5rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-size:12px;font-weight:600;cursor:pointer;">Retirer et placer ici</button>
+    </div>`;
+  document.body.appendChild(div);
+  document.getElementById('conf-ann').addEventListener('click', () => div.remove());
+  document.getElementById('conf-ok').addEventListener('click', () => {
+    div.remove();
+    toilesSelectionnees.add(toile.id);
+    selectedToile = toile;
+    afficherStock(); majBtnPlacer();
+    toast(`"${toile.titre||'—'}" prête — sera retirée de ${nomAutre} à la sauvegarde`);
+  });
+  setTimeout(() => {
+    const fermer = e => { if (!div.contains(e.target)) { div.remove(); document.removeEventListener('click', fermer); } };
+    document.addEventListener('click', fermer);
+  }, 150);
+}
+
+
+// ═══════════════════════════════════════════════
+// MODE PLACEMENT PLEIN ÉCRAN
+// ═══════════════════════════════════════════════
+let grilleVisiblePl = false;
+let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
+
+function entrerModePlacement() {
+  if (!salleActive) return;
+  const nbPlacees = (salleActive.positions||[]).length;
+  const nbSelec = toilesSelectionnees.size;
+  if (nbPlacees === 0 && nbSelec === 0) {
+    toast("Sélectionne des toiles dans le stock ou place-en d'abord", 'err'); return;
+  }
+  $('pl-salle-nom').textContent = salleActive.nom;
+  $('overlay-placement').classList.add('ouvert');
+  // Pousse un état pour intercepter le bouton retour Android
+  history.pushState({ ff: 'arrangement' }, '');
+  grilleVisiblePl = false;
+  selectedToilePl = null;
+  peintureSurMurSel = null;
+  afficherMurPlacement();
+  afficherStripPlacement();
+  $('pl-aide').textContent = nbPlacees > 0
+    ? 'Clique une toile du bas pour la placer ou la déplacer'
+    : 'Sélectionne une toile en bas, puis clique sur le mur';
+}
+
+function autoPlacerTout() {
+  if (!salleActive) return;
+  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
+  const aplacer = [...new Set([...poseeIds,...toilesSelectionnees])]
+    .filter(id => !poseeIds.has(id))
+    .map(id => toiles.find(x=>x.id===id)).filter(Boolean);
+
+  if (aplacer.length === 0) { toast("Toutes les toiles sont déjà placées"); return; }
+
+  let placees = 0, impossible = 0;
+  for (const t of aplacer) {
+    const {w,h} = calcCases(t.dimensions);
+    let done = false;
+    outer: for (let r=1; r<=ROWS-h+1; r++) {
+      for (let col=1; col<=COLS-w+1; col++) {
+        if (canPlace(col,r,w,h,null)) {
+          salles.forEach(s => {
+            s.toiles = s.toiles.filter(x=>x!==t.id);
+            s.positions = (s.positions||[]).filter(p=>p.id!==t.id);
+          });
+          salleActive.positions.push({id:t.id,col,row:r,w,h});
+          salleActive.toiles.push(t.id);
+          for(let cc=col;cc<col+w;cc++) for(let rr=r;rr<r+h;rr++) occupancy[`${cc},${rr}`]=t.id;
+          placees++; done=true; break outer;
+        }
+      }
+    }
+    if (!done) impossible++;
+  }
+  afficherMurPlacement(); afficherStripPlacement(); marquerChangement();
+  toast(impossible>0
+    ? `${placees} placée(s) — ${impossible} ne rentrent pas sur le mur`
+    : `✓ ${placees} toile(s) placée(s)`);
+}
+
+function quitterModePlacement() {
+  $('overlay-placement').classList.remove('ouvert');
+  toilesSelectionnees.clear();
+  selectedToilePl = null;
+  selectedToile = null;
+  peintureSurMurSel = null; // efface la sélection avant de revenir en vue normale
+  salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+  afficherPlan();
+  afficherStock(); majBtnPlacer();
+  buildOccupancy(); afficherMur();
+}
+
+function afficherMurPlacement() {
+  const bg = $('mur-placement');
+  bg.innerHTML = '';
+  bg.style.background = couleurMurActuel;
+  const texStr = TEXTURES[textureActuelle] || '';
+  if (texStr) bg.style.background = `${texStr}, ${couleurMurActuel}`;
+  bg.classList.toggle('grille-on', grilleVisiblePl);
+
+  // Toiles déjà posées
+  (salleActive.positions || []).forEach(p => {
+    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const estSel = peintureSurMurSel === p.id;
+    const el = document.createElement('div');
+    el.className = 'toile-posee' + (estSel ? ' sel-mur' : '');
+    el.style.gridColumn = `${p.col} / span ${p.w}`;
+    el.style.gridRow    = `${p.row} / span ${p.h}`;
+    el.style.borderColor = couleurCadresActuel;
+    if (t.photo) { const img = document.createElement('img'); img.src = t.photo; img.alt=''; img.draggable=false; el.appendChild(img); }
+    if (estSel) {
+      const ov = document.createElement('div'); ov.className = 'tp-arrows';
+      ov.innerHTML = `<button class="tp-arr" data-d="0,-1">↑</button><div class="tp-arrows-mid"><button class="tp-arr" data-d="-1,0">←</button><button class="tp-arr suppr" data-rm="1">✕</button><button class="tp-arr" data-d="1,0">→</button></div><button class="tp-arr" data-d="0,1">↓</button>`;
+      ov.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const [dc,dr]=b.dataset.d.split(',').map(Number); deplacerPeinture(p.id,dc,dr); afficherMurPlacement(); }));
+      ov.querySelector('[data-rm]').addEventListener('click', e => {
+        e.stopPropagation();
+        // Retire du mur MAIS reste dans le strip (ajout à toilesSelectionnees)
+        salleActive.positions = (salleActive.positions||[]).filter(x=>x.id!==p.id);
+        salleActive.toiles = salleActive.toiles.filter(id=>id!==p.id);
+        toilesSelectionnees.add(p.id); // reste visible dans le strip
+        peintureSurMurSel = null; selectedToilePl = null;
+        buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
+        marquerChangement();
+        $('pl-aide').textContent = '"' + (toiles.find(x=>x.id===p.id)?.titre||'—') + '" retirée — clique sur le mur pour la replacer';
+      });
+      el.appendChild(ov);
+    } else {
+      const lbl = document.createElement('div'); lbl.className = 'tp-lbl'; lbl.textContent = t.titre||'—'; el.appendChild(lbl);
+    }
+    el.addEventListener('click', () => { peintureSurMurSel = peintureSurMurSel===p.id?null:p.id; afficherMurPlacement(); });
+    bg.appendChild(el);
+  });
+
+  // Cellules vides
+  for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
+    if (occupancy[`${c},${r}`]) continue;
+    const cell = document.createElement('div'); cell.className='cellule';
+    cell.style.gridColumn=c; cell.style.gridRow=r;
+    cell.dataset.col=c; cell.dataset.row=r;
+    cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
+    cell.addEventListener('mouseleave', () => nettoyerSurvolBg('mur-placement'));
+    cell.addEventListener('click', () => placerToilePl(c,r));
+    bg.appendChild(cell);
+  }
+}
+
+function afficherStripPlacement() {
+  const strip = $('pl-strip'); strip.innerHTML = '';
+  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
+
+  // UNION : toiles placées sur le mur + toiles sélectionnées depuis le stock
+  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees])];
+
+  if (tousIds.length === 0) {
+    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucune toile</div>';
+    return;
+  }
+
+  tousIds.forEach(id => {
+    const t = toiles.find(x=>x.id===id); if(!t) return;
+    const estPlace = poseeIds.has(id);
+    const estSelMur = peintureSurMurSel === id;
+    const estSelPlace = selectedToilePl?.id === id;
+
+    const item = document.createElement('div');
+    item.className = 'pl-item'
+      + (estPlace ? ' pose' : '')
+      + (estSelMur || estSelPlace ? ' sel' : '');
+
+    const si = document.createElement('div'); si.className='simg';
+    if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
+    item.appendChild(si);
+
+    // Badge taille
+    if (t.taille) {
+      const tb = document.createElement('div'); tb.className='taille-badge';
+      tb.textContent = t.taille; item.appendChild(tb);
+    }
+
+    // Badge état
+    const badge = document.createElement('div');
+    badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
+    badge.textContent = estPlace ? '🔒 sur le mur' : '+ à placer';
+    item.appendChild(badge);
+
+    const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
+
+    item.addEventListener('click', () => {
+      if (estPlace) {
+        // Sélection pour déplacer avec flèches
+        peintureSurMurSel = peintureSurMurSel===id ? null : id;
+        selectedToilePl = null; selectedToile = null;
+        $('pl-aide').textContent = peintureSurMurSel
+          ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
+          : 'Clique une toile pour la déplacer ou en placer une nouvelle';
+      } else {
+        // Sélection pour placer
+        selectedToilePl = selectedToilePl?.id===id ? null : t;
+        selectedToile = selectedToilePl;
+        peintureSurMurSel = null;
+        $('pl-aide').textContent = selectedToilePl
+          ? `"${t.titre||'—'}" → clique sur le mur pour placer`
+          : 'Sélectionne une toile à placer';
+      }
+      afficherMurPlacement(); afficherStripPlacement();
+    });
+    strip.appendChild(item);
+  });
+}
+
+function placerToilePl(col, row) {
+  if (!selectedToilePl || !salleActive) return;
+  const {w,h} = calcCases(selectedToilePl.dimensions);
+  if (!canPlace(col,row,w,h,null)) { toast('Emplacement occupé','err'); return; }
+  // Retire de TOUTES les salles avant de placer
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== selectedToilePl.id);
+    s.positions = (s.positions || []).filter(p => p.id !== selectedToilePl.id);
+  });
+  salleActive.positions.push({id:selectedToilePl.id,col,row,w,h});
+  salleActive.toiles.push(selectedToilePl.id);
+  buildOccupancy();
+  selectedToilePl = null; selectedToile = null;
+  afficherMurPlacement(); afficherStripPlacement();
+  marquerChangement(); toast('✓ Placée');
+  $('pl-aide').textContent = 'Toile placée — continue ou clique ← Retour';
+}
+
+function survolCellule(col, row, bgId) {
+  const t = selectedToilePl || selectedToile; if (!t) return;
+  const {w,h} = calcCases(t.dimensions);
+  const ok = canPlace(col,row,w,h,null);
+  nettoyerSurvolBg(bgId);
+  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
+    const cell = $(bgId).querySelector(`[data-col="${c}"][data-row="${r}"]`);
+    if (cell) cell.classList.add(ok?'survol':'survol-ko');
+  }
+}
+
+function nettoyerSurvolBg(bgId) {
+  $(bgId).querySelectorAll('.survol,.survol-ko').forEach(c=>c.classList.remove('survol','survol-ko'));
+}
+
+// ═══════════════════════════════════════════════
+// CODES TAILLE
+// ═══════════════════════════════════════════════
+function remplirSelectTaille() {
+  const sel = $('sel-taille'); if (!sel) return;
+  sel.innerHTML = '<option value="">— Choisir —</option>';
+  tailles.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.code;
+    opt.textContent = `${t.code} — ${t.label}`;
+    sel.appendChild(opt);
+  });
+}
+
+function afficherNouveauTaille() {
+  const wrap = $('new-taille-wrap');
+  const visible = wrap.style.display === 'none' || wrap.style.display === '';
+  wrap.style.display = visible ? 'flex' : 'none';
+  if (visible) { wrap.style.flexDirection = 'column'; $('inp-new-taille-code').focus(); }
+}
+
+function confirmerNouveauTaille() {
+  const code  = $('inp-new-taille-code').value.trim().toUpperCase();
+  const label = $('inp-new-taille-label').value.trim();
+  if (!code || !label) { toast('Code et libellé requis', 'err'); return; }
+  if (tailles.find(t => t.code === code)) { toast(`Code "${code}" existe déjà`, 'err'); return; }
+  tailles.push({ code, label });
+  remplirSelectTaille();
+  $('sel-taille').value = code;
+  $('new-taille-wrap').style.display = 'none';
+  $('inp-new-taille-code').value = ''; $('inp-new-taille-label').value = '';
+  toast(`✓ Code "${code}" — ${label} créé`);
+}
+
+function initTailleForm() {
+  $('btn-new-taille').addEventListener('click', afficherNouveauTaille);
+  $('btn-confirm-taille').addEventListener('click', confirmerNouveauTaille);
+  $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
+}
+
+function ouvrirFormulaireNouvel() {
+  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
+  $('modal-toile-tit').textContent = 'Nouvelle toile';
+  $('zone-suppr').classList.add('hidden');
+  viderFormToile();
+  $('overlay-toile').classList.add('ouvert');
+}
+
+function ouvrirFormulaireEdition(id) {
+  const t = toiles.find(x => x.id === id);
+  if (!t) return;
+  toileEnEdition = id; photoB64 = null;
+  $('modal-toile-tit').textContent = 'Modifier la toile';
+  $('zone-suppr').classList.remove('hidden');
+  remplirFormToile(t);
+  $('overlay-toile').classList.add('ouvert');
+}
+
+function fermerModalToile() { $('overlay-toile').classList.remove('ouvert'); }
+
+function viderFormToile() {
+  ['inp-titre','inp-date','inp-style','inp-mat','inp-prix','inp-desc'].forEach(id => $(id).value = '');
+  $('inp-visible').checked = true;
+  $('sel-format').value = '';
+  $('dims-custom').classList.add('hidden');
+  remplirSelectTaille();
+  $('sel-taille').value = '';
+  $('inp-larg').value = ''; $('inp-haut').value = '';
+  $('photo-prev').style.display = 'none';
+  $('photo-ph').style.display = '';
+  document.querySelectorAll('.salle-pill').forEach(p => p.classList.remove('sel'));
+  salleCibleToile = salleActive?.id || null;
+  document.querySelectorAll('.salle-pill').forEach(p => {
+    if (parseInt(p.dataset.salle) === salleCibleToile) p.classList.add('sel');
+  });
+}
+
+function remplirFormToile(t) {
+  $('inp-titre').value = t.titre || '';
+  $('inp-date').value = t.date || '';
+  $('inp-style').value = t.style || '';
+  $('inp-mat').value = (t.materiaux || []).join(', ');
+  $('inp-prix').value = t.prix || '';
+  $('inp-desc').value = t.description || '';
+  $('inp-visible').checked = t.visible !== false;
+  if (t.dimensions) {
+    const { largeur: l, hauteur: h, type: tp } = t.dimensions;
+    const preset = $('sel-format').querySelector(`option[value="${l}x${h}"]`);
+    if (tp === 'ronde') { $('sel-format').value = 'ronde50'; }
+    else if (preset) { $('sel-format').value = `${l}x${h}`; $('dims-custom').classList.add('hidden'); }
+    else { $('sel-format').value = 'custom'; $('dims-custom').classList.remove('hidden'); $('inp-larg').value = l; $('inp-haut').value = h; }
+  }
+  remplirSelectTaille();
+  $('sel-taille').value = t.taille || '';
+  if (t.photo) { $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none'; }
+  salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
+  document.querySelectorAll('.salle-pill').forEach(p => {
+    p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
+  });
+}
+
+function lireFormToile() {
+  const fv = $('sel-format').value;
+  let dim = null;
+  if (fv === 'ronde50') dim = { type: 'ronde', largeur: 50, hauteur: 50 };
+  else if (fv === 'custom') {
+    const l = parseInt($('inp-larg').value), h = parseInt($('inp-haut').value);
+    if (l && h) dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
+  } else if (fv) {
+    const [l, h] = fv.split('x').map(Number);
+    dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
+  }
+  return {
+    titre: $('inp-titre').value.trim(),
+    date: $('inp-date').value.trim(),
+    style: $('inp-style').value.trim(),
+    materiaux: $('inp-mat').value.split(',').map(s => s.trim()).filter(Boolean),
+    prix: $('inp-prix').value ? parseInt($('inp-prix').value) : undefined,
+    description: $('inp-desc').value.trim(),
+    dimensions: dim,
+    taille: $('sel-taille').value || undefined,
+    visible: $('inp-visible').checked
+  };
+}
+
+async function sauverToile() {
+  const donnees = lireFormToile();
+  const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile');
+  btn.disabled = true; lbl.textContent = '⟳ Sauvegarde…';
+  try {
+    if (toileEnEdition === null) {
+      const id = prochainId();
+      let photo = '';
+      if (photoB64) photo = await uploaderPhoto(id, photoB64);
+      const t = { id, photo, source_photo: 'admin', ...donnees };
+      toiles.push(t);
+      if (salleCibleToile) {
+        const s = salles.find(x => x.id === salleCibleToile);
+        if (s && !s.toiles.includes(id)) s.toiles.push(id);
+      }
+      await sauvegarder(`Ajout toile #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+    } else {
+      const idx = toiles.findIndex(x => x.id === toileEnEdition);
+      let photo = toiles[idx].photo;
+      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64);
+      // Déplace de salle si besoin
+      if (salleCibleToile) {
+        salles.forEach(s => { s.toiles = s.toiles.filter(id => id !== toileEnEdition); });
+        const s = salles.find(x => x.id === salleCibleToile);
+        if (s) s.toiles.push(toileEnEdition);
+      }
+      toiles[idx] = { ...toiles[idx], photo, ...donnees };
+      await sauvegarder(`Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+    }
+    fermerModalToile();
+    afficherPlan();
+    if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
+  } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); }
+  finally { btn.disabled = false; lbl.textContent = 'Enregistrer'; }
+}
+
+async function supprimerToile() {
+  if (!toileEnEdition) return;
+  const t = toiles.find(x => x.id === toileEnEdition);
+  if (!confirm(`Supprimer "${t?.titre || 'cette toile'}" ? Réversible via le backup.`)) return;
+  toiles = toiles.filter(x => x.id !== toileEnEdition);
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== toileEnEdition);
+    s.positions = (s.positions || []).filter(p => p.id !== toileEnEdition);
+  });
+  fermerModalToile();
+  try {
+    await sauvegarder(`Suppression toile #${toileEnEdition}${t?.titre ? ' — ' + t.titre : ''}`);
+    afficherPlan();
+    if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
+  } catch (e) { toast('Erreur : ' + e.message, 'err'); }
+}
+
+// ═══════════════════════════════════════════════
+// MODAL SALLE
+// ═══════════════════════════════════════════════
+function ouvrirModalSalle() {
+  $('inp-salle-nom').value = `Salle ${String.fromCharCode(65 + salles.length)}`;
+  $('inp-salle-theme').value = '';
+  // Positions possibles
+  const pg = $('pos-grille');
+  pg.innerHTML = '';
+  salles.forEach((s, i) => {
+    const opt = document.createElement('div');
+    opt.className = 'pos-opt';
+    opt.textContent = `Après ${s.nom}`;
+    opt.dataset.pos = i + 1;
+    opt.addEventListener('click', () => {
+      pg.querySelectorAll('.pos-opt').forEach(o => o.classList.remove('sel'));
+      opt.classList.add('sel');
+    });
+    pg.appendChild(opt);
+  });
+  const fin = document.createElement('div');
+  fin.className = 'pos-opt sel'; fin.textContent = 'En dernier'; fin.dataset.pos = salles.length;
+  pg.appendChild(fin);
+  $('overlay-salle').classList.add('ouvert');
+}
+
+function fermerModalSalle() { $('overlay-salle').classList.remove('ouvert'); }
+
+async function creerSalle() {
+  const nom = $('inp-salle-nom').value.trim() || `Salle ${salles.length + 1}`;
+  const theme = $('inp-salle-theme').value.trim();
+  const couleur = $('overlay-salle').querySelector('.sw.sel')?.dataset.val || '#2e2e2e';
+  const posOpt = $('pos-grille').querySelector('.pos-opt.sel');
+  const pos = posOpt ? parseInt(posOpt.dataset.pos) : salles.length;
+  const newId = Math.max(...salles.map(s => s.id), 0) + 1;
+  const salle = { id: newId, nom, theme, couleur_mur: couleur, couleur_cadres: '#3a3a3a', texture: 'none', visible: true, toiles: [], positions: [] };
+  salles.splice(pos, 0, salle);
+  fermerModalSalle();
+  try {
+    await sauvegarder(`Ajout salle "${nom}"`);
+    afficherPlan();
+    selectSalle(newId);
+  } catch (e) { toast('Erreur : ' + e.message, 'err'); }
+}
+
+// ═══════════════════════════════════════════════
+// PHOTO — resize & compress
+// ═══════════════════════════════════════════════
+function traiterPhoto(fichier) {
+  return new Promise((ok, ko) => {
+    const img = new Image(), url = URL.createObjectURL(fichier);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > MAX_PX) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg', JPEG_Q).split(',')[1]);
+    };
+    img.onerror = ko; img.src = url;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// BACKUP / ROLLBACK
+// ═══════════════════════════════════════════════
+async function chargerCommits() {
+  const cont = $('commits-contenu');
+  cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
+  try {
+    const tousCommits = await apiGH(`/repos/${REPO}/commits?path=data/toiles.json&per_page=50`);
+    // Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit
+    const commits = tousCommits.filter((c, i) => 
+      i === 0 || c.commit.message.toLowerCase().startsWith('admin :')
+    );
+    if (!commits.length) { cont.innerHTML = '<div class="chargement" style="color:var(--muted)">Aucun historique.</div>'; return; }
+    cont.innerHTML = '';
+    const liste = document.createElement('div'); liste.className = 'commits-liste';
+    commits.forEach((c, i) => {
+      const msg = c.commit.message.replace(/^Admin\s*:\s*/i, '');
+      const date = formaterDate(c.commit.author.date);
+      const item = document.createElement('div'); item.className = 'commit-item';
+      item.innerHTML = `
+        <div style="width:2rem;height:2rem;border-radius:50%;background:${i===0?'rgba(200,160,80,.15)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${i===0?'var(--gold)':'var(--muted)'}" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+        </div>
+        <div class="commit-corps">
+          <div class="commit-msg">${msg}</div>
+          <div class="commit-date">${date}</div>
+        </div>
+        ${i===0 ? '<span class="commit-actuel">Actuel</span>' : `<button class="btn btn-outline btn-sm" data-sha="${c.sha}" data-msg="${msg.replace(/"/g,'')}" data-date="${date}">Restaurer</button>`}`;
+      liste.appendChild(item);
+    });
+    cont.appendChild(liste);
+    cont.querySelectorAll('[data-sha]').forEach(btn => {
+      btn.addEventListener('click', () => demanderRestauration(btn.dataset.sha, btn.dataset.msg, btn.dataset.date));
+    });
+  } catch (e) { cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : ${e.message}</div>`; }
+}
+
+function demanderRestauration(sha, msg, date) {
+  commitARestaurer = sha;
+  $('restore-txt1').innerHTML = `Restaurer à l'état du :<br><strong>${date}</strong><br><br>Version : <em>${msg}</em><br><br>Toutes les modifications <strong>après cette date</strong> seront annulées.`;
+  $('restore-txt2').innerHTML = `Restauration vers :<br><strong style="color:var(--gold)">${msg}</strong><br><strong style="color:var(--danger)">${date}</strong>`;
+  $('inp-restore').value = '';
+  $('btn-restore-ok').disabled = true;
+  document.querySelectorAll('.restore-step').forEach(s => s.classList.remove('active'));
+  $('restore-s1').classList.add('active');
+  $('overlay-restore').classList.add('ouvert');
+}
+
+async function executerRestauration() {
+  const btn = $('btn-restore-ok'); btn.disabled = true; btn.textContent = '⟳ Restauration…';
+  try {
+    const [tf, sf] = await Promise.all([
+      apiGH(`/repos/${REPO}/contents/data/toiles.json?ref=${commitARestaurer}`),
+      apiGH(`/repos/${REPO}/contents/data/salles.json?ref=${commitARestaurer}`)
+    ]);
+    await commitMulti([
+      { chemin: 'data/toiles.json', contenu: tf.content.replace(/\n/g, ''), encoding: 'base64' },
+      { chemin: 'data/salles.json', contenu: sf.content.replace(/\n/g, ''), encoding: 'base64' }
+    ], `Admin : Restauration vers ${commitARestaurer.substring(0, 7)}`);
+    $('overlay-restore').classList.remove('ouvert');
+    syncBadge('ok');
+    toast('✓ Restauration effectuée — rechargement…');
+    await chargerTout();
+  } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); btn.disabled = false; btn.textContent = 'Restaurer'; }
+}
+
+// ═══════════════════════════════════════════════
+// APPARENCE (couleurs + textures)
+// ═══════════════════════════════════════════════
+const TEXTURES = {
+  none:   '',
+  tissu:  'repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 4px)',
+  bois:   'repeating-linear-gradient(rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 3px)',
+  pierre: 'repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 6px)',
+  damier: 'repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%) 0 0/8px 8px'
+};
+
+function appliquerApparence() {
+  const bg = $('mur-bg');
+  const tex = TEXTURES[textureActuelle] || '';
+  bg.style.background = tex
+    ? `${tex}, ${couleurMurActuel}`
+    : couleurMurActuel;
+  // Swatches
+  document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurMurActuel));
+  document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurCadresActuel));
+  document.querySelectorAll('#sw-texture .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
+  // Met à jour les cadres affichés
+  document.querySelectorAll('.toile-posee').forEach(el => {
+    if (!el.classList.contains('reserve-posee')) el.style.borderColor = couleurCadresActuel;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════════════
+function ouvrirModalPreset() {
+  // Prérempli la preview
+  $('preset-prev-mur').style.background = couleurMurActuel;
+  $('preset-prev-mur-val').textContent = couleurMurActuel;
+  $('preset-prev-cadres').style.background = couleurCadresActuel;
+  $('preset-prev-cadres-val').textContent = couleurCadresActuel;
+  const nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
+  $('preset-prev-texture-val').textContent = nomsTex[textureActuelle] || textureActuelle;
+  if (TEXTURES[textureActuelle]) $('preset-prev-texture').style.background = TEXTURES[textureActuelle] + ',#555';
+  $('inp-preset-nom').value = '';
+  $('overlay-preset').classList.add('ouvert');
+  setTimeout(() => $('inp-preset-nom').focus(), 200);
+}
+
+function confirmerPreset() {
+  const nom = $('inp-preset-nom').value.trim();
+  if (!nom) { toast('Entrez un nom pour le preset', 'err'); return; }
+  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, texture: textureActuelle };
+  localStorage.setItem('ff_presets', JSON.stringify(presets));
+  $('overlay-preset').classList.remove('ouvert');
+  toast(`✓ Preset "${nom}" sauvegardé`);
+}
+
+function chargerPreset() {
+  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  const noms = Object.keys(presets);
+  if (!noms.length) { toast('Aucun preset — sauvegardez-en un d\'abord', 'err'); return; }
+  const choix = noms.length === 1 ? noms[0] : prompt(`Presets disponibles :\n${noms.map((n,i) => `${i+1}. ${n}`).join('\n')}\n\nEntrez le nom :`);
+  if (!choix || !presets[choix]) { if(choix) toast('Preset non trouvé', 'err'); return; }
+  const p = presets[choix];
+  couleurMurActuel = p.couleur_mur;
+  couleurCadresActuel = p.couleur_cadres;
+  textureActuelle = p.texture || 'none';
+  if (salleActive) {
+    salleActive.couleur_mur = couleurMurActuel;
+    salleActive.couleur_cadres = couleurCadresActuel;
+    salleActive.texture = textureActuelle;
+    marquerChangement();
+  }
+  appliquerApparence(); afficherMur();
+  toast(`✓ Preset "${choix}" appliqué`);
+}
+
+function gererTextureCustom(fichier) {
+  if (!fichier) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    const key = 'tex_custom_' + Date.now();
+    const customs = JSON.parse(localStorage.getItem('ff_textures_custom') || '[]');
+    customs.push({ key, url: dataUrl, nom: fichier.name.split('.')[0] });
+    if (customs.length > 5) customs.shift(); // garde max 5
+    localStorage.setItem('ff_textures_custom', JSON.stringify(customs));
+    afficherTexturesCustom();
+    setTexture(key);
+    toast('✓ Texture ajoutée');
+  };
+  reader.readAsDataURL(fichier);
+}
+
+function afficherTexturesCustom() {
+  const cont = $('textures-custom'); if (!cont) return;
+  cont.innerHTML = '';
+  const customs = JSON.parse(localStorage.getItem('ff_textures_custom') || '[]');
+  customs.forEach(t => {
+    TEXTURES[t.key] = `url("${t.url}")`;
+    const sw = document.createElement('div');
+    sw.className = 'sw' + (textureActuelle === t.key ? ' sel' : '');
+    sw.style.backgroundImage = `url("${t.url}")`;
+    sw.style.backgroundSize = 'cover';
+    sw.dataset.val = t.key;
+    sw.title = t.nom;
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('#sw-texture .sw, #textures-custom .sw').forEach(s => s.classList.remove('sel'));
+      sw.classList.add('sel'); setTexture(t.key);
+    });
+    cont.appendChild(sw);
+  });
+}
+
+
+
+
+function swSelect(el, groupe) {
+  el.closest('.swatches').querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function initSwatches() {
+  document.querySelectorAll('#sw-mur .sw').forEach(sw => {
+    sw.addEventListener('click', () => { swSelect(sw, 'mur'); setCouleurMur(sw.dataset.val); });
+  });
+  document.querySelectorAll('#sw-cadres .sw').forEach(sw => {
+    sw.addEventListener('click', () => { swSelect(sw, 'cadres'); setCouleurCadres(sw.dataset.val); });
+  });
+  document.querySelectorAll('#sw-texture .sw').forEach(sw => {
+    sw.addEventListener('click', () => { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
+  });
+  $('mur-custom').addEventListener('change', e => {
+    document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.remove('sel'));
+    setCouleurMur(e.target.value);
+  });
+  $('btn-preset-sauver').addEventListener('click', ouvrirModalPreset);
+  $('btn-preset-charger').addEventListener('click', chargerPreset);
+  $('btn-close-preset').addEventListener('click', () => $('overlay-preset').classList.remove('ouvert'));
+  $('btn-annuler-preset').addEventListener('click', () => $('overlay-preset').classList.remove('ouvert'));
+  $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
+  $('inp-preset-nom').addEventListener('keydown', e => { if(e.key==='Enter') confirmerPreset(); });
+  $('overlay-preset').addEventListener('click', e => { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
+  $('cadres-custom').addEventListener('change', e => {
+    document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.remove('sel'));
+    setCouleurCadres(e.target.value);
+  });
+  afficherTexturesCustom();
+}
+
+function setCouleurMur(col) {
+  couleurMurActuel = col;
+  if (salleActive) { salleActive.couleur_mur = col; marquerChangement(); }
+  appliquerApparence();
+}
+
+function setCouleurCadres(col) {
+  couleurCadresActuel = col;
+  if (salleActive) { salleActive.couleur_cadres = col; marquerChangement(); }
+  appliquerApparence();
+  afficherMur();
+}
+
+function setTexture(val) {
+  textureActuelle = val;
+  if (salleActive) { salleActive.texture = val; marquerChangement(); }
+  appliquerApparence();
+}
+
+// ═══════════════════════════════════════════════
+// GRILLE toggle
+// ═══════════════════════════════════════════════
+let grilleVisible = false;
+function toggleGrille() {
+  grilleVisible = !grilleVisible;
+  $('mur-bg').classList.toggle('grille-on', grilleVisible);
+  $('btn-grille').classList.toggle('on', grilleVisible);
+}
+
+// ═══════════════════════════════════════════════
+// TOKEN SETUP
+// ═══════════════════════════════════════════════
+async function validerToken() {
+  const t = $('inp-token').value.trim();
+  if (!t) { $('token-err').textContent = 'Entrez un token.'; return; }
+  const btn = $('btn-token'); btn.disabled = true; btn.textContent = 'Vérification…';
+  $('token-err').textContent = '';
+  try {
+    const old = token; token = t;
+    await apiGH(`/repos/${REPO}`);
+    localStorage.setItem('ff_gh_token', t);
+    afficherEcran('ecran-principal');
+    chargerTout();
+  } catch (e) { $('token-err').textContent = 'Token invalide : ' + e.message; token = ''; }
+  finally { btn.disabled = false; btn.textContent = 'Vérifier et enregistrer'; }
+}
+
+// ═══════════════════════════════════════════════
+// INIT ÉVÉNEMENTS
+// ═══════════════════════════════════════════════
+// Login
+$('inp-mdp').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-login').click(); });
+$('btn-login').addEventListener('click', verifierLogin);
+$('lien-creer').addEventListener('click', e => { e.preventDefault(); creerMotDePasse(); });
+$('btn-oeil').addEventListener('click', () => {
+  const i = $('inp-mdp'); const v = i.type === 'text';
+  i.type = v ? 'password' : 'text';
+  $('oeil-svg').innerHTML = v
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+});
+
+// Token
+$('inp-token').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-token').click(); });
+$('btn-token').addEventListener('click', validerToken);
+
+// Logout
+$('btn-logout').addEventListener('click', () => { if (confirm('Se déconnecter ?')) deconnecter(); });
+
+// Onglets
+document.querySelectorAll('.onglet').forEach(o => {
+  o.addEventListener('click', () => {
+    document.querySelectorAll('.onglet').forEach(x => x.classList.remove('actif'));
+    document.querySelectorAll('.vue').forEach(x => x.classList.remove('active'));
+    o.classList.add('actif');
+    $(o.dataset.vue).classList.add('active');
+    if (o.dataset.vue === 'vue-backup') chargerCommits();
+  });
+});
+
+// Plan salles
+$('btn-ajouter-salle').addEventListener('click', ouvrirModalSalle);
+$('btn-supprimer-salle').addEventListener('click', async () => {
+  if (!salleActive) return;
+  if (!confirm(`Supprimer "${salleActive.nom}" et toutes ses positions ? Réversible via le backup.`)) return;
+  salles = salles.filter(s => s.id !== salleActive.id);
+  salleActive = null;
+  try {
+    await sauvegarder(`Suppression salle`);
+    afficherPlan();
+    if (salles.length) selectSalle(salles[0].id);
+    else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
+  } catch (e) { toast('Erreur : ' + e.message, 'err'); }
+});
+$('btn-toggle-visible').addEventListener('click', async () => {
+  if (!salleActive) return;
+  salleActive.visible = !salleActive.visible;
+  try { await sauvegarder(`${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); afficherPlan(); }
+  catch (e) { toast('Erreur : ' + e.message, 'err'); }
+});
+
+// Contrôles mur
+$('btn-coul-toggle').addEventListener('click', () => {
+  const ouvert = $('coul-panel').classList.toggle('ouvert');
+  $('coul-overlay').classList.toggle('ouvert', ouvert);
+  $('btn-coul-toggle').classList.toggle('on', ouvert);
+});
+$('btn-close-coul').addEventListener('click', () => {
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
+});
+$('coul-overlay').addEventListener('click', () => {
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
+});
+// Plan repliable
+let planOuvert = true;
+$('btn-toggle-plan').addEventListener('click', () => {
+  planOuvert = !planOuvert;
+  const chips = $('chips-salles');
+  const btns = document.querySelector('.plan-actions').querySelectorAll('.plan-btn');
+  chips.style.display = planOuvert ? '' : 'none';
+  btns.forEach(b => b.style.display = planOuvert ? '' : 'none');
+  $('btn-toggle-plan').textContent = planOuvert ? '▲' : '▼';
+  $('plan-section').style.minHeight = planOuvert ? '' : '0';
+});
+$('btn-rename').addEventListener('click', async () => {
+  const nom = $('inp-rename').value.trim();
+  if (!nom || !salleActive) return;
+  salleActive.nom = nom;
+  $('badge-salle').textContent = nom;
+  $('inp-rename').value = '';
+  try { await sauvegarder(`Renommage salle → "${nom}"`); afficherPlan(); }
+  catch (e) { toast('Erreur : ' + e.message, 'err'); }
+});
+
+// Bouton placer sur le mur
+$('btn-arranger-mur').addEventListener('click', entrerModePlacement);
+$('btn-placer-mur').addEventListener('click', entrerModePlacement);
+$('btn-fin-placement').addEventListener('click', quitterModePlacement);
+$('btn-tout-mettre').addEventListener('click', autoPlacerTout);
+
+// Intercepte le bouton retour Android quand le mode arrangement est ouvert
+window.addEventListener('popstate', () => {
+  if ($('overlay-placement').classList.contains('ouvert')) {
+    quitterModePlacement();
+  }
+});
+$('btn-sauver-flottant').addEventListener('click', async () => {
+  const btn = $('btn-sauver-flottant');
+  btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
+  try { await sauvegarder('Mise à jour galerie'); }
+  catch (_) {}
+  btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
+});
+
+// Barre basse
+$('btn-ajouter-toile').addEventListener('click', () => {
+  // Construit les pills de salle
+  const pills = $('salle-pills'); pills.innerHTML = '';
+  salles.forEach(s => {
+    const p = document.createElement('button');
+    p.className = 'salle-pill'; p.type = 'button';
+    p.dataset.salle = s.id; p.textContent = s.nom;
+    if (s.id === salleActive?.id) p.classList.add('sel');
+    p.addEventListener('click', () => {
+      pills.querySelectorAll('.salle-pill').forEach(x => x.classList.remove('sel'));
+      p.classList.add('sel'); salleCibleToile = s.id;
+    });
+    pills.appendChild(p);
+  });
+  ouvrirFormulaireNouvel();
+});
+$('btn-uploader').addEventListener('click', () => toast('Upload par toile via "+ Ajouter" → photo'));
+$('btn-telecharger').addEventListener('click', () => toast('Fonctionnalité à venir'));
+
+// Modal toile
+$('btn-close-toile').addEventListener('click', fermerModalToile);
+$('btn-annuler-toile').addEventListener('click', fermerModalToile);
+$('btn-sauver-toile').addEventListener('click', sauverToile);
+$('btn-suppr-toile').addEventListener('click', supprimerToile);
+$('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
+$('inp-photo').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    photoB64 = await traiterPhoto(f);
+    $('photo-prev').src = 'data:image/jpeg;base64,' + photoB64;
+    $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
+  } catch (_) { toast('Erreur lecture photo', 'err'); }
+});
+$('sel-format').addEventListener('change', () => {
+  $('dims-custom').classList.toggle('hidden', $('sel-format').value !== 'custom');
+});
+
+// Swipe bas pour fermer modal toile
+let swY = null;
+$('overlay-toile').querySelector('.modal').addEventListener('touchstart', e => { swY = e.touches[0].clientY; }, { passive: true });
+$('overlay-toile').querySelector('.modal').addEventListener('touchend', e => {
+  if (swY && e.changedTouches[0].clientY - swY > 80) fermerModalToile(); swY = null;
+}, { passive: true });
+
+// Modal salle
+$('btn-close-salle').addEventListener('click', fermerModalSalle);
+$('btn-annuler-salle').addEventListener('click', fermerModalSalle);
+$('btn-creer-salle').addEventListener('click', creerSalle);
+$('overlay-salle').addEventListener('click', e => { if (e.target === $('overlay-salle')) fermerModalSalle(); });
+
+// Restore
+$('btn-restore-ann1').addEventListener('click', () => $('overlay-restore').classList.remove('ouvert'));
+$('btn-restore-ann2').addEventListener('click', () => $('overlay-restore').classList.remove('ouvert'));
+$('btn-restore-suite').addEventListener('click', () => {
+  document.querySelectorAll('.restore-step').forEach(s => s.classList.remove('active'));
+  $('restore-s2').classList.add('active'); $('inp-restore').focus();
+});
+$('inp-restore').addEventListener('input', () => {
+  $('btn-restore-ok').disabled = $('inp-restore').value !== 'RESTAURER';
+});
+$('btn-restore-ok').addEventListener('click', executerRestauration);
+$('overlay-restore').addEventListener('click', e => { if (e.target === $('overlay-restore')) $('overlay-restore').classList.remove('ouvert'); });
+
+// Init swatches couleurs
+initSwatches();
+initTailleForm();
+
+// ═══════════════════════════════════════════════
+// DÉMARRAGE
+// ═══════════════════════════════════════════════
+if (sessionStorage.getItem('ff_auth') === '1') {
+  token = localStorage.getItem('ff_gh_token') || '';
+  if (token) { afficherEcran('ecran-principal'); chargerTout(); }
+  else afficherEcran('ecran-token');
+} else {
+  if (localStorage.getItem('ff_pw_hash')) $('login-aide').style.display = 'none';
+}
+</script>
+</body>
+</html>
