@@ -110,8 +110,12 @@ button{cursor:pointer;}
 .chip.sel .cn{color:var(--gold);}
 .chip.vide{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);}
 .chip.vide .cn{color:#ef9fa0;}
-.chip.invisible{border:2px solid rgba(255,255,255,.5)!important;}
-.chip.invisible .cn{opacity:.55;}
+.chip.invisible{
+  background:rgba(0,0,0,.06)!important;
+  border:2px dashed rgba(0,0,0,.3)!important;
+  opacity:.55;
+}
+.chip.invisible .cn::after{content:' ◑';font-size:9px;opacity:.7;}
 .chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
   border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;
   display:flex;align-items:center;gap:3px;transition:border-color .2s,color .2s;}
@@ -170,8 +174,8 @@ button{cursor:pointer;}
 .stock-item .simg{width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;}
 .stock-item .simg img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
 .stock-item .simg .sph{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);}
-.stock-item .snom{font-size:7.5px;padding:2px 4px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stock-size{font-size:7px;padding:0 4px 3px;color:rgba(200,160,80,.5);line-height:1.2;}
+.stock-item .snom{font-size:7.5px;padding:2px 4px;color:#fff;background:rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stock-size{font-size:7px;padding:0 4px 3px;color:rgba(255,220,120,.85);background:rgba(0,0,0,.45);line-height:1.2;}
 .stock-item .check-ov{display:none;position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:var(--gold);align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;}
 .stock-item.coche .check-ov{display:flex;}
 .btn-placer-mur{margin:.35rem;padding:.45rem;border-radius:6px;background:rgba(200,160,80,.15);border:0.5px solid rgba(200,160,80,.4);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;display:none;text-align:center;line-height:1.4;}
@@ -183,9 +187,9 @@ button{cursor:pointer;}
 /* ── Zone mur ── */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
 .mur-bg{border-radius:6px;display:grid;
-  grid-template-columns:repeat(12,minmax(28px,1fr));
-  grid-template-rows:repeat(8,minmax(28px,1fr));
-  gap:2px;width:100%;aspect-ratio:12/8;min-width:340px;min-height:230px;
+  grid-template-columns:repeat(12,1fr);
+  grid-template-rows:repeat(8,1fr);
+  gap:2px;width:100%;aspect-ratio:12/8;
   position:relative;transition:background .3s;}
 .mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
 .cellule{border:0.5px solid rgba(255,255,255,.06);border-radius:2px;transition:background .1s;cursor:crosshair;}
@@ -520,7 +524,7 @@ textarea.champ{resize:vertical;min-height:65px;}
       <div class="backup-titre">Historique des modifications</div>
       <div class="backup-desc">Chaque sauvegarde crée une version. Vous pouvez revenir à n'importe quelle version précédente.</div>
     </div>
-    <div id="commits-contenu"><div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div></div>
+    <div id="commits-contenu" style="flex:1;overflow-y:auto;"><div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div></div>
   </div>
 
 </div><!-- /ecran-principal -->
