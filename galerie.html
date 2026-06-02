@@ -547,24 +547,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
-    <div class="conteneur-salles" id="conteneurSalles">
-      <div class="salle" id="salle1" aria-label="Salle 1">
-        <p class="nom-salle">Salle I</p>
-        <div class="mur" id="mur1"></div>
-      </div>
-      <div class="salle" id="salle2" aria-label="Salle 2">
-        <p class="nom-salle">Salle II</p>
-        <div class="mur" id="mur2"></div>
-      </div>
-      <div class="salle" id="salle3" aria-label="Salle 3">
-        <p class="nom-salle">Salle III</p>
-        <div class="mur" id="mur3"></div>
-      </div>
-      <div class="salle" id="salle4" aria-label="Salle 4">
-        <p class="nom-salle">Salle IV</p>
-        <div class="mur" id="mur4"></div>
-      </div>
-    </div>
+    <div class="conteneur-salles" id="conteneurSalles"></div>
     <!-- Navigation mobile -->
   <div class="nav-mobile" id="navMobile">
     <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)">&#8249;</button>
@@ -598,7 +581,7 @@
   <script src="assets/js/main.js"></script>
   <script>
     let salleCourante = 1;
-    const TOTAL_SALLES = 4;
+    let TOTAL_SALLES = 0; // défini dynamiquement après chargement JSON
     const NOMS_ROMAINS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
@@ -607,28 +590,7 @@
     const dotsEl     = document.querySelectorAll('.dot');
     let navMode = 'c';
 
-    /* --- Portes mode C : injection dans chaque mur --- */
-    for (let i = 1; i <= TOTAL_SALLES; i++) {
-      const cible = document.getElementById('mur' + i);
-      ['g', 'd'].forEach(cote => {
-        const p = document.createElement('div');
-        p.className = 'porte porte-' + cote + ' invisible';
-        p.dataset.murId = i;
-        p.dataset.cote  = cote;
-        p.innerHTML =
-          '<span class="porte-nom"></span>' +
-          '<div class="porte-forme"><div class="porte-interieur"></div>' +
-          '<span class="porte-fleche">' + (cote === 'g' ? '&#8249;' : '&#8250;') + '</span>' +
-          '</div>';
-        p.addEventListener('click', () => {
-          const cible = p.dataset.cible;
-          if (cible === 'accueil') { window.location.href = 'index.html'; return; }
-          const n = parseInt(cible);
-          if (n >= 1 && n <= TOTAL_SALLES) allerSalle(n);
-        });
-        cible.appendChild(p);
-      });
-    }
+    /* Portes injectées dynamiquement après chargement JSON */
 
     function mettreAJourNav() {
       /* Navigation mobile */
@@ -932,9 +894,50 @@
     ])
     .then(([tData, sData]) => {
       const toileMap = {};
-      (tData.toiles || []).filter(t => t.visible !== false).forEach(t => { toileMap[t.id] = t; });
+      (tData.toiles || []).forEach(t => { toileMap[t.id] = t; });
 
-      (sData.salles || []).forEach(salle => {
+      // Génère les salles dynamiquement depuis le JSON
+      const salles = sData.salles || [];
+      TOTAL_SALLES = salles.length;
+      salles.forEach(salle => {
+        const salleDiv = document.createElement('div');
+        salleDiv.className = 'salle';
+        salleDiv.id = 'salle' + salle.id;
+        salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
+        const nomEl = document.createElement('p');
+        nomEl.className = 'nom-salle';
+        nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
+        salleDiv.appendChild(nomEl);
+        const mur = document.createElement('div');
+        mur.className = 'mur';
+        mur.id = 'mur' + salle.id;
+        salleDiv.appendChild(mur);
+        conteneur.appendChild(salleDiv);
+      });
+
+      // Crée les portes mode C pour toutes les salles
+      salles.forEach(salle => {
+        const mur = document.getElementById('mur' + salle.id);
+        if (!mur) return;
+        ['g','d'].forEach(cote => {
+          const p = document.createElement('div');
+          p.className = 'porte porte-' + cote + ' invisible';
+          p.dataset.murId = salle.id;
+          p.dataset.cote = cote;
+          p.innerHTML = '<span class="porte-nom"></span>' +
+            '<div class="porte-forme"><div class="porte-interieur"></div>' +
+            '<span class="porte-fleche">'+(cote==='g'?'&#8249;':'&#8250;')+'</span></div>';
+          p.addEventListener('click', () => {
+            if (p.dataset.cible === 'accueil') { window.location.href='index.html'; return; }
+            const n = parseInt(p.dataset.cible);
+            if (n >= 1 && n <= TOTAL_SALLES) allerSalle(n);
+          });
+          mur.appendChild(p);
+        });
+      });
+      mettreAJourNav();
+
+      salles.forEach(salle => {
         const mur = document.getElementById('mur' + salle.id);
         if (!mur) return;
 
@@ -1041,7 +1044,7 @@
       });
     })
     .catch(() => {
-      ['mur1', 'mur2', 'mur3', 'mur4'].forEach(id => {
+      document.querySelectorAll('.mur').forEach(mur => { const id = mur.id; {
         const el = document.getElementById(id);
         if (el) el.innerHTML =
           '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';

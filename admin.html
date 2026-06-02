@@ -110,12 +110,7 @@ button{cursor:pointer;}
 .chip.sel .cn{color:var(--gold);}
 .chip.vide{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);}
 .chip.vide .cn{color:#ef9fa0;}
-.chip.invisible{
-  background:rgba(0,0,0,.06)!important;
-  border:2px dashed rgba(0,0,0,.3)!important;
-  opacity:.55;
-}
-.chip.invisible .cn::after{content:' ◑';font-size:9px;opacity:.7;}
+
 .chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
   border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;
   display:flex;align-items:center;gap:3px;transition:border-color .2s,color .2s;}
@@ -1004,7 +999,7 @@ function afficherPlan() {
   cont.innerHTML = '';
   salles.forEach(s => {
     const chip = document.createElement('div');
-    chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '') + (!s.visible ? ' invisible' : '');
+    chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} toile${s.toiles.length > 1 ? 's' : ''}</div>`;
     chip.addEventListener('click', () => selectSalle(s.id));
