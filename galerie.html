@@ -652,7 +652,7 @@
     document.body.setAttribute('data-nav', 'c');
     mettreAJourNav();
 
-    const hashSalle = parseInt((window.location.hash.match(/^#salle-([2-4])$/) || [])[1]);
+    const hashSalle = parseInt((window.location.hash.match(/^#salle-(\d+)$/) || [])[1]);
     if (hashSalle) {
       conteneur.style.transition = 'none';
       allerSalle(hashSalle);
