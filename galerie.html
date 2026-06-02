@@ -767,19 +767,30 @@
       // ── 4 plans de profondeur ──────────────────────────────────────
       // Rendu arrière → avant (algorithme du peintre)
       const VW = 420, VH = 150;
+
+      // Nombre aléatoire de silhouettes par plan (varie à chaque chargement)
+      const nb = {
+        tl: 2 + Math.floor(Math.random() * 4), // très lointain : 2–5
+        lo: 2 + Math.floor(Math.random() * 2), // lointain      : 2–3
+        mi: 2 + Math.floor(Math.random() * 2), // milieu        : 2–3
+        av: 1 + Math.floor(Math.random() * 2)  // avant-scène   : 1–2
+      };
+
       const PLANS = [
-        { yFloor: 30,        hBase: 26, opacite: 0.60, nbMax: 2 }, // très lointain
-        { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: 2 }, // lointain
-        { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: 2 }, // milieu
-        { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: 2 }  // avant-scène
+        { yFloor: 30,        hBase: 26, opacite: 0.60, nbMax: nb.tl }, // très lointain
+        { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: nb.lo }, // lointain
+        { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: nb.mi }, // milieu
+        { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: nb.av }  // avant-scène
       ];
 
-      // Distribue les silhouettes du pool dans les plans (pool = 8, total nbMax = 8)
+      // Distribue avec pool cyclique : si total > 8, réutilise des silhouettes
+      // (mirror aléatoire les rend visuellement différentes même réutilisées)
       let pi = 0;
       PLANS.forEach(plan => {
         plan.sils = [];
-        for (let k = 0; k < plan.nbMax && pi < pool.length; k++, pi++) {
-          plan.sils.push({ ...pool[pi], mirror: Math.random() > 0.5 });
+        for (let k = 0; k < plan.nbMax; k++) {
+          plan.sils.push({ ...pool[pi % pool.length], mirror: Math.random() > 0.5 });
+          pi++;
         }
       });
 
