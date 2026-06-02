@@ -1044,10 +1044,8 @@
       });
     })
     .catch(() => {
-      document.querySelectorAll('.mur').forEach(mur => { const id = mur.id; {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML =
-          '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
+      document.querySelectorAll('.mur').forEach(mur => {
+        mur.innerHTML = '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
       });
     });
   
