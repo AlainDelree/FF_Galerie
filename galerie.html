@@ -26,10 +26,7 @@
     .dots { display:flex; gap:.55rem; justify-content:center; padding:.3rem 0 .9rem; }
     .dot { width:5px; height:5px; border-radius:50%; background-color:var(--sep); transition:background-color .35s,transform .35s; }
     .dot.actif { background-color:var(--accent); transform:scale(1.4); }
-    .conteneur-salles { display:flex; flex:1; width:400%; min-height:0; transition:transform .65s cubic-bezier(.77,0,.175,1); }
-    .conteneur-salles.salle-2 { transform:translateX(-25%); }
-    .conteneur-salles.salle-3 { transform:translateX(-50%); }
-    .conteneur-salles.salle-4 { transform:translateX(-75%); }
+    .conteneur-salles { display:flex; flex:1; min-height:0; transition:transform .65s cubic-bezier(.77,0,.175,1); }
     .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:.8rem; text-align:center; }
     .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; }
     .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
@@ -637,7 +634,10 @@
 
     function allerSalle(n) {
       salleCourante = Math.max(1, Math.min(TOTAL_SALLES, n));
-      conteneur.className = 'conteneur-salles' + (salleCourante > 1 ? ' salle-' + salleCourante : '');
+      // Calcul dynamique : chaque salle = 1/TOTAL_SALLES du conteneur
+      conteneur.style.transform = salleCourante > 1
+        ? 'translateX(-' + ((salleCourante-1)/TOTAL_SALLES*100).toFixed(4) + '%)'
+        : '';
       numSalleEl.textContent = salleCourante;
       btnPrev.disabled = salleCourante === 1;
       btnNext.disabled = salleCourante === TOTAL_SALLES;
@@ -899,6 +899,8 @@
       // Génère les salles dynamiquement depuis le JSON
       const salles = sData.salles || [];
       TOTAL_SALLES = salles.length;
+      // Largeur du conteneur = N salles × 100% de la fenêtre
+      conteneur.style.width = (TOTAL_SALLES * 100) + '%';
       salles.forEach(salle => {
         const salleDiv = document.createElement('div');
         salleDiv.className = 'salle';
