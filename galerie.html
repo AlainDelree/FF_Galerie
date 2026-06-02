@@ -526,14 +526,12 @@
        PAYSAGE GSM — orientation:landscape AND max-height:500px
        Mutuellement exclusif avec max-width:600px (portrait) ✓
 
-       Principe : html/body height:100% ancre la hauteur à la viewport
-       initiale. Le mur reçoit flex:1 (hauteur = espace disponible)
-       et width:auto + aspect-ratio 12/8 (largeur = hauteur × 1.5).
-       Plus de dvh instable → le mur ne change plus de taille.
-       Parquet supprimé, portes visibles, tout tient sans scroller.
+       Layout : mur prend TOUTE la hauteur (flex:1 + zone-basse hors
+       du flux). Portes en overlay latéral absolu des deux côtés du
+       mur → clin d'oeil aux portes latérales du mode portrait.
        ═══════════════════════════════════════════════════════════════ */
     @media (orientation:landscape) and (max-height:500px) {
-      /* Ancrage hauteur stable */
+      /* Ancrage hauteur stable — plus de dvh instable */
       html, body { height:100%; overflow:hidden; }
       body { display:flex; flex-direction:column; }
       .pied { display:none; }
@@ -541,7 +539,7 @@
       /* Header ultra-compact */
       .entete { padding:.18rem .8rem !important; flex-shrink:0; }
 
-      /* Galerie : prend tout l'espace apres le header */
+      /* Galerie : espace restant apres le header */
       .galerie-principale {
         flex: 1 !important;
         min-height: 0 !important;
@@ -556,59 +554,86 @@
         overflow: visible;
       }
 
-      /* Salle : flex-column centree */
+      /* Salle : colonne, reference pour les portes en position absolue */
       .salle {
         display: flex !important;
         flex-direction: column !important;
         align-items: center;
         height: 100% !important;
         min-height: unset !important;
-        padding: .1rem .3rem 0;
+        padding: .1rem 0 0;
         overflow-x: clip;
+        position: relative;
       }
       .nom-salle { display:none; }
 
-      /* Mur : flex:1 = toute la hauteur libre
-         height:0 necessaire pour que flex:1 fonctionne en colonne
-         width:auto + aspect-ratio = largeur calculee automatiquement */
+      /* ── Mur : prend TOUTE la hauteur disponible ──
+         Zone-basse etant hors du flux (absolute), le mur seul
+         est en flex et prend flex:1 = 100% de la salle. */
       .mur.mur-grille {
         flex: 1 !important;
         height: 0 !important;
         min-height: 0 !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
-        max-width: calc(100vw - .6rem) !important;
+        max-width: 100% !important;
         padding: 3px !important;
         gap: 2px !important;
         overflow: hidden !important;
         margin: 0;
       }
 
-      /* Zone-basse : uniquement les portes, pas de parquet */
+      /* ── Zone-basse : HORS du flux, overlay transparent sur la salle ──
+         Les portes flottent dans la zone sombre a cote du mur. */
       .salle-grille .zone-basse {
-        flex-shrink: 0;
-        width: calc(100% + .6rem);
-        margin-left: -.3rem;
-        margin-right: -.3rem;
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        pointer-events: none;
       }
-      .mur-inferieur { height:46px !important; }
-      .pm-ouverture  { width:32px; height:40px; border-radius:16px 16px 0 0; }
-      .pm-nom        { font-size:.52rem; margin-bottom:.3rem; }
-      .pm-fleche     { font-size:.78rem; bottom:7px; }
-      .plancher-sol  { display:none; }
 
-      /* Nav mobile compacte */
-      .nav-mobile {
+      /* Mur-inferieur : fond transparent, distribue les portes aux extremes */
+      .mur-inferieur {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100% !important;
+        background: transparent !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px;
+      }
+      .mur-inferieur::before,
+      .mur-inferieur::after { display:none !important; }
+
+      /* Spacer central masque */
+      .mur-inferieur > div:not(.porte-mur) { display:none; }
+
+      /* ── Portes laterales : taille lisible, pointer-events actifs ── */
+      .porte-mur {
+        pointer-events: all;
+        width: 44px;
+        height: 74px;
         display: flex !important;
-        flex-shrink: 0;
-        padding: .2rem 0 calc(.2rem + env(safe-area-inset-bottom, 0px));
-        background: rgba(17,17,17,.92);
-        gap: .5rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        cursor: pointer;
+        transition: filter .2s;
       }
-      .nav-mobile-btn  { width:2rem; height:2rem; font-size:.9rem; }
-      .nav-mobile-info { font-size:.56rem; min-width:2.5rem; }
+      .pm-ouverture { width:32px; height:60px; border-radius:16px 16px 0 0; }
+      .pm-nom       { font-size:.5rem; margin-bottom:.32rem; letter-spacing:.04em; }
+      .pm-fleche    { font-size:.78rem; bottom:8px; }
 
-      /* Modal paysage : cote a cote */
+      /* Parquet supprime */
+      .plancher-sol { display:none !important; }
+
+      /* Nav mobile supprimee — navigation : swipe + portes laterales */
+      .nav-mobile { display:none !important; }
+
+      /* ── Modal paysage : cote a cote ── */
       .modal-overlay    { padding:.4rem; align-items:center; }
       .modal-contenu    { flex-direction:row; max-height:96vh; border-radius:4px; }
       .modal-image-wrap { flex:0 0 48%; max-height:94vh; }
