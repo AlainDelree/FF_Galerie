@@ -599,7 +599,7 @@
   <script>
     let salleCourante = 1;
     const TOTAL_SALLES = 4;
-    const NOMS_ROMAINS = ['I', 'II', 'III', 'IV'];
+    const NOMS_ROMAINS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');
@@ -752,7 +752,7 @@
         const cibleId = estGauche ? salleId - 1 : salleId + 1;
         if (!estGauche || salleId > 1) {} else { btn.className += ' invisible'; }
         let nom = '';
-        if (!estGauche && salleId >= totalSalles) nom = 'Accueil →';
+        if (!estGauche && salleId >= totalSalles) nom = 'Retour à l\'accueil';
         else if (estGauche && salleId > 1) nom = '← Salle ' + nomsRomains[salleId-2];
         else if (!estGauche && salleId < totalSalles) nom = 'Salle ' + nomsRomains[salleId] + ' →';
         else if (estGauche && salleId <= 1) btn.className += ' invisible';
