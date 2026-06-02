@@ -691,15 +691,6 @@
       if (e.key === 'ArrowLeft')  allerSalle(salleCourante - 1);
     });
 
-    let touchX = null;
-    conteneur.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
-    conteneur.addEventListener('touchend', e => {
-      if (touchX === null) return;
-      const dx = e.changedTouches[0].clientX - touchX;
-      if (Math.abs(dx) > 55) allerSalle(salleCourante + (dx < 0 ? 1 : -1));
-      touchX = null;
-    }, { passive: true });
-
     const modalOverlay = document.getElementById('modalOverlay');
 
     // Hauteur plancher selon largeur écran
@@ -725,7 +716,7 @@
       // ── Mur inférieur avec portes ──
       const murBas = document.createElement('div');
       murBas.className = 'mur-inferieur';
-      murBas.style.backgroundColor = couleurMur || '#111';
+      murBas.style.backgroundColor = '#111'; // fond salle, PAS la couleur du mur d'expo
 
       function makePorte(cote) {
         const btn = document.createElement('button');
@@ -773,17 +764,17 @@
     function genererSilhouettes() {
       const pool = [...SIL_DATA].sort(() => Math.random() - 0.5);
 
-      // ── 3 plans de profondeur ──────────────────────────────────────
-      // Chaque plan : yFloor = ligne du sol, hBase = hauteur silhouette
-      // Les plans sont rendus arrière → avant (peintre algorithm)
-      const VW = 420, VH = 140;
+      // ── 4 plans de profondeur ──────────────────────────────────────
+      // Rendu arrière → avant (algorithme du peintre)
+      const VW = 420, VH = 150;
       const PLANS = [
-        { yFloor: VH * 0.42, hBase: 36, opacite: 0.60, nbMax: 3 }, // lointain
-        { yFloor: VH * 0.70, hBase: 56, opacite: 0.70, nbMax: 3 }, // milieu
-        { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: 2 }  // avant-scene
+        { yFloor: 30,        hBase: 26, opacite: 0.60, nbMax: 2 }, // très lointain
+        { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: 2 }, // lointain
+        { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: 2 }, // milieu
+        { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: 2 }  // avant-scène
       ];
 
-      // Distribue les silhouettes du pool dans les plans
+      // Distribue les silhouettes du pool dans les plans (pool = 8, total nbMax = 8)
       let pi = 0;
       PLANS.forEach(plan => {
         plan.sils = [];
@@ -792,40 +783,37 @@
         }
       });
 
-      const GAP_INTRA = 9; // entre silhouettes d'un groupe
+      const GAP_INTRA = 9;
       const svgParts = [];
 
-      // Lignes de sol pour chaque plan (légères)
+      // Lignes de sol tenues (perspectve)
       svgParts.push(
-        '<line x1="0" y1="'+( VH*0.42).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.42).toFixed(0)+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
-        '<line x1="0" y1="'+( VH*0.70).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.70).toFixed(0)+'" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
+        '<line x1="0" y1="30" x2="'+VW+'" y2="30" stroke="rgba(255,255,255,.025)" stroke-width="1"/>',
+        '<line x1="0" y1="'+(VH*0.44).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.44).toFixed(0)+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
+        '<line x1="0" y1="'+(VH*0.72).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.72).toFixed(0)+'" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
       );
 
-      // Zones horizontales assignées à chaque plan (lointain=gauche, milieu=droite, avant=centre-spread)
-      // Chaque plan démarre dans sa propre zone pour éviter le clustering central
+      // Zones horizontales distinctes par plan (évite le clustering central)
       const ZONES = [
-        { debut: 0.02, fin: 0.52 },  // lointain : tiers gauche
-        { debut: 0.48, fin: 0.96 },  // milieu   : tiers droite
-        { debut: 0.15, fin: 0.75 }   // avant    : centre (plus visible)
+        { debut: 0.24, fin: 0.66 }, // très lointain : centre
+        { debut: 0.03, fin: 0.52 }, // lointain      : gauche
+        { debut: 0.48, fin: 0.96 }, // milieu        : droite
+        { debut: 0.12, fin: 0.84 }  // avant-scène   : large spread
       ];
 
-      // Rendu plan par plan (arrière → avant = z-order correct)
+      // Rendu plan par plan (arrière → avant)
       PLANS.forEach((plan, planIdx) => {
         if (!plan.sils.length) return;
 
         const totalW = plan.sils.reduce((s, p) => s + p.w * (plan.hBase / p.h), 0)
                      + (plan.sils.length - 1) * GAP_INTRA;
 
-        // Zone horizontale pour ce plan
         const z = ZONES[planIdx];
         const zoneStart = VW * z.debut;
         const zoneEnd   = VW * z.fin;
-        const zoneWidth = zoneEnd - zoneStart;
-
-        // Démarre au début de la zone + décalage aléatoire dans la zone
-        const maxJitter = Math.max(0, zoneWidth - totalW);
+        const maxJitter = Math.max(0, (zoneEnd - zoneStart) - totalW);
         let x = zoneStart + Math.random() * maxJitter * 0.7;
-        x = Math.max(8, Math.min(VW - totalW - 8, x));
+        x = Math.max(6, Math.min(VW - totalW - 6, x));
 
         plan.sils.forEach(p => {
           const sc = plan.hBase / p.h;
@@ -835,27 +823,23 @@
             ? "translate("+sw.toFixed(1)+",0) scale(-"+sc.toFixed(5)+","+sc.toFixed(5)+")"
             : "scale("+sc.toFixed(5)+","+sc.toFixed(5)+")";
 
-          // Ombre au sol
-          const ombreRy = (1.2 + plan.hBase * 0.022).toFixed(1);
+          const ombreRy = (1.0 + plan.hBase * 0.020).toFixed(1);
           svgParts.push(
             '<ellipse cx="'+(x+sw/2).toFixed(1)+'" cy="'+plan.yFloor.toFixed(1)+
             '" rx="'+(sw*0.42).toFixed(1)+'" ry="'+ombreRy+
-            '" fill="rgba(0,0,0,'+(plan.opacite * 0.42).toFixed(2)+')"/>'
+            '" fill="rgba(0,0,0,'+(plan.opacite * 0.40).toFixed(2)+')"/>'
           );
-
-          // Silhouette
           svgParts.push(
             '<g transform="translate('+x.toFixed(1)+','+sy.toFixed(1)+') '+tr+
             '" opacity="'+plan.opacite.toFixed(2)+'">'+
             '<path d="'+p.d+'" fill="rgba(4,2,0,1)" fill-rule="evenodd"/></g>'
           );
-
           x += sw + GAP_INTRA;
         });
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" style="display:block;width:100%;height:100%;vertical-align:bottom">'+
+        'aria-hidden="true" style="display:block;width:100%;height:auto;vertical-align:bottom">'+
         svgParts.join("")+"</svg>";
     }
 
