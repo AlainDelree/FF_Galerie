@@ -202,10 +202,15 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       pointer-events: none;
     }
-    /* Salle avec espace pour portes */
+    /* Salle grille : conserve le padding latéral pour que le fond sombre encadre le mur */
     .salle.salle-grille {
-      padding-left: 0;
-      padding-right: 0;
+      /* padding inchangé (1rem 2rem 0 depuis .salle) → fond noir visible sur les côtés */
+    }
+    /* Zone-basse plein-écran : compense le padding latéral de la salle (2rem par côté desktop) */
+    .salle-grille .zone-basse {
+      width: calc(100% + 4rem);
+      margin-left: -2rem;
+      margin-right: -2rem;
     }
 
     /* Pas de plinthe en mode grille (le plancher la remplace) */
@@ -477,8 +482,10 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
       .salle { height:auto !important; min-height:unset !important; padding:.5rem .5rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
-      /* Zone-basse déborde du padding salle pour être plein écran */
+      /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
+      /* Clip horizontal : empêche la zone-basse de déborder sur la salle adjacente */
+      .salle { overflow-x: clip; }
       /* Plancher mobile : remplit l'espace jusqu'à la nav fixe */
       .plancher-sol { min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
       /* Navigation mobile */
@@ -672,15 +679,8 @@
     document.body.setAttribute('data-nav', 'c');
     mettreAJourNav();
 
-    const hashSalle = parseInt((window.location.hash.match(/^#salle-(\d+)$/) || [])[1]);
-    if (hashSalle) {
-      conteneur.style.transition = 'none';
-      allerSalle(hashSalle);
-      conteneur.getBoundingClientRect();
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        conteneur.style.transition = '';
-      }));
-    }
+    // NB: le hash (#salle-ID) est traité après chargement JSON (plus bas dans Promise.all)
+    // pour pouvoir mapper l'id JSON → index d'affichage
 
     document.addEventListener('keydown', e => {
       if (document.getElementById('modalOverlay').classList.contains('visible')) {
@@ -778,8 +778,8 @@
       // Les plans sont rendus arrière → avant (peintre algorithm)
       const VW = 420, VH = 140;
       const PLANS = [
-        { yFloor: VH * 0.42, hBase: 36, opacite: 0.28, nbMax: 3 }, // lointain
-        { yFloor: VH * 0.70, hBase: 56, opacite: 0.52, nbMax: 3 }, // milieu
+        { yFloor: VH * 0.42, hBase: 36, opacite: 0.60, nbMax: 3 }, // lointain
+        { yFloor: VH * 0.70, hBase: 56, opacite: 0.70, nbMax: 3 }, // milieu
         { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: 2 }  // avant-scene
       ];
 
@@ -795,23 +795,37 @@
       const GAP_INTRA = 9; // entre silhouettes d'un groupe
       const svgParts = [];
 
-      // Sol parquet : lattes horizontales dans la partie haute (lointain)
-      // et verticales (perspective) dans la partie basse
+      // Lignes de sol pour chaque plan (légères)
       svgParts.push(
         '<line x1="0" y1="'+( VH*0.42).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.42).toFixed(0)+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
         '<line x1="0" y1="'+( VH*0.70).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.70).toFixed(0)+'" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
       );
 
+      // Zones horizontales assignées à chaque plan (lointain=gauche, milieu=droite, avant=centre-spread)
+      // Chaque plan démarre dans sa propre zone pour éviter le clustering central
+      const ZONES = [
+        { debut: 0.02, fin: 0.52 },  // lointain : tiers gauche
+        { debut: 0.48, fin: 0.96 },  // milieu   : tiers droite
+        { debut: 0.15, fin: 0.75 }   // avant    : centre (plus visible)
+      ];
+
       // Rendu plan par plan (arrière → avant = z-order correct)
-      PLANS.forEach(plan => {
+      PLANS.forEach((plan, planIdx) => {
         if (!plan.sils.length) return;
 
         const totalW = plan.sils.reduce((s, p) => s + p.w * (plan.hBase / p.h), 0)
                      + (plan.sils.length - 1) * GAP_INTRA;
 
-        // Centrage avec décalage aléatoire léger (diversité visuelle)
-        const marge = Math.max(0, (VW - totalW - 20) * 0.3);
-        let x = Math.max(8, (VW - totalW) / 2 + (Math.random() - 0.5) * marge);
+        // Zone horizontale pour ce plan
+        const z = ZONES[planIdx];
+        const zoneStart = VW * z.debut;
+        const zoneEnd   = VW * z.fin;
+        const zoneWidth = zoneEnd - zoneStart;
+
+        // Démarre au début de la zone + décalage aléatoire dans la zone
+        const maxJitter = Math.max(0, zoneWidth - totalW);
+        let x = zoneStart + Math.random() * maxJitter * 0.7;
+        x = Math.max(8, Math.min(VW - totalW - 8, x));
 
         plan.sils.forEach(p => {
           const sc = plan.hBase / p.h;
@@ -821,7 +835,7 @@
             ? "translate("+sw.toFixed(1)+",0) scale(-"+sc.toFixed(5)+","+sc.toFixed(5)+")"
             : "scale("+sc.toFixed(5)+","+sc.toFixed(5)+")";
 
-          // Ombre au sol : s'aplatit selon le plan (profondeur)
+          // Ombre au sol
           const ombreRy = (1.2 + plan.hBase * 0.022).toFixed(1);
           svgParts.push(
             '<ellipse cx="'+(x+sw/2).toFixed(1)+'" cy="'+plan.yFloor.toFixed(1)+
@@ -829,7 +843,7 @@
             '" fill="rgba(0,0,0,'+(plan.opacite * 0.42).toFixed(2)+')"/>'
           );
 
-          // Corps de la silhouette
+          // Silhouette
           svgParts.push(
             '<g transform="translate('+x.toFixed(1)+','+sy.toFixed(1)+') '+tr+
             '" opacity="'+plan.opacite.toFixed(2)+'">'+
@@ -1115,6 +1129,21 @@
           });
         }
       });
+
+      // ── Navigation depuis Accueil : hash #salle-ID → index d'affichage ──
+      // Doit être ici car salles[] et TOTAL_SALLES sont disponibles seulement après chargement JSON
+      const hashId = parseInt((window.location.hash.match(/^#salle-(\d+)$/) || [])[1]);
+      if (hashId) {
+        // Cherche l'index d'affichage (1-based) de la salle ayant cet id JSON
+        const hashIdx = salles.findIndex(function(s) { return s.id === hashId; }) + 1;
+        const cible = hashIdx > 0 ? hashIdx : 1; // fallback salle 1 si id inconnu
+        conteneur.style.transition = "none";
+        allerSalle(cible);
+        conteneur.getBoundingClientRect(); // force reflow
+        requestAnimationFrame(function() { requestAnimationFrame(function() {
+          conteneur.style.transition = "";
+        }); });
+      }
     })
     .catch(() => {
       document.querySelectorAll('.mur').forEach(mur => {
