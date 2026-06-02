@@ -865,8 +865,8 @@
 
           // Ajoute le plancher avec silhouettes et portes
           const plancher = creerPlancher(salle.id, (sData.salles||[]).length, NOMS_ROMAINS);
-          const salleEl = mur.closest('.salle');
-          if (salleEl) salleEl.appendChild(plancher);
+          const salleElPl = mur.closest('.salle');
+          if (salleElPl) salleElPl.appendChild(plancher);
 
         } else {
           // ── MODE FLUX (pas de positions → comportement original) ──
