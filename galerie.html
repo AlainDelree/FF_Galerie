@@ -524,87 +524,97 @@
 
     /* ═══════════════════════════════════════════════════════════════
        PAYSAGE GSM — orientation:landscape AND max-height:500px
-       Condition mutuellement exclusive avec max-width:600px (portrait)
-       → zéro interférence entre les deux modes.
+       Mutuellement exclusif avec max-width:600px (portrait) ✓
+
+       Principe : html/body height:100% ancre la hauteur à la viewport
+       initiale. Le mur reçoit flex:1 (hauteur = espace disponible)
+       et width:auto + aspect-ratio 12/8 (largeur = hauteur × 1.5).
+       Plus de dvh instable → le mur ne change plus de taille.
+       Parquet supprimé, portes visibles, tout tient sans scroller.
        ═══════════════════════════════════════════════════════════════ */
     @media (orientation:landscape) and (max-height:500px) {
-      body { overflow:hidden; } /* toute la galerie tient dans l'écran */
+      /* Ancrage hauteur stable */
+      html, body { height:100%; overflow:hidden; }
+      body { display:flex; flex-direction:column; }
+      .pied { display:none; }
 
-      /* ── Header ultra-compact ── */
-      .entete { padding:.25rem 1rem !important; }
+      /* Header ultra-compact */
+      .entete { padding:.18rem .8rem !important; flex-shrink:0; }
 
-      /* ── Galerie remplit le reste de l'écran ── */
+      /* Galerie : prend tout l'espace apres le header */
       .galerie-principale {
-        height: calc(100dvh - 2.4rem);
-        min-height: unset !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+        height: auto !important;
         overflow: hidden;
       }
       .conteneur-salles {
         flex: 1;
+        min-height: 0;
         height: 100%;
-        min-height: unset !important;
         align-items: stretch;
         overflow: visible;
       }
 
-      /* ── Salle : colonne centrée, occupe toute la hauteur ── */
+      /* Salle : flex-column centree */
       .salle {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center;
         height: 100% !important;
         min-height: unset !important;
-        padding: .15rem .5rem 0;
+        padding: .1rem .3rem 0;
         overflow-x: clip;
-        align-items: center;
       }
-      .nom-salle { font-size:.6rem; margin-bottom:.1rem; letter-spacing:.08em; }
+      .nom-salle { display:none; }
 
-      /* ── Mur grille : contrainte de HAUTEUR (inverse du portrait) ──
-         La hauteur est calculée, la largeur suit l'aspect-ratio 12/8.
-         Sur iPhone SE paysage (375px) : mur ≈ 275px h × 412px l ✓
-         Sur iPhone 14 paysage (393px) : mur ≈ 293px h × 440px l ✓ */
+      /* Mur : flex:1 = toute la hauteur libre
+         height:0 necessaire pour que flex:1 fonctionne en colonne
+         width:auto + aspect-ratio = largeur calculee automatiquement */
       .mur.mur-grille {
-        height: calc(100dvh - 100px) !important;
+        flex: 1 !important;
+        height: 0 !important;
+        min-height: 0 !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
-        max-width: calc(100vw - 1rem) !important;
-        min-height: unset !important;
+        max-width: calc(100vw - .6rem) !important;
         padding: 3px !important;
         gap: 2px !important;
-        margin: 0 auto;
         overflow: hidden !important;
+        margin: 0;
       }
 
-      /* ── Zone-basse : fine bande plein-écran ── */
+      /* Zone-basse : uniquement les portes, pas de parquet */
       .salle-grille .zone-basse {
-        width: calc(100% + 1rem);
-        margin-left: -.5rem;
-        margin-right: -.5rem;
+        flex-shrink: 0;
+        width: calc(100% + .6rem);
+        margin-left: -.3rem;
+        margin-right: -.3rem;
       }
-      .mur-inferieur { height: 20px !important; }
-      .pm-ouverture  { width:20px; height:16px; border-radius:10px 10px 0 0; }
-      .pm-nom        { font-size:.42rem; }
-      .pm-fleche     { font-size:.65rem; bottom:3px; }
+      .mur-inferieur { height:46px !important; }
+      .pm-ouverture  { width:32px; height:40px; border-radius:16px 16px 0 0; }
+      .pm-nom        { font-size:.52rem; margin-bottom:.3rem; }
+      .pm-fleche     { font-size:.78rem; bottom:7px; }
+      .plancher-sol  { display:none; }
 
-      /* Plancher : fine bande parquet, silhouettes masquées (trop petites) */
-      .plancher-sol    { min-height:26px !important; max-height:26px !important; }
-      .silhouettes-sol { display:none; }
-
-      /* ── Nav mobile réactivée, compacte ── */
+      /* Nav mobile compacte */
       .nav-mobile {
         display: flex !important;
-        padding: .25rem 0 calc(.25rem + env(safe-area-inset-bottom, 0px));
+        flex-shrink: 0;
+        padding: .2rem 0 calc(.2rem + env(safe-area-inset-bottom, 0px));
         background: rgba(17,17,17,.92);
         gap: .5rem;
       }
-      .nav-mobile-btn  { width:2rem; height:2rem; font-size:.95rem; }
-      .nav-mobile-info { font-size:.56rem; min-width:3rem; }
+      .nav-mobile-btn  { width:2rem; height:2rem; font-size:.9rem; }
+      .nav-mobile-info { font-size:.56rem; min-width:2.5rem; }
 
-      /* ── Modal paysage : côte à côte compact ── */
-      .modal-overlay  { padding:.5rem; align-items:center; }
-      .modal-contenu  { flex-direction:row; max-height:96vh; border-radius:4px; }
+      /* Modal paysage : cote a cote */
+      .modal-overlay    { padding:.4rem; align-items:center; }
+      .modal-contenu    { flex-direction:row; max-height:96vh; border-radius:4px; }
       .modal-image-wrap { flex:0 0 48%; max-height:94vh; }
-      .modal-fiche    { padding:.8rem .8rem .6rem; gap:.4rem; overflow-y:auto; }
-      .modal-titre    { font-size:1rem; }
-      .modal-fermer   { width:2rem; height:2rem; font-size:1rem; }
+      .modal-fiche      { padding:.7rem; gap:.35rem; overflow-y:auto; }
+      .modal-titre      { font-size:1rem; }
+      .modal-fermer     { width:2rem; height:2rem; font-size:1rem; }
     }
   </style>
 </head>
