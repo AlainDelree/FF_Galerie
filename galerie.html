@@ -164,6 +164,52 @@
     }
     .porte:hover .porte-fleche { color:rgba(255,255,255,.55); }
 
+
+    /* ── Mode grille (admin positions) : tous supports ── */
+    .mur.mur-grille {
+      display: grid !important;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      aspect-ratio: 12/8;
+      width: 100%;
+      height: auto !important;
+      padding: 6px !important;
+      gap: 3px !important;
+      overflow: visible;
+    }
+    .tableau-grille {
+      width: 100% !important;
+      height: 100% !important;
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+    .tableau-grille:hover { filter: brightness(1.07); }
+    .tableau-grille .cadre-grille {
+      position: absolute; inset: 0; margin: 0;
+      overflow: hidden; border-radius: 2px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08);
+      outline: none;
+    }
+    .tableau-grille .cadre-grille img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .tableau-grille .tg-titre {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,.68);
+      font-family: 'Cinzel', serif;
+      font-size: clamp(6px, 1.2vw, 11px);
+      color: #e8d8b8;
+      text-align: center;
+      padding: 1px 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    /* Salle avec espace pour portes */
+    .salle.salle-grille {
+      padding-left: 0;
+      padding-right: 0;
+    }
     
   </style>
 </head>
@@ -243,22 +289,40 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
       .salle { height:auto !important; min-height:unset !important; padding:.5rem .3rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
-      .mur { display:grid; grid-template-columns:1fr 1fr; justify-items:center; align-content:space-evenly; column-gap:.5rem; row-gap:0; padding:1rem .7rem; min-height:calc(100vh - 220px); min-height:calc(100svh - 220px); height:auto !important; overflow:visible; }
-      /* Cadre allégé mobile : shadow réduite, marges réduites */
-      .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
-      /* Spots désactivés sur mobile (perf + layout) */
-      .cadre::before, .cadre::after { display:none !important; }
-      /* Navigation mobile + safe area iOS home indicator */
+      /* Navigation mobile */
       .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
+      body { overflow-x:hidden; }
+      /* Mur grille sur mobile : laisse de la place pour les portes */
+      .mur.mur-grille {
+        display:grid !important;
+        grid-template-columns:repeat(12,1fr) !important;
+        grid-template-rows:repeat(8,1fr) !important;
+        aspect-ratio:12/8 !important;
+        width:calc(100% - 56px) !important;
+        height:auto !important;
+        min-height:unset !important;
+        padding:5px !important;
+        gap:2px !important;
+        margin:0 auto;
+        overflow:visible !important;
+      }
+      /* Portes visibles en mode grille sur mobile */
+      .mur.mur-grille .porte { display:flex !important; }
+      .mur.mur-grille .porte-forme { width:24px; height:42px; }
+      .mur.mur-grille .porte-nom { font-size:.52rem; }
+      /* Mur flux classique sur mobile : 2 colonnes */
+      .mur:not(.mur-grille) {
+        display:grid; grid-template-columns:1fr 1fr; justify-items:center;
+        align-content:space-evenly; column-gap:.5rem; row-gap:0;
+        padding:1rem .7rem; min-height:calc(100vh - 220px); height:auto !important; overflow:visible;
+      }
+      .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
+      .cadre::before, .cadre::after { display:none !important; }
       .tableau { flex-shrink:0; }
-      /* Plaquettes absolues : accrochées sous le cadre (top:100%), hors flux */
       .tableau::after { bottom:-8px; }
       .etiquette { position:absolute; top:100%; left:0; right:0; transform:none; margin-top:.3rem; display:flex; justify-content:center; }
       .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
       .plaquette { padding:.25rem .5rem; }
-      /* Portes cachées sur mobile */
-      .porte { display:none !important; }
-      body { overflow-x:hidden; }
     }
   </style>
 </head>
@@ -589,57 +653,66 @@
 
         // ── MODE GRILLE (positions définies dans l'admin) ──────────
         if (positions.length > 0) {
-          const isMobile = window.innerWidth <= 600;
-          // Uniquement les toiles ayant une position dans cette salle
           const toilesPosees = positions.map(p => toileMap[p.id]).filter(Boolean);
           if (!toilesPosees.length) return;
 
-          if (isMobile) {
-            // Mobile : layout 2 colonnes classique avec les toiles posées
-            const H_PREF = 155, H_FALLBACK = 120, BORD = 16, N = 2;
-            const cs = getComputedStyle(mur);
-            const gapPx = parseFloat(cs.gap) || 6;
-            const padL  = parseFloat(cs.paddingLeft)  || 8;
-            const padR  = parseFloat(cs.paddingRight) || 8;
-            const dispo  = mur.clientWidth - padL - padR - (N-1)*gapPx - N*BORD;
-            const totalW = toilesPosees.slice(0,N).reduce((s,t) => {
-              const d = t.dimensions;
-              return s + (d && d.largeur && d.hauteur ? Math.round(H_PREF*d.largeur/d.hauteur) : H_PREF);
-            }, 0);
-            const H = totalW <= dispo ? H_PREF : H_FALLBACK;
-            toilesPosees.forEach(t => {
-              const el = creerTableau(t, H);
-              el.style.borderColor = couleurCadres;
-              mur.appendChild(el);
-            });
-          } else {
-            // Desktop : grille 12 colonnes respectant les positions admin
-            const COLS = 12;
-            const maxRow = Math.max(...positions.map(p => p.row + p.h - 1), 4);
-            mur.style.display = 'grid';
-            mur.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
-            mur.style.gridTemplateRows = `repeat(${maxRow}, 1fr)`;
-            mur.style.height = Math.max(300, maxRow * 60) + 'px';
-            mur.style.gap = '8px';
-            mur.style.padding = '1.5rem 2rem';
-            mur.style.alignItems = 'stretch';
-            mur.style.justifyItems = 'stretch';
+          // Active la classe grille sur le mur et la salle
+          mur.classList.add('mur-grille');
+          const salleEl = mur.closest('.salle');
+          if (salleEl) salleEl.classList.add('salle-grille');
 
-            positions.forEach(p => {
-              const t = toileMap[p.id];
-              if (!t) return;
-              const el = creerTableau(t, 9999); // hauteur gérée par la grille
-              el.style.gridColumn = `${p.col} / span ${p.w}`;
-              el.style.gridRow    = `${p.row} / span ${p.h}`;
-              el.style.width  = '100%';
-              el.style.height = '100%';
-              el.style.borderColor = couleurCadres;
-              // Force l'image à couvrir la cellule
-              const img = el.querySelector('img');
-              if (img) { img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; }
-              mur.appendChild(el);
-            });
+          // Texture du mur
+          const textures = {
+            tissu: 'repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 4px)',
+            bois:  'repeating-linear-gradient(rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 3px)',
+            pierre:'repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 0,transparent 6px)',
+            damier:'repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%) 0 0/8px 8px',
+            parquet:'repeating-linear-gradient(90deg,rgba(74,56,40,.5) 0,rgba(74,56,40,.5) 2px,rgba(58,40,24,.5) 0,rgba(58,40,24,.5) 8px)',
+            velours:'radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/5px 5px',
+            brique: 'url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%23444%22/%3E%3Crect x=%220%22 y=%220%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3Crect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3C/svg%3E') 0 0/8px 8px'
+          };
+          if (salle.texture && salle.texture !== 'none' && textures[salle.texture]) {
+            mur.style.background = textures[salle.texture] + ', ' + (salle.couleur_mur || '#2e2e2e');
           }
+
+          // Place chaque toile selon sa position dans la grille
+          positions.forEach(p => {
+            const t = toileMap[p.id]; if (!t) return;
+            const art = document.createElement('article');
+            art.className = 'tableau-grille';
+            art.style.gridColumn = `${p.col} / span ${p.w}`;
+            art.style.gridRow    = `${p.row} / span ${p.h}`;
+            art.tabIndex = 0;
+            art.setAttribute('role', 'button');
+            art.setAttribute('aria-label', t.titre || 'Toile');
+
+            const cadre = document.createElement('div');
+            cadre.className = 'cadre-grille';
+            cadre.style.border = `3px solid ${couleurCadres}`;
+            cadre.style.boxShadow = `0 0 0 1px rgba(0,0,0,.5), 2px 4px 14px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.06)`;
+
+            if (t.photo) {
+              const img = document.createElement('img');
+              img.src = t.photo; img.alt = t.titre || ''; img.loading = 'lazy';
+              cadre.appendChild(img);
+            } else {
+              cadre.style.background = 'linear-gradient(135deg,rgba(255,255,255,.04),rgba(0,0,0,.1))';
+            }
+
+            if (t.titre) {
+              const lbl = document.createElement('div');
+              lbl.className = 'tg-titre';
+              lbl.textContent = t.titre;
+              cadre.appendChild(lbl);
+            }
+
+            art.appendChild(cadre);
+            const ouvrir = () => ouvrirModal(t);
+            art.addEventListener('click', ouvrir);
+            art.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){e.preventDefault();ouvrir();} });
+            mur.appendChild(art);
+          });
+
         } else {
           // ── MODE FLUX (pas de positions → comportement original) ──
           const isMobile = window.innerWidth <= 600;
