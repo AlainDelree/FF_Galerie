@@ -165,7 +165,8 @@ body.theme-sombre {
   font-weight: 400;
   font-size: clamp(2.4rem, 7vw, 5rem);
   letter-spacing: 0.04em;
-  line-height: 1.1;
+  line-height: 1.2;
+  padding-bottom: 0.12em; /* espace pour les descendantes (g, p, y…) */
   color: var(--text);
   margin-bottom: 0.6rem;
 }
