@@ -1339,12 +1339,7 @@ function afficherStock() {
 
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) {
-        // Sélectionne pour Modifier — déplacement via Arranger uniquement
-        toilesSelectionnees.clear();
-        toilesSelectionnees.add(t.id);
-        selectedToile = t;
-        afficherStock();
-        toast("Sur ce mur — utilise Arranger pour déplacer", "ok", 2500);
+        ouvrirFormulaireEdition(t.id);
         return;
       }
       if (item.classList.contains('autre')) {
