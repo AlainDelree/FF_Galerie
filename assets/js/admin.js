@@ -182,7 +182,18 @@ async function apiGH(url, methode = 'GET', corps = null) {
   };
   if (corps) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(corps); }
   const rep = await fetch(API + url, opts);
-  if (!rep.ok) { const e = await rep.json().catch(() => ({ message: rep.statusText })); throw new Error(e.message); }
+  if (!rep.ok) {
+    const e = await rep.json().catch(() => ({ message: rep.statusText }));
+    if (rep.status === 401) {
+      /* Token invalide ou révoqué → vider le token et aller à l'écran token */
+      localStorage.removeItem(K.token);
+      token = '';
+      afficherEcran('ecran-token');
+      document.getElementById('token-err').textContent = 'Token invalide ou révoqué. Entrez votre nouveau token.';
+      throw new Error('Token invalide');
+    }
+    throw new Error(e.message);
+  }
   return methode === 'DELETE' ? null : rep.json();
 }
 
