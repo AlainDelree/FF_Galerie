@@ -299,8 +299,26 @@
       "couleur_cadres": "#3a3a3a",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        31,
+        23
+      ],
+      "positions": [
+        {
+          "id": 31,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 23,
+          "col": 7,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        }
+      ]
     }
   ]
 }
