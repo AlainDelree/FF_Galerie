@@ -435,9 +435,9 @@
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
       .pied { flex-shrink:0; padding:.28rem 0; }
 
-      /* Mur : overhead 350px (header+footer+nom+mur-inf+plancher+marge) */
+      /* Mur : overhead = 68+34+24+52+175+12 = 365px */
       .mur.mur-grille {
-        height: min(calc(100vh - 350px), 660px) !important;
+        height: min(calc(100vh - 365px), 645px) !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
         max-width: calc(100% - 4rem) !important;
@@ -449,21 +449,12 @@
       .mur-inferieur { height:52px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
-      /* Plancher : overflow:visible pour laisser depasser les silhouettes */
-      .plancher-sol { min-height:100px !important; max-height:160px !important;
-                      overflow:visible !important; }
-      .zone-basse   { overflow:visible; }
+      /* Plancher 175px : montre le SVG depuis y=39 → tetes lontain a y=43 visibles.
+         overflow:hidden : rien ne deborde sur le mur, layout propre. */
+      .plancher-sol { min-height:120px !important; max-height:175px !important; }
 
-      /* Silhouettes : translateY(-25px) → pieds lointain a 15px dans le parquet
-      .silhouettes-sol {
-        max-width: 600px;
-        margin: 0 auto;
-        width: 100%;
-        position: relative;
-        z-index: 10;
-        transform: translateY(-25px);
-        pointer-events: none;
-      }
+      /* Silhouettes centrees, max 600px */
+      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
     }
 
         /* Navigation mobile flèches */
