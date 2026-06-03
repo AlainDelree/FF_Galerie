@@ -1339,7 +1339,13 @@ function afficherStock() {
 
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) {
-        selectionnerPeintureMur(t.id); return;
+        // Sélectionne pour Modifier — déplacement via Arranger uniquement
+        toilesSelectionnees.clear();
+        toilesSelectionnees.add(t.id);
+        selectedToile = t;
+        afficherStock();
+        toast("Sur ce mur — utilise Arranger pour déplacer", "ok", 2500);
+        return;
       }
       if (item.classList.contains('autre')) {
         const autreSalle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(t.id));
@@ -1366,12 +1372,17 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
   div.id = 'confirm-autre-salle';
   div.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:400;background:var(--bg2);border:1.5px solid var(--gold);border-radius:14px;padding:.9rem 1rem;max-width:310px;width:88%;box-shadow:0 8px 32px rgba(0,0,0,.6);';
   div.innerHTML = `<p style="font-size:13px;margin-bottom:.75rem;line-height:1.5;"><strong style="color:var(--gold);">"${toile.titre||'Sans titre'}"</strong> est dans <strong>${nomAutre}</strong>.<br>Que faire ?</p>
-    <div style="display:flex;gap:.5rem;">
-      <button id="conf-ann" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:12px;cursor:pointer;">Autre toile</button>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+      <button id="conf-ann" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:12px;cursor:pointer;">Annuler</button>
+      <button id="conf-edit" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--gold);background:transparent;color:var(--gold);font-size:12px;cursor:pointer;">✏️ Modifier</button>
       <button id="conf-ok" style="flex:1;padding:.5rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-size:12px;font-weight:600;cursor:pointer;">Retirer et placer ici</button>
     </div>`;
   document.body.appendChild(div);
   document.getElementById('conf-ann').addEventListener('click', () => div.remove());
+  document.getElementById('conf-edit').addEventListener('click', () => {
+    div.remove();
+    ouvrirFormulaireEdition(toile.id);
+  });
   document.getElementById('conf-ok').addEventListener('click', () => {
     div.remove();
     toilesSelectionnees.add(toile.id);
@@ -1779,6 +1790,23 @@ async function sauverToile() {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
       let photo = toiles[idx].photo;
       if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64);
+      // Protection dimensions : si les cases changent, retirer du mur
+      const ancienDim = toiles[idx].dimensions;
+      const nouvelDim = donnees.dimensions;
+      if (ancienDim && nouvelDim) {
+        const avant = calcCases(ancienDim);
+        const apres = calcCases(nouvelDim);
+        if (avant.w !== apres.w || avant.h !== apres.h) {
+          let retiree = false;
+          salles.forEach(s => {
+            if ((s.positions||[]).some(p => p.id === toileEnEdition)) {
+              s.positions = s.positions.filter(p => p.id !== toileEnEdition);
+              retiree = true;
+            }
+          });
+          if (retiree) toast("Dimensions modifiées — toile retirée du mur, à replacer via Arranger", "ok", 5000);
+        }
+      }
       // Déplace de salle si besoin
       if (salleCibleToile) {
         salles.forEach(s => { s.toiles = s.toiles.filter(id => id !== toileEnEdition); });
