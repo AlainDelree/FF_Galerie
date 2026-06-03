@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FF Galerie — Admin</title>
+<title>Daw Wanpram — Admin</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
   <link rel="stylesheet" href="../../assets/css/admin.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
@@ -62,7 +62,7 @@
 <div id="ecran-principal" class="ecran">
 
   <header class="adm-hdr">
-    <span class="adm-logo">FF Galerie</span>
+    <span class="adm-logo">Daw Wanpram</span>
     <div class="hdr-droite">
       <span class="sync-badge hidden" id="badge-sync"></span>
       <button class="btn-logout" id="btn-logout" title="Déconnexion">⏻</button>
@@ -505,8 +505,8 @@
 
   <!-- Config paths -->
   <script>
-    window.ADMIN_DATA_PATH = "artistes/daw/data/";
-    window.ADMIN_REPO_PATH = "artistes/daw/data/";
+    window.ADMIN_DATA_PATH = "data/";                  /* fetch local — relatif à cette page */
+    window.ADMIN_REPO_PATH = "artistes/daw/data/";     /* GitHub API — chemin depuis la racine du repo */
     window.ADMIN_PREFIX    = "daw";
   </script>
   <script src="../../assets/js/admin.js"></script>
