@@ -276,23 +276,27 @@
     .plancher-sol {
       width:100%; height:75px;
       background: linear-gradient(to bottom,
-        rgba(28,18,8,.92) 0%, rgba(38,25,12,.98) 100%);
+        rgba(185,138,80,.95) 0%, rgba(158,112,55,.98) 100%);
       position:relative; overflow:visible;
       display:flex; align-items:flex-end;
       z-index:3;
     }
-    /* Lattes parquet */
+    /* Lattes parquet chêne clair */
     .plancher-sol::before {
       content:''; position:absolute; inset:0;
       background:
-        repeating-linear-gradient(90deg, transparent 0, transparent 44px, rgba(0,0,0,.12) 44px, rgba(0,0,0,.12) 45px),
-        repeating-linear-gradient(to bottom, transparent 0, transparent 14px, rgba(255,255,255,.025) 14px, rgba(255,255,255,.025) 15px);
+        repeating-linear-gradient(90deg,
+          transparent 0, transparent 42px,
+          rgba(120,75,20,.25) 42px, rgba(120,75,20,.25) 44px),
+        repeating-linear-gradient(to bottom,
+          transparent 0, transparent 13px,
+          rgba(100,60,10,.15) 13px, rgba(100,60,10,.15) 14px);
       pointer-events:none;
     }
-    /* Reflet du mur sur le sol */
+    /* Reflet lumineux sur le parquet */
     .plancher-sol::after {
-      content:''; position:absolute; top:0; left:0; right:0; height:20px;
-      background:linear-gradient(to bottom, rgba(255,255,255,.04), transparent);
+      content:''; position:absolute; top:0; left:0; right:0; height:24px;
+      background:linear-gradient(to bottom, rgba(255,240,200,.18), transparent);
       pointer-events:none;
     }
     .silhouettes-sol { width:100%; position:relative; z-index:4; overflow:visible; }
