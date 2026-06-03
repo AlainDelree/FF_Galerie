@@ -1,11 +1,21 @@
 [
   {
-    "id":       "daw",
-    "nom":      "Daw Wanpram",
-    "logo":     "DW",
-    "lien":     "artistes/daw/",
+    "id": "daw",
+    "nom": "Daw Wanpram",
+    "logo": "DW",
+    "lien": "artistes/daw/",
     "repoPath": "artistes/daw/data/",
-    "prefix":   "daw",
-    "draft":    true
+    "prefix": "daw",
+    "draft": true
+  },
+  {
+    "id": "alain",
+    "nom": "Alain",
+    "logo": "AL",
+    "lien": "artistes/alain/",
+    "repoPath": "artistes/alain/data/",
+    "prefix": "alain",
+    "draft": true,
+    "genre": "m"
   }
 ]

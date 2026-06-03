@@ -207,7 +207,7 @@
 
 
   <!-- ── VUE ARTISTES INVITÉS (Fred uniquement) ── -->
-  <div id="vue-artistes" class="vue">
+  <div id="vue-artistes" class="vue" style="overflow-y:auto;max-height:calc(100vh - 120px);">
     <div class="infos-adm-wrap">
 
       <div class="infos-section">
@@ -242,6 +242,7 @@
               <select class="inp" id="art-genre">
                 <option value="f">Féminin — Invitée</option>
                 <option value="m">Masculin — Invité</option>
+                <option value="n">Aucun / Neutre</option>
               </select>
             </div>
             <div class="infos-champ" style="flex:1;justify-content:flex-end;">

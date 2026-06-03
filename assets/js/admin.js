@@ -2109,8 +2109,8 @@ function afficherArtistes() {
       "</div>" +
       "<div class=\"artiste-actions\">" +
         btnPublier +
-        "<button class=\"event-btn\" onclick=\"ouvrirModifierArtiste(" + i + ")\">✏️</button>" +
-        "<button class=\"event-btn\" onclick=\"ouvrirGalerieArtiste('" + a.id + "')\">↗</button>" +
+        "<button class=\"event-btn\" title=\"Modifier\" onclick=\"ouvrirModifierArtiste(" + i + ")\">✏️</button>" +
+        "<button class=\"event-btn\" title=\"Vers l'accueil\" onclick=\"ouvrirGalerieArtiste('" + a.id + "')\">↗</button>" +
       "</div>" +
     "</div>";
   }).join("");
@@ -2242,15 +2242,14 @@ async function creerArtiste() {
 
   try {
     const fichiers = genererFichiers(artiste);
+    /* Inclure artistes.json dans le même commit — évite le conflit "not a fast forward" */
+    const { lien, repoPath, prefix } = artiste;
+    const nouveauxArtistes = artistesData.concat([{ id, nom, logo, lien, repoPath, prefix, draft, genre }]);
+    fichiers.push({ chemin: "data/artistes.json", contenu: JSON.stringify(nouveauxArtistes, null, 2) });
     prog.textContent = "Création sur GitHub (" + fichiers.length + " fichiers)…";
     await commitMulti(fichiers, "Nouvel artiste invité : " + nom);
-
-    prog.textContent = "Mise à jour artistes.json…";
-    const { id: _id, nom: _n, logo: _l, lien, repoPath, prefix, draft: _d, genre: _g } = artiste;
-    artistesData.push({ id, nom, logo, lien, repoPath, prefix, draft, genre });
-    await sauvegarderArtistesJSON("Ajout artiste : " + nom);
-
-    prog.textContent = "✓ Espace créé ! Rechargement…";
+    artistesData = nouveauxArtistes;
+    prog.textContent = "✓ Espace créé !";
     document.getElementById("form-artiste-wrap").style.display = "none";
     afficherArtistes();
   } catch (e) {
@@ -2268,7 +2267,7 @@ async function sauvegarderArtistesJSON(message) {
 
 /* ── Générateur de fichiers ── */
 function genererFichiers(a) {
-  const invite = a.genre === "m" ? "Invité" : "Invitée";
+  const invite = a.genre === "m" ? "Invité" : a.genre === "n" ? "Invité·e" : "Invitée";
   const emailU = a.email ? a.email.split("@")[0] : "";
   const emailD = a.email ? a.email.split("@")[1] : "";
   const base   = "artistes/" + a.id + "/";
