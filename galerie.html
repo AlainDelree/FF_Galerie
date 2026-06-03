@@ -246,7 +246,7 @@
 
     /* Portes dans le mur inférieur */
     .porte-mur {
-      flex-shrink:0; width:48px; height:68px;
+      flex-shrink:0; width:40px; height:60px;
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       cursor:pointer; background:none; border:none; padding:0; z-index:2;
       transition:filter .2s;
@@ -254,15 +254,15 @@
     .porte-mur:hover { filter:brightness(1.25); }
     .porte-mur.invisible { opacity:0; pointer-events:none; }
     .pm-ouverture {
-      width:36px; height:56px; border-radius:18px 18px 0 0;
+      width:30px; height:44px; border-radius:15px 15px 0 0;
       background: radial-gradient(ellipse at 50% 120%,
         rgba(255,220,120,.22) 0%, rgba(0,0,0,.82) 55%);
       border:2.5px solid rgba(255,255,255,.35); border-bottom:none;
       position:relative; overflow:hidden;
     }
     .pm-ouverture::after {
-      content:''; position:absolute; inset:3px 3px 0;
-      border-radius:15px 15px 0 0;
+      content:''; position:absolute; inset:2px 2px 0;
+      border-radius:13px 13px 0 0;
       background:radial-gradient(ellipse at 50% 120%, rgba(255,235,160,.14) 0%, rgba(0,0,0,.85) 55%);
     }
     .pm-nom {
@@ -506,7 +506,10 @@
       }
 
       /* Mur-inférieur compact */
-      .mur-inferieur { height:58px !important; }
+      .mur-inferieur { height:55px !important; }
+      .porte-mur { height:52px !important; width:36px !important; }
+      .pm-ouverture { height:38px !important; width:26px !important; border-radius:13px 13px 0 0 !important; }
+      .pm-nom { font-size:.45rem !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
       /* Plancher */
@@ -1001,10 +1004,10 @@
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: 40,        hBase: 40, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: 53,        hBase: 53, opacite: 0.65, nbMax: nb.lo },                 // lointain
-        { yFloor: 75,        hBase: 80, opacite: 0.70, nbMax: nb.mi },                 // milieu
-        { yFloor: VH,        hBase: 160, opacite: 0.86, nbMax: nb.av }                 // avant-scène
+        { yFloor: 32,        hBase: 32, opacite: 0.52, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: 42,        hBase: 42, opacite: 0.65, nbMax: nb.lo },                 // lointain
+        { yFloor: 64,        hBase: 64, opacite: 0.72, nbMax: nb.mi },                 // milieu
+        { yFloor: VH,        hBase: 128, opacite: 0.86, nbMax: nb.av }                 // avant-scène
       ];
 
       // Distribue avec pool cyclique : si total > 8, réutilise des silhouettes
