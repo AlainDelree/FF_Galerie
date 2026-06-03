@@ -348,7 +348,25 @@ textarea.champ{resize:vertical;min-height:65px;}
   flex:1;gap:.8rem;color:var(--muted);font-size:.85rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{animation:spin .8s linear infinite;}
+
+/* ══ OVERLAY RECADRAGE ══ */
+#overlay-crop{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;}
+#overlay-crop.ouvert{display:flex;}
+.crop-modal{display:flex;flex-direction:column;width:min(96vw,480px);
+  max-height:90dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
+.crop-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:.7rem 1rem;border-bottom:1px solid var(--brd);font-weight:600;font-size:.95rem;}
+.crop-hdr button{background:none;border:none;color:var(--muted);font-size:1.4rem;
+  cursor:pointer;line-height:1;padding:0 .2rem;}
+.crop-canvas-wrap{flex:1;overflow:hidden;min-height:0;background:#111;}
+.crop-canvas-wrap img{display:block;max-width:100%;}
+.crop-aide{font-size:.68rem;letter-spacing:.1em;text-align:center;
+  color:var(--muted);padding:.45rem .5rem;background:var(--bg3);}
+.crop-ftr{display:flex;gap:.6rem;padding:.75rem 1rem;border-top:1px solid var(--brd);}
+.crop-ftr button{flex:1;}
 </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -525,7 +543,7 @@ textarea.champ{resize:vertical;min-height:65px;}
             Sélectionne une toile dans le stock, puis clique sur le mur pour la placer
           </div>
           <!-- Arranger déplacé ici, sous l'aperçu du mur -->
-          <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;text-align:center;">🔧 Arranger le mur</button>
+          <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;justify-content:center;">🔧 Arranger le mur</button>
         </div>
 
       </div><!-- /edit-corps -->
@@ -1114,9 +1132,8 @@ function afficherMur() {
   (salleActive.positions || []).forEach(p => {
     const t = toiles.find(x => x.id === p.id);
     if (!t) return;
-    const estSel = peintureSurMurSel === p.id;
     const el = document.createElement('div');
-    el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '') + (estSel ? ' sel-mur' : '');
+    el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '');
     el.style.gridColumn = `${p.col} / span ${p.w}`;
     el.style.gridRow    = `${p.row} / span ${p.h}`;
     el.style.borderColor = t.visible === false ? '' : couleurCadresActuel;
@@ -1126,36 +1143,12 @@ function afficherMur() {
       el.appendChild(img);
     } else { el.style.background = 'rgba(255,255,255,.05)'; }
 
-    if (estSel) {
-      // Overlay flèches
-      const ov = document.createElement('div'); ov.className = 'tp-arrows';
-      ov.innerHTML = `
-        <button class="tp-arr" data-d="0,-1" title="Haut">↑</button>
-        <div class="tp-arrows-mid">
-          <button class="tp-arr" data-d="-1,0" title="Gauche">←</button>
-          <button class="tp-arr suppr" data-rm="1" title="Retirer">✕</button>
-          <button class="tp-arr" data-d="1,0" title="Droite">→</button>
-        </div>
-        <button class="tp-arr" data-d="0,1" title="Bas">↓</button>`;
-      ov.querySelectorAll('[data-d]').forEach(btn => {
-        btn.addEventListener('click', e => {
-          e.stopPropagation();
-          const [dc, dr] = btn.dataset.d.split(',').map(Number);
-          deplacerPeinture(p.id, dc, dr);
-        });
-      });
-      ov.querySelector('[data-rm]').addEventListener('click', e => {
-        e.stopPropagation(); retirerToile(p.id);
-      });
-      el.appendChild(ov);
-    } else {
-      const lbl = document.createElement('div');
-      lbl.className = 'tp-lbl'; lbl.textContent = t.titre || '—';
-      el.appendChild(lbl);
-    }
+    const lbl = document.createElement('div');
+    lbl.className = 'tp-lbl'; lbl.textContent = t.titre || '—';
+    el.appendChild(lbl);
 
     el.addEventListener('click', () => {
-      toast('Utilise "🔧 Arranger" pour déplacer ou retirer les toiles', 'err');
+      toast("Utilise \"🔧 Arranger\" pour déplacer ou retirer les toiles", 'err');
     });
     bg.appendChild(el);
   });
@@ -2295,6 +2288,7 @@ function ouvrirCrop(file, callback) {
         zoomOnWheel: false,
       });
     };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
