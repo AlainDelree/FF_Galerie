@@ -301,6 +301,12 @@ textarea.champ{resize:vertical;min-height:65px;}
 .photo-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .photo-preview{width:100%;max-height:140px;object-fit:contain;border-radius:6px;display:none;}
 .photo-ph{color:var(--muted);font-size:.85rem;}
+.btn-recadrer-photo{display:none;width:100%;margin-top:.4rem;padding:.42rem;
+  border-radius:var(--r);border:0.5px solid rgba(200,160,80,.4);
+  background:rgba(200,160,80,.08);color:var(--gold);font-size:12px;
+  cursor:pointer;text-align:center;transition:background .15s;}
+.btn-recadrer-photo:hover{background:rgba(200,160,80,.18);}
+.btn-recadrer-photo.visible{display:block;}
 /* Prix */
 .prix-wrap{position:relative;}
 .prix-icone{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);
@@ -592,6 +598,7 @@ textarea.champ{resize:vertical;min-height:65px;}
           <img class="photo-preview" id="photo-prev" alt="">
           <div class="photo-ph" id="photo-ph">Appuyer pour choisir une photo</div>
         </div>
+        <button type="button" class="btn-recadrer-photo" id="btn-recadrer-photo">✂ Recadrer / Tourner la photo existante</button>
       </div>
       <div class="grp">
         <label class="lbl" for="inp-titre">Titre <span style="color:var(--muted)">(optionnel)</span></label>
@@ -1692,6 +1699,7 @@ function viderFormToile() {
   $('inp-larg').value = ''; $('inp-haut').value = '';
   $('photo-prev').style.display = 'none';
   $('photo-ph').style.display = '';
+  $('btn-recadrer-photo').classList.remove('visible');
   document.querySelectorAll('.salle-pill').forEach(p => p.classList.remove('sel'));
   salleCibleToile = salleActive?.id || null;
   document.querySelectorAll('.salle-pill').forEach(p => {
@@ -1716,7 +1724,11 @@ function remplirFormToile(t) {
   }
   remplirSelectTaille();
   $('sel-taille').value = t.taille || '';
-  if (t.photo) { $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none'; }
+  if (t.photo) {
+    $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block';
+    $('photo-ph').style.display = 'none';
+    $('btn-recadrer-photo').classList.add('visible');
+  }
   salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
   document.querySelectorAll('.salle-pill').forEach(p => {
     p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
@@ -2332,6 +2344,42 @@ $('btn-crop-valider').addEventListener('click', () => {
   fermerCrop();
   if (cb) cb(b64);
 });
+function ouvrirCropDepuisSrc(src, callback) {
+  cropCallback = callback;
+  if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
+  const img = $('crop-img');
+  img.crossOrigin = "anonymous";
+  $('overlay-crop').classList.add('ouvert');
+  img.onload = () => {
+    if (typeof Cropper === "undefined") {
+      fermerCrop();
+      toast("Outil de recadrage non disponible", "err");
+      if (cropCallback) cropCallback(null);
+      return;
+    }
+    cropperInst = new Cropper(img, {
+      viewMode: 1, dragMode: "move", autoCropArea: 0.88,
+      restore: false, guides: true, center: true, highlight: false,
+      cropBoxMovable: true, cropBoxResizable: true,
+      toggleDragModeOnDblclick: false, responsive: true,
+      movable: true, zoomable: true, zoomOnTouch: true, zoomOnWheel: false,
+    });
+  };
+  img.src = src;
+}
+
+$('btn-recadrer-photo').addEventListener('click', () => {
+  const src = $('photo-prev').src;
+  if (!src) return;
+  ouvrirCropDepuisSrc(src, b64 => {
+    if (!b64) return;
+    photoB64 = b64;
+    $('photo-prev').src = 'data:image/jpeg;base64,' + photoB64;
+    $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
+    $('btn-recadrer-photo').classList.add('visible');
+  });
+});
+
 $('btn-close-crop').addEventListener('click', fermerCrop);
 $('btn-crop-annuler').addEventListener('click', fermerCrop);
 $('btn-rot-g').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(-90); });
@@ -2344,6 +2392,7 @@ $('inp-photo').addEventListener('change', e => {
     photoB64 = b64;
     $('photo-prev').src = 'data:image/jpeg;base64,' + photoB64;
     $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
+    $('btn-recadrer-photo').classList.add('visible');
   });
 });
 
