@@ -8,9 +8,11 @@
    ============================================================= */
 
 const GALERIE_CFG = {
-  toiles: window.GALERIE_TOILES_PATH || 'data/toiles.json',
-  salles: window.GALERIE_SALLES_PATH || 'data/salles.json',
-  home:   window.GALERIE_HOME        || 'index.html'
+  toiles:  window.GALERIE_TOILES_PATH  || 'data/toiles.json',
+  salles:  window.GALERIE_SALLES_PATH  || 'data/salles.json',
+  home:    window.GALERIE_HOME         || 'index.html',
+  infos:   window.GALERIE_INFOS_PATH   || 'infos.html',
+  contact: window.GALERIE_CONTACT_PATH || 'contact.html'
 };
 
     let salleCourante = 1;
@@ -188,9 +190,9 @@ const GALERIE_CFG = {
 
       // Panneaux de navigation sur pied (visibles desktop via CSS)
       [
-        { href:"infos.html",   cls:"pan-infos",   txt:"← Infos"   },
-        { href:"contact.html", cls:"pan-contact", txt:"Contact ↓" },
-        { href:"index.html",   cls:"pan-accueil", txt:"Accueil →" }
+        { href:GALERIE_CFG.infos,   cls:"pan-infos",   txt:"← Infos"   },
+        { href:GALERIE_CFG.contact, cls:"pan-contact", txt:"Contact ↓" },
+        { href:GALERIE_CFG.home,    cls:"pan-accueil", txt:"Accueil →" }
       ].forEach(function(p) {
         const a = document.createElement("a");
         a.className = "panneau-nav " + p.cls;

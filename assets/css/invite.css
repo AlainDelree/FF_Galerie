@@ -1,0 +1,26 @@
+/* =============================================================
+   FF_Galerie — invite.css
+   Bandeau "Invitée de Frédérique Ferette" commun aux pages invitées
+   ============================================================= */
+
+.bandeau-invite {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: rgba(10,8,5,.92);
+  border-bottom: 1px solid rgba(200,160,80,.18);
+  display: flex; align-items: center; justify-content: center;
+  padding: .35rem 1rem;
+  font-family: 'Lato', sans-serif;
+  font-size: .68rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(200,160,80,.6);
+}
+.bandeau-invite a {
+  color: rgba(200,160,80,.8);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(200,160,80,.3);
+  transition: color .2s, border-color .2s;
+  margin-left: .5rem;
+}
+.bandeau-invite a:hover { color: #c8a050; border-color: #c8a050; }
+.scene-entree { padding-top: 2rem; }
