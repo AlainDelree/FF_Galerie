@@ -2145,7 +2145,6 @@ document.getElementById("btn-ajouter-artiste").addEventListener("click", () => {
   document.getElementById("art-nom").value   = "";
   document.getElementById("art-id").value    = "";
   document.getElementById("art-logo").value  = "";
-  document.getElementById("art-email").value = "";
   document.getElementById("art-genre").value = "f";
   document.getElementById("art-draft").checked = true;
   document.getElementById("art-id").removeAttribute("readonly");
@@ -2164,7 +2163,6 @@ function ouvrirModifierArtiste(idx) {
   document.getElementById("art-nom").value   = a.nom   || "";
   document.getElementById("art-id").value    = a.id    || "";
   document.getElementById("art-logo").value  = a.logo  || "";
-  document.getElementById("art-email").value = a.email || "";
   document.getElementById("art-genre").value = a.genre || "f";
   document.getElementById("art-draft").checked = !!a.draft;
   /* id non modifiable en édition */
@@ -2199,7 +2197,6 @@ async function creerArtiste() {
   const nom   = document.getElementById("art-nom").value.trim();
   const id    = document.getElementById("art-id").value.trim().toLowerCase();
   const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,2).toUpperCase();
-  const email = document.getElementById("art-email").value.trim();
   const genre = document.getElementById("art-genre").value;
   const draft = document.getElementById("art-draft").checked;
   const err   = document.getElementById("form-artiste-err");
@@ -2238,7 +2235,7 @@ async function creerArtiste() {
   prog.textContent = "Génération des fichiers…";
   document.getElementById("btn-sauver-artiste").disabled = true;
 
-  const artiste = { id, nom, logo, email, genre,
+  const artiste = { id, nom, logo, genre,
     lien: "artistes/" + id + "/",
     repoPath: "artistes/" + id + "/data/",
     prefix: id, draft };
@@ -2264,7 +2261,9 @@ async function creerArtiste() {
 }
 
 async function sauvegarderArtistesJSON(message) {
-  await sauvegarderFichier("data/artistes.json", artistesData, message);
+  await commitMulti([
+    { chemin: "data/artistes.json", contenu: JSON.stringify(artistesData, null, 2) }
+  ], message);
 }
 
 /* ── Générateur de fichiers ── */

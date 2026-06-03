@@ -79,7 +79,7 @@
 
   <nav class="onglets">
     <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
-    <button class="onglet" data-vue="vue-infos">Infos &amp; Agenda</button>
+    <button class="onglet" data-vue="vue-infos">Infos &amp; Contact</button>
     <button class="onglet" data-vue="vue-artistes" id="onglet-artistes" style="display:none">Artistes invités</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
   </nav>
@@ -236,10 +236,6 @@
               <input class="inp" type="text" id="art-logo" placeholder="MD" maxlength="3" style="text-transform:uppercase;text-align:center;">
             </div>
           </div>
-          <div class="infos-champ">
-            <label class="lbl" for="art-email">Email (optionnel)</label>
-            <input class="inp" type="email" id="art-email" placeholder="marie@example.com">
-          </div>
           <div style="display:flex;gap:.5rem;">
             <div class="infos-champ" style="flex:1;">
               <label class="lbl" for="art-genre">Genre</label>
@@ -268,7 +264,7 @@
   </div><!-- /vue-artistes -->
 
   <!-- ── VUE INFOS & AGENDA ── -->
-  <div id="vue-infos" class="vue">
+  <div id="vue-infos" class="vue" style="overflow-y:auto;max-height:calc(100vh - 120px);">
     <div class="infos-adm-wrap">
 
       <!-- Section Événements -->
@@ -328,37 +324,39 @@
             <input class="inp" type="tel" id="cnt-tel" placeholder="+32 xxx xx xx xx">
           </div>
           <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.4rem 0 0;">Réseaux sociaux — URL ou nom d'utilisateur</div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-instagram">📸 Instagram</label>
-            <input class="inp" type="text" id="cnt-instagram" placeholder="https://instagram.com/...">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-facebook">👤 Facebook</label>
-            <input class="inp" type="text" id="cnt-facebook" placeholder="https://facebook.com/...">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-tiktok">🎵 TikTok</label>
-            <input class="inp" type="text" id="cnt-tiktok" placeholder="@username">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-pinterest">📌 Pinterest</label>
-            <input class="inp" type="text" id="cnt-pinterest" placeholder="https://pinterest.com/...">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-youtube">▶ YouTube</label>
-            <input class="inp" type="text" id="cnt-youtube" placeholder="https://youtube.com/@...">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-twitter">🐦 X / Twitter</label>
-            <input class="inp" type="text" id="cnt-twitter" placeholder="@username">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-linkedin">💼 LinkedIn</label>
-            <input class="inp" type="text" id="cnt-linkedin" placeholder="https://linkedin.com/in/...">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-site">🌐 Site web</label>
-            <input class="inp" type="url" id="cnt-site" placeholder="https://...">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-instagram">📸 Instagram</label>
+              <input class="inp" type="text" id="cnt-instagram" placeholder="instagram.com/...">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-facebook">👤 Facebook</label>
+              <input class="inp" type="text" id="cnt-facebook" placeholder="facebook.com/...">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-tiktok">🎵 TikTok</label>
+              <input class="inp" type="text" id="cnt-tiktok" placeholder="@username">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-pinterest">📌 Pinterest</label>
+              <input class="inp" type="text" id="cnt-pinterest" placeholder="pinterest.com/...">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-youtube">▶ YouTube</label>
+              <input class="inp" type="text" id="cnt-youtube" placeholder="youtube.com/@...">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-twitter">🐦 X / Twitter</label>
+              <input class="inp" type="text" id="cnt-twitter" placeholder="@username">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-linkedin">💼 LinkedIn</label>
+              <input class="inp" type="text" id="cnt-linkedin" placeholder="linkedin.com/in/...">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-site">🌐 Site web</label>
+              <input class="inp" type="url" id="cnt-site" placeholder="https://...">
+            </div>
           </div>
         </div>
       </div>
