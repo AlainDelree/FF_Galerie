@@ -222,6 +222,12 @@ async function lireFichierJSON(chemin) {
   return { data: JSON.parse(contenu), sha: rep.sha };
 }
 
+async function lireFichierTexte(chemin) {
+  const rep = await apiGH(`/repos/${REPO}/contents/${chemin}`);
+  const bytes = Uint8Array.from(atob(rep.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
 async function commitMulti(fichiers, message) {
   const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
   const commitSha = ref.object.sha;
@@ -2156,7 +2162,7 @@ function slugify(nom) {
     .replace(/[^a-z0-9]/g, "").slice(0, 12);
 }
 function initiales(nom) {
-  return nom.split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+  return nom.split(/\s+/).map(w => w[0] || "").join("").slice(0, 4).toUpperCase();
 }
 
 let artisteEditIdx = null; /* null = création, nombre = modification */
@@ -2219,7 +2225,7 @@ document.getElementById("btn-sauver-artiste").addEventListener("click", creerArt
 async function creerArtiste() {
   const nom   = document.getElementById("art-nom").value.trim();
   const id    = document.getElementById("art-id").value.trim().toLowerCase();
-  const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,2).toUpperCase();
+  const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,4).toUpperCase();
   const genre = document.getElementById("art-genre").value;
   const draft = document.getElementById("art-draft").checked;
   const err   = document.getElementById("form-artiste-err");
@@ -2230,9 +2236,10 @@ async function creerArtiste() {
   /* ── Mode modification ── */
   if (artisteEditIdx !== null) {
     const a = artistesData[artisteEditIdx];
+    const ancienNom  = a.nom;
+    const ancienLogo = a.logo;
     a.nom   = nom;
     a.logo  = logo;
-    a.email = email;
     a.genre = genre;
     a.draft = draft;
     err.textContent = "";
@@ -2240,7 +2247,22 @@ async function creerArtiste() {
     prog.textContent = "Sauvegarde…";
     document.getElementById("btn-sauver-artiste").disabled = true;
     try {
-      await sauvegarderArtistesJSON("Modification artiste : " + nom);
+      const fichiers = [{ chemin: "data/artistes.json", contenu: JSON.stringify(artistesData, null, 2) }];
+      /* Mettre à jour les fichiers HTML si nom ou logo ont changé */
+      if (nom !== ancienNom || logo !== ancienLogo) {
+        prog.textContent = "Mise à jour des pages…";
+        const pages = ["index.html", "galerie.html", "infos.html", "contact.html"];
+        for (const page of pages) {
+          try {
+            const chemin = "artistes/" + a.id + "/" + page;
+            let contenu = await lireFichierTexte(chemin);
+            if (ancienLogo) contenu = contenu.split(">" + ancienLogo + "<").join(">" + logo + "<");
+            if (ancienNom)  contenu = contenu.split(ancienNom).join(nom);
+            fichiers.push({ chemin, contenu });
+          } catch(e) { /* fichier absent, on ignore */ }
+        }
+      }
+      await commitMulti(fichiers, "Modification artiste : " + nom);
       prog.textContent = "✓ Enregistré";
       document.getElementById("form-artiste-wrap").style.display = "none";
       afficherArtistes();
