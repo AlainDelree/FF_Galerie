@@ -36,7 +36,7 @@
       "description": "",
       "dimensions": {
         "type": "paysage",
-        "largeur": 810,
+        "largeur": 80,
         "hauteur": 45
       },
       "visible": true,
