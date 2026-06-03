@@ -3,7 +3,9 @@
    et un bloc nav avec id="nav-artistes" + id="sep-artistes" */
 (function () {
   var path = window.ARTISTES_JSON_PATH || "data/artistes.json";
-  var isPreview = new URLSearchParams(window.location.search).get("preview") === "boss";
+  var urlPreview = new URLSearchParams(window.location.search).get("preview") === "boss";
+  if (urlPreview) sessionStorage.setItem("ff_boss_preview", "1");
+  var isPreview = urlPreview || sessionStorage.getItem("ff_boss_preview") === "1";
 
   fetch(path + "?v=" + Date.now())
     .then(function (r) { return r.json(); })
