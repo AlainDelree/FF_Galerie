@@ -2247,22 +2247,11 @@ async function creerArtiste() {
     prog.textContent = "Sauvegarde…";
     document.getElementById("btn-sauver-artiste").disabled = true;
     try {
-      const fichiers = [{ chemin: "data/artistes.json", contenu: JSON.stringify(artistesData, null, 2) }];
-      /* Mettre à jour les fichiers HTML si nom ou logo ont changé */
-      if (nom !== ancienNom || logo !== ancienLogo) {
-        prog.textContent = "Mise à jour des pages…";
-        const pages = ["index.html", "galerie.html", "infos.html", "contact.html"];
-        for (const page of pages) {
-          try {
-            const chemin = "artistes/" + a.id + "/" + page;
-            let contenu = await lireFichierTexte(chemin);
-            if (ancienLogo) contenu = contenu.split(">" + ancienLogo + "<").join(">" + logo + "<");
-            if (ancienNom)  contenu = contenu.split(ancienNom).join(nom);
-            fichiers.push({ chemin, contenu });
-          } catch(e) { /* fichier absent, on ignore */ }
-        }
-      }
-      await commitMulti(fichiers, "Modification artiste : " + nom);
+      /* artiste-info.js rend les pages dynamiques → seul artistes.json à mettre à jour */
+      await commitMulti(
+        [{ chemin: "data/artistes.json", contenu: JSON.stringify(artistesData, null, 2) }],
+        "Modification artiste : " + nom
+      );
       prog.textContent = "✓ Enregistré";
       document.getElementById("form-artiste-wrap").style.display = "none";
       afficherArtistes();
@@ -2405,6 +2394,7 @@ const TPL_INDEX = `<!DOCTYPE html>
   </script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/plan.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
@@ -2483,6 +2473,7 @@ const TPL_GALERIE = `<!DOCTYPE html>
   </script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/galerie.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
@@ -2529,6 +2520,7 @@ const TPL_INFOS = `<!DOCTYPE html>
   <script>window.INFOS_DATA_PATH = "data/infos.json";</script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/infos.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
@@ -2576,6 +2568,7 @@ const TPL_CONTACT = `<!DOCTYPE html>
   <script>window.CONTACT_DATA_PATH = "data/contact.json";</script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/contact.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
