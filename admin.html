@@ -79,6 +79,7 @@
   <nav class="onglets">
     <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
     <button class="onglet" data-vue="vue-infos">Infos &amp; Agenda</button>
+    <button class="onglet" data-vue="vue-artistes" id="onglet-artistes" style="display:none">Artistes invités</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
   </nav>
 
@@ -203,6 +204,67 @@
     </div><!-- /edit-section -->
   </div><!-- /vue-galerie -->
 
+
+  <!-- ── VUE ARTISTES INVITÉS (Fred uniquement) ── -->
+  <div id="vue-artistes" class="vue">
+    <div class="infos-adm-wrap">
+
+      <div class="infos-section">
+        <div class="infos-section-hdr">
+          <span class="infos-section-titre">Artistes invités</span>
+          <button class="bas-btn" id="btn-ajouter-artiste">＋ Nouvel artiste</button>
+        </div>
+        <div id="liste-artistes"></div>
+      </div>
+
+      <!-- Formulaire -->
+      <div class="infos-form-wrap" id="form-artiste-wrap" style="display:none;">
+        <div class="infos-form-titre" id="form-artiste-titre">Nouvel artiste invité</div>
+        <div class="infos-form-body">
+          <div class="infos-champ">
+            <label class="lbl" for="art-nom">Nom complet</label>
+            <input class="inp" type="text" id="art-nom" placeholder="Marie Dupont">
+          </div>
+          <div style="display:flex;gap:.5rem;">
+            <div class="infos-champ" style="flex:1;">
+              <label class="lbl" for="art-id">Identifiant URL</label>
+              <input class="inp" type="text" id="art-id" placeholder="marie" style="font-family:monospace;">
+            </div>
+            <div class="infos-champ" style="flex:0 0 80px;">
+              <label class="lbl" for="art-logo">Initiales</label>
+              <input class="inp" type="text" id="art-logo" placeholder="MD" maxlength="3" style="text-transform:uppercase;text-align:center;">
+            </div>
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="art-email">Email (optionnel)</label>
+            <input class="inp" type="email" id="art-email" placeholder="marie@example.com">
+          </div>
+          <div style="display:flex;gap:.5rem;">
+            <div class="infos-champ" style="flex:1;">
+              <label class="lbl" for="art-genre">Genre</label>
+              <select class="inp" id="art-genre">
+                <option value="f">Féminin — Invitée</option>
+                <option value="m">Masculin — Invité</option>
+              </select>
+            </div>
+            <div class="infos-champ" style="flex:1;justify-content:flex-end;">
+              <label class="lbl">&nbsp;</label>
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.8rem;color:var(--muted);">
+                <input type="checkbox" id="art-draft" checked> En préparation (draft)
+              </label>
+            </div>
+          </div>
+          <div class="err-txt" id="form-artiste-err"></div>
+          <div class="infos-form-actions">
+            <button class="btn btn-or" id="btn-sauver-artiste">✦ Créer l'espace</button>
+            <button class="bas-btn" id="btn-annuler-artiste">Annuler</button>
+          </div>
+          <div id="artiste-progress" style="display:none;font-size:.78rem;color:var(--muted);margin-top:.4rem;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /vue-artistes -->
 
   <!-- ── VUE INFOS & AGENDA ── -->
   <div id="vue-infos" class="vue">

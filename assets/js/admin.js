@@ -1544,6 +1544,7 @@ document.querySelectorAll('.onglet').forEach(o => {
     $(o.dataset.vue).classList.add('active');
     if (o.dataset.vue === 'vue-backup') chargerCommits();
     if (o.dataset.vue === 'vue-infos') chargerInfos();
+    if (o.dataset.vue === 'vue-artistes') chargerVueArtistes();
   });
 });
 
@@ -2021,3 +2022,452 @@ document.getElementById('btn-ajouter-event').addEventListener('click', () => ouv
 document.getElementById('btn-sauver-event').addEventListener('click', sauverFormulaireEvent);
 document.getElementById('btn-annuler-event').addEventListener('click', fermerFormulaireEvent);
 document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
+
+
+// ═══════════════════════════════════════════════
+// VUE ARTISTES INVITÉS (Fred uniquement)
+// ═══════════════════════════════════════════════
+
+/* Afficher l'onglet uniquement pour Frédérique */
+(function () {
+  if (ADMIN_CFG.prefix === "ff") {
+    const btn = document.getElementById("onglet-artistes");
+    if (btn) btn.style.display = "";
+  }
+})();
+
+let artistesData = [];
+
+/* Chargement au clic sur l'onglet */
+async function chargerVueArtistes() {
+  try {
+    const res = await lireFichierJSON("data/artistes.json");
+    artistesData = res.data || [];
+    afficherArtistes();
+  } catch (e) {
+    artistesData = [];
+    afficherArtistes();
+  }
+}
+
+function afficherArtistes() {
+  const liste = document.getElementById("liste-artistes");
+  if (!liste) return;
+  if (!artistesData.length) {
+    liste.innerHTML = "<div class=\"event-vide\">Aucun artiste invité pour l'instant</div>";
+    return;
+  }
+  liste.innerHTML = artistesData.map((a, i) => {
+    const badge = a.draft
+      ? "<span class=\"artiste-badge draft\">Draft</span>"
+      : "<span class=\"artiste-badge live\">En ligne</span>";
+    const btnPublier = a.draft
+      ? "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Publier</button>"
+      : "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Masquer</button>";
+    return "<div class=\"artiste-card\">" +
+      "<div class=\"artiste-logo-mini\">" + (a.logo || "?") + "</div>" +
+      "<div class=\"artiste-infos\">" +
+        "<div class=\"artiste-nom\">" + a.nom + " " + badge + "</div>" +
+        "<div class=\"artiste-meta\">artistes/" + a.id + "/  &nbsp;·&nbsp; prefix: " + a.prefix + "</div>" +
+      "</div>" +
+      "<div class=\"artiste-actions\">" +
+        btnPublier +
+        "<button class=\"event-btn\" onclick=\"ouvrirGalerieArtiste('" + a.id + "')\">↗</button>" +
+      "</div>" +
+    "</div>";
+  }).join("");
+}
+
+function ouvrirGalerieArtiste(id) {
+  window.open("artistes/" + id + "/", "_blank");
+}
+
+async function toggleDraftArtiste(idx) {
+  artistesData[idx].draft = !artistesData[idx].draft;
+  await sauvegarderArtistesJSON("Statut artiste mis à jour : " + artistesData[idx].nom);
+  afficherArtistes();
+}
+
+/* ── Formulaire nouvel artiste ── */
+function slugify(nom) {
+  return nom.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "").slice(0, 12);
+}
+function initiales(nom) {
+  return nom.split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+}
+
+document.getElementById("btn-ajouter-artiste").addEventListener("click", () => {
+  document.getElementById("art-nom").value   = "";
+  document.getElementById("art-id").value    = "";
+  document.getElementById("art-logo").value  = "";
+  document.getElementById("art-email").value = "";
+  document.getElementById("art-genre").value = "f";
+  document.getElementById("art-draft").checked = true;
+  document.getElementById("form-artiste-err").textContent = "";
+  document.getElementById("artiste-progress").style.display = "none";
+  document.getElementById("form-artiste-wrap").style.display = "";
+  document.getElementById("art-nom").focus();
+});
+
+document.getElementById("art-nom").addEventListener("input", function () {
+  const v = this.value.trim();
+  if (!document.getElementById("art-id").dataset.modifie)
+    document.getElementById("art-id").value = slugify(v);
+  if (!document.getElementById("art-logo").dataset.modifie)
+    document.getElementById("art-logo").value = initiales(v);
+});
+document.getElementById("art-id").addEventListener("input",   function () { this.dataset.modifie = "1"; });
+document.getElementById("art-logo").addEventListener("input",  function () { this.dataset.modifie = "1"; });
+
+document.getElementById("btn-annuler-artiste").addEventListener("click", () => {
+  document.getElementById("form-artiste-wrap").style.display = "none";
+  delete document.getElementById("art-id").dataset.modifie;
+  delete document.getElementById("art-logo").dataset.modifie;
+});
+
+document.getElementById("btn-sauver-artiste").addEventListener("click", creerArtiste);
+
+/* ── Création complète ── */
+async function creerArtiste() {
+  const nom   = document.getElementById("art-nom").value.trim();
+  const id    = document.getElementById("art-id").value.trim().toLowerCase();
+  const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,2).toUpperCase();
+  const email = document.getElementById("art-email").value.trim();
+  const genre = document.getElementById("art-genre").value;
+  const draft = document.getElementById("art-draft").checked;
+  const err   = document.getElementById("form-artiste-err");
+  const prog  = document.getElementById("artiste-progress");
+
+  if (!nom) { err.textContent = "Le nom est obligatoire."; return; }
+  if (!id || !/^[a-z0-9]+$/.test(id)) { err.textContent = "L'identifiant ne peut contenir que des lettres et chiffres."; return; }
+  if (artistesData.find(a => a.id === id)) { err.textContent = "Cet identifiant existe déjà."; return; }
+
+  err.textContent = "";
+  prog.style.display = "";
+  prog.textContent = "Génération des fichiers…";
+  document.getElementById("btn-sauver-artiste").disabled = true;
+
+  const artiste = { id, nom, logo, email, genre,
+    lien: "artistes/" + id + "/",
+    repoPath: "artistes/" + id + "/data/",
+    prefix: id, draft };
+
+  try {
+    const fichiers = genererFichiers(artiste);
+    prog.textContent = "Création sur GitHub (" + fichiers.length + " fichiers)…";
+    await commitMulti(fichiers, "Nouvel artiste invité : " + nom);
+
+    prog.textContent = "Mise à jour artistes.json…";
+    const { id: _id, nom: _n, logo: _l, lien, repoPath, prefix, draft: _d, genre: _g } = artiste;
+    artistesData.push({ id, nom, logo, lien, repoPath, prefix, draft, genre });
+    await sauvegarderArtistesJSON("Ajout artiste : " + nom);
+
+    prog.textContent = "✓ Espace créé ! Rechargement…";
+    document.getElementById("form-artiste-wrap").style.display = "none";
+    afficherArtistes();
+  } catch (e) {
+    err.textContent = "Erreur : " + e.message;
+    prog.style.display = "none";
+  }
+  document.getElementById("btn-sauver-artiste").disabled = false;
+}
+
+async function sauvegarderArtistesJSON(message) {
+  await sauvegarderFichier("data/artistes.json", artistesData, message);
+}
+
+/* ── Générateur de fichiers ── */
+function genererFichiers(a) {
+  const invite = a.genre === "m" ? "Invité" : "Invitée";
+  const emailU = a.email ? a.email.split("@")[0] : "";
+  const emailD = a.email ? a.email.split("@")[1] : "";
+  const base   = "artistes/" + a.id + "/";
+
+  function r(tpl) {
+    return tpl
+      .replace(/{{NOM}}/g,     a.nom)
+      .replace(/{{LOGO}}/g,    a.logo)
+      .replace(/{{ID}}/g,      a.id)
+      .replace(/{{INVITE}}/g,  invite)
+      .replace(/{{EMAIL_U}}/g, emailU)
+      .replace(/{{EMAIL_D}}/g, emailD);
+  }
+
+  const toiles = JSON.stringify({
+    tailles: [{code:"XXS",label:"Très petite"},{code:"XS",label:"Petite"},
+              {code:"M",label:"Moyenne"},{code:"XL",label:"Grande"},
+              {code:"XXL",label:"Très grande"},{code:"E",label:"Étirée"}],
+    toiles: []
+  }, null, 2);
+
+  const salles = JSON.stringify({
+    salles: [{id:1,nom:"Salle I",theme:"",couleur_mur:"#1e1e1e",
+      couleur_cadres:"#3a3a3a",texture:"none",visible:true,toiles:[],positions:[]}]
+  }, null, 2);
+
+  const infos = JSON.stringify({ evenements: [], collegues: [] }, null, 2);
+
+  return [
+    { chemin: base + "data/toiles.json", contenu: toiles },
+    { chemin: base + "data/salles.json", contenu: salles },
+    { chemin: base + "data/infos.json",  contenu: infos  },
+    { chemin: base + "index.html",       contenu: r(TPL_INDEX)   },
+    { chemin: base + "galerie.html",     contenu: r(TPL_GALERIE) },
+    { chemin: base + "infos.html",       contenu: r(TPL_INFOS)   },
+    { chemin: base + "contact.html",     contenu: r(TPL_CONTACT) },
+    { chemin: base + "admin.html",       contenu: r(TPL_ADMIN)   },
+  ];
+}
+
+/* ── Templates HTML ── */
+const TPL_INDEX = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{{NOM}} — Peintures</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/plan.css">
+  <link rel="stylesheet" href="../../assets/css/invite.css">
+</head>
+<body class="theme-sombre">
+  <div class="bandeau-invite">
+    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
+  </div>
+  <div class="scene-entree">
+    <header class="entete">
+      <nav class="nav-pages">
+        <a href="index.html" class="lien-contact actif">Accueil</a>
+        <span class="nav-sep">|</span>
+        <a href="infos.html" class="lien-contact">Infos</a>
+        <span class="nav-sep">|</span>
+        <a href="contact.html" class="lien-contact">Contact</a>
+      </nav>
+    </header>
+    <main class="contenu-principal">
+      <div class="encadre-titre">
+        <h1 class="nom-artiste">{{NOM}}</h1>
+        <p class="sous-titre">Peintures</p>
+        <div class="separateur"></div>
+        <p class="titre-galerie">Galerie</p>
+        <div class="plan-galerie" id="plan-galerie">
+          <div id="plan-svg-wrap" style="width:100%;"></div>
+          <p class="plan-legende">Cliquez sur une salle pour y entrer</p>
+        </div>
+      </div>
+    </main>
+    <footer class="pied">
+      <div class="signature-artiste">{{LOGO}}</div>
+      <span class="mention">&copy; {{NOM}}</span>
+    </footer>
+  </div>
+  <script>
+    window.PLAN_SALLES_PATH  = "data/salles.json";
+    window.PLAN_GALERIE_PATH = "galerie.html";
+  </script>
+  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/plan.js"></script>
+</body>
+</html>`;
+
+const TPL_GALERIE = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Galerie — {{NOM}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/galerie.css">
+  <link rel="stylesheet" href="../../assets/css/invite.css">
+  <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+</head>
+<body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
+  <div class="bandeau-invite">
+    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
+  </div>
+  <header class="entete" style="margin-top:1.6rem;">
+    <nav class="nav-pages">
+      <a href="index.html" class="lien-contact">Accueil</a>
+      <span class="nav-sep">|</span>
+      <a href="infos.html" class="lien-contact">Infos</a>
+      <span class="nav-sep">|</span>
+      <a href="contact.html" class="lien-contact">Contact</a>
+    </nav>
+    <div class="controles">
+      <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
+        <span id="iconeMusique">&#9835;</span>
+      </button>
+    </div>
+  </header>
+  <main class="galerie-principale">
+    <nav class="barre-navigation" aria-label="Navigation entre les salles">
+      <button class="btn-nav-salle" id="btnPrecedent" aria-label="Salle précédente" disabled>&#8249;</button>
+      <span class="indicateur-salle">Salle <span id="numSalle">1</span>&thinsp;/&thinsp;1</span>
+      <button class="btn-nav-salle" id="btnSuivant" aria-label="Salle suivante">&#8250;</button>
+    </nav>
+    <div class="dots" id="dotsNav" aria-hidden="true"><div class="dot actif"></div></div>
+    <div class="conteneur-salles" id="conteneurSalles"></div>
+    <div class="nav-mobile" id="navMobile">
+      <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)">&#8249;</button>
+      <span class="nav-mobile-info" id="navMobInfo"></span>
+      <button class="nav-mobile-btn" id="navMobD" onclick="allerSalle(salleCourante+1)">&#8250;</button>
+    </div>
+  </main>
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitre">
+    <div class="modal-contenu">
+      <button class="modal-fermer" id="modalFermer" aria-label="Fermer">
+        <svg viewBox="0 0 14 14" width="13" height="13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
+      <div class="modal-image-wrap" id="modalImageWrap"></div>
+      <div class="modal-fiche">
+        <h2 class="modal-titre" id="modalTitre"></h2>
+        <div class="modal-separateur"></div>
+        <div class="modal-ligne"><span class="modal-label">Date</span><span class="modal-valeur" id="modalDate"></span></div>
+        <div class="modal-ligne"><span class="modal-label">Style</span><span class="modal-valeur" id="modalStyle"></span></div>
+        <div class="modal-ligne"><span class="modal-label">Matériaux</span><span class="modal-valeur" id="modalMateriaux"></span></div>
+        <div class="modal-ligne"><span class="modal-label">Dimensions</span><span class="modal-valeur" id="modalDimensions"></span></div>
+        <div class="modal-ligne" id="modalDescLigne"><span class="modal-label">Description</span><span class="modal-valeur" id="modalDesc"></span></div>
+      </div>
+    </div>
+  </div>
+  <footer class="pied"><span class="mention">&copy; {{NOM}}</span></footer>
+  <script>
+    window.GALERIE_TOILES_PATH  = "data/toiles.json";
+    window.GALERIE_SALLES_PATH  = "data/salles.json";
+    window.GALERIE_HOME         = "index.html";
+    window.GALERIE_INFOS_PATH   = "infos.html";
+    window.GALERIE_CONTACT_PATH = "contact.html";
+  </script>
+  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/galerie.js"></script>
+</body>
+</html>`;
+
+const TPL_INFOS = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{{NOM}} — Infos &amp; Agenda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/infos.css">
+  <link rel="stylesheet" href="../../assets/css/invite.css">
+</head>
+<body class="theme-sombre">
+  <div class="bandeau-invite">
+    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
+  </div>
+  <div class="scene-entree">
+    <header class="entete">
+      <nav class="nav-pages">
+        <a href="index.html" class="lien-contact">Accueil</a>
+        <span class="nav-sep">|</span>
+        <a href="infos.html" class="lien-contact actif">Infos</a>
+        <span class="nav-sep">|</span>
+        <a href="contact.html" class="lien-contact">Contact</a>
+      </nav>
+    </header>
+    <main class="contenu-principal">
+      <div class="encadre-titre">
+        <h1 class="contact-titre" style="font-family:'Cinzel',serif;font-weight:400;font-size:1.6rem;letter-spacing:.38em;text-transform:uppercase;background:linear-gradient(135deg,#c8a050 0%,#f0d080 40%,#c8a050 60%,#e8c060 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 1.2rem;">Infos &amp; Agenda</h1>
+        <div class="separateur"></div>
+        <div class="infos-wrap" id="infosWrap"><p class="vide">Chargement…</p></div>
+      </div>
+    </main>
+    <footer class="pied">
+      <div class="signature-artiste">{{LOGO}}</div>
+      <span class="mention">&copy; {{NOM}}</span>
+    </footer>
+  </div>
+  <script>window.INFOS_DATA_PATH = "data/infos.json";</script>
+  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/infos.js"></script>
+</body>
+</html>`;
+
+const TPL_CONTACT = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{{NOM}} — Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Lato:wght@300;400&family=Cinzel:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/contact.css">
+  <link rel="stylesheet" href="../../assets/css/invite.css">
+</head>
+<body class="theme-sombre">
+  <div class="bandeau-invite">
+    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
+  </div>
+  <div class="scene-entree">
+    <header class="entete">
+      <nav class="nav-pages">
+        <a href="index.html" class="lien-contact">Accueil</a>
+        <span class="nav-sep">|</span>
+        <a href="infos.html" class="lien-contact">Infos</a>
+        <span class="nav-sep">|</span>
+        <a href="contact.html" class="lien-contact actif">Contact</a>
+      </nav>
+    </header>
+    <main class="contenu-principal">
+      <div class="encadre-titre">
+        <h1 class="contact-titre">Contact</h1>
+        <p class="contact-accroche">Pour tout renseignement</p>
+        <div class="separateur"></div>
+        <div class="contact-bloc">
+          <div class="contact-item">
+            <span class="contact-label">Courrier électronique</span>
+            <div class="contact-email-wrap">
+              <a class="lien-email" href="#" data-u="{{EMAIL_U}}" data-d="{{EMAIL_D}}" aria-label="Envoyer un email à {{NOM}}">
+                {{EMAIL_U}}&#64;{{EMAIL_D}}
+              </a>
+              <button class="btn-copier" id="btnCopier" aria-label="Copier" title="Copier">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copie-ok">Copié !</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="pied">
+      <div class="signature-artiste">{{LOGO}}</div>
+      <span class="mention">&copy; {{NOM}}</span>
+    </footer>
+  </div>
+  <script src="../../assets/js/main.js"></script>
+  <script src="../../assets/js/contact.js"></script>
+</body>
+</html>`;
+
+const TPL_ADMIN = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=../../admin.html?artiste={{ID}}">
+  <script>window.location.replace("../../admin.html?artiste={{ID}}");<\/script>
+</head>
+<body></body>
+</html>`;

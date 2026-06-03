@@ -498,3 +498,34 @@ textarea.champ{resize:vertical;min-height:65px;}
   gap: .5rem;
   margin-top: .3rem;
 }
+
+/* ══ VUE ARTISTES INVITÉS ══ */
+.artiste-card {
+  padding: .65rem .8rem;
+  border-bottom: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+}
+.artiste-card:last-child { border-bottom: none; }
+.artiste-logo-mini {
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--brd2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700;
+  color: var(--gold); letter-spacing: .04em;
+  flex-shrink: 0;
+}
+.artiste-infos { flex: 1; min-width: 0; }
+.artiste-nom { font-size: .85rem; color: var(--text); }
+.artiste-meta { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
+.artiste-badge {
+  font-size: .62rem; letter-spacing: .08em;
+  padding: .1rem .4rem; border-radius: 3px;
+  text-transform: uppercase;
+}
+.artiste-badge.draft { background: rgba(180,130,0,.15); color: #b88000; border: 1px solid rgba(180,130,0,.3); }
+.artiste-badge.live  { background: rgba(0,160,80,.12);  color: #00a050; border: 1px solid rgba(0,160,0,.25); }
+.artiste-actions { display: flex; gap: .3rem; flex-shrink: 0; }
