@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FF Galerie — Admin</title>
@@ -524,14 +523,16 @@ textarea.champ{resize:vertical;min-height:65px;}
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:.2rem;" id="mur-aide">
             Sélectionne une toile dans le stock, puis clique sur le mur pour la placer
           </div>
+          <!-- Arranger déplacé ici, sous l'aperçu du mur -->
+          <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;">🔧 Arranger le mur</button>
         </div>
 
       </div><!-- /edit-corps -->
 
       <!-- Barre basse -->
       <div class="bas-barre">
-        <button class="bas-btn" id="btn-arranger-mur">🔧 Arranger</button>
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajouter</button>
+        <button class="bas-btn" id="btn-modifier-toile">✏️ Modifier</button>
         <button class="bas-btn" id="btn-uploader">⬆ Uploader</button>
         <button class="bas-btn" id="btn-telecharger">⬇ Télécharger</button>
       </div>
@@ -2158,6 +2159,19 @@ $('btn-rename').addEventListener('click', async () => {
 // Bouton placer sur le mur
 $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
 $('btn-placer-mur').addEventListener('click', entrerModePlacement);
+
+// Bouton Modifier : ouvre le formulaire d'édition pour la toile sélectionnée
+$('btn-modifier-toile').addEventListener('click', () => {
+  // Cherche une toile sélectionnée dans le stock
+  const sel = selectedToile || (toilesSelectionnees.size === 1
+    ? toiles.find(t => t.id === [...toilesSelectionnees][0])
+    : null);
+  if (sel) {
+    ouvrirFormulaireEdition(sel.id);
+  } else {
+    toast('Sélectionne d\'abord une toile dans le stock', 'err');
+  }
+});
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
 
