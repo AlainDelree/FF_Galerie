@@ -110,6 +110,10 @@ button{cursor:pointer;}
 .chip.sel .cn{color:var(--gold);}
 .chip.vide{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);}
 .chip.vide .cn{color:#ef9fa0;}
+.chip{position:relative;}
+.chip-sync{position:absolute;top:-6px;right:-6px;background:rgba(180,120,0,.92);
+  color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;
+  pointer-events:none;white-space:nowrap;}
 
 .chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
   border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;
@@ -927,6 +931,25 @@ let salleCibleToile = null;
 let photoB64 = null;
 let toilesEnAttente = new Map(); // id → timestamp de sauvegarde
 let timerAttenteInterval = null;
+let sallesEnAttente = new Map(); // id → timestamp de sauvegarde
+let timerAttenteChipInterval = null;
+
+function marquerSalleEnAttente(id) {
+  if (!id) return;
+  sallesEnAttente.set(id, Date.now());
+  if (timerAttenteChipInterval) return;
+  timerAttenteChipInterval = setInterval(() => {
+    const now = Date.now();
+    sallesEnAttente.forEach((ts, sid) => {
+      if (now - ts >= 65000) sallesEnAttente.delete(sid);
+    });
+    afficherPlan();
+    if (sallesEnAttente.size === 0) {
+      clearInterval(timerAttenteChipInterval);
+      timerAttenteChipInterval = null;
+    }
+  }, 1000);
+}
 
 function demarrerTimerAttente() {
   if (timerAttenteInterval) return;
@@ -1142,6 +1165,14 @@ function afficherPlan() {
     chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} toile${s.toiles.length > 1 ? 's' : ''}</div>`;
+    if (sallesEnAttente.has(s.id)) {
+      const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
+      const restant = Math.max(0, 60 - elapsed);
+      const badge = document.createElement('div');
+      badge.className = 'chip-sync';
+      badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
+      chip.appendChild(badge);
+    }
     chip.addEventListener('click', () => selectSalle(s.id));
     cont.appendChild(chip);
   });
@@ -2051,6 +2082,7 @@ async function creerSalle() {
   fermerModalSalle();
   try {
     await sauvegarder(`[admin] Ajout salle "${nom}"`);
+    marquerSalleEnAttente(newId);
     afficherPlan();
     selectSalle(newId);
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
@@ -2384,7 +2416,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
 $('btn-toggle-visible').addEventListener('click', async () => {
   if (!salleActive) return;
   salleActive.visible = !salleActive.visible;
-  try { await sauvegarder(`[admin] ${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); afficherPlan(); }
+  try { await sauvegarder(`[admin] ${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); marquerSalleEnAttente(salleActive?.id); afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
 
@@ -2421,7 +2453,7 @@ $('btn-rename').addEventListener('click', async () => {
   salleActive.nom = nom;
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
-  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); afficherPlan(); }
+  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
 
@@ -2444,7 +2476,7 @@ window.addEventListener('popstate', () => {
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
   btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
-  try { await sauvegarder('[admin] Mise à jour galerie'); }
+  try { await sauvegarder('[admin] Mise à jour galerie'); marquerSalleEnAttente(salleActive?.id); }
   catch (_) {}
   btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
 });
