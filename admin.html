@@ -363,6 +363,10 @@ textarea.champ{resize:vertical;min-height:65px;}
 .crop-canvas-wrap img{display:block;max-width:100%;}
 .crop-aide{font-size:.68rem;letter-spacing:.1em;text-align:center;
   color:var(--muted);padding:.45rem .5rem;background:var(--bg3);}
+.crop-rot-barre{display:flex;gap:.5rem;padding:.5rem .75rem 0;justify-content:center;}
+.crop-rot-btn{padding:.38rem .8rem;border-radius:8px;border:0.5px solid var(--brd);
+  background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;transition:border-color .15s;}
+.crop-rot-btn:hover{border-color:var(--gold);color:var(--gold);}
 .crop-ftr{display:flex;gap:.6rem;padding:.75rem 1rem;border-top:1px solid var(--brd);}
 .crop-ftr button{flex:1;}
 </style>
@@ -526,7 +530,6 @@ textarea.champ{resize:vertical;min-height:65px;}
         <div class="stock-col">
           <div class="stock-hdr" id="stock-hdr">Stock</div>
           <div class="stock-list" id="stock-list"></div>
-          <button class="btn-placer-mur" id="btn-placer-mur">▶ Placer<br><span id="placer-count">0</span> toile(s)</button>
           <div class="stock-leg">
             <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
             <div class="leg-li"><div class="leg-sq" style="color:rgba(192,57,43,.6);"></div>Autre salle</div>
@@ -540,7 +543,7 @@ textarea.champ{resize:vertical;min-height:65px;}
             <!-- Généré par JS -->
           </div>
           <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:.2rem;" id="mur-aide">
-            Sélectionne une toile dans le stock, puis clique sur le mur pour la placer
+            Utilise "🔧 Arranger le mur" pour placer ou déplacer les toiles
           </div>
           <!-- Arranger déplacé ici, sous l'aperçu du mur -->
           <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;justify-content:center;">🔧 Arranger le mur</button>
@@ -805,6 +808,11 @@ textarea.champ{resize:vertical;min-height:65px;}
     </div>
     <div class="crop-canvas-wrap">
       <img id="crop-img" alt="Photo à recadrer">
+    </div>
+    <div class="crop-rot-barre">
+      <button class="crop-rot-btn" id="btn-rot-g" title="Rotation 90° gauche">↺ 90°</button>
+      <button class="crop-rot-btn" id="btn-rot-d" title="Rotation 90° droite">↻ 90°</button>
+      <button class="crop-rot-btn" id="btn-rot-180" title="Retourner 180°">↕ 180°</button>
     </div>
     <div class="crop-aide">Pincer pour zoomer · Glisser pour déplacer · Coins pour redimensionner</div>
     <div class="crop-ftr">
@@ -1147,9 +1155,6 @@ function afficherMur() {
     lbl.className = 'tp-lbl'; lbl.textContent = t.titre || '—';
     el.appendChild(lbl);
 
-    el.addEventListener('click', () => {
-      toast("Utilise \"🔧 Arranger\" pour déplacer ou retirer les toiles", 'err');
-    });
     bg.appendChild(el);
   });
 
@@ -1224,11 +1229,8 @@ function retirerToile(toileId) {
 
 function selectionnerPeintureMur(toileId) {
   peintureSurMurSel = peintureSurMurSel === toileId ? null : toileId;
-  selectedToile = null; // désélectionne le stock
+  selectedToile = null;
   afficherMur(); afficherStock();
-  $('mur-aide').textContent = peintureSurMurSel
-    ? 'Utilise les flèches pour déplacer · ✕ pour retirer'
-    : 'Sélectionne une toile dans le stock, puis clique sur le mur pour la placer';
 }
 
 function deplacerPeinture(toileId, dCol, dRow) {
@@ -2309,11 +2311,15 @@ $('btn-crop-valider').addEventListener('click', () => {
     imageSmoothingQuality: 'high',
   });
   const b64 = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];
+  const cb = cropCallback;
   fermerCrop();
-  if (cropCallback) cropCallback(b64);
+  if (cb) cb(b64);
 });
 $('btn-close-crop').addEventListener('click', fermerCrop);
 $('btn-crop-annuler').addEventListener('click', fermerCrop);
+$('btn-rot-g').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(-90); });
+$('btn-rot-d').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(90); });
+$('btn-rot-180').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(180); });
 
 $('inp-photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
