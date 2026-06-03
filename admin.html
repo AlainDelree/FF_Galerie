@@ -525,7 +525,7 @@ textarea.champ{resize:vertical;min-height:65px;}
             Sélectionne une toile dans le stock, puis clique sur le mur pour la placer
           </div>
           <!-- Arranger déplacé ici, sous l'aperçu du mur -->
-          <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;">🔧 Arranger le mur</button>
+          <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;text-align:center;">🔧 Arranger le mur</button>
         </div>
 
       </div><!-- /edit-corps -->
@@ -2227,12 +2227,18 @@ function ouvrirCrop(file, callback) {
   cropCallback = callback;
   const reader = new FileReader();
   reader.onload = e => {
-    const img = $('crop-img');
-    // Détruit l'instance précédente
     if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
-    img.src = e.target.result;
+    const img = $('crop-img');
     $('overlay-crop').classList.add('ouvert');
+    // onload AVANT src pour éviter le race condition mobile
     img.onload = () => {
+      if (typeof Cropper === "undefined") {
+        // Fallback si Cropper.js pas chargé : utilise la photo sans recadrage
+        fermerCrop();
+        toast('Outil de recadrage non disponible (réseau lent) — photo utilisée sans recadrage', 'err');
+        if (cropCallback) cropCallback(e.target.result.split(",")[1]);
+        return;
+      }
       cropperInst = new Cropper(img, {
         viewMode: 1,
         dragMode: 'move',
@@ -2285,6 +2291,72 @@ $('inp-photo').addEventListener('change', e => {
     $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
   });
 });
+
+// ── Guide des tailles ──
+function ouvrirGuide() {
+  const tbody = $('guide-tbody');
+  tbody.innerHTML = '';
+  // Dimensions types par code (portrait/paysage)
+  const dims = {
+    'XXS': '40×30 cm',
+    'XS':  '40×50 cm',
+    'M':   '70×50, 75×55 cm',
+    'XL':  '80×60, 80×45 cm',
+    'XXL': '100×75, 115×75 cm',
+    'E':   '100×40 cm (étirée)'
+  };
+  tailles.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom:0.5px solid var(--brd);';
+    tr.innerHTML = '<td style="padding:.45rem .5rem;font-weight:600;color:var(--gold);">'+t.code+'</td>' +
+      '<td style="padding:.45rem .5rem;">'+t.label+'</td>' +
+      '<td style="padding:.45rem .5rem;color:var(--muted);font-size:11px;">'+(dims[t.code]||'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+  $('overlay-guide').classList.add('ouvert');
+  $('overlay-guide').style.display = 'flex';
+}
+$('btn-guide-tailles').addEventListener('click', ouvrirGuide);
+$('btn-close-guide').addEventListener('click', () => {
+  $('overlay-guide').classList.remove('ouvert');
+  $('overlay-guide').style.display = 'none';
+});
+$('overlay-guide').addEventListener('click', e => {
+  if (e.target === $('overlay-guide')) { $('overlay-guide').style.display = 'none'; }
+});
+
+// ── Auto-sélection code taille selon dimensions ──
+function autoSelectTaille() {
+  const fv = $('sel-format').value;
+  let l = 0, h = 0;
+  if (fv === 'custom') {
+    l = parseInt($('inp-larg')?.value) || 0;
+    h = parseInt($('inp-haut')?.value) || 0;
+  } else if (fv && fv !== '' && fv !== 'ronde50') {
+    const parts = fv.split('x');
+    if (parts.length === 2) { l = parseInt(parts[0]); h = parseInt(parts[1]); }
+  }
+  if (!l || !h) return;
+  const s = new Set([l, h]);
+  const f = (a, b) => s.has(a) && s.has(b);
+  let code = null;
+  if (f(40,30)) code = 'XXS';
+  else if (f(40,50)||f(50,40)) code = 'XS';
+  else if (f(70,50)||f(75,55)||f(55,75)) code = 'M';
+  else if (f(80,60)||f(60,80)||f(80,45)) code = 'XL';
+  else if (f(115,75)||f(100,75)) code = 'XXL';
+  else if (f(100,40)) code = 'E';
+  if (code && $('sel-taille').querySelector('option[value="'+code+'"]')) {
+    $('sel-taille').value = code;
+  }
+}
+// Écoute les changements de format/dimensions
+document.addEventListener('change', e => {
+  if (e.target.id === 'sel-format' || e.target.id === 'inp-larg' || e.target.id === 'inp-haut') {
+    autoSelectTaille();
+  }
+});
+
 $('sel-format').addEventListener('change', () => {
   $('dims-custom').classList.toggle('hidden', $('sel-format').value !== 'custom');
 });
@@ -2344,6 +2416,26 @@ if (sessionStorage.getItem('ff_auth') === '1') {
     <div class="crop-ftr">
       <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
       <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider le recadrage</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── GUIDE DES TAILLES ── -->
+<div id="overlay-guide" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border-radius:14px;width:100%;max-width:360px;overflow:hidden;">
+    <div style="padding:.7rem 1rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:600;">Guide des tailles</span>
+      <button id="btn-close-guide" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="padding:.8rem 1rem;" id="guide-contenu">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:1px solid var(--brd);">
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Code</th>
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Libellé</th>
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Dimensions types</th>
+        </tr></thead>
+        <tbody id="guide-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
