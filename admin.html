@@ -925,7 +925,23 @@ let pendingChanges = false;
 let toileEnEdition = null;
 let salleCibleToile = null;
 let photoB64 = null;
-let toilesEnAttente = new Set(); // IDs sauvegardés, site en cours de déploiement (~1 min)
+let toilesEnAttente = new Map(); // id → timestamp de sauvegarde
+let timerAttenteInterval = null;
+
+function demarrerTimerAttente() {
+  if (timerAttenteInterval) return;
+  timerAttenteInterval = setInterval(() => {
+    const now = Date.now();
+    toilesEnAttente.forEach((ts, id) => {
+      if (now - ts >= 65000) toilesEnAttente.delete(id);
+    });
+    afficherStock();
+    if (toilesEnAttente.size === 0) {
+      clearInterval(timerAttenteInterval);
+      timerAttenteInterval = null;
+    }
+  }, 1000);
+}
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
 let couleurCadresActuel = '#3a3a3a';
@@ -1377,9 +1393,11 @@ function afficherStock() {
     }
 
     if (toilesEnAttente.has(t.id)) {
+      const elapsed = Math.floor((Date.now() - toilesEnAttente.get(t.id)) / 1000);
+      const restant = Math.max(0, 60 - elapsed);
       const sb = document.createElement('div');
       sb.className = 'sync-badge';
-      sb.textContent = '⏳ site ~1 min';
+      sb.textContent = restant > 0 ? `⏳ ${restant}s` : '✓ publié';
       item.appendChild(sb);
     }
 
@@ -1966,8 +1984,8 @@ async function sauverToile() {
     const idSauve = toileEnEdition === null
       ? toiles[toiles.length - 1].id
       : toileEnEdition;
-    toilesEnAttente.add(idSauve);
-    setTimeout(() => { toilesEnAttente.delete(idSauve); afficherStock(); }, 65000);
+    toilesEnAttente.set(idSauve, Date.now());
+    demarrerTimerAttente();
     fermerModalToile();
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
