@@ -282,7 +282,7 @@
 
     /* Sol parquet */
     .plancher-sol {
-      width:100%; min-height:160px; max-height:230px; overflow:visible;
+      width:100%; min-height:160px; max-height:230px; overflow:visible; position:relative;
       background: linear-gradient(to bottom,
         rgba(185,138,80,.95) 0%, rgba(165,118,60,.97) 60%, rgba(158,112,55,.99) 100%);
       position:relative;
@@ -303,7 +303,7 @@
       background:linear-gradient(to bottom, rgba(255,240,200,.15), transparent);
       pointer-events:none;
     }
-    .silhouettes-sol { width:100%; position:relative; z-index:4; overflow:visible; }
+    .silhouettes-sol { position:absolute; inset:0; z-index:4; overflow:visible; pointer-events:none; }
 
     /* ── Plancher galerie (ancien, conservé pour compatibilité) ── */
     .plancher-galerie {
@@ -514,7 +514,7 @@
 
       /* Plancher */
       .plancher-sol    { min-height:120px !important; max-height:175px !important; }
-      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
+      .silhouettes-sol { max-width:600px; left:50%; transform:translateX(-50%); right:auto; width:100%; }
     }
 
         /* Navigation mobile flèches */
@@ -989,7 +989,7 @@
 
       // ── 4 plans de profondeur ──────────────────────────────────────
       // Rendu arrière → avant (algorithme du peintre)
-      const VW = 420, VH = 150;
+      const VW = 420, VH = 160;
 
       // Nombre aléatoire de silhouettes par plan
       const isMobile = window.innerWidth < 901;
@@ -1004,10 +1004,10 @@
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: 32,        hBase: 32, opacite: 0.52, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: 42,        hBase: 42, opacite: 0.65, nbMax: nb.lo },                 // lointain
-        { yFloor: 64,        hBase: 64, opacite: 0.72, nbMax: nb.mi },                 // milieu
-        { yFloor: VH,        hBase: 128, opacite: 0.86, nbMax: nb.av }                 // avant-scène
+        { yFloor: 32,        hBase: 32, opacite: 0.52, nbMax: isMobile ? nb.tl : 0 }, // très lointain — tête à y=0 = base porte
+        { yFloor: 60,        hBase: 42, opacite: 0.65, nbMax: nb.lo },                 // lointain
+        { yFloor: 100,       hBase: 64, opacite: 0.72, nbMax: nb.mi },                 // milieu
+        { yFloor: VH,        hBase: 128, opacite: 0.86, nbMax: nb.av }                 // avant-scène — pieds au sol
       ];
 
       // Distribue avec pool cyclique : si total > 8, réutilise des silhouettes
@@ -1041,8 +1041,8 @@
 
       // Lignes de sol (perspective)
       svgParts.push(
-        '<line x1="0" y1="'+(VH*0.44).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.44).toFixed(0)+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
-        '<line x1="0" y1="'+(VH*0.72).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.72).toFixed(0)+'" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
+        '<line x1="0" y1="60" x2="'+VW+'" y2="60" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
+        '<line x1="0" y1="100" x2="'+VW+'" y2="100" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
       );
 
       // Zones horizontales distinctes par plan (4 entrées = 4 plans)
@@ -1096,7 +1096,7 @@
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:auto;vertical-align:bottom">'+
+        'preserveAspectRatio="none" aria-hidden="true" overflow="visible" style="display:block;width:100%;height:100%;vertical-align:bottom">'+
         svgParts.join("")+"</svg>";
     }
 
