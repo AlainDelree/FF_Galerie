@@ -587,8 +587,6 @@ textarea.champ{resize:vertical;min-height:65px;}
       <div class="bas-barre">
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajouter</button>
         <button class="bas-btn" id="btn-modifier-toile" disabled>✏️ Modifier</button>
-        <button class="bas-btn" id="btn-uploader">⬆ Uploader</button>
-        <button class="bas-btn" id="btn-telecharger">⬇ Télécharger</button>
       </div>
 
     </div><!-- /edit-section -->
@@ -2486,8 +2484,6 @@ $('btn-ajouter-toile').addEventListener('click', () => {
   construirePillsSalle(salleActive?.id || null);
   ouvrirFormulaireNouvel();
 });
-$('btn-uploader').addEventListener('click', () => toast('Upload par toile via "+ Ajouter" → photo'));
-$('btn-telecharger').addEventListener('click', () => toast('Fonctionnalité à venir'));
 
 // Modal toile
 $('btn-close-toile').addEventListener('click', fermerModalToile);
