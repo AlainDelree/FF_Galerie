@@ -435,7 +435,7 @@
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
       .pied { flex-shrink:0; padding:.28rem 0; }
 
-      /* Mur : overhead = header(68)+footer(34)+nom(24)+mur-inf(52)+plancher(160)+marge(12) = 350px */
+      /* Mur : overhead 350px (header+footer+nom+mur-inf+plancher+marge) */
       .mur.mur-grille {
         height: min(calc(100vh - 350px), 660px) !important;
         width: auto !important;
@@ -449,25 +449,22 @@
       .mur-inferieur { height:52px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
-      /* Plancher : fond plein-ecran, overflow visible pour laisser
-         les silhouettes remonter devant le mur */
+      /* Plancher : overflow:visible pour laisser depasser les silhouettes */
       .plancher-sol { min-height:100px !important; max-height:160px !important;
                       overflow:visible !important; }
       .zone-basse   { overflow:visible; }
 
-      /* Silhouettes : translateY(-120px) pour chevaucher le bas du mur
-         Geometrie (SVG 600px = 214px haut, zone-basse = 212px sous mur) :
-           Tres lointain : 79px dans le mur  (silhouettes discrètes)
-           Lointain      : 27px dans le mur  (devant les toiles du bas)
-           Milieu        : 27px sous le mur  (zone de transition)
-           Avant-scene   : 92px sous le mur  (plancher, proches du spectateur) */
+      /* Silhouettes : translateY(-41px) pour que les tetes lointain
+         arrivent exactement au bas du mur sans entrer dedans.
+         Calcul (SVG 600px=214px, zone-basse=212px) :
+           tetes lointain normalement a 41px sous mur → -41px = 0 ✓ */
       .silhouettes-sol {
         max-width: 600px;
         margin: 0 auto;
         width: 100%;
         position: relative;
         z-index: 10;
-        transform: translateY(-120px);
+        transform: translateY(-41px);
         pointer-events: none;
       }
     }
@@ -929,16 +926,14 @@
       // Rendu arrière → avant (algorithme du peintre)
       const VW = 420, VH = 150;
 
-      // Nombre aléatoire de silhouettes par plan (varie à chaque chargement)
+      // Nombre aléatoire de silhouettes par plan
       const nb = {
-        tl: 2 + Math.floor(Math.random() * 4), // très lointain : 2–5
-        lo: 2 + Math.floor(Math.random() * 2), // lointain      : 2–3
-        mi: 2 + Math.floor(Math.random() * 2), // milieu        : 2–3
-        av: 1 + Math.floor(Math.random() * 2)  // avant-scène   : 1–2
+        lo: 2 + Math.floor(Math.random() * 3), // lointain  : 2–4
+        mi: 2 + Math.floor(Math.random() * 2), // milieu    : 2–3
+        av: 1 + Math.floor(Math.random() * 2)  // avant-scène : 1–2
       };
 
       const PLANS = [
-        { yFloor: 30,        hBase: 26, opacite: 0.60, nbMax: nb.tl }, // très lointain
         { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: nb.lo }, // lointain
         { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: nb.mi }, // milieu
         { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: nb.av }  // avant-scène
@@ -958,19 +953,17 @@
       const GAP_INTRA = 9;
       const svgParts = [];
 
-      // Lignes de sol tenues (perspectve)
+      // Lignes de sol (perspective)
       svgParts.push(
-        '<line x1="0" y1="30" x2="'+VW+'" y2="30" stroke="rgba(255,255,255,.025)" stroke-width="1"/>',
         '<line x1="0" y1="'+(VH*0.44).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.44).toFixed(0)+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>',
         '<line x1="0" y1="'+(VH*0.72).toFixed(0)+'" x2="'+VW+'" y2="'+(VH*0.72).toFixed(0)+'" stroke="rgba(255,255,255,.05)" stroke-width="1"/>'
       );
 
-      // Zones horizontales distinctes par plan (évite le clustering central)
+      // Zones horizontales distinctes par plan
       const ZONES = [
-        { debut: 0.24, fin: 0.66 }, // très lointain : centre
-        { debut: 0.03, fin: 0.52 }, // lointain      : gauche
-        { debut: 0.48, fin: 0.96 }, // milieu        : droite
-        { debut: 0.12, fin: 0.84 }  // avant-scène   : large spread
+        { debut: 0.03, fin: 0.52 }, // lointain   : gauche
+        { debut: 0.48, fin: 0.96 }, // milieu     : droite
+        { debut: 0.12, fin: 0.84 }  // avant-scène : large spread
       ];
 
       // Rendu plan par plan (arrière → avant)
