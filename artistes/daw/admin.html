@@ -65,12 +65,14 @@
     <span class="adm-logo">Daw Wanpram</span>
     <div class="hdr-droite">
       <span class="sync-badge hidden" id="badge-sync"></span>
+      <button class="btn-logout" id="btn-changer-token" title="Changer le token GitHub" style="font-size:.75rem;letter-spacing:.04em;padding:0 .5rem;width:auto;border-radius:3px;">🔑</button>
       <button class="btn-logout" id="btn-logout" title="Déconnexion">⏻</button>
     </div>
   </header>
 
   <nav class="onglets">
     <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
+    <button class="onglet" data-vue="vue-infos">Infos &amp; Agenda</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
   </nav>
 
@@ -194,6 +196,61 @@
 
     </div><!-- /edit-section -->
   </div><!-- /vue-galerie -->
+
+  <!-- ── VUE INFOS & AGENDA ── -->
+  <div id="vue-infos" class="vue">
+    <div class="infos-adm-wrap">
+
+      <!-- Section Événements -->
+      <div class="infos-section">
+        <div class="infos-section-hdr">
+          <span class="infos-section-titre">Événements &amp; Agenda</span>
+          <button class="bas-btn" id="btn-ajouter-event">＋ Ajouter</button>
+        </div>
+        <div id="liste-events"></div>
+      </div>
+
+      <!-- Formulaire événement (caché par défaut) -->
+      <div class="infos-form-wrap" id="form-event-wrap" style="display:none;">
+        <div class="infos-form-titre" id="form-event-titre">Nouvel événement</div>
+        <div class="infos-form-body">
+          <input type="hidden" id="form-event-id">
+          <div class="infos-champ">
+            <label class="lbl" for="evt-titre">Titre</label>
+            <input class="inp" type="text" id="evt-titre" placeholder="Nom de l'exposition…">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="evt-date">Date</label>
+            <input class="inp" type="text" id="evt-date" placeholder="ex : 15 mars 2025">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="evt-lieu">Lieu</label>
+            <input class="inp" type="text" id="evt-lieu" placeholder="Ville, Pays…">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="evt-desc">Description</label>
+            <textarea class="inp" id="evt-desc" rows="3" placeholder="Quelques lignes…" style="resize:vertical;font-family:inherit;"></textarea>
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="evt-lien">Lien (optionnel)</label>
+            <input class="inp" type="url" id="evt-lien" placeholder="https://…">
+          </div>
+          <div class="infos-form-actions">
+            <button class="btn btn-or" id="btn-sauver-event">Enregistrer</button>
+            <button class="bas-btn" id="btn-annuler-event">Annuler</button>
+          </div>
+          <div class="err-txt" id="form-event-err"></div>
+        </div>
+      </div>
+
+      <!-- Bouton sauvegarder -->
+      <div style="padding:1rem 0 .5rem;display:flex;gap:.5rem;align-items:center;">
+        <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder les infos</button>
+        <span class="sync-badge hidden" id="badge-infos"></span>
+      </div>
+
+    </div>
+  </div><!-- /vue-infos -->
 
   <!-- ── VUE BACKUP ── -->
   <div id="vue-backup" class="vue">
