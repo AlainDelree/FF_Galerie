@@ -543,7 +543,8 @@
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
       .conteneur-salles   { flex:1; min-height:0; height:100%; align-items:stretch; overflow:visible; }
 
-      /* Salle : aligne et clip */
+      /* Salle : aligne et clip
+         padding lat. = safe-area pour encoche/Dynamic Island iPhone */
       .salle {
         display:flex !important;
         flex-direction:column !important;
@@ -551,7 +552,7 @@
         justify-content:flex-start;
         height:100% !important;
         min-height:unset !important;
-        padding:0;
+        padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
         overflow:hidden;
         position:relative;
       }
