@@ -249,8 +249,9 @@ button{cursor:pointer;}
   background:var(--bg2);display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
 .bas-btn{display:flex;align-items:center;gap:5px;font-size:12px;
   padding:.4rem .85rem;border:0.5px solid var(--brd);
-  border-radius:8px;background:var(--bg3);color:var(--text);transition:border-color .2s;}
-.bas-btn:hover{border-color:var(--gold);color:var(--gold);}
+  border-radius:8px;background:var(--bg3);color:var(--text);transition:border-color .2s,opacity .2s;cursor:pointer;}
+.bas-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+.bas-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
 
 /* ══ BACKUP ══ */
 .backup-hdr{padding:1rem 1rem .7rem;border-bottom:1px solid var(--brd);}
@@ -563,7 +564,7 @@ textarea.champ{resize:vertical;min-height:65px;}
       <!-- Barre basse -->
       <div class="bas-barre">
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajouter</button>
-        <button class="bas-btn" id="btn-modifier-toile">✏️ Modifier</button>
+        <button class="bas-btn" id="btn-modifier-toile" disabled>✏️ Modifier</button>
         <button class="bas-btn" id="btn-uploader">⬆ Uploader</button>
         <button class="bas-btn" id="btn-telecharger">⬇ Télécharger</button>
       </div>
@@ -1338,24 +1339,12 @@ function afficherStock() {
     }
 
     item.addEventListener('click', () => {
-      if (item.classList.contains('pose')) {
-        // Toile sur ce mur → formulaire directement (placement géré par Arranger)
-        ouvrirFormulaireEdition(t.id);
-        return;
-      }
-      if (item.classList.contains('autre')) {
-        // Toile autre salle → sélectionne + formulaire (salle modifiable dedans)
-        toilesSelectionnees.add(t.id);
-        selectedToile = t;
-        afficherStock();
-        ouvrirFormulaireEdition(t.id);
-        return;
-      }
-      // Toile disponible → sélection pour Arranger
       if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
       else toilesSelectionnees.add(t.id);
-      selectedToile = toilesSelectionnees.size === 0 ? null : t;
+      selectedToile = toilesSelectionnees.size === 1
+        ? toiles.find(x => x.id === [...toilesSelectionnees][0]) : null;
       afficherStock();
+      majBoutons();
     });
     item.addEventListener('dblclick', () => ouvrirFormulaireEdition(t.id));
     list.appendChild(item);
@@ -1363,6 +1352,11 @@ function afficherStock() {
 }
 
 function majBtnPlacer() { /* bouton Placer supprimé — Arranger le mur le remplace */ }
+
+function majBoutons() {
+  const n = toilesSelectionnees.size;
+  $('btn-modifier-toile').disabled = (n !== 1);
+}
 
 function afficherConfirmAutreSalle(toile, nomAutre) {
   const ancien = document.getElementById('confirm-autre-salle');
@@ -1386,7 +1380,7 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
     div.remove();
     toilesSelectionnees.add(toile.id);
     selectedToile = toile;
-    afficherStock(); majBtnPlacer();
+    afficherStock(); majBoutons();
     toast(`"${toile.titre||'—'}" prête — sera retirée de ${nomAutre} à la sauvegarde`);
   });
   setTimeout(() => {
@@ -1404,6 +1398,48 @@ let selectedToilePl = null; // toile sélectionnée dans le strip du mode placem
 
 function entrerModePlacement() {
   if (!salleActive) return;
+  // Vérifier si des toiles sélectionnées viennent d'une autre salle
+  const autresSelectionnees = [...toilesSelectionnees].filter(id => {
+    const salle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+    return !!salle;
+  });
+  if (autresSelectionnees.length > 0) {
+    const noms = autresSelectionnees.map(id => {
+      const t = toiles.find(x => x.id === id);
+      const s = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+      return `"${t?.titre || 'Sans titre'}" (${s?.nom || 'autre salle'})`;
+    }).join(', ');
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom);';
+    div.innerHTML = `<div style="background:var(--bg2);border-radius:16px 16px 0 0;padding:1.2rem;width:100%;max-width:480px;box-shadow:0 -8px 32px rgba(0,0,0,.5);">
+      <p style="font-size:13px;line-height:1.6;margin-bottom:1rem;">Ces toiles sont dans une autre salle :<br><strong style="color:var(--gold);">${noms}</strong><br>Elles seront retirées de leur salle actuelle et placées ici.</p>
+      <div style="display:flex;gap:.6rem;">
+        <button id="arr-ann" style="flex:1;padding:.6rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:13px;cursor:pointer;">Annuler</button>
+        <button id="arr-ok" style="flex:1;padding:.6rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-size:13px;font-weight:600;cursor:pointer;">Continuer</button>
+      </div></div>`;
+    document.body.appendChild(div);
+    div.querySelector('#arr-ann').addEventListener('click', () => div.remove());
+    div.querySelector('#arr-ok').addEventListener('click', () => {
+      div.remove();
+      // Retire les toiles de leur ancienne salle
+      autresSelectionnees.forEach(id => {
+        salles.forEach(s => {
+          if (s.id !== salleActive.id) {
+            s.toiles = s.toiles.filter(tid => tid !== id);
+            s.positions = (s.positions||[]).filter(p => p.id !== id);
+          }
+        });
+        if (!salleActive.toiles.includes(id)) salleActive.toiles.push(id);
+      });
+      ouvrirArrangerApresConfirm();
+    });
+    return;
+  }
+  ouvrirArrangerApresConfirm();
+}
+
+function ouvrirArrangerApresConfirm() {
+  if (!salleActive) return;
   const nbPlacees = (salleActive.positions||[]).length;
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
@@ -1418,6 +1454,8 @@ function entrerModePlacement() {
     ? 'Clique une toile du bas pour la placer ou la déplacer'
     : 'Sélectionne une toile en bas, puis clique sur le mur';
 }
+
+
 
 function autoPlacerTout() {
   if (!salleActive) return;
@@ -1462,7 +1500,7 @@ function quitterModePlacement() {
   peintureSurMurSel = null; // efface la sélection avant de revenir en vue normale
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   afficherPlan();
-  afficherStock(); majBtnPlacer();
+  toilesSelectionnees.clear(); afficherStock(); majBoutons();
   buildOccupancy(); afficherMur();
 }
 
@@ -2260,14 +2298,7 @@ $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
 
 // Bouton Modifier : ouvre le formulaire d'édition pour la toile sélectionnée
 $('btn-modifier-toile').addEventListener('click', () => {
-  const sel = selectedToile || (toilesSelectionnees.size === 1
-    ? toiles.find(t => t.id === [...toilesSelectionnees][0])
-    : null);
-  if (sel) {
-    ouvrirFormulaireEdition(sel.id);
-  } else {
-    toast("Sélectionne d'abord une toile dans le stock", "err");
-  }
+  if (selectedToile) ouvrirFormulaireEdition(selectedToile.id);
 });
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
