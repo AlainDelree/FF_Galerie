@@ -476,7 +476,7 @@
     },
     {
       "id": 33,
-      "photo": "",
+      "photo": "assets/images/toiles/toile-033.jpg",
       "source_photo": "admin",
       "titre": "Équilibre Nébuleux",
       "date": "02/10/2015",
@@ -485,7 +485,7 @@
       "description": "",
       "dimensions": {
         "type": "paysage",
-        "largeur": 61,
+        "largeur": 60,
         "hauteur": 50
       },
       "taille": "M",
