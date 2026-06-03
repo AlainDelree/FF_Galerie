@@ -282,7 +282,7 @@
 
     /* Sol parquet */
     .plancher-sol {
-      width:100%; min-height:160px; max-height:230px; overflow:hidden;
+      width:100%; min-height:160px; max-height:230px; overflow:visible;
       background: linear-gradient(to bottom,
         rgba(185,138,80,.95) 0%, rgba(165,118,60,.97) 60%, rgba(158,112,55,.99) 100%);
       position:relative;
@@ -293,8 +293,8 @@
     .plancher-sol::before {
       content:''; position:absolute; inset:0;
       background:
-        repeating-linear-gradient(90deg, transparent 0, transparent 21px, rgba(120,75,20,.22) 21px, rgba(120,75,20,.22) 22px),
-        repeating-linear-gradient(to bottom, transparent 0, transparent 6px, rgba(100,60,10,.12) 6px, rgba(100,60,10,.12) 7px);
+        repeating-linear-gradient(90deg, transparent 0, transparent 10px, rgba(100,60,15,.20) 10px, rgba(100,60,15,.20) 11px),
+        repeating-linear-gradient(to bottom, transparent 0, transparent 50px, rgba(80,45,10,.12) 50px, rgba(80,45,10,.12) 51px);
       pointer-events:none;
     }
     /* Reflet du mur sur le sol */
@@ -1001,8 +1001,8 @@
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: VH * 0.26, hBase: 26, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: nb.lo },                 // lointain
+        { yFloor: VH * 0.20, hBase: 28, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: VH * 0.36, hBase: 42, opacite: 0.62, nbMax: nb.lo },                 // lointain
         { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: nb.mi },                 // milieu
         { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: nb.av }                  // avant-scène
       ];
