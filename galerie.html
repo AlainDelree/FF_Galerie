@@ -471,14 +471,14 @@
       .pan-pole { background:#666; display:block; width:3px; margin:0 auto; }
       .pan-base { background:#555; border-radius:50%; display:block; }
 
-      /* Plan lointain — Accueil → (petit, haut sur le parquet) */
-      .pan-accueil           { left:86%; bottom:48px; }
+      /* Plan lointain — Accueil → (près du mur, entre lointain et mur-inf) */
+      .pan-accueil           { left:86%; bottom:130px; }
       .pan-accueil .pan-board { font-size:.44rem; padding:2px 6px; border-width:1px; }
       .pan-accueil .pan-pole  { height:18px; }
       .pan-accueil .pan-base  { width:20px; height:6px; }
 
-      /* Plan milieu — ← Infos */
-      .pan-infos           { left:9%; bottom:28px; }
+      /* Plan milieu — ← Infos (mi-parquet) */
+      .pan-infos           { left:9%; bottom:88px; }
       .pan-infos .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
       .pan-infos .pan-pole  { height:24px; }
       .pan-infos .pan-base  { width:26px; height:7px; }
@@ -987,13 +987,17 @@
       const VW = 420, VH = 150;
 
       // Nombre aléatoire de silhouettes par plan
+      const isMobile = window.innerWidth < 901;
       const nb = {
-        lo: 2 + Math.floor(Math.random() * 3), // lointain  : 2–4
-        mi: 2 + Math.floor(Math.random() * 2), // milieu    : 2–3
-        av: 1 + Math.floor(Math.random() * 2)  // avant-scène : 1–2
+        tl: 2 + Math.floor(Math.random() * 4), // très lointain : 2–5 (mobile uniquement)
+        lo: 2 + Math.floor(Math.random() * 3), // lointain      : 2–4
+        mi: 2 + Math.floor(Math.random() * 2), // milieu        : 2–3
+        av: 1 + Math.floor(Math.random() * 2)  // avant-scène   : 1–2
       };
 
+      // Très lointain restauré sur GSM (supprimé desktop : trop petit + conflits panneaux)
       const PLANS = [
+        ...( isMobile ? [{ yFloor: VH * 0.26, hBase: 26, opacite: 0.50, nbMax: nb.tl }] : [] ),
         { yFloor: VH * 0.44, hBase: 36, opacite: 0.60, nbMax: nb.lo }, // lointain
         { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: nb.mi }, // milieu
         { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: nb.av }  // avant-scène
