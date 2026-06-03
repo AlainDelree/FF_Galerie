@@ -778,6 +778,44 @@ textarea.champ{resize:vertical;min-height:65px;}
 <!-- Toast -->
 <div id="toast"></div>
 
+<!-- ── MODAL RECADRAGE ── -->
+<div id="overlay-crop">
+  <div class="crop-modal">
+    <div class="crop-hdr">
+      <span>✂ Recadrer la photo</span>
+      <button id="btn-close-crop">×</button>
+    </div>
+    <div class="crop-canvas-wrap">
+      <img id="crop-img" alt="Photo à recadrer">
+    </div>
+    <div class="crop-aide">Pincer pour zoomer · Glisser pour déplacer · Coins pour redimensionner</div>
+    <div class="crop-ftr">
+      <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
+      <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider le recadrage</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── GUIDE DES TAILLES ── -->
+<div id="overlay-guide" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border-radius:14px;width:100%;max-width:360px;overflow:hidden;">
+    <div style="padding:.7rem 1rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:600;">Guide des tailles</span>
+      <button id="btn-close-guide" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="padding:.8rem 1rem;" id="guide-contenu">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:1px solid var(--brd);">
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Code</th>
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Libellé</th>
+          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Dimensions types</th>
+        </tr></thead>
+        <tbody id="guide-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════
 // CONFIG
@@ -2402,42 +2440,6 @@ if (sessionStorage.getItem('ff_auth') === '1') {
   if (localStorage.getItem('ff_pw_hash')) $('login-aide').style.display = 'none';
 }
 </script>
-<!-- ── MODAL RECADRAGE ── -->
-<div id="overlay-crop">
-  <div class="crop-modal">
-    <div class="crop-hdr">
-      <span>✂ Recadrer la photo</span>
-      <button id="btn-close-crop">×</button>
-    </div>
-    <div class="crop-canvas-wrap">
-      <img id="crop-img" alt="Photo à recadrer">
-    </div>
-    <div class="crop-aide">Pincer pour zoomer · Glisser pour déplacer · Coins pour redimensionner</div>
-    <div class="crop-ftr">
-      <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
-      <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider le recadrage</button>
-    </div>
-  </div>
-</div>
 
-<!-- ── GUIDE DES TAILLES ── -->
-<div id="overlay-guide" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--bg2);border-radius:14px;width:100%;max-width:360px;overflow:hidden;">
-    <div style="padding:.7rem 1rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:600;">Guide des tailles</span>
-      <button id="btn-close-guide" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">×</button>
-    </div>
-    <div style="padding:.8rem 1rem;" id="guide-contenu">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead><tr style="border-bottom:1px solid var(--brd);">
-          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Code</th>
-          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Libellé</th>
-          <th style="text-align:left;padding:.4rem .5rem;color:var(--gold);">Dimensions types</th>
-        </tr></thead>
-        <tbody id="guide-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 </body>
 </html>
