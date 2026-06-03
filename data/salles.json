@@ -36,6 +36,17 @@
           "h": 3
         }
       ]
+    },
+    {
+      "id": 6,
+      "nom": "Couloir",
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
     }
   ]
 }
