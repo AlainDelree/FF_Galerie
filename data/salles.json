@@ -78,9 +78,9 @@
       "id": 7,
       "nom": "Escaliers",
       "theme": "",
-      "couleur_mur": "#2e2e2e",
+      "couleur_mur": "#6a80b8",
       "couleur_cadres": "#3a3a3a",
-      "texture": "none",
+      "texture": "damier",
       "visible": true,
       "toiles": [],
       "positions": []
