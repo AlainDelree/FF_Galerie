@@ -24,8 +24,8 @@ const ADMIN_CFG = {
   document.title = ADMIN_CFG.nom + ' — Admin';
   /* Masquer le combobox artiste sur les admins invités */
   if (ADMIN_CFG.prefix !== 'ff') {
-    const sel = document.getElementById('sel-artiste');
-    if (sel && sel.parentElement) sel.parentElement.style.display = 'none';
+    const wrap = document.getElementById('div-sel-artiste');
+    if (wrap) wrap.style.display = 'none';
   }
 })();
 /* Clés de stockage dérivées du prefix */
@@ -1935,6 +1935,34 @@ async function chargerInfos() {
     infosData = { evenements: [], collegues: [] };
     afficherEvents();
   }
+  /* Charger contact.json */
+  try {
+    const rc = await lireFichierJSON(ADMIN_CFG.repoPath + 'contact.json');
+    remplirFormulaireContact(rc.data || {});
+  } catch(e) { /* pas de contact.json encore */ }
+}
+
+function remplirFormulaireContact(d) {
+  const champs = ['email','tel','instagram','facebook','tiktok','pinterest','youtube','twitter','linkedin','site'];
+  champs.forEach(function(c) {
+    const el = document.getElementById('cnt-' + c);
+    if (el) el.value = d[c === 'tel' ? 'telephone' : c] || '';
+  });
+}
+
+function lireFormulaireContact() {
+  return {
+    email:     document.getElementById('cnt-email')?.value.trim()     || '',
+    telephone: document.getElementById('cnt-tel')?.value.trim()       || '',
+    instagram: document.getElementById('cnt-instagram')?.value.trim() || '',
+    facebook:  document.getElementById('cnt-facebook')?.value.trim()  || '',
+    tiktok:    document.getElementById('cnt-tiktok')?.value.trim()    || '',
+    pinterest: document.getElementById('cnt-pinterest')?.value.trim() || '',
+    youtube:   document.getElementById('cnt-youtube')?.value.trim()   || '',
+    twitter:   document.getElementById('cnt-twitter')?.value.trim()   || '',
+    linkedin:  document.getElementById('cnt-linkedin')?.value.trim()  || '',
+    site:      document.getElementById('cnt-site')?.value.trim()      || ''
+  };
 }
 
 function afficherEvents() {
@@ -2011,7 +2039,11 @@ async function sauvegarderInfos() {
   badge.textContent = '…';
   badge.className = 'sync-badge';
   try {
-    await sauvegarderFichier(ADMIN_CFG.repoPath + 'infos.json', infosData, 'Mise à jour infos.json');
+    const contactData = lireFormulaireContact();
+    await commitMulti([
+      { chemin: ADMIN_CFG.repoPath + 'infos.json',   contenu: JSON.stringify(infosData, null, 2) },
+      { chemin: ADMIN_CFG.repoPath + 'contact.json', contenu: JSON.stringify(contactData, null, 2) }
+    ], 'Mise à jour infos + contact');
     badge.textContent = '✓';
     badge.className = 'sync-badge ok';
     infosModifiees = false;
@@ -2282,7 +2314,7 @@ function genererFichiers(a) {
 const TPL_INDEX = `<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Peintures</title>
@@ -2414,7 +2446,7 @@ const TPL_GALERIE = `<!DOCTYPE html>
 const TPL_INFOS = `<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Infos &amp; Agenda</title>
@@ -2460,7 +2492,7 @@ const TPL_INFOS = `<!DOCTYPE html>
 const TPL_CONTACT = `<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Contact</title>
@@ -2490,23 +2522,7 @@ const TPL_CONTACT = `<!DOCTYPE html>
         <h1 class="contact-titre">Contact</h1>
         <p class="contact-accroche">Pour tout renseignement</p>
         <div class="separateur"></div>
-        <div class="contact-bloc">
-          <div class="contact-item">
-            <span class="contact-label">Courrier électronique</span>
-            <div class="contact-email-wrap">
-              <a class="lien-email" href="#" data-u="{{EMAIL_U}}" data-d="{{EMAIL_D}}" aria-label="Envoyer un email à {{NOM}}">
-                {{EMAIL_U}}&#64;{{EMAIL_D}}
-              </a>
-              <button class="btn-copier" id="btnCopier" aria-label="Copier" title="Copier">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span class="copie-ok">Copié !</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <div class="contact-bloc"><p style="color:var(--text-doux);font-style:italic;font-size:.85rem;">Chargement…</p></div>
       </div>
     </main>
     <footer class="pied">
@@ -2514,6 +2530,7 @@ const TPL_CONTACT = `<!DOCTYPE html>
       <span class="mention">&copy; {{NOM}}</span>
     </footer>
   </div>
+  <script>window.CONTACT_DATA_PATH = "data/contact.json";</script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/contact.js"></script>
 </body>

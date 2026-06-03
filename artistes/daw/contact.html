@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Daw Wanpram — Contact</title>
@@ -37,27 +37,9 @@
         <p class="contact-accroche">Pour tout renseignement</p>
         <div class="separateur"></div>
 
-        <div class="contact-bloc">
-          <div class="contact-item">
-            <span class="contact-label">Courrier électronique</span>
-            <div class="contact-email-wrap">
-              <a class="lien-email" href="#"
-                 data-u="dwanpram" data-d="gmail.com"
-                 aria-label="Envoyer un email à Daw Wanpram">
-                dwanpram&#64;gmail.com
-              </a>
-              <button class="btn-copier" id="btnCopier" aria-label="Copier l'adresse email" title="Copier">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span class="copie-ok">Copié !</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
+        <div class="contact-bloc"><p style="color:var(--text-doux);font-style:italic;font-size:.85rem;">Chargement…</p></div>
       </div>
+    </main>
     </main>
 
     <footer class="pied">
@@ -68,6 +50,7 @@
   </div>
 
   <script src="../../assets/js/main.js"></script>
+  <script>window.CONTACT_DATA_PATH = "data/contact.json";</script>
   <script src="../../assets/js/contact.js"></script>
 </body>
 </html>

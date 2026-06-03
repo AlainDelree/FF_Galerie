@@ -17,7 +17,7 @@
   <div class="login-logo">FF</div>
   <div class="login-sous">Administration</div>
   <div class="login-card">
-    <div>
+    <div id="div-sel-artiste">
       <label class="lbl" for="sel-artiste">Gérer la galerie de</label>
       <select class="inp" id="sel-artiste" style="cursor:pointer;">
         <option value="">Frédérique Ferette</option>
@@ -313,9 +313,59 @@
         </div>
       </div>
 
-      <!-- Bouton sauvegarder -->
+      <!-- Section Contact & Réseaux sociaux -->
+      <div class="infos-section">
+        <div class="infos-section-hdr">
+          <span class="infos-section-titre">Contact &amp; Réseaux sociaux</span>
+        </div>
+        <div style="padding:.7rem .8rem;display:flex;flex-direction:column;gap:.5rem;">
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-email">📧 Email</label>
+            <input class="inp" type="email" id="cnt-email" placeholder="artiste@example.com">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-tel">📞 Téléphone</label>
+            <input class="inp" type="tel" id="cnt-tel" placeholder="+32 xxx xx xx xx">
+          </div>
+          <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.4rem 0 0;">Réseaux sociaux — URL ou nom d'utilisateur</div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-instagram">📸 Instagram</label>
+            <input class="inp" type="text" id="cnt-instagram" placeholder="https://instagram.com/...">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-facebook">👤 Facebook</label>
+            <input class="inp" type="text" id="cnt-facebook" placeholder="https://facebook.com/...">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-tiktok">🎵 TikTok</label>
+            <input class="inp" type="text" id="cnt-tiktok" placeholder="@username">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-pinterest">📌 Pinterest</label>
+            <input class="inp" type="text" id="cnt-pinterest" placeholder="https://pinterest.com/...">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-youtube">▶ YouTube</label>
+            <input class="inp" type="text" id="cnt-youtube" placeholder="https://youtube.com/@...">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-twitter">🐦 X / Twitter</label>
+            <input class="inp" type="text" id="cnt-twitter" placeholder="@username">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-linkedin">💼 LinkedIn</label>
+            <input class="inp" type="text" id="cnt-linkedin" placeholder="https://linkedin.com/in/...">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="cnt-site">🌐 Site web</label>
+            <input class="inp" type="url" id="cnt-site" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton sauvegarder tout (infos + contact) -->
       <div style="padding:1rem 0 .5rem;display:flex;gap:.5rem;align-items:center;">
-        <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder les infos</button>
+        <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder infos &amp; contact</button>
         <span class="sync-badge hidden" id="badge-infos"></span>
       </div>
 
