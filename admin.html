@@ -1337,7 +1337,26 @@ function afficherStock() {
       item.appendChild(sb);
     }
 
-    item.addEventListener('click', () => ouvrirFormulaireEdition(t.id));
+    item.addEventListener('click', () => {
+      if (item.classList.contains('pose')) {
+        // Toile sur ce mur → formulaire directement (placement géré par Arranger)
+        ouvrirFormulaireEdition(t.id);
+        return;
+      }
+      if (item.classList.contains('autre')) {
+        // Toile autre salle → sélectionne + formulaire (salle modifiable dedans)
+        toilesSelectionnees.add(t.id);
+        selectedToile = t;
+        afficherStock();
+        ouvrirFormulaireEdition(t.id);
+        return;
+      }
+      // Toile disponible → sélection pour Arranger
+      if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
+      else toilesSelectionnees.add(t.id);
+      selectedToile = toilesSelectionnees.size === 0 ? null : t;
+      afficherStock();
+    });
     item.addEventListener('dblclick', () => ouvrirFormulaireEdition(t.id));
     list.appendChild(item);
   });
@@ -2241,7 +2260,14 @@ $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
 
 // Bouton Modifier : ouvre le formulaire d'édition pour la toile sélectionnée
 $('btn-modifier-toile').addEventListener('click', () => {
-  toast("Clique directement sur une toile du stock pour la modifier", "ok", 2500);
+  const sel = selectedToile || (toilesSelectionnees.size === 1
+    ? toiles.find(t => t.id === [...toilesSelectionnees][0])
+    : null);
+  if (sel) {
+    ouvrirFormulaireEdition(sel.id);
+  } else {
+    toast("Sélectionne d'abord une toile dans le stock", "err");
+  }
 });
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
