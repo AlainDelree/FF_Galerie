@@ -226,14 +226,14 @@
 
     /* Mur inférieur : continuation du mur, contient les portes */
     .mur-inferieur {
-      width:100%; height:70px;
+      width:100%; height:40px;
       display:flex; align-items:flex-end; justify-content:space-between;
       position:relative;
       background:inherit; /* hérite la couleur du mur parent */
     }
     /* Ombre intérieure haut mur inférieur */
     .mur-inferieur::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:18px;
+      content:''; position:absolute; top:0; left:0; right:0; height:12px;
       background:linear-gradient(to bottom, rgba(0,0,0,.18), transparent);
       pointer-events:none;
     }
@@ -246,7 +246,7 @@
 
     /* Portes dans le mur inférieur */
     .porte-mur {
-      flex-shrink:0; width:48px; height:66px;
+      flex-shrink:0; width:48px; height:44px;
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       cursor:pointer; background:none; border:none; padding:0; z-index:2;
       transition:filter .2s;
@@ -267,7 +267,7 @@
     }
     .pm-nom {
       font-family:Lato,sans-serif; font-size:.52rem; letter-spacing:.07em;
-      color:rgba(255,255,255,.3); white-space:nowrap; margin-bottom:.25rem;
+      color:rgba(255,255,255,.3); white-space:nowrap; margin-bottom:.15rem;
       transition:color .2s;
     }
     .porte-mur:hover .pm-nom { color:var(--accent); }
@@ -506,7 +506,7 @@
       }
 
       /* Mur-inférieur compact */
-      .mur-inferieur { height:52px !important; }
+      .mur-inferieur { height:38px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
       /* Plancher */
