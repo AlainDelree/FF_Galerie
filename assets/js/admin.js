@@ -22,6 +22,11 @@ const ADMIN_CFG = {
   if (sousEl) sousEl.textContent = ADMIN_CFG.nom;
   if (hdrEl)  hdrEl.textContent  = ADMIN_CFG.nom;
   document.title = ADMIN_CFG.nom + ' — Admin';
+  /* Masquer le combobox artiste sur les admins invités */
+  if (ADMIN_CFG.prefix !== 'ff') {
+    const sel = document.getElementById('sel-artiste');
+    if (sel && sel.parentElement) sel.parentElement.style.display = 'none';
+  }
 })();
 /* Clés de stockage dérivées du prefix */
 const K = {
