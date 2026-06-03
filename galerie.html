@@ -584,17 +584,18 @@
         pointer-events: none;
       }
 
-      /* Mur-inferieur transparent, portes en bas */
+      /* Mur-inferieur : ancre au bas du mur (pas au bas de la salle)
+         top = hauteur mur - hauteur porte = (100svh-3rem) - 108px   */
       .mur-inferieur {
         position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100% !important;
+        top: calc(100svh - 3rem - 108px);
+        left: 0; right: 0;
+        height: 108px;
         background: transparent !important;
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
-        padding: 0 10px 10px;
+        padding: 0 10px 0;
       }
       .mur-inferieur::before,
       .mur-inferieur::after { display:none !important; }
