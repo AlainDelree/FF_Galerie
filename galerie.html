@@ -424,22 +424,36 @@
     .modal-fermer:hover { border-color:var(--accent); color:var(--accent); background:rgba(255,255,255,.06); }
     @media (max-width:900px) { .mur { gap:1.5rem; padding:3rem 1.5rem 2rem; } }
 
-    /* ── DESKTOP (≥ 901px) : mur contraint par la hauteur ────────────
-       Sans contrainte, aspect-ratio:12/8 sur width:100% donne
-       un mur de 800-1200px de haut selon la résolution → page
-       non scrollable + contenu coupé par overflow:hidden.
-       Fix : height explicite, width:auto suit l'aspect-ratio.        */
+    /* ══ DESKTOP (≥ 901px) ══════════════════════════════════════════════
+       body en flex-column : header + galerie(flex:1) + footer = 100vh
+       → plus de min-height qui forçait le scroll.
+       Mur contraint par hauteur, plancher compact.
+       overhead ≈ header(68)+footer(34)+nom(24)+mur-inf(52)+plancher(110)+marge(12) = 300px */
     @media (min-width:901px) {
+      /* Corps : tout tient dans 100vh, plus de scrollbar */
+      body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
+      .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
+      .pied { flex-shrink:0; padding:.28rem 0; }
+
+      /* Mur : hauteur = 100vh - 300px (overhead), max 680px */
       .mur.mur-grille {
-        height: min(calc(100vh - 400px), 620px) !important;
+        height: min(calc(100vh - 300px), 680px) !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
         max-width: calc(100% - 4rem) !important;
-        min-height: 180px !important;
+        min-height: 160px !important;
         margin: 0 auto;
       }
+
+      /* Mur-inferieur compact */
+      .mur-inferieur { height:52px !important; }
+      .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
+
+      /* Plancher reduit : latte + silhouettes proches visibles */
+      .plancher-sol { min-height:80px !important; max-height:110px !important; }
     }
-    /* Navigation mobile flèches */
+
+        /* Navigation mobile flèches */
     .nav-mobile {
       display:none;
       position:fixed;
