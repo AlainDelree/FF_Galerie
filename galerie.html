@@ -454,17 +454,14 @@
                       overflow:visible !important; }
       .zone-basse   { overflow:visible; }
 
-      /* Silhouettes : translateY(-41px) pour que les tetes lointain
-         arrivent exactement au bas du mur sans entrer dedans.
-         Calcul (SVG 600px=214px, zone-basse=212px) :
-           tetes lointain normalement a 41px sous mur → -41px = 0 ✓ */
+      /* Silhouettes : translateY(-25px) → pieds lointain a 15px dans le parquet
       .silhouettes-sol {
         max-width: 600px;
         margin: 0 auto;
         width: 100%;
         position: relative;
         z-index: 10;
-        transform: translateY(-41px);
+        transform: translateY(-25px);
         pointer-events: none;
       }
     }
