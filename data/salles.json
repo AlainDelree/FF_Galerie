@@ -1,35 +1,6 @@
 {
   "salles": [
     {
-      "id": 1,
-      "nom": "Salle I",
-      "theme": "",
-      "couleur_mur": "#1e3a2a",
-      "couleur_cadres": "#f0f0f0",
-      "texture": "damier",
-      "visible": true,
-      "toiles": [
-        17,
-        29
-      ],
-      "positions": [
-        {
-          "id": 17,
-          "col": 2,
-          "row": 1,
-          "w": 5,
-          "h": 3
-        },
-        {
-          "id": 29,
-          "col": 1,
-          "row": 4,
-          "w": 4,
-          "h": 5
-        }
-      ]
-    },
-    {
       "id": 3,
       "nom": "Salle III",
       "theme": "",
