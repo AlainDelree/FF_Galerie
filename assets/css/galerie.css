@@ -1,0 +1,716 @@
+/* =============================================================
+   FF_Galerie — galerie.css
+   Extrait de galerie.html — ne pas éditer galerie.html directement
+   ============================================================= */
+
+    body.theme-sombre { --mur:#1c1c1c; --cadre:#3a3a3a; --cadre-in:rgba(255,255,255,.12); --fil:#555; }
+    body.theme-provence .mur {
+      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwICAwIDAgMCAwIDAgIDAgMCAwIDAgMCAgMCAwIDAgMC4xMyAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=");
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
+    /* ── LAYOUT GÉNÉRAL ── */
+    .galerie-principale { display:flex; flex-direction:column; min-height:calc(100vh - 4.5rem - 2.8rem); background-color:var(--bg); overflow:hidden; }
+    .scene-galerie { background-color:var(--bg); min-height:100vh; }
+    .barre-navigation { display:flex; align-items:center; justify-content:center; gap:2rem; padding:1.1rem 2rem 0.5rem; }
+    .indicateur-salle { font-family:Lato,sans-serif; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-doux); min-width:7rem; text-align:center; }
+    .btn-nav-salle { background:none; border:1px solid var(--sep); color:var(--text-doux); width:2.4rem; height:2.4rem; border-radius:50%; cursor:pointer; font-size:1.4rem; display:flex; align-items:center; justify-content:center; transition:border-color .3s,color .3s,opacity .3s; }
+    .btn-nav-salle:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .btn-nav-salle:disabled { opacity:.18; cursor:default; }
+    .dots { display:flex; gap:.55rem; justify-content:center; padding:.3rem 0 .9rem; }
+    .dot { width:5px; height:5px; border-radius:50%; background-color:var(--sep); transition:background-color .35s,transform .35s; }
+    .dot.actif { background-color:var(--accent); transform:scale(1.4); }
+    .conteneur-salles { display:flex; flex:1; min-height:0; transition:transform .65s cubic-bezier(.77,0,.175,1); }
+    .nom-salle { font-family:"Playfair Display",serif; font-style:italic; font-size:.88rem; letter-spacing:.18em; color:var(--text-doux); margin-bottom:.8rem; text-align:center; }
+    .tableau { cursor:pointer; display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; transition:transform .3s ease,filter .3s ease; }
+    .tableau:hover { transform:translateY(-5px); filter:brightness(1.06); }
+    .tableau:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+    .cadre {
+      border: 0; position:relative;
+      /* Caisse américaine : bord extérieur sombre + surface plate + filet intérieur */
+      outline: 2px solid rgba(0,0,0,.7);
+      box-shadow:
+        0 12px 40px rgba(0,0,0,.65),
+        0 3px 10px rgba(0,0,0,.35),
+        /* Relief extérieur */
+        0 0 0 14px #3a3a3a,
+        0 0 0 16px rgba(80,80,80,.6),
+        /* Filet intérieur clair (retrait vers la toile) */
+        inset 0 0 0 3px rgba(100,100,100,.5),
+        inset 2px 2px 4px rgba(0,0,0,.6),
+        inset -2px -2px 4px rgba(0,0,0,.4);
+      margin: 16px;
+    }
+    .cadre::after { content:''; position:absolute; inset:0; border:3px solid rgba(255,255,255,.07); pointer-events:none; }
+    .cadre img { display:block; object-fit:cover; }
+    .placeholder { background:linear-gradient(135deg,rgba(0,0,0,.07),rgba(0,0,0,.02)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; }
+    .placeholder-num { font-family:"Playfair Display",serif; font-style:italic; font-size:3rem; color:var(--text-doux); opacity:.35; }
+    .placeholder-txt { font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-doux); opacity:.4; }
+    .etiquette { position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:.35rem; text-align:center; max-width:100%; white-space:nowrap; }
+    .plaquette {
+      display:inline-block;
+      max-width:100%;
+      background: linear-gradient(180deg, #d4aa50 0%, #e8c860 30%, #c8980a 60%, #b88800 100%);
+      padding:.3rem .75rem;
+      border-radius:1px;
+      border:1px solid rgba(180,130,0,.6);
+      box-shadow: 0 2px 8px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,250,180,.6);
+      text-align:center;
+    }
+    .etiquette-titre {
+      font-family:"Cinzel",serif;
+      font-style:normal;
+      font-weight:700;
+      font-size:.68rem;
+      color:#1a0e00;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      white-space:normal;
+      word-break:break-word;
+      max-width:100%;
+      line-height:1.3;
+    }
+    .etiquette-date { font-size:.7rem; color:var(--text-doux); margin-top:.15rem; letter-spacing:.06em; }
+
+    /* ============================================================
+       MODES DE NAVIGATION A / C
+       ============================================================ */
+    [data-nav] .barre-navigation,
+    [data-nav] .dots { display:none; }
+
+    
+    
+    
+    .salle { width:25%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:1rem 2rem 0; min-height:0; position:relative; }
+
+    /* ── MUR : overflow visible pour que rien ne soit coupé ── */
+    .mur { background-color:var(--mur); border-radius:3px; width:100%; max-width:1080px; height:420px; flex:none; overflow:visible; display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:nowrap; padding:0 2.5rem; position:relative; box-shadow:inset 0 80px 80px rgba(0,0,0,.06), 0 0 0 0 transparent; }
+
+    /* Ombres intérieures du mur séparées du mur lui-même */
+    .mur::before { content:''; position:absolute; inset:0; border-radius:3px; background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, transparent 25%, transparent 75%, rgba(0,0,0,.12) 100%); pointer-events:none; z-index:0; }
+
+    /* Plinthe en bas du mur */
+    .mur::after { content:''; position:absolute; bottom:0; left:0; right:0; height:14px; background:linear-gradient(to bottom, rgba(0,0,0,.22), rgba(0,0,0,.45)); border-top:1px solid rgba(0,0,0,.30); pointer-events:none; z-index:1; }
+
+    /* Spot lumineux — visible seulement en mode sombre */
+    .cadre::before { content:''; display:none; position:absolute; top:-85px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:rgba(255,250,210,1); box-shadow:0 0 8px 4px rgba(255,240,160,.7), 0 0 20px 10px rgba(255,230,120,.3); pointer-events:none; z-index:3; }
+    /* Halo de lumière diffus — pas de triangle */
+    .cadre::after { content:''; display:none; position:absolute; top:-85px; left:50%; transform:translateX(-50%); width:1px; height:1px; pointer-events:none; z-index:0;
+      box-shadow:
+        0 20px 40px 60px rgba(255,240,160,.06),
+        0 40px 80px 40px rgba(255,235,140,.04),
+        0 70px 100px 20px rgba(255,230,120,.02);
+    }
+    /* Activer spots uniquement en mode sombre */
+    body.theme-sombre .cadre::before,
+    body.theme-sombre .cadre::after { display:block; }
+
+    /* Ombre portée au sol sous chaque cadre */
+    .tableau::after { content:''; position:absolute; bottom:-14px; left:8%; width:84%; height:12px; background:radial-gradient(ellipse, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 50%, transparent 72%); filter:blur(3px); pointer-events:none; }
+
+    /* ── PARQUET : simple, sans clip-path, sans overflow ── */
+
+    /* ── PORTES : collées à l'extérieur du mur, alignées en bas ── */
+    .porte {
+      display:none; flex-direction:column; align-items:center;
+      cursor:pointer; user-select:none;
+      position:absolute;
+      bottom:0;
+      z-index:10;
+    }
+    .porte-g { right:100%; }
+    .porte-d { left:100%; }
+    .porte.invisible { opacity:0; pointer-events:none; }
+    [data-nav="c"] .porte { display:flex; }
+
+    .porte-nom {
+      font-family:Lato,sans-serif; font-style:normal; font-weight:400;
+      font-size:.75rem; letter-spacing:.07em; color:var(--text-doux);
+      margin-bottom:.4rem; white-space:nowrap;
+      background:rgba(255,255,255,.07); padding:.1rem .45rem; border-radius:2px;
+      text-shadow:0 1px 4px rgba(0,0,0,.9);
+      transition:color .3s, background .3s;
+    }
+    .porte:hover .porte-nom { color:var(--accent); background:rgba(255,255,255,.11); }
+
+    .porte-forme {
+      width:44px; height:71px; border-radius:22px 22px 0 0;
+      background:var(--cadre); position:relative;
+      border:1px solid rgba(255,255,255,.18); border-bottom:none;
+      transition:border-color .35s;
+    }
+    .porte-interieur {
+      position:absolute; inset:3px 3px 0; border-radius:19px 19px 0 0;
+      background:radial-gradient(ellipse at 50% 115%, rgba(255,238,160,.18) 0%, rgba(0,0,0,.88) 65%);
+    }
+    .porte:hover .porte-forme {
+      border-color:rgba(255,255,255,.32);
+      box-shadow:0 0 14px 4px var(--accent);
+    }
+    /* Chevron directionnel dans l'ouverture */
+    .porte-fleche {
+      position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+      font-size:.9rem; color:rgba(255,255,255,.20); transition:color .3s;
+      pointer-events:none;
+    }
+    .porte:hover .porte-fleche { color:rgba(255,255,255,.55); }
+
+
+    /* ── Mode grille (admin positions) : tous supports ── */
+    .mur.mur-grille {
+      display: grid !important;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      aspect-ratio: 12/8;
+      width: 100%;
+      height: auto !important;
+      padding: 6px !important;
+      gap: 3px !important;
+      overflow: visible;
+    }
+    .tableau-grille {
+      width: 100% !important;
+      height: 100% !important;
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+    .tableau-grille:hover { filter: brightness(1.07); }
+    .tableau-grille .cadre-grille {
+      position: absolute; inset: 0; margin: 0;
+      overflow: hidden; border-radius: 2px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08);
+      outline: none;
+    }
+    .tableau-grille .cadre-grille img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .tableau-grille .tg-titre {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,.68);
+      font-family: 'Cinzel', serif;
+      font-size: clamp(6px, 1.2vw, 11px);
+      color: #e8d8b8;
+      text-align: center;
+      padding: 1px 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    /* Salle grille : conserve le padding latéral pour que le fond sombre encadre le mur */
+    .salle.salle-grille {
+      /* padding inchangé (1rem 2rem 0 depuis .salle) → fond noir visible sur les côtés */
+    }
+    /* Zone-basse plein-écran : compense le padding latéral de la salle (2rem par côté desktop) */
+    .salle-grille .zone-basse {
+      width: calc(100% + 4rem);
+      margin-left: -2rem;
+      margin-right: -2rem;
+    }
+
+    /* Pas de plinthe en mode grille (le plancher la remplace) */
+    .mur.mur-grille::after { display:none; }
+    /* Cache les vieilles portes latérales en mode grille */
+    .mur.mur-grille > .porte { display:none !important; }
+    /* Titre toile au-dessus de la plinthe en mode classique */
+    .tg-titre { bottom: 0; }
+
+
+    /* ── Zone basse galerie (mur-inférieur + sol) ── */
+    .zone-basse { width:100%; display:flex; flex-direction:column; overflow:visible; }
+
+    /* Mur inférieur : continuation du mur, contient les portes */
+    .mur-inferieur {
+      width:100%; height:65px;
+      display:flex; align-items:flex-end; justify-content:space-between;
+      position:relative;
+      background:inherit; /* hérite la couleur du mur parent */
+    }
+    /* Ombre intérieure haut mur inférieur */
+    .mur-inferieur::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:16px;
+      background:linear-gradient(to bottom, rgba(0,0,0,.18), transparent);
+      pointer-events:none;
+    }
+    /* Plinthe en bas du mur inférieur */
+    .mur-inferieur::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:10px;
+      background:linear-gradient(to bottom, rgba(0,0,0,.2), rgba(0,0,0,.5));
+      border-top:1px solid rgba(0,0,0,.4); pointer-events:none;
+    }
+
+    /* Portes dans le mur inférieur */
+    .porte-mur {
+      flex-shrink:0; width:40px; height:60px;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      cursor:pointer; background:none; border:none; padding:0; z-index:2;
+      transition:filter .2s;
+    }
+    .porte-mur:hover { filter:brightness(1.25); }
+    .porte-mur.invisible { opacity:0; pointer-events:none; }
+    .pm-ouverture {
+      width:30px; height:44px; border-radius:15px 15px 0 0;
+      background: radial-gradient(ellipse at 50% 120%,
+        rgba(255,220,120,.22) 0%, rgba(0,0,0,.82) 55%);
+      border:2.5px solid rgba(255,255,255,.35); border-bottom:none;
+      position:relative; overflow:hidden;
+    }
+    .pm-ouverture::after {
+      content:''; position:absolute; inset:2px 2px 0;
+      border-radius:13px 13px 0 0;
+      background:radial-gradient(ellipse at 50% 120%, rgba(255,235,160,.14) 0%, rgba(0,0,0,.85) 55%);
+    }
+    .pm-nom {
+      font-family:Lato,sans-serif; font-size:.52rem; letter-spacing:.07em;
+      color:rgba(255,255,255,.3); white-space:nowrap; margin-bottom:.15rem;
+      transition:color .2s;
+    }
+    .porte-mur:hover .pm-nom { color:var(--accent); }
+    .pm-fleche {
+      position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+      font-size:.8rem; color:rgba(255,255,255,.2); z-index:1; transition:color .2s;
+    }
+    .porte-mur:hover .pm-fleche { color:rgba(255,255,255,.6); }
+
+    /* Panneaux de navigation sur pied (desktop uniquement) */
+    .panneau-nav { display:none; }
+
+    /* Sol parquet */
+    .plancher-sol {
+      width:100%; min-height:160px; max-height:230px; overflow:visible;
+      background: linear-gradient(to bottom,
+        rgba(185,138,80,.95) 0%, rgba(165,118,60,.97) 60%, rgba(158,112,55,.99) 100%);
+      position:relative;
+      display:flex; align-items:flex-end;
+      z-index:3;
+    }
+    /* Lattes parquet */
+    .plancher-sol::before {
+      content:''; position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(90deg, transparent 0, transparent 10px, rgba(100,60,15,.20) 10px, rgba(100,60,15,.20) 11px),
+        repeating-linear-gradient(to bottom, transparent 0, transparent 50px, rgba(80,45,10,.12) 50px, rgba(80,45,10,.12) 51px);
+      pointer-events:none;
+    }
+    /* Reflet du mur sur le sol */
+    .plancher-sol::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:20px;
+      background:linear-gradient(to bottom, rgba(255,240,200,.15), transparent);
+      pointer-events:none;
+    }
+    .silhouettes-sol { width:100%; position:relative; z-index:4; overflow:visible; }
+
+    /* ── Plancher galerie (ancien, conservé pour compatibilité) ── */
+    .plancher-galerie {
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      overflow: hidden;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,.35) 0%,
+        rgba(20,15,10,.6) 40%,
+        rgba(30,22,14,.85) 100%);
+      border-top: 1px solid rgba(0,0,0,.4);
+    }
+    /* Reflet du mur sur le sol */
+    .plancher-galerie::before {
+      content:'';
+      position:absolute;
+      top:0; left:0; right:0; height:18px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.04), transparent);
+      pointer-events:none;
+    }
+    /* Latte de parquet subtile */
+    .plancher-galerie::after {
+      content:'';
+      position:absolute;
+      inset:0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0, transparent 39px,
+        rgba(0,0,0,.08) 39px, rgba(0,0,0,.08) 40px
+      );
+      pointer-events:none;
+    }
+    .silhouettes-zone {
+      flex:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:1;
+    }
+    .silhouettes-zone svg { width:100%; }
+
+    /* Portes dans le plancher */
+    .porte-plancher {
+      flex-shrink:0;
+      width:42px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-end;
+      cursor:pointer;
+      z-index:2;
+      background:none;
+      border:none;
+      padding:0;
+      transition:filter .2s;
+      position:relative;
+    }
+    .porte-plancher:hover { filter:brightness(1.3); }
+    .porte-plancher.invisible { opacity:0; pointer-events:none; }
+    .pp-arc {
+      width:32px;
+      height:52px;
+      border-radius:16px 16px 0 0;
+      background: radial-gradient(ellipse at 50% 110%,
+        rgba(200,160,80,.15) 0%,
+        rgba(0,0,0,.85) 65%);
+      border: 1px solid rgba(255,255,255,.18);
+      border-bottom:none;
+      position:relative;
+    }
+    .pp-arc::after {
+      content:'';
+      position:absolute;
+      inset:3px 3px 0;
+      border-radius:13px 13px 0 0;
+      background: radial-gradient(ellipse at 50% 115%,
+        rgba(255,235,150,.12) 0%,
+        rgba(0,0,0,.9) 60%);
+    }
+    .pp-nom {
+      font-family:Lato,sans-serif;
+      font-size:.52rem;
+      letter-spacing:.07em;
+      color:rgba(255,255,255,.35);
+      white-space:nowrap;
+      margin-bottom:.2rem;
+      transition:color .2s;
+    }
+    .porte-plancher:hover .pp-nom { color:var(--accent); }
+    .pp-fleche {
+      position:absolute;
+      bottom:6px; left:50%; transform:translateX(-50%);
+      font-size:.75rem;
+      color:rgba(255,255,255,.18);
+      transition:color .2s;
+      z-index:1;
+    }
+    .porte-plancher:hover .pp-fleche { color:rgba(255,255,255,.55); }
+
+    
+
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity .35s ease; padding:1.5rem; }
+    .modal-overlay.visible { opacity:1; pointer-events:all; }
+    .modal-contenu { background-color:var(--bg); border:1px solid var(--sep); max-width:880px; width:100%; max-height:92vh; overflow-y:auto; display:flex; position:relative; transform:scale(.94); transition:transform .35s ease; }
+    .modal-overlay.visible .modal-contenu { transform:scale(1); }
+    .modal-image-wrap { flex:0 0 55%; max-height:88vh; overflow:hidden; display:flex; align-items:center; justify-content:center; background-color:var(--bg); }
+    .modal-image-wrap img { width:100%; height:100%; object-fit:contain; display:block; }
+    .modal-placeholder-grand { width:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,rgba(0,0,0,.06),rgba(0,0,0,.02)); font-family:"Playfair Display",serif; font-style:italic; font-size:5rem; color:var(--text-doux); opacity:.28; min-height:300px; }
+    .modal-fiche { flex:1; padding:2.4rem 2rem 2rem; display:flex; flex-direction:column; gap:1rem; }
+    .modal-titre { font-family:"Playfair Display",serif; font-weight:400; font-style:italic; font-size:1.55rem; color:var(--text); line-height:1.25; }
+    .modal-separateur { width:2.2rem; height:1px; background-color:var(--sep); margin:-.2rem 0 .2rem; }
+    .modal-ligne { display:flex; flex-direction:column; gap:.12rem; }
+    .modal-label { font-size:.66rem; letter-spacing:.17em; text-transform:uppercase; color:var(--text-doux); }
+    .modal-valeur { font-size:.9rem; color:var(--text); }
+    .modal-fermer { position:absolute; top:.85rem; right:.85rem; background:none; border:1.5px solid rgba(255,255,255,.35); color:var(--text); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1; transition:border-color .3s,color .3s,background .3s; }
+    .modal-fermer:hover { border-color:var(--accent); color:var(--accent); background:rgba(255,255,255,.06); }
+    @media (max-width:900px) { .mur { gap:1.5rem; padding:3rem 1.5rem 2rem; } }
+
+    /* ══ DESKTOP (≥ 901px) ══════════════════════════════════════════════
+       body en flex-column : header + galerie(flex:1) + footer = 100vh
+       → plus de min-height qui forçait le scroll.
+       Mur contraint par hauteur, plancher compact.
+       overhead ≈ header(68)+footer(34)+nom(24)+mur-inf(52)+plancher(110)+marge(12) = 300px */
+    @media (min-width:901px) {
+      /* ── Header supprimé : gain ~68px pour le mur ── */
+      .entete {
+        height:0 !important; min-height:0 !important;
+        padding:0 !important; border:none !important;
+        background:transparent !important; overflow:visible !important;
+        position:static !important;
+      }
+
+      /* ♪ Bouton musique : DROITE, même niveau que le nom-salle */
+      .controles {
+        position:fixed; right:1.5rem;
+        top:1.4rem;
+        z-index:101;
+      }
+
+      /* Liens nav : GAUCHE, colonne verticale, centrés sur le mur
+         Schéma :   Accueil  │ MUR │       ♪
+                    Infos    │     │
+                    Contact  │     │             */
+      /* Liens nav fixes → remplacés par panneaux parquet */
+      .nav-pages    { display:none !important; }
+      .lien-contact { display:none !important; }
+
+      /* ── Panneaux de navigation sur pied ── */
+      .panneau-nav {
+        position:absolute; display:flex; flex-direction:column;
+        align-items:center; text-decoration:none; cursor:pointer;
+        transform:translateX(-50%); z-index:6; transition:filter .25s;
+      }
+      .panneau-nav:hover { filter:brightness(1.4); }
+      .pan-board {
+        background:rgba(8,5,2,.92); border:1.5px solid #c8a050;
+        color:#e8d8b8; font-family:"Cinzel",serif; white-space:nowrap;
+        border-radius:2px; display:block; letter-spacing:.05em;
+      }
+      .pan-pole { background:#666; display:block; width:3px; margin:0 auto; }
+      .pan-base { background:#555; border-radius:50%; display:block; }
+
+      /* Plan lointain — Accueil → (près du mur, entre lointain et mur-inf) */
+      .pan-accueil           { left:86%; bottom:130px; }
+      .pan-accueil .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
+      .pan-accueil .pan-pole  { height:24px; }
+      .pan-accueil .pan-base  { width:26px; height:7px; }
+
+      /* Plan milieu — ← Infos (mi-parquet) */
+      .pan-infos           { left:9%; bottom:88px; }
+      .pan-infos .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
+      .pan-infos .pan-pole  { height:24px; }
+      .pan-infos .pan-base  { width:26px; height:7px; }
+
+      /* Plan avant — Contact ↓ (grand, bas sur le parquet) */
+      .pan-contact           { left:67%; bottom:8px; }
+      .pan-contact .pan-board { font-size:.62rem; padding:3px 9px; }
+      .pan-contact .pan-pole  { height:30px; }
+      .pan-contact .pan-base  { width:30px; height:9px; }
+
+      /* Corps */
+      body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
+      .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
+      .pied { flex-shrink:0; padding:.28rem 0; }
+
+      /* Mur : overhead = nom(43)+mur-inf(52)+plancher(175)+footer(34)+marge(6) = 310px */
+      .mur.mur-grille {
+        height: min(calc(100vh - 310px), 720px) !important;
+        width: auto !important;
+        aspect-ratio: 12/8 !important;
+        max-width: calc(100% - 4rem) !important;
+        min-height: 160px !important;
+        margin: 0 auto;
+      }
+
+      /* Mur-inférieur compact */
+      .mur-inferieur { height:55px !important; }
+      .porte-mur { height:52px !important; width:36px !important; }
+      .pm-ouverture { height:38px !important; width:26px !important; border-radius:13px 13px 0 0 !important; }
+      .pm-nom { font-size:.45rem !important; }
+      .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
+
+      /* Plancher */
+      .plancher-sol    { min-height:120px !important; max-height:175px !important; }
+      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
+    }
+
+        /* Navigation mobile flèches */
+    .nav-mobile {
+      display:none;
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:rgba(17,17,17,.95);
+      padding:.8rem 0;
+      justify-content:center;
+      z-index:50;
+      gap:.8rem;
+      align-items:center;
+    }
+    .nav-mobile-btn {
+      background:rgba(20,20,20,.85);
+      border:1px solid var(--sep);
+      color:var(--accent);
+      width:3rem; height:3rem;
+      border-radius:50%;
+      font-size:1.4rem;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(6px);
+      transition:background .3s, border-color .3s;
+    }
+    .nav-mobile-btn:disabled { opacity:.2; pointer-events:none; }
+    .nav-mobile-btn:hover { background:rgba(40,40,40,.95); border-color:var(--accent); }
+    .nav-mobile-info {
+      font-family:"Playfair Display",serif;
+      font-style:italic;
+      font-size:.75rem;
+      color:var(--text-doux);
+      letter-spacing:.1em;
+      min-width:4rem;
+      text-align:center;
+    }
+    @media (max-width:700px) {
+      .mur { gap:1rem; padding:2rem 1rem 1.5rem; min-height:auto; flex-wrap:wrap; height:auto; }
+      /* Modal en feuille descendante sur mobile — toile en haut */
+      .modal-overlay { padding:0; align-items:flex-start; }
+      .modal-contenu { flex-direction:column; border-radius:0 0 16px 16px; max-height:90vh; width:100%; }
+      /* Indicateur de glissement en bas (swipe bas = fermer) */
+      .modal-contenu::before { display:none; }
+      .modal-contenu::after { content:''; display:block; width:40px; height:4px; background:rgba(255,255,255,.18); border-radius:2px; margin:.6rem auto; flex-shrink:0; order:99; }
+      .modal-image-wrap { flex:none; width:100%; height:auto; max-height:58vh; display:flex; align-items:center; justify-content:center; background-color:var(--bg); }
+      .modal-image-wrap img { width:auto !important; height:auto !important; max-width:100%; max-height:58vh; object-fit:contain; display:block; }
+      .modal-fiche { padding:1.2rem 1.2rem 1rem; gap:.7rem; }
+      /* Bouton fermer plus grand sur mobile */
+      .modal-fermer { width:2.8rem; height:2.8rem; font-size:1.3rem; }
+      .etiquette { margin-top:.8rem; }
+      .plaquette { padding:.25rem .5rem; }
+      .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
+    }
+    @media (max-width:600px) {
+      .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
+      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
+      /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
+      .salle { height:auto !important; min-height:unset !important; padding:.5rem .5rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
+      /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
+      .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
+      /* Clip horizontal : empêche la zone-basse de déborder sur la salle adjacente */
+      .salle { overflow-x: clip; }
+      /* Plancher mobile : remplit l'espace jusqu'à la nav fixe */
+      .plancher-sol { min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
+      /* Navigation mobile */
+      .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
+      body { overflow-x:hidden; }
+      /* Mur grille sur mobile : laisse de la place pour les portes */
+      .mur.mur-grille {
+        display:grid !important;
+        grid-template-columns:repeat(12,1fr) !important;
+        grid-template-rows:repeat(8,1fr) !important;
+        aspect-ratio:12/8 !important;
+        width:100% !important;
+        height:auto !important;
+        min-height:unset !important;
+        padding:4px !important;
+        gap:2px !important;
+        margin:0;
+        overflow:visible !important;
+      }
+      /* Portes dans zone-basse uniquement en mode grille mobile */
+      .mur.mur-grille > .porte { display:none !important; }
+      /* Mur flux classique sur mobile : 2 colonnes */
+      .mur:not(.mur-grille) {
+        display:grid; grid-template-columns:1fr 1fr; justify-items:center;
+        align-content:space-evenly; column-gap:.5rem; row-gap:0;
+        padding:1rem .7rem; min-height:calc(100vh - 220px); height:auto !important; overflow:visible;
+      }
+      .cadre { margin:8px; box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 8px #3a3a3a, 0 0 0 9px rgba(80,80,80,.45), inset 0 0 0 2px rgba(100,100,100,.35), inset 1px 1px 3px rgba(0,0,0,.5); }
+      .cadre::before, .cadre::after { display:none !important; }
+      .tableau { flex-shrink:0; }
+      .tableau::after { bottom:-8px; }
+      .etiquette { position:absolute; top:100%; left:0; right:0; transform:none; margin-top:.3rem; display:flex; justify-content:center; }
+      .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
+      .plaquette { padding:.25rem .5rem; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAYSAGE GSM — orientation:landscape AND max-height:500px
+       Mutuellement exclusif avec max-width:600px (portrait) ✓
+
+       Principe de stabilite : le mur recoit une hauteur explicite
+       calc(100svh - 3rem). Pas de chaine flex incertaine.
+       100svh = hauteur minimale garantie (barre browser visible).
+       width:auto + aspect-ratio → largeur = hauteur × 1.5 auto.
+       ═══════════════════════════════════════════════════════════════ */
+    @media (orientation:landscape) and (max-height:500px) {
+      html, body { height:100svh; overflow:hidden; }
+      body { display:flex; flex-direction:column; }
+      .pied { display:none; }
+
+      /* Header */
+      .entete { padding:.18rem .8rem !important; flex-shrink:0; }
+
+      /* Galerie et conteneur : juste overflow hidden */
+      .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
+      .conteneur-salles   { flex:1; min-height:0; height:100%; align-items:stretch; overflow:visible; }
+
+      /* Salle : aligne et clip
+         padding lat. = safe-area pour encoche/Dynamic Island iPhone */
+      .salle {
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center;
+        justify-content:flex-start;
+        height:100% !important;
+        min-height:unset !important;
+        padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+        overflow:hidden;
+        position:relative;
+      }
+      .nom-salle { display:none; }
+
+      /* ── Mur : hauteur DIRECTE depuis 100svh ──────────────────────
+         3rem ≈ 48px = estimation haute du header compact.
+         width:auto + aspect-ratio 12/8 → largeur = hauteur × 1.5.
+         Plus de chaine flex : rien ne peut deborder.             */
+      .mur.mur-grille {
+        height: calc(100svh - 3rem) !important;
+        flex: none !important;
+        flex-shrink: 0;
+        width: auto !important;
+        aspect-ratio: 12/8 !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+        padding: 3px !important;
+        gap: 2px !important;
+        overflow: hidden !important;
+        margin: 0;
+      }
+
+      /* Zone-basse : overlay hors flux */
+      .salle-grille .zone-basse {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        pointer-events: none;
+      }
+
+      /* Mur-inferieur : ancre au bas du mur (pas au bas de la salle)
+         top = hauteur mur - hauteur porte = (100svh-3rem) - 108px   */
+      .mur-inferieur {
+        position: absolute;
+        top: calc(100svh - 3rem - 108px);
+        left: 0; right: 0;
+        height: 108px;
+        background: transparent !important;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 10px 0;
+      }
+      .mur-inferieur::before,
+      .mur-inferieur::after { display:none !important; }
+      .mur-inferieur > div:not(.porte-mur) { display:none; }
+
+      /* Portes × 1.5 */
+      .porte-mur {
+        pointer-events: all;
+        width: 66px;
+        height: 108px;
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        cursor: pointer;
+        transition: filter .2s;
+      }
+      .pm-ouverture { width:48px; height:90px; border-radius:24px 24px 0 0; }
+      .pm-nom       { font-size:.68rem; margin-bottom:.4rem; white-space:nowrap; }
+      .pm-fleche    { font-size:1.1rem; bottom:10px; }
+
+      .plancher-sol { display:none !important; }
+      .nav-mobile   { display:none !important; }
+
+      /* Modal cote a cote */
+      .modal-overlay    { padding:.4rem; align-items:center; }
+      .modal-contenu    { flex-direction:row; max-height:96vh; border-radius:4px; }
+      .modal-image-wrap { flex:0 0 48%; max-height:94vh; }
+      .modal-fiche      { padding:.7rem; gap:.35rem; overflow-y:auto; }
+      .modal-titre      { font-size:1rem; }
+      .modal-fermer     { width:2rem; height:2rem; font-size:1rem; }
+    }

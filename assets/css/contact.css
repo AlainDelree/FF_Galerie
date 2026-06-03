@@ -1,0 +1,125 @@
+/* FF_Galerie — contact.css */
+
+    .entete { display:flex; flex-direction:row; justify-content:space-between; align-items:center; transform:translateY(0); transition:transform .4s ease; }
+    .entete.cache { transform:translateY(-100%); }
+    .pied { display:flex; flex-direction:column; align-items:center; gap:.1rem; }
+    .signature-artiste { font-family:'Playfair Display',serif; font-size:3.5rem; background:linear-gradient(135deg,#c8a050 0%,#f0d080 50%,#c8a050 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; opacity:.85; line-height:1; margin-bottom:.2rem; letter-spacing:.05em; }
+
+    /* ── Page contact ── */
+    .contact-titre {
+      font-family: 'Cinzel', serif;
+      font-weight: 400;
+      font-size: 1.6rem;
+      letter-spacing: .38em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 40%, #c8a050 60%, #e8c060 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 1.2rem;
+    }
+    .contact-accroche {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: .92rem;
+      color: var(--text-doux, #888880);
+      letter-spacing: .06em;
+      margin-bottom: 2.4rem;
+    }
+    .contact-bloc {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.6rem;
+      margin-top: 2rem;
+    }
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .65rem;
+    }
+    .contact-label {
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: rgba(200,160,80,.45);
+    }
+    .contact-email-wrap {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+    }
+    .btn-copier {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: .2rem;
+      color: rgba(200,160,80,.35);
+      transition: color .2s;
+      flex-shrink: 0;
+      position: relative;
+      line-height: 0;
+    }
+    .btn-copier:hover { color: #c8a050; }
+    .btn-copier svg { width: .85rem; height: .85rem; }
+    .btn-copier .copie-ok {
+      display: none;
+      position: absolute;
+      top: -1.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Cinzel', serif;
+      font-size: .45rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #c8a050;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .btn-copier.copie-active .copie-ok { display: block; }
+    .lien-email {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: 1rem;
+      letter-spacing: .09em;
+      color: #c8a050;
+      text-decoration: none;
+      position: relative;
+      transition: color .25s;
+    }
+    .lien-email::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #c8a050 40%, #c8a050 60%, transparent);
+      opacity: .35;
+      transition: opacity .3s;
+    }
+    .lien-email:hover { color: #f0d080; }
+    .lien-email:hover::after { opacity: .85; }
+    /* Réseaux */
+    .contact-social {
+      display: flex;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+    .lien-social {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .55rem;
+      text-decoration: none;
+      color: rgba(200,160,80,.4);
+      transition: color .3s;
+    }
+    .lien-social:hover { color: #c8a050; }
+    .lien-social svg { width: 1.6rem; height: 1.6rem; }
+    .lien-social span {
+      font-family: 'Cinzel', serif;
+      font-size: .5rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }

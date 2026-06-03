@@ -1,0 +1,45 @@
+/* =============================================================
+   FF_Galerie — plan.css  (page d'accueil / plan SVG)
+   ============================================================= */
+
+    .nom-artiste, .sous-titre, .titre-galerie {
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 40%, #c8a050 60%, #e8c060 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .titre-galerie {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-top: .5rem;
+      opacity: .9;
+    }
+    .signature-artiste {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, #c8a050 0%, #f0d080 50%, #c8a050 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: .85;
+      line-height: 1;
+      margin-bottom: .2rem;
+      letter-spacing: .05em;
+    }
+    .pied { display: flex; flex-direction: column; align-items: center; gap: .1rem; }
+    .plan-count { font-size:7px; fill:var(--accent,#c8a050); opacity:.7; text-anchor:middle; font-family:Lato,sans-serif; }
+    /* Header auto-hide */
+    .entete {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      transform: translateY(0);
+      transition: transform .4s ease;
+    }
+    .entete.cache {
+      transform: translateY(-100%);
+    }
