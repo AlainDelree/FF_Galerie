@@ -482,7 +482,6 @@ textarea.champ{resize:vertical;min-height:65px;}
         </div>
         <button class="plan-btn" id="btn-ajouter-salle">＋ Ajouter</button>
         <button class="plan-btn" id="btn-supprimer-salle">✕ Supprimer</button>
-        <button class="plan-btn" id="btn-toggle-visible">◑ Visible / Caché</button>
       </div>
       <div class="salles-chips" id="chips-salles"></div>
     </div>
@@ -2411,13 +2410,6 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
-$('btn-toggle-visible').addEventListener('click', async () => {
-  if (!salleActive) return;
-  salleActive.visible = !salleActive.visible;
-  try { await sauvegarder(`[admin] ${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); marquerSalleEnAttente(salleActive?.id); afficherPlan(); }
-  catch (e) { toast('Erreur : ' + e.message, 'err'); }
-});
-
 // Contrôles mur
 $('btn-coul-toggle').addEventListener('click', () => {
   const ouvert = $('coul-panel').classList.toggle('ouvert');
