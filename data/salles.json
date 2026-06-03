@@ -168,9 +168,9 @@
       "id": 9,
       "nom": "Buanderie",
       "theme": "",
-      "couleur_mur": "#2e2e2e",
-      "couleur_cadres": "#3a3a3a",
-      "texture": "none",
+      "couleur_mur": "#25dbdb",
+      "couleur_cadres": "#1c1c1c",
+      "texture": "pierre",
       "visible": true,
       "toiles": [],
       "positions": []
