@@ -17,5 +17,15 @@
     "prefix": "alain",
     "draft": true,
     "genre": "m"
+  },
+  {
+    "id": "gerogegg",
+    "nom": "Gerogegg",
+    "logo": "GE",
+    "lien": "artistes/gerogegg/",
+    "repoPath": "artistes/gerogegg/data/",
+    "prefix": "gerogegg",
+    "draft": true,
+    "genre": "n"
   }
 ]

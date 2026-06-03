@@ -233,7 +233,16 @@ async function commitMulti(fichiers, message) {
   }));
   const tree = await apiGH(`/repos/${REPO}/git/trees`, 'POST', { base_tree: baseCommit.tree.sha, tree: blobs });
   const commit = await apiGH(`/repos/${REPO}/git/commits`, 'POST', { message, tree: tree.sha, parents: [commitSha] });
-  await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha });
+  /* Mise à jour du ref — retry avec force si fast-forward impossible */
+  try {
+    await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false });
+  } catch (e) {
+    if (e.message && (e.message.includes('fast forward') || e.message.includes('Update is not'))) {
+      await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: true });
+    } else {
+      throw e;
+    }
+  }
 }
 
 async function uploaderPhoto(id, b64) {
@@ -2110,6 +2119,7 @@ function afficherArtistes() {
       "<div class=\"artiste-actions\">" +
         btnPublier +
         "<button class=\"event-btn\" title=\"Modifier\" onclick=\"ouvrirModifierArtiste(" + i + ")\">✏️</button>" +
+        "<button class=\"event-btn del\" title=\"Supprimer\" onclick=\"supprimerArtiste(" + i + ")\">✕</button>" +
         "<button class=\"event-btn\" title=\"Vers l'accueil\" onclick=\"ouvrirGalerieArtiste('" + a.id + "')\">↗</button>" +
       "</div>" +
     "</div>";
@@ -2118,6 +2128,19 @@ function afficherArtistes() {
 
 function ouvrirGalerieArtiste(id) {
   window.open("artistes/" + id + "/", "_blank");
+}
+
+async function supprimerArtiste(idx) {
+  const a = artistesData[idx];
+  if (!confirm("Supprimer " + a.nom + " de la liste ?\n\nSes fichiers restent sur GitHub (dossier artistes/" + a.id + "/). Seule l'entrée dans artistes.json est supprimée.")) return;
+  artistesData.splice(idx, 1);
+  try {
+    await sauvegarderArtistesJSON("Suppression artiste : " + a.nom);
+    afficherArtistes();
+  } catch(e) {
+    artistesData.splice(idx, 0, a); // rollback
+    alert("Erreur : " + e.message);
+  }
 }
 
 async function toggleDraftArtiste(idx) {
