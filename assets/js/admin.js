@@ -7,7 +7,16 @@
 
 const ADMIN_CFG = {
   dataPath: window.ADMIN_DATA_PATH || 'data/',
-  repoPath: window.ADMIN_REPO_PATH || 'data/'
+  repoPath: window.ADMIN_REPO_PATH || 'data/',
+  prefix:   window.ADMIN_PREFIX    || 'ff'
+};
+/* Clés de stockage dérivées du prefix */
+const K = {
+  pw:       ADMIN_CFG.prefix + '_pw_hash',
+  auth:     ADMIN_CFG.prefix + '_auth',
+  token:    'ff_gh_token',          /* token partagé — même repo */
+  presets:  ADMIN_CFG.prefix + '_presets',
+  textures: ADMIN_CFG.prefix + '_textures_custom'
 };
 
 // ═══════════════════════════════════════════════
@@ -130,31 +139,31 @@ async function verifierLogin() {
   const mdp = $('inp-mdp').value.trim();
   if (!mdp) { $('login-err').textContent = 'Entrez un mot de passe.'; return; }
   const hash = await sha256(mdp);
-  const stocke = localStorage.getItem('ff_pw_hash');
+  const stocke = localStorage.getItem(K.pw);
   if (!stocke) { $('login-err').textContent = 'Aucun mot de passe configuré. Cliquez sur "Créer un mot de passe".'; return; }
   if (hash !== stocke) { $('login-err').textContent = 'Mot de passe incorrect.'; $('inp-mdp').value = ''; return; }
-  sessionStorage.setItem('ff_auth', '1');
+  sessionStorage.setItem(K.auth, '1');
   apresLogin();
 }
 
 async function creerMotDePasse() {
   const mdp = $('inp-mdp').value.trim();
   if (mdp.length < 6) { $('login-err').textContent = 'Minimum 6 caractères.'; return; }
-  if (localStorage.getItem('ff_pw_hash')) { $('login-err').textContent = 'Un mot de passe existe déjà.'; return; }
-  localStorage.setItem('ff_pw_hash', await sha256(mdp));
-  sessionStorage.setItem('ff_auth', '1');
+  if (localStorage.getItem(K.pw)) { $('login-err').textContent = 'Un mot de passe existe déjà.'; return; }
+  localStorage.setItem(K.pw, await sha256(mdp));
+  sessionStorage.setItem(K.auth, '1');
   apresLogin();
 }
 
 function apresLogin() {
-  token = localStorage.getItem('ff_gh_token') || '';
+  token = localStorage.getItem(K.token) || '';
   if (!token) { afficherEcran('ecran-token'); return; }
   afficherEcran('ecran-principal');
   chargerTout();
 }
 
 function deconnecter() {
-  sessionStorage.removeItem('ff_auth');
+  sessionStorage.removeItem(K.auth);
   afficherEcran('ecran-login');
   $('inp-mdp').value = '';
 }
@@ -1333,15 +1342,15 @@ function ouvrirModalPreset() {
 function confirmerPreset() {
   const nom = $('inp-preset-nom').value.trim();
   if (!nom) { toast('Entrez un nom pour le preset', 'err'); return; }
-  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
   presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, texture: textureActuelle };
-  localStorage.setItem('ff_presets', JSON.stringify(presets));
+  localStorage.setItem(K.presets, JSON.stringify(presets));
   $('overlay-preset').classList.remove('ouvert');
   toast(`✓ Preset "${nom}" sauvegardé`);
 }
 
 function chargerPreset() {
-  const presets = JSON.parse(localStorage.getItem('ff_presets') || '{}');
+  const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
   const noms = Object.keys(presets);
   if (!noms.length) { toast('Aucun preset — sauvegardez-en un d\'abord', 'err'); return; }
   const choix = noms.length === 1 ? noms[0] : prompt(`Presets disponibles :\n${noms.map((n,i) => `${i+1}. ${n}`).join('\n')}\n\nEntrez le nom :`);
@@ -1366,10 +1375,10 @@ function gererTextureCustom(fichier) {
   reader.onload = e => {
     const dataUrl = e.target.result;
     const key = 'tex_custom_' + Date.now();
-    const customs = JSON.parse(localStorage.getItem('ff_textures_custom') || '[]');
+    const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
     customs.push({ key, url: dataUrl, nom: fichier.name.split('.')[0] });
     if (customs.length > 5) customs.shift(); // garde max 5
-    localStorage.setItem('ff_textures_custom', JSON.stringify(customs));
+    localStorage.setItem(K.textures, JSON.stringify(customs));
     afficherTexturesCustom();
     setTexture(key);
     toast('✓ Texture ajoutée');
@@ -1380,7 +1389,7 @@ function gererTextureCustom(fichier) {
 function afficherTexturesCustom() {
   const cont = $('textures-custom'); if (!cont) return;
   cont.innerHTML = '';
-  const customs = JSON.parse(localStorage.getItem('ff_textures_custom') || '[]');
+  const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
   customs.forEach(t => {
     TEXTURES[t.key] = `url("${t.url}")`;
     const sw = document.createElement('div');
@@ -1473,7 +1482,7 @@ async function validerToken() {
   try {
     const old = token; token = t;
     await apiGH(`/repos/${REPO}`);
-    localStorage.setItem('ff_gh_token', t);
+    localStorage.setItem(K.token, t);
     afficherEcran('ecran-principal');
     chargerTout();
   } catch (e) { $('token-err').textContent = 'Token invalide : ' + e.message; token = ''; }
@@ -1868,10 +1877,10 @@ initTailleForm();
 // ═══════════════════════════════════════════════
 // DÉMARRAGE
 // ═══════════════════════════════════════════════
-if (sessionStorage.getItem('ff_auth') === '1') {
-  token = localStorage.getItem('ff_gh_token') || '';
+if (sessionStorage.getItem(K.auth) === '1') {
+  token = localStorage.getItem(K.token) || '';
   if (token) { afficherEcran('ecran-principal'); chargerTout(); }
   else afficherEcran('ecran-token');
 } else {
-  if (localStorage.getItem('ff_pw_hash')) $('login-aide').style.display = 'none';
+  if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
 }

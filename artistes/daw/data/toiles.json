@@ -1,0 +1,11 @@
+{
+  "tailles": [
+    { "code": "XXS", "label": "Très petit",  "largeur_max": 20 },
+    { "code": "XS",  "label": "Petit",       "largeur_max": 35 },
+    { "code": "M",   "label": "Moyen",       "largeur_max": 60 },
+    { "code": "XL",  "label": "Grand",       "largeur_max": 100 },
+    { "code": "XXL", "label": "Très grand",  "largeur_max": 150 },
+    { "code": "E",   "label": "Exceptionnel","largeur_max": 9999 }
+  ],
+  "toiles": []
+}
