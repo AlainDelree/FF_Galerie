@@ -1,51 +1,6 @@
 {
   "salles": [
     {
-      "id": 6,
-      "nom": "Salle F",
-      "theme": "",
-      "couleur_mur": "#0000ff",
-      "couleur_cadres": "#f0f0f0",
-      "texture": "bois",
-      "visible": true,
-      "toiles": [
-        18,
-        19,
-        32,
-        28
-      ],
-      "positions": [
-        {
-          "id": 18,
-          "col": 2,
-          "row": 2,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 19,
-          "col": 2,
-          "row": 5,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 32,
-          "col": 7,
-          "row": 1,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 28,
-          "col": 8,
-          "row": 5,
-          "w": 3,
-          "h": 3
-        }
-      ]
-    },
-    {
       "id": 4,
       "nom": "Salle IV",
       "theme": "",
