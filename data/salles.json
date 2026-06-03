@@ -329,15 +329,23 @@
       "texture": "damier",
       "visible": true,
       "toiles": [
-        27
+        27,
+        33
       ],
       "positions": [
         {
           "id": 27,
-          "col": 3,
-          "row": 2,
+          "col": 5,
+          "row": 4,
           "w": 8,
           "h": 5
+        },
+        {
+          "id": 33,
+          "col": 1,
+          "row": 1,
+          "w": 4,
+          "h": 3
         }
       ]
     }
