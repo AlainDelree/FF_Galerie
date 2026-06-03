@@ -4,12 +4,12 @@ on:
     branches: [main]
 
 concurrency:
-  group: "pages"
+  group: "pages-admin"
   cancel-in-progress: true
 
 jobs:
   deploy:
-    if: "startsWith(github.event.head_commit.message, '[admin]')"
+    if: "contains(github.event.head_commit.message, '[admin]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
