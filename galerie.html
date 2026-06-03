@@ -226,14 +226,14 @@
 
     /* Mur inférieur : continuation du mur, contient les portes */
     .mur-inferieur {
-      width:100%; height:40px;
+      width:100%; height:65px;
       display:flex; align-items:flex-end; justify-content:space-between;
       position:relative;
       background:inherit; /* hérite la couleur du mur parent */
     }
     /* Ombre intérieure haut mur inférieur */
     .mur-inferieur::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:12px;
+      content:''; position:absolute; top:0; left:0; right:0; height:16px;
       background:linear-gradient(to bottom, rgba(0,0,0,.18), transparent);
       pointer-events:none;
     }
@@ -246,7 +246,7 @@
 
     /* Portes dans le mur inférieur */
     .porte-mur {
-      flex-shrink:0; width:48px; height:44px;
+      flex-shrink:0; width:48px; height:68px;
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       cursor:pointer; background:none; border:none; padding:0; z-index:2;
       transition:filter .2s;
@@ -506,7 +506,7 @@
       }
 
       /* Mur-inférieur compact */
-      .mur-inferieur { height:38px !important; }
+      .mur-inferieur { height:58px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
       /* Plancher */
@@ -1001,10 +1001,10 @@
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: 44,        hBase: 40, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: 65,        hBase: 60, opacite: 0.65, nbMax: nb.lo },                 // lointain
-        { yFloor: VH * 0.72, hBase: 80, opacite: 0.70, nbMax: nb.mi },                 // milieu
-        { yFloor: VH,        hBase: 126, opacite: 0.86, nbMax: nb.av }                 // avant-scène
+        { yFloor: 40,        hBase: 40, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: 53,        hBase: 53, opacite: 0.65, nbMax: nb.lo },                 // lointain
+        { yFloor: 75,        hBase: 80, opacite: 0.70, nbMax: nb.mi },                 // milieu
+        { yFloor: VH,        hBase: 160, opacite: 0.86, nbMax: nb.av }                 // avant-scène
       ];
 
       // Distribue avec pool cyclique : si total > 8, réutilise des silhouettes
