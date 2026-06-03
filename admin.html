@@ -2553,9 +2553,18 @@ $('btn-recadrer-photo').addEventListener('click', () => {
 
 $('btn-close-crop').addEventListener('click', fermerCrop);
 $('btn-crop-annuler').addEventListener('click', fermerCrop);
-$('btn-rot-g').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(-90); });
-$('btn-rot-d').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(90); });
-$('btn-rot-180').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(180); });
+function rotaterEtReinitCadre(deg) {
+  if (!cropperInst) return;
+  cropperInst.rotate(deg);
+  // Après rotation, recaler le cadre sur l'image entière
+  setTimeout(() => {
+    const c = cropperInst.getCanvasData();
+    cropperInst.setCropBoxData({ left: c.left, top: c.top, width: c.width, height: c.height });
+  }, 150);
+}
+$('btn-rot-g').addEventListener('click', () => rotaterEtReinitCadre(-90));
+$('btn-rot-d').addEventListener('click', () => rotaterEtReinitCadre(90));
+$('btn-rot-180').addEventListener('click', () => rotaterEtReinitCadre(180));
 
 $('inp-photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
