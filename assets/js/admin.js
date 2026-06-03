@@ -8,8 +8,21 @@
 const ADMIN_CFG = {
   dataPath: window.ADMIN_DATA_PATH || 'data/',
   repoPath: window.ADMIN_REPO_PATH || 'data/',
-  prefix:   window.ADMIN_PREFIX    || 'ff'
+  prefix:   window.ADMIN_PREFIX    || 'ff',
+  nom:      window.ADMIN_NOM       || 'Frédérique Ferette',
+  logo:     window.ADMIN_LOGO      || 'FF'
 };
+
+/* Appliquer le nom/logo dès le chargement */
+(function () {
+  const logoEl = document.querySelector('.login-logo');
+  const sousEl = document.querySelector('.login-sous');
+  const hdrEl  = document.querySelector('.adm-logo');
+  if (logoEl) logoEl.textContent = ADMIN_CFG.logo;
+  if (sousEl) sousEl.textContent = ADMIN_CFG.nom;
+  if (hdrEl)  hdrEl.textContent  = ADMIN_CFG.nom;
+  document.title = ADMIN_CFG.nom + ' — Admin';
+})();
 /* Clés de stockage dérivées du prefix */
 const K = {
   pw:       ADMIN_CFG.prefix + '_pw_hash',

@@ -567,13 +567,36 @@
   </div>
 </div>
 
-  <!-- Config paths -->
+  <!-- Initialisation dynamique : lit ?artiste=xxx, charge artistes.json, puis lance admin.js -->
   <script>
-    window.ADMIN_DATA_PATH = "data/";
-    window.ADMIN_REPO_PATH = "data/";
+    (async function () {
+      const id = new URLSearchParams(location.search).get("artiste");
+      if (id) {
+        try {
+          const artistes = await fetch("data/artistes.json?v=" + Date.now()).then(r => r.json());
+          const a = artistes.find(x => x.id === id);
+          if (a) {
+            window.ADMIN_REPO_PATH = a.repoPath;
+            window.ADMIN_PREFIX    = a.prefix;
+            window.ADMIN_NOM       = a.nom;
+            window.ADMIN_LOGO      = a.logo || id.slice(0, 2).toUpperCase();
+          }
+        } catch (e) {}
+      }
+      /* Charge admin.js une fois la config prête */
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin.js";
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      /* Charge admin-artistes.js (combobox login) uniquement pour Frédérique */
+      if (!id) {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-artistes.js";
+        document.body.appendChild(s);
+      }
+    })();
   </script>
-  <script src="assets/js/admin.js"></script>
-
-  <script src="assets/js/admin-artistes.js"></script>
 </body>
 </html>

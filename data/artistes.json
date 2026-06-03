@@ -1,3 +1,11 @@
 [
-  { "id": "daw", "nom": "Daw Wanpram", "lien": "artistes/daw/", "draft": true }
+  {
+    "id":       "daw",
+    "nom":      "Daw Wanpram",
+    "logo":     "DW",
+    "lien":     "artistes/daw/",
+    "repoPath": "artistes/daw/data/",
+    "prefix":   "daw",
+    "draft":    true
+  }
 ]

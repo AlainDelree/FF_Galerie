@@ -9,7 +9,7 @@
     .then(function (artistes) {
       artistes.forEach(function (a) {
         var opt = document.createElement("option");
-        opt.value = a.lien;
+        opt.value = "admin.html?artiste=" + a.id;
         opt.textContent = a.nom + (a.draft ? " (en préparation)" : "");
         sel.appendChild(opt);
       });
