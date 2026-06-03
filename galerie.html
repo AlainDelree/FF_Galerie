@@ -435,9 +435,9 @@
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
       .pied { flex-shrink:0; padding:.28rem 0; }
 
-      /* Mur : hauteur = 100vh - 300px (overhead), max 680px */
+      /* Mur : overhead = header(68)+footer(34)+nom(24)+mur-inf(52)+plancher(160)+marge(12) = 350px */
       .mur.mur-grille {
-        height: min(calc(100vh - 300px), 680px) !important;
+        height: min(calc(100vh - 350px), 660px) !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
         max-width: calc(100% - 4rem) !important;
@@ -449,8 +449,11 @@
       .mur-inferieur { height:52px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
-      /* Plancher reduit : latte + silhouettes proches visibles */
-      .plancher-sol { min-height:80px !important; max-height:110px !important; }
+      /* Plancher : fond plein-ecran, SVG limite a 600px centre
+         A 600px le SVG fait 214px de haut -> coupe a 160px montre
+         les figures avant-scene et milieu entieres (y=38->150 viewBox) */
+      .plancher-sol    { min-height:100px !important; max-height:160px !important; }
+      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
     }
 
         /* Navigation mobile flèches */
