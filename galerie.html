@@ -1001,8 +1001,8 @@
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: VH * 0.20, hBase: 28, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: VH * 0.36, hBase: 42, opacite: 0.62, nbMax: nb.lo },                 // lointain
+        { yFloor: 4,         hBase: 28, opacite: 0.50, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: 8,         hBase: 50, opacite: 0.65, nbMax: nb.lo },                 // lointain — pieds jonction mur/sol
         { yFloor: VH * 0.72, hBase: 56, opacite: 0.70, nbMax: nb.mi },                 // milieu
         { yFloor: VH,        hBase: 88, opacite: 0.86, nbMax: nb.av }                  // avant-scène
       ];
@@ -1093,7 +1093,7 @@
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" style="display:block;width:100%;height:auto;vertical-align:bottom">'+
+        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:auto;vertical-align:bottom">'+
         svgParts.join("")+"</svg>";
     }
 
