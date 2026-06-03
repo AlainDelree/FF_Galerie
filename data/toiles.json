@@ -473,6 +473,23 @@
       },
       "visible": true,
       "taille": "M"
+    },
+    {
+      "id": 33,
+      "photo": "",
+      "source_photo": "admin",
+      "titre": "Équilibre Nébuleux",
+      "date": "02/10/2015",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 60,
+        "hauteur": 50
+      },
+      "taille": "M",
+      "visible": true
     }
   ]
 }
