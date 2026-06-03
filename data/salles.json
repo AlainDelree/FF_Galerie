@@ -245,6 +245,17 @@
           "h": 5
         }
       ]
+    },
+    {
+      "id": 11,
+      "nom": "Salle de bain",
+      "theme": "",
+      "couleur_mur": "#f5f5f5",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
     }
   ]
 }
