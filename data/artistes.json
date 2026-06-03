@@ -7,15 +7,5 @@
     "repoPath": "artistes/daw/data/",
     "prefix": "daw",
     "draft": true
-  },
-  {
-    "id": "gerogegg",
-    "nom": "Geroge gg",
-    "logo": "GI",
-    "lien": "artistes/gerogegg/",
-    "repoPath": "artistes/gerogegg/data/",
-    "prefix": "gerogegg",
-    "draft": false,
-    "genre": "n"
   }
 ]
