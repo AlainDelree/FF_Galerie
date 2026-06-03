@@ -848,21 +848,32 @@ textarea.champ{resize:vertical;min-height:65px;}
 <div id="overlay-crop">
   <div class="crop-modal">
     <div class="crop-hdr">
-      <span>✂ Recadrer la photo</span>
+      <span id="crop-hdr-titre">Étape 1 — Orienter</span>
       <button id="btn-close-crop">×</button>
     </div>
     <div class="crop-canvas-wrap">
       <img id="crop-img" alt="Photo à recadrer">
     </div>
-    <div class="crop-rot-barre">
-      <button class="crop-rot-btn" id="btn-rot-g" title="Rotation 90° gauche">↺ 90°</button>
-      <button class="crop-rot-btn" id="btn-rot-d" title="Rotation 90° droite">↻ 90°</button>
-      <button class="crop-rot-btn" id="btn-rot-180" title="Retourner 180°">↕ 180°</button>
+    <!-- Étape 1 : rotation -->
+    <div id="crop-etape1">
+      <div class="crop-aide">Tourne la photo jusqu'à la bonne orientation</div>
+      <div class="crop-rot-barre">
+        <button class="crop-rot-btn" id="btn-rot-g">↺ 90° gauche</button>
+        <button class="crop-rot-btn" id="btn-rot-d">↻ 90° droite</button>
+        <button class="crop-rot-btn" id="btn-rot-180">↕ 180°</button>
+      </div>
+      <div class="crop-ftr">
+        <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
+        <button id="btn-crop-suivant" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">Recadrer →</button>
+      </div>
     </div>
-    <div class="crop-aide">Pincer pour zoomer · Glisser pour déplacer · Coins pour redimensionner</div>
-    <div class="crop-ftr">
-      <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
-      <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider le recadrage</button>
+    <!-- Étape 2 : recadrage -->
+    <div id="crop-etape2" style="display:none;">
+      <div class="crop-aide">Ajuste le cadre · Pincer pour zoomer · Glisser pour déplacer</div>
+      <div class="crop-ftr">
+        <button id="btn-crop-retour" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">← Retour</button>
+        <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2475,10 +2486,10 @@ function ouvrirCrop(file, callback) {
       cropperInst = new Cropper(img, {
         viewMode: 1,
         dragMode: 'move',
-        autoCropArea: 0.88,
+        autoCrop: false,
         restore: false,
-        guides: true,
-        center: true,
+        guides: false,
+        center: false,
         highlight: false,
         cropBoxMovable: true,
         cropBoxResizable: true,
@@ -2489,6 +2500,10 @@ function ouvrirCrop(file, callback) {
         zoomOnTouch: true,
         zoomOnWheel: false,
       });
+      // Étape 1 visible, étape 2 cachée
+      $('crop-etape1').style.display = '';
+      $('crop-etape2').style.display = 'none';
+      $('crop-hdr-titre').textContent = 'Étape 1 — Orienter';
     };
     img.src = e.target.result;
   };
@@ -2504,6 +2519,10 @@ function fermerCrop() {
 
 $('btn-crop-valider').addEventListener('click', () => {
   if (!cropperInst) return;
+  // Si pas encore de cropBox, activer sur l'image entière
+  if (!cropperInst.getCropBoxData().width) {
+    cropperInst.crop();
+  }
   const canvas = cropperInst.getCroppedCanvas({
     maxWidth: 1400, maxHeight: 1400,
     fillColor: '#fff',
@@ -2529,12 +2548,15 @@ function ouvrirCropDepuisSrc(src, callback) {
       return;
     }
     cropperInst = new Cropper(img, {
-      viewMode: 1, dragMode: "move", autoCropArea: 0.88,
-      restore: false, guides: true, center: true, highlight: false,
+      viewMode: 1, dragMode: "move", autoCrop: false,
+      restore: false, guides: false, center: false, highlight: false,
       cropBoxMovable: true, cropBoxResizable: true,
       toggleDragModeOnDblclick: false, responsive: true,
       movable: true, zoomable: true, zoomOnTouch: true, zoomOnWheel: false,
     });
+    $('crop-etape1').style.display = '';
+    $('crop-etape2').style.display = 'none';
+    $('crop-hdr-titre').textContent = 'Étape 1 — Orienter';
   };
   img.src = src;
 }
@@ -2553,18 +2575,31 @@ $('btn-recadrer-photo').addEventListener('click', () => {
 
 $('btn-close-crop').addEventListener('click', fermerCrop);
 $('btn-crop-annuler').addEventListener('click', fermerCrop);
-function rotaterEtReinitCadre(deg) {
+$('btn-rot-g').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(-90); });
+$('btn-rot-d').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(90); });
+$('btn-rot-180').addEventListener('click', () => { if (cropperInst) cropperInst.rotate(180); });
+
+$('btn-crop-suivant').addEventListener('click', () => {
   if (!cropperInst) return;
-  cropperInst.rotate(deg);
-  // Après rotation, recaler le cadre sur l'image entière
+  // Passer à l'étape 2 : activer le cadre de recadrage sur l'image entière
+  cropperInst.crop();
   setTimeout(() => {
     const c = cropperInst.getCanvasData();
     cropperInst.setCropBoxData({ left: c.left, top: c.top, width: c.width, height: c.height });
-  }, 150);
-}
-$('btn-rot-g').addEventListener('click', () => rotaterEtReinitCadre(-90));
-$('btn-rot-d').addEventListener('click', () => rotaterEtReinitCadre(90));
-$('btn-rot-180').addEventListener('click', () => rotaterEtReinitCadre(180));
+  }, 100);
+  $('crop-etape1').style.display = 'none';
+  $('crop-etape2').style.display = '';
+  $('crop-hdr-titre').textContent = 'Étape 2 — Recadrer';
+});
+
+$('btn-crop-retour').addEventListener('click', () => {
+  if (!cropperInst) return;
+  // Retour à l'étape 1 : masquer le cadre
+  cropperInst.clear();
+  $('crop-etape1').style.display = '';
+  $('crop-etape2').style.display = 'none';
+  $('crop-hdr-titre').textContent = 'Étape 1 — Orienter';
+});
 
 $('inp-photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
