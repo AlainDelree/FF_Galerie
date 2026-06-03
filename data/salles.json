@@ -324,12 +324,22 @@
       "id": 13,
       "nom": "Bureau",
       "theme": "",
-      "couleur_mur": "#f5f5f5",
+      "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#3a3a3a",
-      "texture": "none",
+      "texture": "damier",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        27
+      ],
+      "positions": [
+        {
+          "id": 27,
+          "col": 3,
+          "row": 2,
+          "w": 8,
+          "h": 5
+        }
+      ]
     }
   ]
 }
