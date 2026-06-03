@@ -284,7 +284,7 @@
     .plancher-sol {
       width:100%; min-height:160px; max-height:230px; overflow:hidden;
       background: linear-gradient(to bottom,
-        rgba(22,14,6,.88) 0%, rgba(32,20,10,.96) 60%, rgba(38,25,12,.99) 100%);
+        rgba(185,138,80,.95) 0%, rgba(165,118,60,.97) 60%, rgba(158,112,55,.99) 100%);
       position:relative;
       display:flex; align-items:flex-end;
       z-index:3;
@@ -293,14 +293,14 @@
     .plancher-sol::before {
       content:''; position:absolute; inset:0;
       background:
-        repeating-linear-gradient(90deg, transparent 0, transparent 44px, rgba(0,0,0,.12) 44px, rgba(0,0,0,.12) 45px),
-        repeating-linear-gradient(to bottom, transparent 0, transparent 14px, rgba(255,255,255,.025) 14px, rgba(255,255,255,.025) 15px);
+        repeating-linear-gradient(90deg, transparent 0, transparent 42px, rgba(120,75,20,.22) 42px, rgba(120,75,20,.22) 44px),
+        repeating-linear-gradient(to bottom, transparent 0, transparent 13px, rgba(100,60,10,.12) 13px, rgba(100,60,10,.12) 14px);
       pointer-events:none;
     }
     /* Reflet du mur sur le sol */
     .plancher-sol::after {
       content:''; position:absolute; top:0; left:0; right:0; height:20px;
-      background:linear-gradient(to bottom, rgba(255,255,255,.04), transparent);
+      background:linear-gradient(to bottom, rgba(255,240,200,.15), transparent);
       pointer-events:none;
     }
     .silhouettes-sol { width:100%; position:relative; z-index:4; overflow:visible; }
@@ -408,6 +408,7 @@
 
     
   </style>
+  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
   <style>
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity .35s ease; padding:1.5rem; }
@@ -720,6 +721,7 @@
       .modal-fermer     { width:2rem; height:2rem; font-size:1rem; }
     }
   </style>
+  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
 <body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
 
@@ -790,7 +792,7 @@
   <script>
     let salleCourante = 1;
     let TOTAL_SALLES = 0; // défini dynamiquement après chargement JSON
-    const NOMS_ROMAINS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+    const NOMS_ROMAINS = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');
