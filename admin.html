@@ -185,8 +185,7 @@ button{cursor:pointer;}
   pointer-events:none;line-height:1.3;}
 .stock-item .check-ov{display:none;position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:var(--gold);align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;}
 .stock-item.coche .check-ov{display:flex;}
-.btn-placer-mur{margin:.35rem;padding:.45rem;border-radius:6px;background:rgba(200,160,80,.15);border:0.5px solid rgba(200,160,80,.4);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;display:none;text-align:center;line-height:1.4;}
-.btn-placer-mur.visible{display:block;}
+
 .stock-leg{padding:.3rem .45rem;border-top:0.5px solid var(--brd);display:flex;flex-direction:column;gap:3px;}
 .leg-li{display:flex;align-items:center;gap:3px;font-size:8px;color:var(--muted);}
 .leg-sq{width:8px;height:8px;border-radius:1px;border:1.5px solid currentColor;flex-shrink:0;}
@@ -1751,7 +1750,7 @@ async function sauverToile() {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      await sauvegarder(`Ajout toile #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      await sauvegarder(`[admin] Ajout toile #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     } else {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
       let photo = toiles[idx].photo;
@@ -1763,7 +1762,7 @@ async function sauverToile() {
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, ...donnees };
-      await sauvegarder(`Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      await sauvegarder(`[admin] Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     }
     fermerModalToile();
     afficherPlan();
@@ -1783,7 +1782,7 @@ async function supprimerToile() {
   });
   fermerModalToile();
   try {
-    await sauvegarder(`Suppression toile #${toileEnEdition}${t?.titre ? ' — ' + t.titre : ''}`);
+    await sauvegarder(`[admin] Suppression toile #${toileEnEdition}${t?.titre ? ' — ' + t.titre : ''}`);
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
@@ -1828,7 +1827,7 @@ async function creerSalle() {
   salles.splice(pos, 0, salle);
   fermerModalSalle();
   try {
-    await sauvegarder(`Ajout salle "${nom}"`);
+    await sauvegarder(`[admin] Ajout salle "${nom}"`);
     afficherPlan();
     selectSalle(newId);
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
@@ -2153,7 +2152,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   salles = salles.filter(s => s.id !== salleActive.id);
   salleActive = null;
   try {
-    await sauvegarder(`Suppression salle`);
+    await sauvegarder(`[admin] Suppression salle`);
     afficherPlan();
     if (salles.length) selectSalle(salles[0].id);
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
@@ -2162,7 +2161,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
 $('btn-toggle-visible').addEventListener('click', async () => {
   if (!salleActive) return;
   salleActive.visible = !salleActive.visible;
-  try { await sauvegarder(`${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); afficherPlan(); }
+  try { await sauvegarder(`[admin] ${salleActive.visible ? 'Affichage' : 'Masquage'} salle "${salleActive.nom}"`); afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
 
@@ -2199,13 +2198,12 @@ $('btn-rename').addEventListener('click', async () => {
   salleActive.nom = nom;
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
-  try { await sauvegarder(`Renommage salle → "${nom}"`); afficherPlan(); }
+  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
 });
 
-// Bouton placer sur le mur
+// Bouton arranger le mur
 $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
-$('btn-placer-mur').addEventListener('click', entrerModePlacement);
 
 // Bouton Modifier : ouvre le formulaire d'édition pour la toile sélectionnée
 $('btn-modifier-toile').addEventListener('click', () => {
@@ -2231,7 +2229,7 @@ window.addEventListener('popstate', () => {
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
   btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
-  try { await sauvegarder('Mise à jour galerie'); }
+  try { await sauvegarder('[admin] Mise à jour galerie'); }
   catch (_) {}
   btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
 });
