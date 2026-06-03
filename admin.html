@@ -1339,12 +1339,7 @@ function afficherStock() {
   });
 }
 
-function majBtnPlacer() {
-  const btn = $('btn-placer-mur');
-  const n = toilesSelectionnees.size;
-  $('placer-count').textContent = n;
-  btn.classList.toggle('visible', n > 0);
-}
+function majBtnPlacer() { /* bouton Placer supprimé — Arranger le mur le remplace */ }
 
 function afficherConfirmAutreSalle(toile, nomAutre) {
   const ancien = document.getElementById('confirm-autre-salle');
@@ -1646,10 +1641,28 @@ function ouvrirFormulaireNouvel() {
   $('overlay-toile').classList.add('ouvert');
 }
 
+function construirePillsSalle(salleSelId) {
+  const pills = $('salle-pills'); pills.innerHTML = '';
+  salles.forEach(s => {
+    const p = document.createElement('button');
+    p.className = 'salle-pill'; p.type = 'button';
+    p.dataset.salle = s.id; p.textContent = s.nom;
+    if (s.id === salleSelId) p.classList.add('sel');
+    p.addEventListener('click', () => {
+      pills.querySelectorAll('.salle-pill').forEach(x => x.classList.remove('sel'));
+      p.classList.add('sel'); salleCibleToile = s.id;
+    });
+    pills.appendChild(p);
+  });
+}
+
 function ouvrirFormulaireEdition(id) {
   const t = toiles.find(x => x.id === id);
   if (!t) return;
   toileEnEdition = id; photoB64 = null;
+  const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
+  construirePillsSalle(salleDeLaToile);
+  salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = 'Modifier la toile';
   $('zone-suppr').classList.remove('hidden');
   remplirFormToile(t);
@@ -2203,7 +2216,7 @@ $('btn-modifier-toile').addEventListener('click', () => {
   if (sel) {
     ouvrirFormulaireEdition(sel.id);
   } else {
-    toast('Sélectionne d\'abord une toile dans le stock', 'err');
+    toast("Sélectionne d'abord une toile dans le stock", "err");
   }
 });
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
@@ -2225,19 +2238,7 @@ $('btn-sauver-flottant').addEventListener('click', async () => {
 
 // Barre basse
 $('btn-ajouter-toile').addEventListener('click', () => {
-  // Construit les pills de salle
-  const pills = $('salle-pills'); pills.innerHTML = '';
-  salles.forEach(s => {
-    const p = document.createElement('button');
-    p.className = 'salle-pill'; p.type = 'button';
-    p.dataset.salle = s.id; p.textContent = s.nom;
-    if (s.id === salleActive?.id) p.classList.add('sel');
-    p.addEventListener('click', () => {
-      pills.querySelectorAll('.salle-pill').forEach(x => x.classList.remove('sel'));
-      p.classList.add('sel'); salleCibleToile = s.id;
-    });
-    pills.appendChild(p);
-  });
+  construirePillsSalle(salleActive?.id || null);
   ouvrirFormulaireNouvel();
 });
 $('btn-uploader').addEventListener('click', () => toast('Upload par toile via "+ Ajouter" → photo'));
