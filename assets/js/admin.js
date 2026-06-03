@@ -223,8 +223,8 @@ async function uploaderPhoto(id, b64) {
 async function chargerTout() {
   try {
     const [tRes, sRes] = await Promise.all([
-      lireFichierJSON('data/toiles.json?v=' + Date.now()),
-      lireFichierJSON('data/salles.json?v=' + Date.now())
+      lireFichierJSON(ADMIN_CFG.repoPath + 'toiles.json'),
+      lireFichierJSON(ADMIN_CFG.repoPath + 'salles.json')
     ]);
     toiles = tRes.data.toiles || [];
     tailles = tRes.data.tailles || [];
@@ -1236,7 +1236,7 @@ async function chargerCommits() {
   const cont = $('commits-contenu');
   cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
   try {
-    const tousCommits = await apiGH(`/repos/${REPO}/commits?path=data/toiles.json&per_page=50`);
+    const tousCommits = await apiGH(`/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`);
     // Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit
     const commits = tousCommits.filter((c, i) => 
       i === 0 || c.commit.message.toLowerCase().startsWith('admin :')
@@ -1281,8 +1281,8 @@ async function executerRestauration() {
   const btn = $('btn-restore-ok'); btn.disabled = true; btn.textContent = '⟳ Restauration…';
   try {
     const [tf, sf] = await Promise.all([
-      apiGH(`/repos/${REPO}/contents/data/toiles.json?ref=${commitARestaurer}`),
-      apiGH(`/repos/${REPO}/contents/data/salles.json?ref=${commitARestaurer}`)
+      apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}toiles.json?ref=${commitARestaurer}`),
+      apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}salles.json?ref=${commitARestaurer}`)
     ]);
     await commitMulti([
       { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: tf.content.replace(/\n/g, ''), encoding: 'base64' },
@@ -1896,7 +1896,7 @@ let infosModifiees = false;
 /* Charge infos.json au passage sur l'onglet */
 async function chargerInfos() {
   try {
-    const res = await lireFichierJSON(ADMIN_CFG.dataPath + 'infos.json?v=' + Date.now());
+    const res = await lireFichierJSON(ADMIN_CFG.repoPath + 'infos.json');
     infosData = res.data || { evenements: [], collegues: [] };
     infosData.evenements = infosData.evenements || [];
     infosData.collegues  = infosData.collegues  || [];
