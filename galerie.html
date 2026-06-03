@@ -430,14 +430,44 @@
        Mur contraint par hauteur, plancher compact.
        overhead ≈ header(68)+footer(34)+nom(24)+mur-inf(52)+plancher(110)+marge(12) = 300px */
     @media (min-width:901px) {
-      /* Corps : tout tient dans 100vh, plus de scrollbar */
+      /* ── Header supprimé : gain ~68px pour le mur ── */
+      .entete {
+        height:0 !important; min-height:0 !important;
+        padding:0 !important; border:none !important;
+        background:transparent !important; overflow:visible !important;
+        position:static !important;
+      }
+
+      /* ♪ Bouton musique : DROITE, même niveau que le nom-salle */
+      .controles {
+        position:fixed; right:1.5rem;
+        top:1.4rem;
+        z-index:101;
+      }
+
+      /* Liens nav : GAUCHE, colonne verticale, centrés sur le mur
+         Schéma :   Accueil  │ MUR │       ♪
+                    Infos    │     │
+                    Contact  │     │             */
+      .nav-pages {
+        position:fixed; left:1.5rem;
+        top: calc(2.7rem + min(calc((100vh - 310px) / 2), 360px));
+        transform:translateY(-50%);
+        display:flex; flex-direction:column;
+        align-items:flex-start; gap:1.1rem;
+        z-index:101;
+      }
+      .nav-sep   { display:none; }
+      .lien-contact { display:block; }
+
+      /* Corps */
       body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
       .pied { flex-shrink:0; padding:.28rem 0; }
 
-      /* Mur : overhead = 68+34+24+52+175+12 = 365px */
+      /* Mur : overhead = nom(43)+mur-inf(52)+plancher(175)+footer(34)+marge(6) = 310px */
       .mur.mur-grille {
-        height: min(calc(100vh - 365px), 645px) !important;
+        height: min(calc(100vh - 310px), 720px) !important;
         width: auto !important;
         aspect-ratio: 12/8 !important;
         max-width: calc(100% - 4rem) !important;
@@ -445,15 +475,12 @@
         margin: 0 auto;
       }
 
-      /* Mur-inferieur compact */
+      /* Mur-inférieur compact */
       .mur-inferieur { height:52px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
-      /* Plancher 175px : montre le SVG depuis y=39 → tetes lontain a y=43 visibles.
-         overflow:hidden : rien ne deborde sur le mur, layout propre. */
-      .plancher-sol { min-height:120px !important; max-height:175px !important; }
-
-      /* Silhouettes centrees, max 600px */
+      /* Plancher */
+      .plancher-sol    { min-height:120px !important; max-height:175px !important; }
       .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
     }
 
