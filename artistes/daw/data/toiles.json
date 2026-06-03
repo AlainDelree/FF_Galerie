@@ -1,11 +1,426 @@
 {
   "tailles": [
-    { "code": "XXS", "label": "Très petit",  "largeur_max": 20 },
-    { "code": "XS",  "label": "Petit",       "largeur_max": 35 },
-    { "code": "M",   "label": "Moyen",       "largeur_max": 60 },
-    { "code": "XL",  "label": "Grand",       "largeur_max": 100 },
-    { "code": "XXL", "label": "Très grand",  "largeur_max": 150 },
-    { "code": "E",   "label": "Exceptionnel","largeur_max": 9999 }
+    {
+      "code": "XXS",
+      "label": "Très petite"
+    },
+    {
+      "code": "XS",
+      "label": "Petite"
+    },
+    {
+      "code": "M",
+      "label": "Moyenne"
+    },
+    {
+      "code": "XL",
+      "label": "Grande"
+    },
+    {
+      "code": "XXL",
+      "label": "Très grande"
+    },
+    {
+      "code": "E",
+      "label": "Étirée"
+    }
   ],
-  "toiles": []
+  "toiles": [
+    {
+      "id": 1,
+      "titre": "Lumière du matin",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 60,
+        "hauteur": 80
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 2,
+      "titre": "Portrait au voile",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/The_Lady_with_an_Ermine.jpg/360px-The_Lady_with_an_Ermine.jpg",
+      "date": "2022",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 55,
+        "hauteur": 75
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 3,
+      "titre": "Regard intérieur",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Vermeer-_Girl_with_a_Pearl_Earring.jpg/375px-Vermeer-_Girl_with_a_Pearl_Earring.jpg",
+      "date": "2024",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 45,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 4,
+      "titre": "Profil doré",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camille_Monet_on_a_Garden_Bench.jpg/556px-Camille_Monet_on_a_Garden_Bench.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 80,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 5,
+      "titre": "Mer d'automne",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Claude_Monet%2C_Impression%2C_soleil_levant.jpg/520px-Claude_Monet%2C_Impression%2C_soleil_levant.jpg",
+      "date": "2021",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 100,
+        "hauteur": 65
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 6,
+      "titre": "Ciel d'orage",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Above_the_Clouds_I.jpg/564px-Above_the_Clouds_I.jpg",
+      "date": "2022",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 80,
+        "hauteur": 50
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 7,
+      "titre": "Vallée bleue",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/The_Starry_Night_-_Van_Gogh_%281889%29.jpg/600px-The_Starry_Night_-_Van_Gogh_%281889%29.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 115,
+        "hauteur": 75
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 8,
+      "titre": "Rivière en été",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Claude_Monet_-_The_Water-Lily_Pond.jpg/580px-Claude_Monet_-_The_Water-Lily_Pond.jpg",
+      "date": "2024",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 90,
+        "hauteur": 70
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 9,
+      "titre": "Collines dorées",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+      "date": "2022",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 75,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 10,
+      "titre": "Bouquet d'été",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Sunflowers_National_Gallery_London.jpg/390px-Sunflowers_National_Gallery_London.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 60,
+        "hauteur": 80
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 11,
+      "titre": "Pivoine rose",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Renoir_-_Madame_Monet_Reading.jpg/490px-Renoir_-_Madame_Monet_Reading.jpg",
+      "date": "2024",
+      "style": "Aquarelle",
+      "materiaux": [
+        "Aquarelle"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 75,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 12,
+      "titre": "Iris sauvages",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Irises_%281890%29.jpg/600px-Vincent_van_Gogh_-_Irises_%281890%29.jpg",
+      "date": "2022",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 95,
+        "hauteur": 70
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 13,
+      "titre": "Cerisier en fleurs",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Van_Gogh_Almond_Blossom.jpg/600px-Van_Gogh_Almond_Blossom.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 75,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 14,
+      "titre": "Jardin secret",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Claude_Monet_-_Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son_-_National_Gallery_of_Art.jpg/396px-Claude_Monet_-_Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son_-_National_Gallery_of_Art.jpg",
+      "date": "2024",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 55,
+        "hauteur": 75
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 15,
+      "titre": "Explosion rouge",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Edvard_Munch%2C_1893%2C_The_Scream%2C_oil%2C_tempera_and_pastel_on_cardboard%2C_91_x_73_cm%2C_National_Gallery_of_Norway.jpg/450px-Edvard_Munch%2C_1893%2C_The_Scream%2C_oil%2C_tempera_and_pastel_on_cardboard%2C_91_x_73_cm%2C_National_Gallery_of_Norway.jpg",
+      "date": "2023",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 60,
+        "hauteur": 80
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 16,
+      "titre": "Danse solaire",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/600px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
+      "date": "2022",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 115,
+        "hauteur": 75
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 17,
+      "titre": "Composition orange",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Gustave_Caillebotte_-_Paris_Street%3B_Rainy_Day_-_Google_Art_Project.jpg/600px-Gustave_Caillebotte_-_Paris_Street%3B_Rainy_Day_-_Google_Art_Project.jpg",
+      "date": "2024",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 80,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 18,
+      "titre": "Vibration jaune",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat_03.jpg/600px-Cat_03.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 75,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 19,
+      "titre": "Équilibre",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg/428px-Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg",
+      "date": "2024",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 55,
+        "hauteur": 75
+      },
+      "visible": true,
+      "taille": "M"
+    },
+    {
+      "id": 20,
+      "titre": "Nuit calme",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/White_shark.jpg/600px-White_shark.jpg",
+      "date": "2023",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 80,
+        "hauteur": 60
+      },
+      "visible": true,
+      "taille": "XL"
+    },
+    {
+      "id": 21,
+      "titre": "Passage",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Seurat-la-grande-jatte.jpg/600px-Seurat-la-grande-jatte.jpg",
+      "date": "2022",
+      "style": "Huile",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 100,
+        "hauteur": 65
+      },
+      "visible": true,
+      "taille": "XXL"
+    },
+    {
+      "id": 22,
+      "titre": "Murmure",
+      "photo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg/441px-Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg",
+      "date": "2024",
+      "style": "Acrylique",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 45,
+        "hauteur": 55
+      },
+      "visible": true,
+      "taille": "XS"
+    }
+  ]
 }

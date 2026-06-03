@@ -1,20 +1,18 @@
 {
   "salles": [
     {
-      "id": 1,
-      "nom": "Cosmos",
+      "id": 5,
+      "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#0d0d1e",
-      "couleur_cadres": "#c8a050",
+      "couleur_mur": "#e8e4dc",
+      "couleur_cadres": "#3a3a3a",
       "texture": "none",
-      "visible": true,
+      "visible": false,
       "toiles": [
         4,
-        2,
-        21,
-        31,
-        23,
-        32
+        3,
+        16,
+        2
       ],
       "positions": [
         {
@@ -25,275 +23,329 @@
           "h": 5
         },
         {
-          "id": 2,
+          "id": 3,
           "col": 9,
           "row": 1,
           "w": 4,
-          "h": 3
+          "h": 5
         },
         {
-          "id": 31,
-          "col": 9,
-          "row": 4,
-          "w": 4,
-          "h": 2
-        },
-        {
-          "id": 21,
-          "col": 1,
-          "row": 6,
-          "w": 6,
-          "h": 3
-        },
-        {
-          "id": 23,
+          "id": 16,
           "col": 7,
           "row": 6,
           "w": 3,
           "h": 3
         },
         {
-          "id": 32,
-          "col": 10,
+          "id": 2,
+          "col": 1,
           "row": 6,
-          "w": 3,
+          "w": 5,
           "h": 3
         }
       ]
     },
     {
-      "id": 2,
-      "nom": "Océan",
+      "id": 6,
+      "nom": "Couloir",
       "theme": "",
-      "couleur_mur": "#0a1828",
-      "couleur_cadres": "#5a8fa0",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
       "texture": "none",
       "visible": true,
       "toiles": [
-        10,
-        9,
-        24,
-        25,
-        20,
-        15
+        19,
+        17,
+        14
       ],
       "positions": [
         {
-          "id": 10,
+          "id": 19,
           "col": 1,
           "row": 1,
-          "w": 6,
-          "h": 4
+          "w": 3,
+          "h": 3
         },
         {
-          "id": 24,
+          "id": 17,
           "col": 8,
           "row": 1,
           "w": 5,
-          "h": 4
-        },
-        {
-          "id": 9,
-          "col": 1,
-          "row": 5,
-          "w": 7,
-          "h": 2
-        },
-        {
-          "id": 25,
-          "col": 9,
-          "row": 5,
-          "w": 4,
-          "h": 2
-        },
-        {
-          "id": 15,
-          "col": 1,
-          "row": 7,
-          "w": 3,
-          "h": 2
-        },
-        {
-          "id": 20,
-          "col": 5,
-          "row": 7,
-          "w": 3,
-          "h": 2
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "nom": "Floraison",
-      "theme": "",
-      "couleur_mur": "#12180a",
-      "couleur_cadres": "#8b7355",
-      "texture": "none",
-      "visible": true,
-      "toiles": [
-        27,
-        26,
-        12,
-        18,
-        30,
-        22
-      ],
-      "positions": [
-        {
-          "id": 27,
-          "col": 1,
-          "row": 1,
-          "w": 7,
-          "h": 5
-        },
-        {
-          "id": 26,
-          "col": 9,
-          "row": 1,
-          "w": 4,
           "h": 3
         },
         {
-          "id": 12,
-          "col": 9,
+          "id": 14,
+          "col": 3,
           "row": 4,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 18,
-          "col": 1,
-          "row": 6,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 30,
-          "col": 5,
-          "row": 6,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 22,
-          "col": 9,
-          "row": 7,
-          "w": 3,
-          "h": 2
+          "w": 8,
+          "h": 5
         }
       ]
     },
     {
-      "id": 4,
-      "nom": "Âme",
+      "id": 7,
+      "nom": "Cuisine",
       "theme": "",
-      "couleur_mur": "#1e0a0a",
-      "couleur_cadres": "#9090a8",
-      "texture": "none",
+      "couleur_mur": "#6a80b8",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "damier",
       "visible": true,
       "toiles": [
         13,
-        14,
-        8,
-        11,
-        29,
-        33
+        9,
+        22
       ],
       "positions": [
         {
           "id": 13,
           "col": 1,
           "row": 1,
-          "w": 6,
-          "h": 4
+          "w": 8,
+          "h": 5
         },
         {
-          "id": 14,
-          "col": 7,
-          "row": 1,
-          "w": 6,
-          "h": 4
+          "id": 9,
+          "col": 4,
+          "row": 6,
+          "w": 7,
+          "h": 3
         },
         {
-          "id": 8,
-          "col": 1,
-          "row": 5,
+          "id": 22,
+          "col": 10,
+          "row": 3,
           "w": 3,
-          "h": 4
-        },
-        {
-          "id": 29,
-          "col": 5,
-          "row": 5,
-          "w": 3,
-          "h": 4
-        },
-        {
-          "id": 11,
-          "col": 9,
-          "row": 5,
-          "w": 4,
-          "h": 2
-        },
-        {
-          "id": 33,
-          "col": 9,
-          "row": 7,
-          "w": 4,
           "h": 2
         }
       ]
     },
     {
-      "id": 5,
-      "nom": "Poésie",
+      "id": 8,
+      "nom": "Salle à manger",
       "theme": "",
-      "couleur_mur": "#1a1714",
-      "couleur_cadres": "#b8a060",
+      "couleur_mur": "#2c2535",
+      "couleur_cadres": "#3a3a3a",
       "texture": "none",
       "visible": true,
       "toiles": [
-        3,
-        17,
-        16,
-        19,
-        28
+        12,
+        18,
+        24,
+        32,
+        30
       ],
       "positions": [
         {
-          "id": 3,
+          "id": 12,
           "col": 1,
           "row": 1,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 18,
+          "col": 4,
+          "row": 1,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 24,
+          "col": 7,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 32,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 30,
+          "col": 7,
+          "row": 6,
+          "w": 3,
+          "h": 3
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "nom": "Buanderie",
+      "theme": "",
+      "couleur_mur": "#25dbdb",
+      "couleur_cadres": "#1c1c1c",
+      "texture": "pierre",
+      "visible": true,
+      "toiles": [
+        8,
+        11,
+        15
+      ],
+      "positions": [
+        {
+          "id": 8,
+          "col": 6,
+          "row": 3,
           "w": 4,
           "h": 5
         },
         {
-          "id": 17,
-          "col": 5,
-          "row": 1,
-          "w": 4,
-          "h": 3
+          "id": 11,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
         },
         {
-          "id": 19,
+          "id": 15,
           "col": 10,
           "row": 1,
           "w": 3,
-          "h": 4
-        },
+          "h": 3
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "nom": "Escaliers",
+      "theme": "",
+      "couleur_mur": "#e8e4dc",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        20,
+        28,
+        21
+      ],
+      "positions": [
         {
-          "id": 16,
-          "col": 5,
-          "row": 4,
+          "id": 20,
+          "col": 9,
+          "row": 1,
           "w": 3,
-          "h": 4
+          "h": 3
         },
         {
           "id": 28,
+          "col": 9,
+          "row": 5,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 21,
           "col": 1,
-          "row": 7,
+          "row": 2,
+          "w": 8,
+          "h": 5
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "nom": "Salle de bain",
+      "theme": "",
+      "couleur_mur": "#f5f5f5",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        26,
+        25,
+        10,
+        29
+      ],
+      "positions": [
+        {
+          "id": 26,
+          "col": 1,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 25,
+          "col": 1,
+          "row": 6,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 10,
+          "col": 4,
+          "row": 5,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 29,
+          "col": 9,
+          "row": 1,
           "w": 4,
-          "h": 2
+          "h": 5
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "nom": "Chambre",
+      "theme": "",
+      "couleur_mur": "#b178b3",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        31,
+        23
+      ],
+      "positions": [
+        {
+          "id": 31,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 23,
+          "col": 7,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "nom": "Bureau",
+      "theme": "",
+      "couleur_mur": "#1e3a2a",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "damier",
+      "visible": true,
+      "toiles": [
+        27,
+        33
+      ],
+      "positions": [
+        {
+          "id": 27,
+          "col": 5,
+          "row": 4,
+          "w": 8,
+          "h": 5
+        },
+        {
+          "id": 33,
+          "col": 1,
+          "row": 1,
+          "w": 4,
+          "h": 3
         }
       ]
     }

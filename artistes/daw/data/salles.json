@@ -2,14 +2,244 @@
   "salles": [
     {
       "id": 1,
-      "nom": "Salle I",
+      "nom": "Portraits",
       "theme": "",
-      "couleur_mur": "#1e1e1e",
-      "couleur_cadres": "#3a3a3a",
+      "couleur_mur": "#1a1410",
+      "couleur_cadres": "#c8a050",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "positions": [
+        {
+          "id": 1,
+          "col": 1,
+          "row": 1,
+          "w": 5,
+          "h": 6
+        },
+        {
+          "id": 2,
+          "col": 7,
+          "row": 1,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 3,
+          "col": 7,
+          "row": 6,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 4,
+          "col": 1,
+          "row": 7,
+          "w": 5,
+          "h": 2
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nom": "Paysages",
+      "theme": "",
+      "couleur_mur": "#0a1420",
+      "couleur_cadres": "#6090b0",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "positions": [
+        {
+          "id": 7,
+          "col": 1,
+          "row": 1,
+          "w": 7,
+          "h": 5
+        },
+        {
+          "id": 8,
+          "col": 9,
+          "row": 1,
+          "w": 4,
+          "h": 4
+        },
+        {
+          "id": 5,
+          "col": 9,
+          "row": 5,
+          "w": 4,
+          "h": 2
+        },
+        {
+          "id": 6,
+          "col": 1,
+          "row": 6,
+          "w": 4,
+          "h": 3
+        },
+        {
+          "id": 9,
+          "col": 6,
+          "row": 7,
+          "w": 4,
+          "h": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nom": "Floraison",
+      "theme": "",
+      "couleur_mur": "#0e1a08",
+      "couleur_cadres": "#907850",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "positions": [
+        {
+          "id": 12,
+          "col": 1,
+          "row": 1,
+          "w": 7,
+          "h": 5
+        },
+        {
+          "id": 13,
+          "col": 9,
+          "row": 1,
+          "w": 4,
+          "h": 3
+        },
+        {
+          "id": 10,
+          "col": 9,
+          "row": 4,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 11,
+          "col": 1,
+          "row": 6,
+          "w": 4,
+          "h": 3
+        },
+        {
+          "id": 14,
+          "col": 6,
+          "row": 6,
+          "w": 3,
+          "h": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nom": "Couleurs vives",
+      "theme": "",
+      "couleur_mur": "#1a0a14",
+      "couleur_cadres": "#b0a0c0",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "positions": [
+        {
+          "id": 16,
+          "col": 1,
+          "row": 1,
+          "w": 7,
+          "h": 5
+        },
+        {
+          "id": 15,
+          "col": 9,
+          "row": 1,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 17,
+          "col": 1,
+          "row": 6,
+          "w": 5,
+          "h": 3
+        },
+        {
+          "id": 18,
+          "col": 7,
+          "row": 6,
+          "w": 4,
+          "h": 3
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "nom": "Atmosphères",
+      "theme": "",
+      "couleur_mur": "#141414",
+      "couleur_cadres": "#a09070",
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        19,
+        20,
+        21,
+        22
+      ],
+      "positions": [
+        {
+          "id": 21,
+          "col": 1,
+          "row": 1,
+          "w": 7,
+          "h": 5
+        },
+        {
+          "id": 19,
+          "col": 9,
+          "row": 1,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 20,
+          "col": 1,
+          "row": 6,
+          "w": 4,
+          "h": 3
+        },
+        {
+          "id": 22,
+          "col": 6,
+          "row": 6,
+          "w": 3,
+          "h": 3
+        }
+      ]
     }
   ]
 }
