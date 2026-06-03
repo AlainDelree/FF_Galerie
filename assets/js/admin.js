@@ -2072,6 +2072,7 @@ function afficherArtistes() {
       "</div>" +
       "<div class=\"artiste-actions\">" +
         btnPublier +
+        "<button class=\"event-btn\" onclick=\"ouvrirModifierArtiste(" + i + ")\">✏️</button>" +
         "<button class=\"event-btn\" onclick=\"ouvrirGalerieArtiste('" + a.id + "')\">↗</button>" +
       "</div>" +
     "</div>";
@@ -2098,18 +2099,45 @@ function initiales(nom) {
   return nom.split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
 }
 
+let artisteEditIdx = null; /* null = création, nombre = modification */
+
 document.getElementById("btn-ajouter-artiste").addEventListener("click", () => {
+  artisteEditIdx = null;
+  document.getElementById("form-artiste-titre").textContent = "Nouvel artiste invité";
+  document.getElementById("btn-sauver-artiste").textContent = "✦ Créer l'espace";
   document.getElementById("art-nom").value   = "";
   document.getElementById("art-id").value    = "";
   document.getElementById("art-logo").value  = "";
   document.getElementById("art-email").value = "";
   document.getElementById("art-genre").value = "f";
   document.getElementById("art-draft").checked = true;
+  document.getElementById("art-id").removeAttribute("readonly");
+  document.getElementById("art-id").style.opacity = "";
   document.getElementById("form-artiste-err").textContent = "";
   document.getElementById("artiste-progress").style.display = "none";
   document.getElementById("form-artiste-wrap").style.display = "";
   document.getElementById("art-nom").focus();
 });
+
+function ouvrirModifierArtiste(idx) {
+  const a = artistesData[idx];
+  artisteEditIdx = idx;
+  document.getElementById("form-artiste-titre").textContent = "Modifier — " + a.nom;
+  document.getElementById("btn-sauver-artiste").textContent = "💾 Enregistrer";
+  document.getElementById("art-nom").value   = a.nom   || "";
+  document.getElementById("art-id").value    = a.id    || "";
+  document.getElementById("art-logo").value  = a.logo  || "";
+  document.getElementById("art-email").value = a.email || "";
+  document.getElementById("art-genre").value = a.genre || "f";
+  document.getElementById("art-draft").checked = !!a.draft;
+  /* id non modifiable en édition */
+  document.getElementById("art-id").setAttribute("readonly", true);
+  document.getElementById("art-id").style.opacity = "0.5";
+  document.getElementById("form-artiste-err").textContent = "";
+  document.getElementById("artiste-progress").style.display = "none";
+  document.getElementById("form-artiste-wrap").style.display = "";
+  document.getElementById("art-nom").focus();
+}
 
 document.getElementById("art-nom").addEventListener("input", function () {
   const v = this.value.trim();
@@ -2141,6 +2169,30 @@ async function creerArtiste() {
   const prog  = document.getElementById("artiste-progress");
 
   if (!nom) { err.textContent = "Le nom est obligatoire."; return; }
+
+  /* ── Mode modification ── */
+  if (artisteEditIdx !== null) {
+    const a = artistesData[artisteEditIdx];
+    a.nom   = nom;
+    a.logo  = logo;
+    a.email = email;
+    a.genre = genre;
+    a.draft = draft;
+    err.textContent = "";
+    prog.style.display = "";
+    prog.textContent = "Sauvegarde…";
+    document.getElementById("btn-sauver-artiste").disabled = true;
+    try {
+      await sauvegarderArtistesJSON("Modification artiste : " + nom);
+      prog.textContent = "✓ Enregistré";
+      document.getElementById("form-artiste-wrap").style.display = "none";
+      afficherArtistes();
+    } catch (e) { err.textContent = "Erreur : " + e.message; prog.style.display = "none"; }
+    document.getElementById("btn-sauver-artiste").disabled = false;
+    return;
+  }
+
+  /* ── Mode création ── */
   if (!id || !/^[a-z0-9]+$/.test(id)) { err.textContent = "L'identifiant ne peut contenir que des lettres et chiffres."; return; }
   if (artistesData.find(a => a.id === id)) { err.textContent = "Cet identifiant existe déjà."; return; }
 
