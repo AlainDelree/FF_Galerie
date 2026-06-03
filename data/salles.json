@@ -173,19 +173,11 @@
       "texture": "pierre",
       "visible": true,
       "toiles": [
-        2,
         8,
         11,
         15
       ],
       "positions": [
-        {
-          "id": 2,
-          "col": 1,
-          "row": 1,
-          "w": 5,
-          "h": 3
-        },
         {
           "id": 8,
           "col": 6,
