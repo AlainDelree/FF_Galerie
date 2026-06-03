@@ -177,6 +177,10 @@ button{cursor:pointer;}
 .stock-item .simg .sph{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);}
 .stock-item .snom{font-size:7.5px;padding:2px 4px;color:#fff;background:rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stock-size{display:none;} /* remplacé par badge */
+.sync-badge{position:absolute;bottom:22px;left:0;right:0;text-align:center;
+  font-size:9px;font-weight:600;letter-spacing:.04em;
+  color:#fff;background:rgba(180,120,0,.85);
+  padding:2px 4px;pointer-events:none;}
 .taille-badge{position:absolute;top:4px;right:4px;
   font-size:11px;font-weight:700;letter-spacing:.05em;
   color:#fff;background:rgba(0,0,0,.65);
@@ -868,6 +872,7 @@ let pendingChanges = false;
 let toileEnEdition = null;
 let salleCibleToile = null;
 let photoB64 = null;
+let toilesEnAttente = new Set(); // IDs sauvegardés, site en cours de déploiement (~1 min)
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
 let couleurCadresActuel = '#3a3a3a';
@@ -1318,6 +1323,13 @@ function afficherStock() {
       item.appendChild(badge);
     }
 
+    if (toilesEnAttente.has(t.id)) {
+      const sb = document.createElement('div');
+      sb.className = 'sync-badge';
+      sb.textContent = '⏳ site ~1 min';
+      item.appendChild(sb);
+    }
+
     item.addEventListener('click', () => {
       if (item.classList.contains('pose')) {
         selectionnerPeintureMur(t.id); return;
@@ -1764,9 +1776,15 @@ async function sauverToile() {
       toiles[idx] = { ...toiles[idx], photo, ...donnees };
       await sauvegarder(`[admin] Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     }
+    const idSauve = toileEnEdition === null
+      ? toiles[toiles.length - 1].id
+      : toileEnEdition;
+    toilesEnAttente.add(idSauve);
+    setTimeout(() => { toilesEnAttente.delete(idSauve); afficherStock(); }, 65000);
     fermerModalToile();
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
+    toast("✓ Enregistré — site mis à jour dans ~1 min", "ok", 5000);
   } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); }
   finally { btn.disabled = false; lbl.textContent = 'Enregistrer'; }
 }
