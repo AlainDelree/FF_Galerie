@@ -449,11 +449,27 @@
       .mur-inferieur { height:52px !important; }
       .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
 
-      /* Plancher : fond plein-ecran, SVG limite a 600px centre
-         A 600px le SVG fait 214px de haut -> coupe a 160px montre
-         les figures avant-scene et milieu entieres (y=38->150 viewBox) */
-      .plancher-sol    { min-height:100px !important; max-height:160px !important; }
-      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
+      /* Plancher : fond plein-ecran, overflow visible pour laisser
+         les silhouettes remonter devant le mur */
+      .plancher-sol { min-height:100px !important; max-height:160px !important;
+                      overflow:visible !important; }
+      .zone-basse   { overflow:visible; }
+
+      /* Silhouettes : translateY(-120px) pour chevaucher le bas du mur
+         Geometrie (SVG 600px = 214px haut, zone-basse = 212px sous mur) :
+           Tres lointain : 79px dans le mur  (silhouettes discrètes)
+           Lointain      : 27px dans le mur  (devant les toiles du bas)
+           Milieu        : 27px sous le mur  (zone de transition)
+           Avant-scene   : 92px sous le mur  (plancher, proches du spectateur) */
+      .silhouettes-sol {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+        position: relative;
+        z-index: 10;
+        transform: translateY(-120px);
+        pointer-events: none;
+      }
     }
 
         /* Navigation mobile flèches */
