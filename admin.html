@@ -1337,22 +1337,7 @@ function afficherStock() {
       item.appendChild(sb);
     }
 
-    item.addEventListener('click', () => {
-      if (item.classList.contains('pose')) {
-        ouvrirFormulaireEdition(t.id);
-        return;
-      }
-      if (item.classList.contains('autre')) {
-        const autreSalle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(t.id));
-        afficherConfirmAutreSalle(t, autreSalle ? autreSalle.nom : 'une autre salle');
-        return;
-      }
-      if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
-      else toilesSelectionnees.add(t.id);
-      selectedToile = toilesSelectionnees.size === 0 ? null : t;
-      afficherStock();
-      majBtnPlacer();
-    });
+    item.addEventListener('click', () => ouvrirFormulaireEdition(t.id));
     item.addEventListener('dblclick', () => ouvrirFormulaireEdition(t.id));
     list.appendChild(item);
   });
@@ -1401,10 +1386,6 @@ let selectedToilePl = null; // toile sélectionnée dans le strip du mode placem
 function entrerModePlacement() {
   if (!salleActive) return;
   const nbPlacees = (salleActive.positions||[]).length;
-  const nbSelec = toilesSelectionnees.size;
-  if (nbPlacees === 0 && nbSelec === 0) {
-    toast("Sélectionne des toiles dans le stock ou place-en d'abord", 'err'); return;
-  }
   $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
@@ -2260,15 +2241,7 @@ $('btn-arranger-mur').addEventListener('click', entrerModePlacement);
 
 // Bouton Modifier : ouvre le formulaire d'édition pour la toile sélectionnée
 $('btn-modifier-toile').addEventListener('click', () => {
-  // Cherche une toile sélectionnée dans le stock
-  const sel = selectedToile || (toilesSelectionnees.size === 1
-    ? toiles.find(t => t.id === [...toilesSelectionnees][0])
-    : null);
-  if (sel) {
-    ouvrirFormulaireEdition(sel.id);
-  } else {
-    toast("Sélectionne d'abord une toile dans le stock", "err");
-  }
+  toast("Clique directement sur une toile du stock pour la modifier", "ok", 2500);
 });
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
