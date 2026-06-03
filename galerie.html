@@ -423,6 +423,22 @@
     .modal-fermer { position:absolute; top:.85rem; right:.85rem; background:none; border:1.5px solid rgba(255,255,255,.35); color:var(--text); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1; transition:border-color .3s,color .3s,background .3s; }
     .modal-fermer:hover { border-color:var(--accent); color:var(--accent); background:rgba(255,255,255,.06); }
     @media (max-width:900px) { .mur { gap:1.5rem; padding:3rem 1.5rem 2rem; } }
+
+    /* ── DESKTOP (≥ 901px) : mur contraint par la hauteur ────────────
+       Sans contrainte, aspect-ratio:12/8 sur width:100% donne
+       un mur de 800-1200px de haut selon la résolution → page
+       non scrollable + contenu coupé par overflow:hidden.
+       Fix : height explicite, width:auto suit l'aspect-ratio.        */
+    @media (min-width:901px) {
+      .mur.mur-grille {
+        height: min(calc(100vh - 400px), 620px) !important;
+        width: auto !important;
+        aspect-ratio: 12/8 !important;
+        max-width: calc(100% - 4rem) !important;
+        min-height: 180px !important;
+        margin: 0 auto;
+      }
+    }
     /* Navigation mobile flèches */
     .nav-mobile {
       display:none;
