@@ -349,6 +349,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{animation:spin .8s linear infinite;}
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
 
@@ -2215,13 +2216,74 @@ $('btn-annuler-toile').addEventListener('click', fermerModalToile);
 $('btn-sauver-toile').addEventListener('click', sauverToile);
 $('btn-suppr-toile').addEventListener('click', supprimerToile);
 $('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
-$('inp-photo').addEventListener('change', async e => {
+
+// ═══════════════════════════════════════════════
+// RECADRAGE PHOTO (Cropper.js)
+// ═══════════════════════════════════════════════
+let cropperInst = null;
+let cropCallback = null;
+
+function ouvrirCrop(file, callback) {
+  cropCallback = callback;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = $('crop-img');
+    // Détruit l'instance précédente
+    if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
+    img.src = e.target.result;
+    $('overlay-crop').classList.add('ouvert');
+    img.onload = () => {
+      cropperInst = new Cropper(img, {
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 0.88,
+        restore: false,
+        guides: true,
+        center: true,
+        highlight: false,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+        responsive: true,
+        movable: true,
+        zoomable: true,
+        zoomOnTouch: true,
+        zoomOnWheel: false,
+      });
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+function fermerCrop() {
+  $('overlay-crop').classList.remove('ouvert');
+  if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
+  cropCallback = null;
+  $('inp-photo').value = '';
+}
+
+$('btn-crop-valider').addEventListener('click', () => {
+  if (!cropperInst) return;
+  const canvas = cropperInst.getCroppedCanvas({
+    maxWidth: 1400, maxHeight: 1400,
+    fillColor: '#fff',
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high',
+  });
+  const b64 = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];
+  fermerCrop();
+  if (cropCallback) cropCallback(b64);
+});
+$('btn-close-crop').addEventListener('click', fermerCrop);
+$('btn-crop-annuler').addEventListener('click', fermerCrop);
+
+$('inp-photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
-  try {
-    photoB64 = await traiterPhoto(f);
+  ouvrirCrop(f, b64 => {
+    photoB64 = b64;
     $('photo-prev').src = 'data:image/jpeg;base64,' + photoB64;
     $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
-  } catch (_) { toast('Erreur lecture photo', 'err'); }
+  });
 });
 $('sel-format').addEventListener('change', () => {
   $('dims-custom').classList.toggle('hidden', $('sel-format').value !== 'custom');
@@ -2268,5 +2330,22 @@ if (sessionStorage.getItem('ff_auth') === '1') {
   if (localStorage.getItem('ff_pw_hash')) $('login-aide').style.display = 'none';
 }
 </script>
+<!-- ── MODAL RECADRAGE ── -->
+<div id="overlay-crop">
+  <div class="crop-modal">
+    <div class="crop-hdr">
+      <span>✂ Recadrer la photo</span>
+      <button id="btn-close-crop">×</button>
+    </div>
+    <div class="crop-canvas-wrap">
+      <img id="crop-img" alt="Photo à recadrer">
+    </div>
+    <div class="crop-aide">Pincer pour zoomer · Glisser pour déplacer · Coins pour redimensionner</div>
+    <div class="crop-ftr">
+      <button id="btn-crop-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
+      <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider le recadrage</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
