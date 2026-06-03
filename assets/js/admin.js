@@ -1519,6 +1519,7 @@ document.querySelectorAll('.onglet').forEach(o => {
     o.classList.add('actif');
     $(o.dataset.vue).classList.add('active');
     if (o.dataset.vue === 'vue-backup') chargerCommits();
+    if (o.dataset.vue === 'vue-infos') chargerInfos();
   });
 });
 
@@ -1884,3 +1885,115 @@ if (sessionStorage.getItem(K.auth) === '1') {
 } else {
   if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
 }
+
+
+// ═══════════════════════════════════════════════
+// VUE INFOS & AGENDA
+// ═══════════════════════════════════════════════
+let infosData = { evenements: [], collegues: [] };
+let infosModifiees = false;
+
+/* Charge infos.json au passage sur l'onglet */
+async function chargerInfos() {
+  try {
+    const res = await lireFichierJSON(ADMIN_CFG.dataPath + 'infos.json?v=' + Date.now());
+    infosData = res.data || { evenements: [], collegues: [] };
+    infosData.evenements = infosData.evenements || [];
+    infosData.collegues  = infosData.collegues  || [];
+    afficherEvents();
+  } catch(e) {
+    infosData = { evenements: [], collegues: [] };
+    afficherEvents();
+  }
+}
+
+function afficherEvents() {
+  const liste = document.getElementById('liste-events');
+  if (!liste) return;
+  if (!infosData.evenements.length) {
+    liste.innerHTML = "<div class=\"event-vide\">Aucun événement pour l'instant</div>";
+    return;
+  }
+  liste.innerHTML = infosData.evenements.map((ev, i) => `
+    <div class="event-card">
+      <div class="event-info">
+        <div class="event-titre">${ev.titre || '—'}</div>
+        <div class="event-meta">${[ev.dateAffichage, ev.lieu].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="event-actions">
+        <button class="event-btn" onclick="ouvrirFormulaireEvent(${i})">✏️</button>
+        <button class="event-btn del" onclick="supprimerEvent(${i})">✕</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function ouvrirFormulaireEvent(idx) {
+  const ev = idx !== null ? infosData.evenements[idx] : null;
+  document.getElementById('form-event-id').value  = idx !== null ? idx : '';
+  document.getElementById('evt-titre').value       = ev ? (ev.titre        || '') : '';
+  document.getElementById('evt-date').value        = ev ? (ev.dateAffichage|| '') : '';
+  document.getElementById('evt-lieu').value        = ev ? (ev.lieu         || '') : '';
+  document.getElementById('evt-desc').value        = ev ? (ev.description  || '') : '';
+  document.getElementById('evt-lien').value        = ev ? (ev.lien         || '') : '';
+  document.getElementById('form-event-err').textContent = '';
+  document.getElementById('form-event-titre').textContent = ev ? 'Modifier l\'événement' : 'Nouvel événement';
+  document.getElementById('form-event-wrap').style.display = '';
+  document.getElementById('evt-titre').focus();
+}
+
+function fermerFormulaireEvent() {
+  document.getElementById('form-event-wrap').style.display = 'none';
+}
+
+function sauverFormulaireEvent() {
+  const titre = document.getElementById('evt-titre').value.trim();
+  if (!titre) { document.getElementById('form-event-err').textContent = 'Le titre est obligatoire.'; return; }
+  const ev = {
+    titre,
+    dateAffichage: document.getElementById('evt-date').value.trim(),
+    lieu:          document.getElementById('evt-lieu').value.trim(),
+    description:   document.getElementById('evt-desc').value.trim(),
+    lien:          document.getElementById('evt-lien').value.trim(),
+  };
+  const idxStr = document.getElementById('form-event-id').value;
+  if (idxStr !== '') {
+    infosData.evenements[parseInt(idxStr)] = ev;
+  } else {
+    ev.id = Date.now();
+    infosData.evenements.push(ev);
+  }
+  infosModifiees = true;
+  afficherEvents();
+  fermerFormulaireEvent();
+}
+
+function supprimerEvent(idx) {
+  if (!confirm('Supprimer cet événement ?')) return;
+  infosData.evenements.splice(idx, 1);
+  infosModifiees = true;
+  afficherEvents();
+}
+
+async function sauvegarderInfos() {
+  const badge = document.getElementById('badge-infos');
+  if (!token) { alert('Token GitHub requis pour sauvegarder.'); return; }
+  badge.textContent = '…';
+  badge.className = 'sync-badge';
+  try {
+    await sauvegarderFichier(ADMIN_CFG.repoPath + 'infos.json', infosData, 'Mise à jour infos.json');
+    badge.textContent = '✓';
+    badge.className = 'sync-badge ok';
+    infosModifiees = false;
+    setTimeout(() => badge.classList.add('hidden'), 3000);
+  } catch(e) {
+    badge.textContent = '✗';
+    badge.className = 'sync-badge err';
+  }
+}
+
+/* Wirer les boutons */
+document.getElementById('btn-ajouter-event').addEventListener('click', () => ouvrirFormulaireEvent(null));
+document.getElementById('btn-sauver-event').addEventListener('click', sauverFormulaireEvent);
+document.getElementById('btn-annuler-event').addEventListener('click', fermerFormulaireEvent);
+document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
