@@ -9,23 +9,13 @@
     "draft": true
   },
   {
-    "id": "alain",
-    "nom": "Alain",
-    "logo": "AL",
-    "lien": "artistes/alain/",
-    "repoPath": "artistes/alain/data/",
-    "prefix": "alain",
-    "draft": true,
-    "genre": "m"
-  },
-  {
     "id": "gerogegg",
-    "nom": "Gerogegg",
-    "logo": "GE",
+    "nom": "Geroge gg",
+    "logo": "GI",
     "lien": "artistes/gerogegg/",
     "repoPath": "artistes/gerogegg/data/",
     "prefix": "gerogegg",
-    "draft": true,
+    "draft": false,
     "genre": "n"
   }
 ]
