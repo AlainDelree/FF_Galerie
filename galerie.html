@@ -420,8 +420,8 @@
     .modal-ligne { display:flex; flex-direction:column; gap:.12rem; }
     .modal-label { font-size:.66rem; letter-spacing:.17em; text-transform:uppercase; color:var(--text-doux); }
     .modal-valeur { font-size:.9rem; color:var(--text); }
-    .modal-fermer { position:absolute; top:.85rem; right:.85rem; background:none; border:1px solid var(--sep); color:var(--text-doux); width:2rem; height:2rem; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:1; transition:border-color .3s,color .3s; }
-    .modal-fermer:hover { border-color:var(--accent); color:var(--accent); }
+    .modal-fermer { position:absolute; top:.85rem; right:.85rem; background:none; border:1.5px solid rgba(255,255,255,.35); color:var(--text); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1; transition:border-color .3s,color .3s,background .3s; }
+    .modal-fermer:hover { border-color:var(--accent); color:var(--accent); background:rgba(255,255,255,.06); }
     @media (max-width:900px) { .mur { gap:1.5rem; padding:3rem 1.5rem 2rem; } }
     /* Navigation mobile flèches */
     .nav-mobile {
@@ -672,7 +672,11 @@
 
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitre">
     <div class="modal-contenu">
-      <button class="modal-fermer" id="modalFermer" aria-label="Fermer">&times;</button>
+      <button class="modal-fermer" id="modalFermer" aria-label="Fermer">
+        <svg viewBox="0 0 14 14" width="13" height="13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
       <div class="modal-image-wrap" id="modalImageWrap"></div>
       <div class="modal-fiche">
         <h2 class="modal-titre" id="modalTitre"></h2>
@@ -965,17 +969,43 @@
 
     function ouvrirModal(toile) {
       document.getElementById('modalTitre').textContent = toile.titre || 'Sans titre';
-      document.getElementById('modalDate').textContent  = toile.date  || '—';
-      document.getElementById('modalStyle').textContent = toile.style || '—';
-      document.getElementById('modalMateriaux').textContent =
-        (toile.materiaux && toile.materiaux.length) ? toile.materiaux.join(', ') : '—';
+
+      // Affiche un champ ou masque toute la ligne si valeur vide
+      function setChamp(id, valeur) {
+        const el = document.getElementById(id);
+        const ligne = el && el.closest('.modal-ligne');
+        if (valeur) {
+          el.textContent = valeur;
+          if (ligne) ligne.style.display = '';
+        } else {
+          if (ligne) ligne.style.display = 'none';
+        }
+      }
+
+      setChamp('modalDate',      toile.date  || '');
+      setChamp('modalStyle',     toile.style || '');
+      setChamp('modalMateriaux',
+        (toile.materiaux && toile.materiaux.length) ? toile.materiaux.join(', ') : '');
+
+      // Dimensions : utilise largeur/hauteur (le champ "format" n'existe pas dans le JSON)
       const dim = toile.dimensions;
-      document.getElementById('modalDimensions').textContent =
-        (dim && dim.format) ? dim.format + ' — ' + dim.largeur + ' × ' + dim.hauteur + ' cm' : '—';
+      let dimTexte = '';
+      if (dim && dim.largeur && dim.hauteur) {
+        dimTexte = dim.largeur + ' \u00d7 ' + dim.hauteur + ' cm';
+        if (dim.type) dimTexte += '\u2002\u2014\u2002' + dim.type;
+      }
+      setChamp('modalDimensions', dimTexte);
+
+      // Description
       const descLigne = document.getElementById('modalDescLigne');
       const descVal   = document.getElementById('modalDesc');
-      if (toile.description) { descVal.textContent = toile.description; descLigne.style.display = ''; }
-      else { descLigne.style.display = 'none'; }
+      if (toile.description) {
+        descVal.textContent = toile.description;
+        descLigne.style.display = '';
+      } else {
+        descLigne.style.display = 'none';
+      }
+
       const wrap = document.getElementById('modalImageWrap');
       if (toile.photo) {
         wrap.innerHTML = '<img src="' + toile.photo + '" alt="' + (toile.titre || 'Toile') + '">';
