@@ -93,6 +93,20 @@
         const svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la galerie">'+p.join('')+'</svg>';
         const wrap = document.getElementById('plan-svg-wrap');
         if (wrap) wrap.innerHTML = svg;
+
+        /* Préchargement des toiles pendant que l'utilisateur consulte le plan */
+        const toilesPath = window.PLAN_TOILES_PATH || 'data/toiles.json';
+        const assetsBase = window.GALERIE_ASSETS_BASE || '';
+        fetch(toilesPath + '?v=' + Date.now())
+          .then(function(r) { return r.json(); })
+          .then(function(td) {
+            (td.toiles || []).forEach(function(t) {
+              if (!t.photo) return;
+              var img = new Image();
+              img.src = /^https?:\/\//.test(t.photo) ? t.photo : assetsBase + t.photo;
+            });
+          })
+          .catch(function() {});
       })
       .catch(() => {});
 

@@ -2711,6 +2711,7 @@ const TPL_GALERIE = `<!DOCTYPE html>
     window.GALERIE_SALLES_PATH  = "data/salles.json";
     window.GALERIE_ASSETS_BASE  = "../../";
     window.GALERIE_ASSETS_BASE  = "../../";
+    window.PLAN_TOILES_PATH     = "data/toiles.json";
     window.GALERIE_HOME         = "index.html";
     window.GALERIE_INFOS_PATH   = "infos.html";
     window.GALERIE_CONTACT_PATH = "contact.html";
