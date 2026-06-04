@@ -2867,8 +2867,10 @@ async function uploaderTextureConfirmee() {
 
 async function chargerTexturesGitHub() {
   var dossiers = [
-    { chemin: 'assets/images/textures',            wrap: $('tex-gh-partage-wrap'), cont: $('textures-gh-partage'), suppressible: false },
-    { chemin: ADMIN_CFG.repoPath + 'textures',     wrap: $('tex-gh-prive-wrap'),   cont: $('textures-gh-prive'),   suppressible: true  }
+    { chemin: 'assets/images/textures',        wrap: $('tex-gh-partage-wrap'), cont: $('textures-gh-partage'),
+      suppressible: ADMIN_CFG.prefix === 'ff'  /* Fred peut supprimer les partagées, pas les invités */ },
+    { chemin: ADMIN_CFG.repoPath + 'textures', wrap: $('tex-gh-prive-wrap'),   cont: $('textures-gh-prive'),
+      suppressible: true }
   ];
   for (var i = 0; i < dossiers.length; i++) {
     var d = dossiers[i];
