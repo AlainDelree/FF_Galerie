@@ -25,5 +25,22 @@
       "label": "Étirée"
     }
   ],
-  "toiles": []
+  "toiles": [
+    {
+      "id": 1,
+      "photo": "assets/images/toiles/toile-001.jpg",
+      "source_photo": "admin",
+      "titre": "Galerie virtuelle",
+      "date": "23/09/2025",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 74,
+        "hauteur": 163
+      },
+      "visible": true
+    }
+  ]
 }
