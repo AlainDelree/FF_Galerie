@@ -173,6 +173,7 @@ let pendingChanges = false;
 let toileEnEdition = null;
 let salleCibleToile = null;
 let photoB64 = null;
+let _origPhotoMaxDim = 0; // dimensions originales avant crop, pour qualité photo
 let toilesEnAttente = new Map(); // id → timestamp de sauvegarde
 let timerAttenteInterval = null;
 let sallesEnAttente = new Map(); // id → timestamp de sauvegarde
@@ -1222,6 +1223,7 @@ function viderFormToile() {
   $('photo-prev').style.display = 'none';
   $('photo-ph').style.display = '';
   $('btn-recadrer-photo').classList.remove('visible');
+  const pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   document.querySelectorAll('.salle-pill').forEach(p => p.classList.remove('sel'));
   salleCibleToile = salleActive?.id || null;
   document.querySelectorAll('.salle-pill').forEach(p => {
@@ -1255,9 +1257,19 @@ function remplirFormToile(t) {
   afficherTailleAuto(t.taille || '');
   $('taille-manual-wrap').style.display = 'none';
   if (t.photo) {
-    $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block';
+    const prevImg = $('photo-prev');
+    prevImg.onload = function() {
+      afficherQualitePhoto(Math.max(this.naturalWidth, this.naturalHeight), false);
+      this.onload = null;
+    };
+    prevImg.src = t.photo; prevImg.style.display = 'block';
     $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
+    // Si déjà en cache
+    if (prevImg.complete && prevImg.naturalWidth) {
+      afficherQualitePhoto(Math.max(prevImg.naturalWidth, prevImg.naturalHeight), false);
+      prevImg.onload = null;
+    }
   }
   salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
   document.querySelectorAll('.salle-pill').forEach(p => {
@@ -1426,6 +1438,29 @@ function traiterPhoto(fichier) {
     };
     img.onerror = ko; img.src = url;
   });
+}
+
+// ── Qualité photo ───────────────────────────────────────────────
+function afficherQualitePhoto(maxDim, isOriginal) {
+  const el = $('photo-qualite');
+  if (!el || !maxDim) return;
+  let niveau, icone, color;
+  if (isOriginal) {
+    // Seuils sur dimensions originales (avant compression)
+    if      (maxDim < 800)  { niveau = 'Qualité photo faible';   icone = '\u25cf\u25cb\u25cb\u25cb'; color = 'var(--danger)'; }
+    else if (maxDim < 1400) { niveau = 'Qualité photo correcte'; icone = '\u25cf\u25cf\u25cb\u25cb'; color = 'var(--muted)'; }
+    else if (maxDim < 2500) { niveau = 'Qualité photo bonne';    icone = '\u25cf\u25cf\u25cf\u25cb'; color = 'var(--success)'; }
+    else                    { niveau = 'Qualité photo parfaite'; icone = '\u25cf\u25cf\u25cf\u25cf'; color = 'var(--gold2)'; }
+  } else {
+    // Seuils sur photo stockée (déjà compressée à max 1400px)
+    if      (maxDim < 700)  { niveau = 'Qualité photo faible';   icone = '\u25cf\u25cb\u25cb\u25cb'; color = 'var(--danger)'; }
+    else if (maxDim < 1000) { niveau = 'Qualité photo correcte'; icone = '\u25cf\u25cf\u25cb\u25cb'; color = 'var(--muted)'; }
+    else if (maxDim < 1300) { niveau = 'Qualité photo bonne';    icone = '\u25cf\u25cf\u25cf\u25cb'; color = 'var(--success)'; }
+    else                    { niveau = 'Qualité photo parfaite'; icone = '\u25cf\u25cf\u25cf\u25cf'; color = 'var(--gold2)'; }
+  }
+  el.innerHTML = '<span style="letter-spacing:.12em;font-size:.68rem;">' + icone + '</span>\u00a0' + niveau;
+  el.style.color = color;
+  el.style.display = '';
 }
 
 // ═══════════════════════════════════════════════
@@ -1995,6 +2030,7 @@ function ouvrirCrop(file, callback) {
     $('overlay-crop').classList.add('ouvert');
     // onload AVANT src pour éviter le race condition mobile
     img.onload = () => {
+      _origPhotoMaxDim = Math.max(img.width, img.height); // capture avant compression/crop
       if (typeof Cropper === "undefined") {
         // Fallback si Cropper.js pas chargé : utilise la photo sans recadrage
         fermerCrop();
@@ -2127,6 +2163,7 @@ $('inp-photo').addEventListener('change', e => {
     $('photo-prev').src = 'data:image/jpeg;base64,' + photoB64;
     $('photo-prev').style.display = 'block'; $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
+    afficherQualitePhoto(_origPhotoMaxDim, true);
   });
 });
 
