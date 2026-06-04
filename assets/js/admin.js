@@ -2143,6 +2143,11 @@ async function supprimerArtiste(idx) {
   try {
     await sauvegarderArtistesJSON("Suppression artiste : " + a.nom);
     afficherArtistes();
+    /* Fermer le formulaire si on vient de supprimer l'artiste en cours d'édition */
+    if (artisteEditIdx !== null && (artisteEditIdx === idx || artisteEditIdx >= artistesData.length)) {
+      artisteEditIdx = null;
+      document.getElementById("form-artiste-wrap").style.display = "none";
+    }
   } catch(e) {
     artistesData.splice(idx, 0, a); // rollback
     alert("Erreur : " + e.message);
