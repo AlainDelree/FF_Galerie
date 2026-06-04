@@ -26,6 +26,9 @@ const ADMIN_CFG = {
   if (ADMIN_CFG.prefix !== 'ff') {
     const wrap = document.getElementById('div-sel-artiste');
     if (wrap) wrap.style.display = 'none';
+    /* EmailJS : config réservée à Frédérique */
+    const ejs = document.getElementById('bloc-emailjs');
+    if (ejs) ejs.style.display = 'none';
   }
 })();
 /* Clés de stockage dérivées du prefix */
