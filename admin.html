@@ -756,8 +756,8 @@
       Partager avec tous les artistes
     </label>
     <div style="display:flex;gap:.5rem;">
-      <button class="btn btn-or" id="btn-tex-confirmer" style="flex:1;">💾 Uploader</button>
-      <button class="bas-btn" id="btn-tex-annuler-upload">Annuler</button>
+      <button class="btn btn-or" id="btn-tex-confirmer" onclick="uploaderTextureConfirmee()" style="flex:1;">💾 Uploader</button>
+      <button class="bas-btn" onclick="document.getElementById('overlay-tex-upload').style.display='none'">Annuler</button>
     </div>
     <div id="tex-progress" style="font-size:.73rem;color:var(--muted);min-height:1em;"></div>
   </div>

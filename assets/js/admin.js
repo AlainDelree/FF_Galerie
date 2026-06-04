@@ -1517,8 +1517,7 @@ function gererTextureCustom(fichier) {
   /* Label natif → input file (fonctionne sur mobile sans JS) */
   const inpTex = $('inp-texture-custom');
   if (inpTex) inpTex.addEventListener('change', e => { ouvrirOverlayTexture(e.target.files[0]); e.target.value = ''; });
-  $('btn-tex-confirmer')?.addEventListener('click', uploaderTextureConfirmee);
-  $('btn-tex-annuler-upload')?.addEventListener('click', () => { $('overlay-tex-upload').style.display = 'none'; });
+  /* boutons overlay : onclick dans le HTML */
   chargerTexturesGitHub();
     setTexture(key);
     toast('✓ Texture ajoutée');
@@ -2824,7 +2823,8 @@ async function ouvrirOverlayTexture(file) {
 }
 
 async function uploaderTextureConfirmee() {
-  if (!_texData || !token) return;
+  if (!_texData) { $('tex-progress').textContent = '⚠ Aucune image — réessayez'; return; }
+  if (!token)    { $('tex-progress').textContent = '⚠ Token GitHub requis'; return; }
   var partager = $('tex-partager').checked;
   var dossier  = partager ? 'assets/images/textures/' : ADMIN_CFG.repoPath + 'textures/';
   var chemin   = dossier + _texData.nom + '_' + Date.now().toString(36) + '.jpg';
