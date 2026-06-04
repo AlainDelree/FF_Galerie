@@ -10,18 +10,29 @@
 
   function parseDateFR(str) {
     if (!str || !str.trim()) return 0;
-    var s = str.trim().toLowerCase()
-      .replace(/[éè]/g,'e').replace(/û/g,'u').replace(/î/g,'i').replace(/ô/g,'o').replace(/â/g,'a');
+    var s = str.trim();
+
+    /* Format numérique DD/MM/YYYY ou DD-MM-YYYY */
+    var num = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (num) return new Date(+num[3], +num[2] - 1, +num[1]).getTime();
+
+    /* Format numérique MM/YYYY ou MM-YYYY */
+    var moisAn = s.match(/^(\d{1,2})[\/-](\d{4})$/);
+    if (moisAn) return new Date(+moisAn[2], +moisAn[1] - 1, 1).getTime();
+
+    /* Format texte français : "27 septembre 2026" */
     var MOIS_N = ['janvier','fevrier','mars','avril','mai','juin',
                   'juillet','aout','septembre','octobre','novembre','decembre'];
+    var sl = s.toLowerCase()
+      .replace(/[éèê]/g,'e').replace(/[ûù]/g,'u').replace(/[îï]/g,'i')
+      .replace(/[ôö]/g,'o').replace(/[âä]/g,'a');
     var jour = 1, mois = 0, annee = 0;
-    s.split(/[\s,/-]+/).forEach(function(p) {
+    sl.split(/[\s,/-]+/).forEach(function(p) {
       var n = parseInt(p, 10);
-      if (!isNaN(n) && n > 1900)     annee = n;
+      if (!isNaN(n) && n > 1900)          annee = n;
       else if (!isNaN(n) && n >= 1 && n <= 31) jour = n;
       else {
-        var idx = MOIS_N.findIndex(function(m){ return p.indexOf(m) === 0 || m.indexOf(p) === 0; });
-        if (idx >= 0) mois = idx;
+        MOIS_N.forEach(function(m, i){ if (p.indexOf(m) === 0 || m.indexOf(p) === 0) mois = i; });
       }
     });
     if (!annee) return 0;
