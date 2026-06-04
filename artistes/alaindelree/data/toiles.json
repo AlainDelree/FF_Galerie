@@ -94,6 +94,23 @@
       },
       "taille": "E",
       "visible": true
+    },
+    {
+      "id": 5,
+      "photo": "artistes/alaindelree/assets/images/toiles/toile-005.jpg",
+      "source_photo": "admin",
+      "titre": "Industrie mieilliere",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 80,
+        "hauteur": 60
+      },
+      "taille": "XL",
+      "visible": true
     }
   ]
 }
