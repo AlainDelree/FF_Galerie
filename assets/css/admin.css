@@ -588,6 +588,14 @@ textarea.champ{resize:vertical;min-height:65px;}
   .mur-zone { padding: .3rem .45rem; gap: .25rem; }
   .mur-bg   { max-width: min(420px, calc((100dvh - 215px) * 1.5)); }
 
+  /* Mode Arrangement : même logique, chrome = hdr+aide+strip+bas-barre ≈ 215px */
+  .placement-hdr { padding: .38rem .9rem; }
+  .placement-mur-zone { padding: .25rem; }
+  .placement-mur-bg { max-width: min(600px, calc((100dvh - 215px) * 1.5)); min-width: 0; }
+  .placement-strip { height: 80px; }
+  .pl-item { width: 56px; }
+  .pl-item .simg { height: 44px; }
+
   /* Panneaux couleurs + musique : centrés, width limité */
   .coul-panel {
     left: 50%; right: auto; width: min(480px, 90vw);
