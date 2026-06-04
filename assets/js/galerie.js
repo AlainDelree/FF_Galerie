@@ -8,11 +8,12 @@
    ============================================================= */
 
 const GALERIE_CFG = {
-  toiles:  window.GALERIE_TOILES_PATH  || 'data/toiles.json',
-  salles:  window.GALERIE_SALLES_PATH  || 'data/salles.json',
-  home:    window.GALERIE_HOME         || 'index.html',
-  infos:   window.GALERIE_INFOS_PATH   || 'infos.html',
-  contact: window.GALERIE_CONTACT_PATH || 'contact.html'
+  toiles:     window.GALERIE_TOILES_PATH  || 'data/toiles.json',
+  salles:     window.GALERIE_SALLES_PATH  || 'data/salles.json',
+  home:       window.GALERIE_HOME         || 'index.html',
+  infos:      window.GALERIE_INFOS_PATH   || 'infos.html',
+  contact:    window.GALERIE_CONTACT_PATH || 'contact.html',
+  assetsBase: window.GALERIE_ASSETS_BASE  || '' /* '' pour Fred, '../../' pour artistes */
 };
 
     let salleCourante = 1;
@@ -364,7 +365,7 @@ const GALERIE_CFG = {
 
       const wrap = document.getElementById('modalImageWrap');
       if (toile.photo) {
-        wrap.innerHTML = '<img src="' + toile.photo + '" alt="' + (toile.titre || 'Toile') + '">';
+        wrap.innerHTML = '<img src="' + GALERIE_CFG.assetsBase + toile.photo + '" alt="' + (toile.titre || 'Toile') + '">';
       } else {
         wrap.innerHTML = '<div class="modal-placeholder-grand">' + toile.id + '</div>';
       }
@@ -408,7 +409,7 @@ const GALERIE_CFG = {
       cadre.className = 'cadre';
       if (toile.photo) {
         const img = document.createElement('img');
-        img.src = toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
+        img.src = GALERIE_CFG.assetsBase + toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
@@ -578,7 +579,7 @@ const GALERIE_CFG = {
 
             if (t.photo) {
               const img = document.createElement('img');
-              img.src = t.photo; img.alt = t.titre || ''; img.loading = 'lazy';
+              img.src = GALERIE_CFG.assetsBase + t.photo; img.alt = t.titre || ''; img.loading = 'lazy';
               cadre.appendChild(img);
             } else {
               cadre.style.background = 'linear-gradient(135deg,rgba(255,255,255,.04),rgba(0,0,0,.1))';

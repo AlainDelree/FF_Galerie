@@ -351,9 +351,13 @@ async function uploaderPhoto(id, b64) {
      Alain      : artistes/alaindelree/assets/images/toiles/
      Le chemin stocké dans toiles.json est TOUJOURS assets/images/toiles/toile-NNN.jpg
      (relatif à la galerie.html de l'artiste) */
+  /* chemin GitHub (upload) = chemin stocké dans toiles.json
+     = chemin visible depuis la racine du repo
+     Fred  : assets/images/toiles/toile-NNN.jpg
+     Alain : artistes/alaindelree/assets/images/toiles/toile-NNN.jpg */
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
   const chemin = base + `toile-${String(id).padStart(3, '0')}.jpg`;
-  const stored = `assets/images/toiles/toile-${String(id).padStart(3, '0')}.jpg`;
+  const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
   try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}`); sha = r.sha; } catch (_) {}
   const corps = { message: `Admin : Photo toile #${id}`, content: b64, branch: BRANCH };
