@@ -555,8 +555,9 @@ const GALERIE_CFG = {
               /* Texture CSS (tissu, bois, pierre…) */
               mur.style.background = textures[salle.texture] + ', ' + (salle.couleur_mur || '#2e2e2e');
             } else if (/\.(jpg|jpeg|png|webp)$/i.test(salle.texture)) {
-              /* Texture image uploadée — multiply blend : blanc=couleur, noir=sombre */
-              mur.style.background = 'url("' + salle.texture + '") center/cover, ' + (salle.couleur_mur || '#2e2e2e');
+              /* Texture image — préfixe assetsBase pour les galeries en sous-dossier */
+              var texUrl = GALERIE_CFG.assetsBase + salle.texture;
+              mur.style.background = 'url("' + texUrl + '") center/cover, ' + (salle.couleur_mur || '#2e2e2e');
               mur.style.backgroundBlendMode = 'multiply';
             }
           }
