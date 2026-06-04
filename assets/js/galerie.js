@@ -365,7 +365,7 @@ const GALERIE_CFG = {
 
       const wrap = document.getElementById('modalImageWrap');
       if (toile.photo) {
-        wrap.innerHTML = '<img src="' + GALERIE_CFG.assetsBase + toile.photo + '" alt="' + (toile.titre || 'Toile') + '">';
+        wrap.innerHTML = '<img src="' + ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo) + '" alt="' + (toile.titre || 'Toile') + '">';
       } else {
         wrap.innerHTML = '<div class="modal-placeholder-grand">' + toile.id + '</div>';
       }
@@ -409,7 +409,7 @@ const GALERIE_CFG = {
       cadre.className = 'cadre';
       if (toile.photo) {
         const img = document.createElement('img');
-        img.src = GALERIE_CFG.assetsBase + toile.photo; img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
+        img.src = ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo); img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
@@ -580,7 +580,7 @@ const GALERIE_CFG = {
 
             if (t.photo) {
               const img = document.createElement('img');
-              img.src = GALERIE_CFG.assetsBase + t.photo; img.alt = t.titre || ''; img.loading = 'lazy';
+              img.src = ((/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo); img.alt = t.titre || ''; img.loading = 'lazy';
               cadre.appendChild(img);
             } else {
               cadre.style.background = 'linear-gradient(135deg,rgba(255,255,255,.04),rgba(0,0,0,.1))';
