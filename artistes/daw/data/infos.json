@@ -6,6 +6,14 @@
       "lieu": "Mange-Tes-Morts",
       "description": "Ca va etre super",
       "lien": ""
+    },
+    {
+      "titre": "Test via gsm",
+      "dateAffichage": "",
+      "lieu": "Ca",
+      "description": "Fonctionne",
+      "lien": "",
+      "id": 1780532817934
     }
   ],
   "collegues": []
