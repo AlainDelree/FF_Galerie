@@ -60,6 +60,23 @@
       },
       "visible": true,
       "taille": "XXL"
+    },
+    {
+      "id": 3,
+      "photo": "artistes/alaindelree/assets/images/toiles/toile-003.jpg",
+      "source_photo": "admin",
+      "titre": "Old timer motor",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 60,
+        "hauteur": 80
+      },
+      "taille": "XL",
+      "visible": true
     }
   ]
 }
