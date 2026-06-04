@@ -748,10 +748,13 @@
     <div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);">Uploader une texture</div>
     <div id="tex-prev" style="width:100%;height:90px;border-radius:4px;background:var(--bg3);background-size:cover;background-position:center;"></div>
     <div id="tex-info" style="font-size:.73rem;color:var(--muted);"></div>
-    <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;font-size:.8rem;color:var(--text);">
-      <input type="checkbox" id="tex-partager">
-      Partager avec tous les artistes
-    </label>
+    <div>
+      <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;font-size:.8rem;color:var(--text);">
+        <input type="checkbox" id="tex-partager" onchange="document.getElementById('tex-partager-info').style.display=this.checked?'':'none'">
+        Partager avec tous les artistes
+      </label>
+      <div id="tex-partager-info" style="display:none;font-size:.68rem;color:var(--muted);margin-top:.2rem;padding-left:1.4rem;">ℹ Permanente — seule Frédérique peut la supprimer</div>
+    </div>
     <div style="display:flex;gap:.5rem;">
       <button class="btn btn-or" id="btn-tex-confirmer" onclick="uploaderTextureConfirmee()" style="flex:1;">💾 Uploader</button>
       <button class="bas-btn" onclick="document.getElementById('overlay-tex-upload').style.display='none'">Annuler</button>

@@ -322,7 +322,19 @@ async function lireFichierTexte(chemin) {
   return new TextDecoder('utf-8').decode(bytes);
 }
 
+/* File d'attente : garantit que les commits s'exécutent
+   séquentiellement même si plusieurs sont déclenchés en même temps.
+   Élimine les conflits 'Update is not a fast forward'. */
+let _commitQueue = Promise.resolve();
+
 async function commitMulti(fichiers, message) {
+  _commitQueue = _commitQueue.then(function() {
+    return _commitMultiImpl(fichiers, message);
+  });
+  return _commitQueue;
+}
+
+async function _commitMultiImpl(fichiers, message) {
   const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
   const commitSha = ref.object.sha;
   const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
@@ -337,6 +349,7 @@ async function commitMulti(fichiers, message) {
   try {
     await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false });
   } catch (e) {
+    /* La file d'attente devrait éviter ce cas, mais on garde le fallback */
     if (e.message && (e.message.includes('fast forward') || e.message.includes('Update is not'))) {
       await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: true });
     } else {
