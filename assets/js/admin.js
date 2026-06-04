@@ -98,7 +98,7 @@ async function rapporterErreur(message, priorite, details) {
         'Content-Type': 'application/json',
         'X-GitHub-Api-Version': '2022-11-28'
       },
-      body: JSON.stringify({ title: titre, body: corps })
+      body: JSON.stringify({ title: titre, body: corps, assignees: [REPO.split('/')[0]] })
     });
   } catch(e) { /* silencieux — éviter la boucle infinie */ }
 }
