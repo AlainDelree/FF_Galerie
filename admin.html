@@ -170,6 +170,21 @@
             <div id="textures-gh-partage" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
           </div>
         </div>
+        <!-- Séparateur + Musique du site -->
+        <div style="height:1px;background:var(--brd);margin:.5rem 0 .4rem;"></div>
+        <div class="coul-row" style="align-items:flex-start;flex-direction:column;gap:.3rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;width:100%;">
+            <span class="coul-lbl" style="width:auto;flex-shrink:0;">🎵 Musique</span>
+            <span id="musique-nom" style="font-size:.72rem;color:var(--text-doux);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" title="">Aucune</span>
+            <button id="btn-musique-del" onclick="supprimerMusique()" title="Supprimer la musique" style="display:none;background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);padding:0;line-height:1;flex-shrink:0;">🗑</button>
+          </div>
+          <audio id="musique-prev" controls style="display:none;width:100%;height:26px;"></audio>
+          <label for="inp-musique-upload" class="ctrl-btn" style="font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+            ↑ Changer…
+            <input type="file" id="inp-musique-upload" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4" style="display:none;">
+          </label>
+        </div>
+
         <div class="coul-actions">
           <button class="ctrl-btn" id="btn-preset-sauver" style="font-size:11px;">⊙ Sauver preset</button>
           <button class="ctrl-btn" id="btn-preset-charger" style="font-size:11px;">▾ Preset…</button>

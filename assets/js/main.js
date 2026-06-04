@@ -5,12 +5,26 @@ const MUSIC_KEY     = 'ff_galerie_music';
 const DEFAULT_THEME = 'theme-sombre';
 
 /* ── Fichier audio ──────────────────────────────────────────────
-   Pour changer la musique : remplacer le fichier MP3 dans
-   assets/music/ et mettre son nom ici.
+   Le chemin est lu dynamiquement depuis data/infos.json (champ
+   musique.fichier). La valeur ci-dessous sert uniquement de
+   fallback si le JSON est inaccessible.
    ─────────────────────────────────────────────────────────────── */
-const MUSIC_SRC    = 'assets/music/musique.mp3';
-const MUSIC_VOLUME = 0.55;   // volume cible (0 à 1)
-const FADE_MS      = 1800;   // durée du fondu en ms
+let    MUSIC_SRC    = 'assets/music/musique.mp3'; // mis à jour par chargerConfigMusique()
+const  MUSIC_VOLUME = 0.55;   // volume cible (0 à 1)
+const  FADE_MS      = 1800;   // durée du fondu en ms
+
+let _configMusiqueChargee = false;
+async function chargerConfigMusique() {
+  if (_configMusiqueChargee) return;
+  try {
+    const r = await fetch('data/infos.json?v=' + Date.now());
+    if (r.ok) {
+      const d = await r.json();
+      if (d.musique && d.musique.fichier) MUSIC_SRC = d.musique.fichier;
+    }
+  } catch(e) { /* garde la valeur par défaut */ }
+  _configMusiqueChargee = true;
+}
 
 // ── Thème ──────────────────────────────────────────────────────
 function appliquerTheme(theme) {
@@ -105,8 +119,10 @@ const btnMusique = document.getElementById('btnMusique');
 btnMusique?.addEventListener('click', toggleMusique);
 
 // Auto-démarrage musique sur la galerie uniquement
-if (musiqueActive && document.body.dataset.page === 'galerie') {
-  window.addEventListener('load', () => {
+if (document.body.dataset.page === 'galerie') {
+  window.addEventListener('load', async () => {
+    await chargerConfigMusique(); // chemin depuis infos.json
+    if (!musiqueActive) return;
     demarrerMusique();
     // Fallback si autoplay bloqué : relance au premier clic
     const reprise = () => {

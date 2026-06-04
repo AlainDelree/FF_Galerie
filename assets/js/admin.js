@@ -1518,6 +1518,110 @@ function appliquerApparence() {
 }
 
 // ═══════════════════════════════════════════════
+// MUSIQUE
+// ═══════════════════════════════════════════════
+let _musiqueChargee = false;
+
+/* Charge depuis GitHub si pas encore fait, puis affiche */
+async function chargerEtAfficherMusique() {
+  if (!_musiqueChargee) {
+    try {
+      var res = await lireFichierJSON(ADMIN_CFG.repoPath + 'infos.json');
+      var d = res.data || {};
+      infosData.musique = d.musique || { fichier: '' };
+      _musiqueChargee = true;
+    } catch(e) {
+      infosData.musique = infosData.musique || { fichier: '' };
+    }
+  }
+  afficherSectionMusique();
+}
+
+function afficherSectionMusique() {
+  var fichier = (infosData.musique && infosData.musique.fichier) || '';
+  var nomEl  = $('musique-nom');
+  var prevEl = $('musique-prev');
+  var delBtn = $('btn-musique-del');
+  if (!nomEl) return;
+  if (fichier) {
+    nomEl.textContent = fichier.split('/').pop();
+    nomEl.title = fichier;
+    prevEl.src = fichier + '?v=' + Date.now();
+    prevEl.style.display = '';
+    if (delBtn) delBtn.style.display = '';
+  } else {
+    nomEl.textContent = 'Aucune';
+    nomEl.title = '';
+    if (prevEl) { prevEl.src = ''; prevEl.style.display = 'none'; }
+    if (delBtn) delBtn.style.display = 'none';
+  }
+}
+
+async function uploaderMusique(fichier) {
+  if (!token) { toast('Token GitHub requis', 'err'); return; }
+  if (fichier.size > 12 * 1024 * 1024) { toast('Fichier trop lourd (max 12 MB)', 'err'); return; }
+  toast('Upload musique…');
+  try {
+    var b64 = await new Promise(function(ok, ko) {
+      var reader = new FileReader();
+      reader.onload = function(e) { ok(e.target.result.split(',')[1]); };
+      reader.onerror = ko;
+      reader.readAsDataURL(fichier);
+    });
+    var nom = fichier.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '').toLowerCase();
+    var base = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
+    var cheminGH = base + 'assets/music/' + nom;
+    var cheminStocke = 'assets/music/' + nom; // relatif à galerie.html artiste
+
+    // Supprime l'ancien fichier s'il est différent
+    var ancienFichier = (infosData.musique && infosData.musique.fichier) || '';
+    if (ancienFichier && ancienFichier !== cheminStocke) {
+      var ancienGH = base + ancienFichier;
+      try {
+        var rAnc = await apiGH('/repos/' + REPO + '/contents/' + ancienGH);
+        await apiGH('/repos/' + REPO + '/contents/' + ancienGH, 'DELETE', {
+          message: 'Admin : Suppression ancienne musique', sha: rAnc.sha, branch: BRANCH
+        });
+      } catch(_) {}
+    }
+
+    if (!infosData.musique) infosData.musique = {};
+    infosData.musique.fichier = cheminStocke;
+    await commitMulti([
+      { chemin: cheminGH,                                  contenu: b64, encoding: 'base64' },
+      { chemin: ADMIN_CFG.repoPath + 'infos.json', contenu: JSON.stringify(infosData, null, 2) }
+    ], 'Admin : Musique galerie mise à jour');
+
+    _musiqueChargee = true;
+    afficherSectionMusique();
+    toast('✓ Musique mise à jour');
+  } catch(e) {
+    toast('Erreur upload musique : ' + e.message, 'err');
+  }
+}
+
+async function supprimerMusique() {
+  var fichier = (infosData.musique && infosData.musique.fichier) || '';
+  if (!fichier) return;
+  if (!confirm('Supprimer la musique de la galerie ?')) return;
+  if (!token) { toast('Token GitHub requis', 'err'); return; }
+  var base = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
+  var cheminGH = base + fichier;
+  try {
+    var r = await apiGH('/repos/' + REPO + '/contents/' + cheminGH);
+    await apiGH('/repos/' + REPO + '/contents/' + cheminGH, 'DELETE', {
+      message: 'Admin : Suppression musique galerie', sha: r.sha, branch: BRANCH
+    });
+  } catch(_) { /* fichier déjà absent */ }
+  infosData.musique = { fichier: '' };
+  await commitMulti([
+    { chemin: ADMIN_CFG.repoPath + 'infos.json', contenu: JSON.stringify(infosData, null, 2) }
+  ], 'Admin : Musique galerie supprimée');
+  afficherSectionMusique();
+  toast('✓ Musique supprimée');
+}
+
+// ═══════════════════════════════════════════════
 // PRESETS
 // ═══════════════════════════════════════════════
 function ouvrirModalPreset() {
@@ -1738,6 +1842,7 @@ $('btn-coul-toggle').addEventListener('click', () => {
   const ouvert = $('coul-panel').classList.toggle('ouvert');
   $('coul-overlay').classList.toggle('ouvert', ouvert);
   $('btn-coul-toggle').classList.toggle('on', ouvert);
+  if (ouvert) chargerEtAfficherMusique();
 });
 $('btn-close-coul').addEventListener('click', () => {
   $('coul-panel').classList.remove('ouvert');
@@ -2096,9 +2201,11 @@ async function chargerInfos() {
     infosData = res.data || { evenements: [], collegues: [] };
     infosData.evenements = infosData.evenements || [];
     infosData.collegues  = infosData.collegues  || [];
+    infosData.musique    = infosData.musique    || { fichier: '' };
+    _musiqueChargee = true;
     afficherEvents();
   } catch(e) {
-    infosData = { evenements: [], collegues: [] };
+    infosData = { evenements: [], collegues: [], musique: { fichier: '' } };
     afficherEvents();
   }
   /* Charger contact.json */
@@ -3000,6 +3107,13 @@ async function supprimerTextureGitHub(chemin) {
         ouvrirOverlayTexture(e.target.files[0]);
         e.target.value = '';
       }
+    });
+  }
+  var _inpMusique = document.getElementById('inp-musique-upload');
+  if (_inpMusique) {
+    _inpMusique.addEventListener('change', function() {
+      if (this.files[0]) uploaderMusique(this.files[0]);
+      this.value = '';
     });
   }
   /* _texBound_module */
