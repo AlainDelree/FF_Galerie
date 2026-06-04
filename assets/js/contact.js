@@ -91,7 +91,8 @@
       var valeur = data[r.id];
       if (!valeur) return;
       var url = valeur.indexOf('http') === 0 ? valeur : 'https://' + r.id + '.com/' + valeur;
-      var nom = extraireNom(r.id, url);
+      /* Nom affiché : champ _nom en priorité, sinon extraction auto depuis URL */
+      var nom = data[r.id + '_nom'] || extraireNom(r.id, url);
       reseauxHTML +=
         '<div class="contact-item">' +
           '<span class="contact-label reseau-label">' +

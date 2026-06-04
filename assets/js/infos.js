@@ -9,24 +9,30 @@
               'juillet','août','septembre','octobre','novembre','décembre'];
 
   function parseDateFR(str) {
-    if (!str) return null;
-    var s = str.trim().toLowerCase();
-    var jour = 1, mois = -1, annee = null;
-    s.split(/\s+/).forEach(function(p) {
-      var n = parseInt(p);
-      if (!isNaN(n) && n > 31)       annee = n;
-      else if (!isNaN(n) && n >= 1)  jour = n;
-      else { var m = MOIS.indexOf(p); if (m >= 0) mois = m; }
+    if (!str || !str.trim()) return 0;
+    var s = str.trim().toLowerCase()
+      .replace(/[éè]/g,'e').replace(/û/g,'u').replace(/î/g,'i').replace(/ô/g,'o').replace(/â/g,'a');
+    var MOIS_N = ['janvier','fevrier','mars','avril','mai','juin',
+                  'juillet','aout','septembre','octobre','novembre','decembre'];
+    var jour = 1, mois = 0, annee = 0;
+    s.split(/[\s,/-]+/).forEach(function(p) {
+      var n = parseInt(p, 10);
+      if (!isNaN(n) && n > 1900)     annee = n;
+      else if (!isNaN(n) && n >= 1 && n <= 31) jour = n;
+      else {
+        var idx = MOIS_N.findIndex(function(m){ return p.indexOf(m) === 0 || m.indexOf(p) === 0; });
+        if (idx >= 0) mois = idx;
+      }
     });
-    if (annee === null) return null;
-    return new Date(annee, mois < 0 ? 0 : mois, jour);
+    if (!annee) return 0;
+    return new Date(annee, mois, jour).getTime();
   }
 
   function trierEvenements(evts) {
-    var avecDate  = evts.filter(function(e){ return  parseDateFR(e.dateAffichage); });
-    var sansDate  = evts.filter(function(e){ return !parseDateFR(e.dateAffichage); });
+    var avecDate  = evts.filter(function(e){ return parseDateFR(e.dateAffichage) > 0; });
+    var sansDate  = evts.filter(function(e){ return parseDateFR(e.dateAffichage) === 0; });
     avecDate.sort(function(a,b){ return parseDateFR(a.dateAffichage) - parseDateFR(b.dateAffichage); });
-    return avecDate.concat(sansDate); /* sans date : ordre d'ajout (plus ancien en premier) */
+    return avecDate.concat(sansDate);
   }
 
   fetch(INFOS_PATH + '?v=' + Date.now())

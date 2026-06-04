@@ -2047,26 +2047,29 @@ async function chargerInfos() {
 }
 
 function remplirFormulaireContact(d) {
-  const champs = ['email','tel','instagram','facebook','tiktok','pinterest','youtube','twitter','linkedin','site'];
+  var champs = ['email','tel','instagram','facebook','tiktok','pinterest','youtube','twitter','linkedin','site'];
+  var RESEAUX = ['instagram','facebook','tiktok','pinterest','youtube','twitter','linkedin','site'];
   champs.forEach(function(c) {
-    const el = document.getElementById('cnt-' + c);
+    var el = document.getElementById('cnt-' + c);
     if (el) el.value = d[c === 'tel' ? 'telephone' : c] || '';
+  });
+  RESEAUX.forEach(function(r) {
+    var el = document.getElementById('cnt-' + r + '-nom');
+    if (el) el.value = d[r + '_nom'] || '';
   });
 }
 
 function lireFormulaireContact() {
-  return {
-    email:     document.getElementById('cnt-email')?.value.trim()     || '',
-    telephone: document.getElementById('cnt-tel')?.value.trim()       || '',
-    instagram: document.getElementById('cnt-instagram')?.value.trim() || '',
-    facebook:  document.getElementById('cnt-facebook')?.value.trim()  || '',
-    tiktok:    document.getElementById('cnt-tiktok')?.value.trim()    || '',
-    pinterest: document.getElementById('cnt-pinterest')?.value.trim() || '',
-    youtube:   document.getElementById('cnt-youtube')?.value.trim()   || '',
-    twitter:   document.getElementById('cnt-twitter')?.value.trim()   || '',
-    linkedin:  document.getElementById('cnt-linkedin')?.value.trim()  || '',
-    site:      document.getElementById('cnt-site')?.value.trim()      || ''
+  var RESEAUX = ['instagram','facebook','tiktok','pinterest','youtube','twitter','linkedin','site'];
+  var data = {
+    email:     document.getElementById('cnt-email')?.value.trim() || '',
+    telephone: document.getElementById('cnt-tel')?.value.trim()   || ''
   };
+  RESEAUX.forEach(function(r) {
+    data[r]          = document.getElementById('cnt-' + r)       ?.value.trim() || '';
+    data[r + '_nom'] = document.getElementById('cnt-' + r + '-nom')?.value.trim() || '';
+  });
+  return data;
 }
 
 function afficherEvents() {
