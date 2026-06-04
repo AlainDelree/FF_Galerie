@@ -549,8 +549,14 @@ const GALERIE_CFG = {
             velours:'radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/5px 5px',
             brique: 'repeating-conic-gradient(rgba(0,0,0,.08) 0% 25%,rgba(255,255,255,.03) 0% 50%) 0 0/8px 8px'
           };
-          if (salle.texture && salle.texture !== 'none' && textures[salle.texture]) {
-            mur.style.background = textures[salle.texture] + ', ' + (salle.couleur_mur || '#2e2e2e');
+          if (salle.texture && salle.texture !== 'none') {
+            if (textures[salle.texture]) {
+              /* Texture CSS (tissu, bois, pierre…) */
+              mur.style.background = textures[salle.texture] + ', ' + (salle.couleur_mur || '#2e2e2e');
+            } else if (/\.(jpg|jpeg|png|webp)$/i.test(salle.texture)) {
+              /* Texture image uploadée sur GitHub */
+              mur.style.background = 'url("' + salle.texture + '") center/cover, ' + (salle.couleur_mur || '#2e2e2e');
+            }
           }
 
           // Place chaque toile selon sa position dans la grille
