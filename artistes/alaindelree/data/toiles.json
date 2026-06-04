@@ -128,6 +128,18 @@
       },
       "taille": "XL",
       "visible": true
+    },
+    {
+      "id": 7,
+      "photo": "artistes/alaindelree/assets/images/toiles/toile-007.jpg",
+      "source_photo": "admin",
+      "titre": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": null,
+      "visible": true
     }
   ]
 }
