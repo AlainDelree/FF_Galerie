@@ -4,8 +4,8 @@
       "id": 1,
       "nom": "Salle I",
       "theme": "",
-      "couleur_mur": "#1e1e1e",
-      "couleur_cadres": "#3a3a3a",
+      "couleur_mur": "#f5f5f5",
+      "couleur_cadres": "#c8a050",
       "texture": "artistes/alaindelree/data/textures/1000014236_mpz15ibp.jpg",
       "visible": true,
       "toiles": [
