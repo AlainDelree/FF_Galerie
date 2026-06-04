@@ -710,5 +710,19 @@
       }
     })();
   </script>
+
+<!-- ══ MODALE CONFIRMATION SUPPRESSION ARTISTE ══ -->
+<div id="overlay-suppr-artiste" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:6px;max-width:360px;width:100%;padding:1.4rem 1.2rem;display:flex;flex-direction:column;gap:1rem;">
+    <div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#c0392b;">Suppression définitive</div>
+    <div id="suppr-artiste-msg" style="font-size:.88rem;color:var(--text);line-height:1.5;"></div>
+    <div style="font-size:.78rem;color:var(--muted);">Tous ses fichiers seront effacés de GitHub et son URL retournera 404.</div>
+    <div style="display:flex;gap:.6rem;margin-top:.2rem;">
+      <button id="btn-suppr-confirmer" class="btn" style="flex:1;background:#c0392b;color:#fff;border:none;padding:.55rem;border-radius:4px;cursor:pointer;font-size:.82rem;">Supprimer définitivement</button>
+      <button id="btn-suppr-annuler"   class="btn btn-outline" style="flex:1;">Annuler</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

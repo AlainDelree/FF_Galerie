@@ -2138,7 +2138,14 @@ function ouvrirGalerieArtiste(id) {
 
 async function supprimerArtiste(idx) {
   const a = artistesData[idx];
-  if (!confirm("Supprimer définitivement " + a.nom + " ?\n\nTous ses fichiers seront supprimés de GitHub.")) return;
+  /* Modale de confirmation */
+  document.getElementById("suppr-artiste-msg").textContent = "Supprimer " + a.nom + " ?";
+  const overlay = document.getElementById("overlay-suppr-artiste");
+  overlay.style.display = "flex";
+  await new Promise(resolve => {
+    document.getElementById("btn-suppr-confirmer").onclick = () => { overlay.style.display = "none"; resolve(true); };
+    document.getElementById("btn-suppr-annuler").onclick   = () => { overlay.style.display = "none"; resolve(false); };
+  }).then(ok => { if (!ok) throw new Error("annulé"); });
   artistesData.splice(idx, 1);
   try {
     /* Fichiers à supprimer */
@@ -2180,8 +2187,10 @@ async function supprimerArtiste(idx) {
       document.getElementById("form-artiste-wrap").style.display = "none";
     }
   } catch(e) {
-    artistesData.splice(idx, 0, a); // rollback
-    alert("Erreur : " + e.message);
+    if (e.message !== "annulé") {
+      artistesData.splice(idx, 0, a); // rollback
+      alert("Erreur : " + e.message);
+    }
   }
 }
 
