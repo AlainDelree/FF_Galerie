@@ -426,6 +426,7 @@ async function chargerTout() {
     if (salles.length > 0) selectSalle(salles[0].id);
     syncBadge('ok');
   } catch (e) {
+    rapporterErreur('Chargement galerie échoué : ' + e.message, 'bloquant', e.stack || '');
     toast('Erreur chargement : ' + e.message, 'err', 4000);
     syncBadge('err');
   }
@@ -2232,6 +2233,7 @@ async function sauvegarderInfos() {
   } catch(e) {
     badge.textContent = '✗';
     badge.className = 'sync-badge err';
+    rapporterErreur('Sauvegarde infos/contact échouée : ' + e.message, 'bloquant', e.stack || '');
   }
 }
 
@@ -2375,6 +2377,7 @@ async function supprimerArtiste(idx) {
   } catch(e) {
     if (e.message !== "annulé") {
       artistesData.splice(idx, 0, a); // rollback
+      rapporterErreur("Suppression artiste échouée : " + e.message, "bloquant", e.stack || "");
       alert("Erreur : " + e.message);
     }
   }
@@ -2486,7 +2489,7 @@ async function creerArtiste() {
       prog.textContent = "✓ Enregistré";
       document.getElementById("form-artiste-wrap").style.display = "none";
       afficherArtistes();
-    } catch (e) { err.textContent = "Erreur : " + e.message; prog.style.display = "none"; }
+    } catch (e) { err.textContent = "Erreur : " + e.message; prog.style.display = "none"; rapporterErreur("Modification artiste échouée : " + e.message, "bloquant", e.stack || ""); }
     document.getElementById("btn-sauver-artiste").disabled = false;
     return;
   }
@@ -2520,6 +2523,7 @@ async function creerArtiste() {
   } catch (e) {
     err.textContent = "Erreur : " + e.message;
     prog.style.display = "none";
+    rapporterErreur("Création artiste échouée : " + e.message, "bloquant", e.stack || "");
   }
   document.getElementById("btn-sauver-artiste").disabled = false;
 }
