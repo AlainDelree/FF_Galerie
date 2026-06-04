@@ -265,6 +265,21 @@ function apresLogin() {
   if (!token) { afficherEcran('ecran-token'); return; }
   afficherEcran('ecran-principal');
   chargerTout();
+  initTexturesUI();
+}
+
+function initTexturesUI() {
+  /* Brancher le file input sur l'overlay de compression */
+  const inpTex = $('inp-texture-custom');
+  if (inpTex && !inpTex._texBound) {
+    inpTex._texBound = true;
+    inpTex.addEventListener('change', function(e) {
+      ouvrirOverlayTexture(e.target.files[0]);
+      e.target.value = '';
+    });
+  }
+  /* Charger les textures GitHub (partagées + privées) */
+  chargerTexturesGitHub();
 }
 
 function deconnecter() {
@@ -1513,12 +1528,6 @@ function gererTextureCustom(fichier) {
     if (customs.length > 5) customs.shift(); // garde max 5
     localStorage.setItem(K.textures, JSON.stringify(customs));
     afficherTexturesCustom();
-  /* Brancher l'upload de texture custom */
-  /* Label natif → input file (fonctionne sur mobile sans JS) */
-  const inpTex = $('inp-texture-custom');
-  if (inpTex) inpTex.addEventListener('change', e => { ouvrirOverlayTexture(e.target.files[0]); e.target.value = ''; });
-  /* boutons overlay : onclick dans le HTML */
-  chargerTexturesGitHub();
     setTexture(key);
     toast('✓ Texture ajoutée');
   };
