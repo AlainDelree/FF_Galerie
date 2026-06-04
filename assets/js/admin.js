@@ -2579,6 +2579,7 @@ const TPL_INDEX = `<!DOCTYPE html>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/plan.js"></script>
   <script src="../../assets/js/artiste-info.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
@@ -2594,7 +2595,7 @@ const TPL_GALERIE = `<!DOCTYPE html>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <link rel="stylesheet" href="../../assets/css/galerie.css">
   <link rel="stylesheet" href="../../assets/css/invite.css">
-  <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
 </head>
 <body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
   <div class="bandeau-invite">
@@ -2652,12 +2653,14 @@ const TPL_GALERIE = `<!DOCTYPE html>
     window.GALERIE_TOILES_PATH  = "data/toiles.json";
     window.GALERIE_SALLES_PATH  = "data/salles.json";
     window.GALERIE_ASSETS_BASE  = "../../";
+    window.GALERIE_ASSETS_BASE  = "../../";
     window.GALERIE_HOME         = "index.html";
     window.GALERIE_INFOS_PATH   = "infos.html";
     window.GALERIE_CONTACT_PATH = "contact.html";
   </script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/galerie.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
   <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
@@ -2706,6 +2709,7 @@ const TPL_INFOS = `<!DOCTYPE html>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/infos.js"></script>
   <script src="../../assets/js/artiste-info.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
 
@@ -2753,6 +2757,7 @@ const TPL_CONTACT = `<!DOCTYPE html>
   <script>window.CONTACT_DATA_PATH = "data/contact.json";</script>
   <script src="../../assets/js/main.js"></script>
   <script src="../../assets/js/contact.js"></script>
+  <script src="../../assets/js/artiste-info.js"></script>
   <script src="../../assets/js/artiste-info.js"></script>
 </body>
 </html>`;
