@@ -546,3 +546,43 @@ textarea.champ{resize:vertical;min-height:65px;}
   word-break: break-all;
   margin-right: .3rem;
 }
+
+/* ══ PC / TABLETTE (≥ 860px) ══════════════════════════════════
+   Uniquement pour adapter le layout desktop — mobile inchangé.
+   ============================================================= */
+@media (min-width: 860px) {
+  body { font-size: 13px; }
+  input,select,textarea,button { font-size: 13px; }
+
+  /* Header */
+  .adm-hdr  { padding: .38rem 1.1rem; }
+  .adm-logo { font-size: .65rem; }
+  .onglets  { top: 42px; }
+  .onglet   { font-size: .6rem; letter-spacing: .15em; padding: .5rem 1rem; }
+
+  /* Plan des salles */
+  .plan-section { padding: .32rem .9rem; }
+  .chip { min-width: 58px; padding: .22rem .5rem; }
+  .chip .cn { font-size: 10px; }
+  .chip .cb { font-size: 9px; }
+
+  /* Barre contrôle mur */
+  .mur-ctrl    { padding: .3rem .75rem; gap: .4rem; }
+  .ctrl-btn    { font-size: 9.5px; }
+  .salle-badge { font-size: 11px; }
+
+  /* Colonne stock */
+  .stock-col     { width: 125px; }
+  .stock-hdr     { font-size: .52rem; }
+  .stock-item .simg { height: 58px; }
+
+  /* Zone mur : on cap la largeur → la hauteur suit via aspect-ratio */
+  .mur-zone { padding: .4rem .55rem; }
+  .mur-bg   { max-width: calc(56vh * 1.5); } /* ≈ 850px sur 1080p */
+
+  /* Panneaux couleurs + musique : centrés, width limité */
+  .coul-panel {
+    left: 50%; right: auto; width: min(520px, 90vw);
+    transform: translateX(-50%);
+  }
+}
