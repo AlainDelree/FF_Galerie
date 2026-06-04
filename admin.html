@@ -698,14 +698,14 @@
       /* Charge admin.js une fois la config prête */
       await new Promise(resolve => {
         const s = document.createElement("script");
-        s.src = "assets/js/admin.js";
+        s.src = "assets/js/admin.js?v=" + Date.now();
         s.onload = resolve;
         document.body.appendChild(s);
       });
       /* Charge admin-artistes.js (combobox login) uniquement pour Frédérique */
       if (!id) {
         const s = document.createElement("script");
-        s.src = "assets/js/admin-artistes.js";
+        s.src = "assets/js/admin-artistes.js?v=" + Date.now();
         document.body.appendChild(s);
       }
     })();
