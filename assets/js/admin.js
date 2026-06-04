@@ -2019,7 +2019,7 @@ function fermerFormulaireEvent() {
   document.getElementById('form-event-wrap').style.display = 'none';
 }
 
-function sauverFormulaireEvent() {
+async function sauverFormulaireEvent() {
   const titre = document.getElementById('evt-titre').value.trim();
   if (!titre) { document.getElementById('form-event-err').textContent = 'Le titre est obligatoire.'; return; }
   const ev = {
@@ -2039,13 +2039,15 @@ function sauverFormulaireEvent() {
   infosModifiees = true;
   afficherEvents();
   fermerFormulaireEvent();
+  await sauvegarderInfos(); /* sauvegarde directement sur GitHub */
 }
 
-function supprimerEvent(idx) {
+async function supprimerEvent(idx) {
   if (!confirm('Supprimer cet événement ?')) return;
   infosData.evenements.splice(idx, 1);
   infosModifiees = true;
   afficherEvents();
+  await sauvegarderInfos(); /* sauvegarde directement sur GitHub */
 }
 
 async function sauvegarderInfos() {
