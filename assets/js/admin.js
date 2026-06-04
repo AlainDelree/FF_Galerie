@@ -2748,15 +2748,13 @@ async function testerRapports() {
   const cleTest = 'Bug : [TEST] Rapport automatique — issue de test'.slice(0, 80);
   delete _rapportCache[cleTest];
 
-  let crees = 0, bloques = 0;
   for (let i = 1; i <= 4; i++) {
     res.textContent = 'Envoi ' + i + '/4…';
-    const avantNb = crees;
-    /* On surveille si une issue est créée en comptant les appels réseau réussis */
-    const origFetch = window._testFetchCount = (window._testFetchCount || 0);
+    /* Vider le cache session avant chaque envoi pour que le vrai anti-spam (GitHub Search) s'applique */
+    delete _rapportCache[cleTest];
     await rapporterErreur('[TEST] Rapport automatique — issue de test', 'bug', 'Envoi ' + i + '/4 — test du système anti-spam (3 max par 24h)');
-    /* Petit délai pour ne pas saturer l'API */
-    await new Promise(r => setTimeout(r, 800));
+    /* Délai entre chaque appel pour laisser GitHub Search se mettre à jour */
+    await new Promise(r => setTimeout(r, 1500));
   }
   res.textContent = '✓ Terminé — vérifie tes emails et github.com/' + REPO + '/issues';
   btn.disabled = false;
