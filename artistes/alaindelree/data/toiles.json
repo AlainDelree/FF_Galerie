@@ -138,7 +138,12 @@
       "style": "",
       "materiaux": [],
       "description": "",
-      "dimensions": null,
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 30,
+        "hauteur": 40
+      },
+      "taille": "E",
       "visible": true
     }
   ]
