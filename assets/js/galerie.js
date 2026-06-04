@@ -642,6 +642,20 @@ const GALERIE_CFG = {
           conteneur.style.transition = "";
         }); });
       }
+
+      // ── Préchargement de toutes les images en arrière-plan ──
+      // Déclenché 1s après l'affichage initial pour ne pas concurrencer
+      // la première salle. Le navigateur met en cache → navigation instantanée.
+      setTimeout(function() {
+        Object.values(toileMap).forEach(function(t) {
+          if (!t.photo) return;
+          var src = /^https?:\/\//.test(t.photo)
+            ? t.photo
+            : GALERIE_CFG.assetsBase + t.photo;
+          var img = new Image();
+          img.src = src;
+        });
+      }, 1000);
     })
     .catch(() => {
       document.querySelectorAll('.mur').forEach(mur => {
