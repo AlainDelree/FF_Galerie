@@ -38,6 +38,71 @@ const K = {
 };
 
 // ═══════════════════════════════════════════════
+// RAPPORT D'ERREURS AUTOMATIQUE → GitHub Issues
+// Crée une issue avec le titre Bug/Bloquant/Effondrement
+// GitHub envoie un email au propriétaire du repo
+// ═══════════════════════════════════════════════
+const _rapportCache = {};
+
+async function rapporterErreur(message, priorite, details) {
+  if (!token) return; /* pas connecté, impossible de créer une issue */
+  /* Anti-spam : max 1 issue par type d'erreur par heure */
+  const cle = (priorite + message).slice(0, 80);
+  if (_rapportCache[cle] && Date.now() - _rapportCache[cle] < 3600000) return;
+  _rapportCache[cle] = Date.now();
+
+  const PREFIX = { bug: 'Bug', bloquant: 'Bloquant', effondrement: 'Effondrement' };
+  const titre = (PREFIX[priorite] || 'Bug') + ' : ' + message.slice(0, 90);
+  const corps = [
+    '### Rapport automatique FF_Galerie',
+    '',
+    '| | |',
+    '|---|---|',
+    '| **Message** | `' + message.replace(/`/g, "'").slice(0, 200) + '` |',
+    '| **Priorité** | **' + (PREFIX[priorite] || 'Bug') + '** |',
+    '| **Admin** | ' + ADMIN_CFG.nom + ' |',
+    '| **URL** | ' + location.href + ' |',
+    '| **Date** | ' + new Date().toLocaleString('fr-BE') + ' |',
+    '',
+    details ? '**Détails :**\n```\n' + String(details).slice(0, 1200) + '\n```' : ''
+  ].filter(Boolean).join('\n');
+
+  try {
+    await fetch('https://api.github.com/repos/' + REPO + '/issues', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      body: JSON.stringify({ title: titre, body: corps })
+    });
+  } catch(e) { /* silencieux — éviter la boucle infinie */ }
+}
+
+/* Intercepteur JS global — erreurs non gérées */
+window.onerror = function(msg, src, line, col, err) {
+  rapporterErreur(
+    String(msg),
+    'bug',
+    'Fichier: ' + src + ' | Ligne: ' + line + '\n' + (err && err.stack ? err.stack : '')
+  );
+};
+
+/* Intercepteur promesses non gérées */
+window.addEventListener('unhandledrejection', function(e) {
+  const msg = e.reason ? (e.reason.message || String(e.reason)) : 'Promesse rejetée';
+  const priorite =
+    (msg.includes('401') || msg.includes('credential') || msg.includes('Token'))
+      ? 'effondrement'
+    : (msg.includes('fast forward') || msg.includes('BadObject') || msg.includes('GitHub') || msg.includes('API'))
+      ? 'bloquant'
+    : 'bug';
+  rapporterErreur(msg, priorite, e.reason && e.reason.stack ? e.reason.stack : String(e.reason || ''));
+});
+
+// ═══════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════
 const REPO   = 'AlainDelree/FF_Galerie';
@@ -206,6 +271,7 @@ async function apiGH(url, methode = 'GET', corps = null) {
       /* Token invalide ou révoqué → vider le token et aller à l'écran token */
       localStorage.removeItem(K.token);
       token = '';
+      rapporterErreur('Token GitHub invalide ou révoqué — admin inaccessible', 'effondrement', url);
       afficherEcran('ecran-token');
       document.getElementById('token-err').textContent = 'Token invalide ou révoqué. Entrez votre nouveau token.';
       throw new Error('Token invalide');
@@ -306,6 +372,7 @@ async function sauvegarder(message) {
     pendingChanges = false;
     $('btn-sauver-flottant').classList.remove('visible');
   } catch (e) {
+    rapporterErreur('Impossible de charger les données : ' + e.message, 'bloquant', e.stack || '');
     syncBadge('err');
     toast('Erreur : ' + e.message, 'err', 4000);
     throw e;
