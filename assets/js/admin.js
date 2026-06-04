@@ -1104,6 +1104,7 @@ function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
   $('modal-toile-tit').textContent = 'Nouvelle toile';
   $('zone-suppr').classList.add('hidden');
+  construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
 }
@@ -1132,6 +1133,7 @@ function ouvrirFormulaireEdition(id) {
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = 'Modifier la toile';
   $('zone-suppr').classList.remove('hidden');
+  construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
 }
@@ -1210,11 +1212,13 @@ function fermerFiche() {
 function viderFormToile() {
   ['inp-titre','inp-date','inp-style','inp-mat','inp-prix','inp-desc'].forEach(id => $(id).value = '');
   $('inp-visible').checked = true;
+  $('inp-larg').value = ''; $('inp-haut').value = '';
   $('sel-format').value = '';
-  $('dims-custom').classList.add('hidden');
+  document.querySelectorAll('#dims-favoris .dim-chip').forEach(c => c.classList.remove('sel'));
   remplirSelectTaille();
   $('sel-taille').value = '';
-  $('inp-larg').value = ''; $('inp-haut').value = '';
+  afficherTailleAuto('');
+  $('taille-manual-wrap').style.display = 'none';
   $('photo-prev').style.display = 'none';
   $('photo-ph').style.display = '';
   $('btn-recadrer-photo').classList.remove('visible');
@@ -1233,15 +1237,23 @@ function remplirFormToile(t) {
   $('inp-prix').value = t.prix || '';
   $('inp-desc').value = t.description || '';
   $('inp-visible').checked = t.visible !== false;
-  if (t.dimensions) {
-    const { largeur: l, hauteur: h, type: tp } = t.dimensions;
-    const preset = $('sel-format').querySelector(`option[value="${l}x${h}"]`);
-    if (tp === 'ronde') { $('sel-format').value = 'ronde50'; }
-    else if (preset) { $('sel-format').value = `${l}x${h}`; $('dims-custom').classList.add('hidden'); }
-    else { $('sel-format').value = 'custom'; $('dims-custom').classList.remove('hidden'); $('inp-larg').value = l; $('inp-haut').value = h; }
+  $('sel-format').value = '';
+  const d = t.dimensions;
+  if (d && d.type === 'ronde') {
+    $('sel-format').value = 'ronde50';
+    $('inp-larg').value = ''; $('inp-haut').value = '';
+    synchroChips(0, 0);
+  } else if (d && d.largeur && d.hauteur) {
+    $('inp-larg').value = d.largeur; $('inp-haut').value = d.hauteur;
+    synchroChips(d.largeur, d.hauteur);
+  } else {
+    $('inp-larg').value = ''; $('inp-haut').value = '';
+    synchroChips(0, 0);
   }
   remplirSelectTaille();
   $('sel-taille').value = t.taille || '';
+  afficherTailleAuto(t.taille || '');
+  $('taille-manual-wrap').style.display = 'none';
   if (t.photo) {
     $('photo-prev').src = t.photo; $('photo-prev').style.display = 'block';
     $('photo-ph').style.display = 'none';
@@ -1254,15 +1266,12 @@ function remplirFormToile(t) {
 }
 
 function lireFormToile() {
-  const fv = $('sel-format').value;
   let dim = null;
-  if (fv === 'ronde50') dim = { type: 'ronde', largeur: 50, hauteur: 50 };
-  else if (fv === 'custom') {
+  if ($('sel-format').value === 'ronde50') {
+    dim = { type: 'ronde', largeur: 50, hauteur: 50 };
+  } else {
     const l = parseInt($('inp-larg').value), h = parseInt($('inp-haut').value);
     if (l && h) dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
-  } else if (fv) {
-    const [l, h] = fv.split('x').map(Number);
-    dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
   }
   return {
     titre: $('inp-titre').value.trim(),
@@ -2150,40 +2159,126 @@ $('overlay-guide').addEventListener('click', e => {
   if (e.target === $('overlay-guide')) { $('overlay-guide').style.display = 'none'; }
 });
 
-// ── Auto-sélection code taille selon dimensions ──
-function autoSelectTaille() {
-  const fv = $('sel-format').value;
-  let l = 0, h = 0;
-  if (fv === 'custom') {
-    l = parseInt($('inp-larg')?.value) || 0;
-    h = parseInt($('inp-haut')?.value) || 0;
-  } else if (fv && fv !== '' && fv !== 'ronde50') {
-    const parts = fv.split('x');
-    if (parts.length === 2) { l = parseInt(parts[0]); h = parseInt(parts[1]); }
+// ── Dimensions favoris + taille automatique ────────────────────
+
+function construireFavoris() {
+  var cont = $('dims-favoris');
+  if (!cont) return;
+  cont.innerHTML = '';
+  var seen = new Set(), favoris = [];
+  toiles.forEach(function(t) {
+    var d = t.dimensions;
+    if (!d || !d.largeur || !d.hauteur || d.type === 'ronde') return;
+    var key = d.largeur + 'x' + d.hauteur;
+    if (!seen.has(key)) { seen.add(key); favoris.push({ l: d.largeur, h: d.hauteur, taille: t.taille || '' }); }
+  });
+  favoris.sort(function(a, b) { return (b.l * b.h) - (a.l * a.h); });
+  if (!favoris.length) { cont.style.display = 'none'; return; }
+  cont.style.display = 'flex';
+  favoris.forEach(function(f) {
+    var chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'dim-chip';
+    chip.textContent = f.l + '\u00d7' + f.h;
+    chip.dataset.l = f.l; chip.dataset.h = f.h; chip.dataset.taille = f.taille;
+    chip.addEventListener('click', function() {
+      $('inp-larg').value = f.l; $('inp-haut').value = f.h;
+      $('sel-format').value = '';
+      synchroChips(f.l, f.h);
+      afficherTailleAuto(f.taille || autoComputeTaille(f.l, f.h));
+    });
+    cont.appendChild(chip);
+  });
+}
+
+function synchroChips(l, h) {
+  document.querySelectorAll('#dims-favoris .dim-chip').forEach(function(c) {
+    c.classList.toggle('sel', parseInt(c.dataset.l) === l && parseInt(c.dataset.h) === h);
+  });
+}
+
+function autoComputeTaille(l, h) {
+  if (!l || !h) return '';
+  for (var i = 0; i < toiles.length; i++) {
+    var t = toiles[i];
+    if (t.taille && t.dimensions && t.dimensions.largeur === l && t.dimensions.hauteur === h) return t.taille;
   }
-  if (!l || !h) return;
-  const s = new Set([l, h]);
-  const f = (a, b) => s.has(a) && s.has(b);
-  let code = null;
-  if (f(40,30)) code = 'XXS';
-  else if (f(40,50)||f(50,40)) code = 'XS';
-  else if (f(70,50)||f(75,55)||f(55,75)) code = 'M';
-  else if (f(80,60)||f(60,80)||f(80,45)) code = 'XL';
-  else if (f(115,75)||f(100,75)) code = 'XXL';
-  else if (f(100,40)) code = 'E';
-  if (code && $('sel-taille').querySelector('option[value="'+code+'"]')) {
-    $('sel-taille').value = code;
+  var surface = l * h, best = null, bestDelta = Infinity;
+  toiles.forEach(function(t) {
+    if (!t.taille || !t.dimensions || !t.dimensions.largeur || !t.dimensions.hauteur) return;
+    var delta = Math.abs(t.dimensions.largeur * t.dimensions.hauteur - surface);
+    if (delta < bestDelta) { bestDelta = delta; best = t.taille; }
+  });
+  if (best) return best;
+  var s = new Set([l, h]);
+  var f = function(a, b) { return s.has(a) && s.has(b); };
+  if (f(40,30)) return 'XXS';
+  if (f(40,50)||f(50,40)) return 'XS';
+  if (f(70,50)||f(75,55)||f(55,75)||f(60,50)) return 'M';
+  if (f(80,60)||f(60,80)||f(80,45)) return 'XL';
+  if (f(115,75)||f(100,75)) return 'XXL';
+  if (f(100,40)) return 'E';
+  return '';
+}
+
+function afficherTailleAuto(code) {
+  var badge = $('taille-auto-badge');
+  if (!badge) return;
+  remplirSelectTaille();
+  if (code) {
+    var tObj = tailles.find(function(x) { return x.code === code; });
+    badge.textContent = code + (tObj ? ' \u00b7 ' + tObj.label : '');
+    badge.className = 'taille-auto-badge';
+    if ($('sel-taille').querySelector('option[value="' + code + '"]')) {
+      $('sel-taille').value = code;
+    } else {
+      $('sel-taille').value = '';
+      $('taille-manual-wrap').style.display = '';
+    }
+  } else {
+    badge.textContent = '\u2014';
+    badge.className = 'taille-auto-badge vide';
+    $('sel-taille').value = '';
   }
 }
-// Écoute les changements de format/dimensions
-document.addEventListener('change', e => {
-  if (e.target.id === 'sel-format' || e.target.id === 'inp-larg' || e.target.id === 'inp-haut') {
-    autoSelectTaille();
+
+['inp-larg', 'inp-haut'].forEach(function(id) {
+  var el = $(id); if (!el) return;
+  el.addEventListener('input', function() {
+    var l = parseInt($('inp-larg').value) || 0;
+    var h = parseInt($('inp-haut').value) || 0;
+    synchroChips(l, h);
+    if (l && h) afficherTailleAuto(autoComputeTaille(l, h));
+    $('sel-format').value = '';
+  });
+});
+
+$('sel-format').addEventListener('change', function() {
+  var fv = this.value;
+  if (!fv) return;
+  if (fv === 'ronde50') {
+    $('inp-larg').value = ''; $('inp-haut').value = '';
+    synchroChips(0, 0); afficherTailleAuto(''); return;
+  }
+  var parts = fv.split('x');
+  if (parts.length === 2) {
+    var l = parseInt(parts[0]), h = parseInt(parts[1]);
+    $('inp-larg').value = l; $('inp-haut').value = h;
+    synchroChips(l, h);
+    afficherTailleAuto(autoComputeTaille(l, h));
   }
 });
 
-$('sel-format').addEventListener('change', () => {
-  $('dims-custom').classList.toggle('hidden', $('sel-format').value !== 'custom');
+$('btn-toggle-chassis').addEventListener('click', function() {
+  var open = $('dims-chassis').style.display !== 'none';
+  $('dims-chassis').style.display = open ? 'none' : '';
+  this.textContent = (open ? '\u25b8' : '\u25be') + ' Formats ch\u00e2ssis fran\u00e7ais';
+});
+
+$('btn-taille-modifier').addEventListener('click', function() {
+  var wrap = $('taille-manual-wrap');
+  var open = wrap.style.display !== 'none';
+  wrap.style.display = open ? 'none' : '';
+  this.textContent = open ? 'Modifier \u25be' : 'R\u00e9duire \u25b4';
 });
 
 // Swipe bas pour fermer modal toile

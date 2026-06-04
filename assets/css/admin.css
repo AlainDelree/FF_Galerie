@@ -605,3 +605,22 @@ textarea.champ{resize:vertical;min-height:65px;}
     transform: translateX(-50%);
   }
 }
+
+/* ── Chips dimensions favorites ── */
+.dim-chip{padding:.2rem .55rem;border-radius:20px;font-size:11px;
+  border:0.5px solid var(--brd);background:var(--bg3);color:var(--muted);
+  cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;}
+.dim-chip:hover{border-color:var(--gold);color:var(--gold);}
+.dim-chip.sel{border-color:var(--gold);background:rgba(200,160,80,.12);color:var(--gold);font-weight:600;}
+/* Badge taille auto */
+.taille-auto-badge{font-size:12px;font-weight:700;padding:.22rem .65rem;border-radius:4px;
+  background:rgba(200,160,80,.12);color:var(--gold);letter-spacing:.04em;display:inline-block;}
+.taille-auto-badge.vide{background:var(--bg3);color:var(--muted);font-weight:400;}
+/* Toggle châssis */
+.chassis-toggle{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;
+  padding:.2rem 0;text-align:left;transition:color .15s;display:block;}
+.chassis-toggle:hover{color:var(--gold);}
+/* Lien Modifier taille */
+.taille-modifier-btn{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;
+  padding:.1rem .3rem;transition:color .15s;text-decoration:underline dotted;}
+.taille-modifier-btn:hover{color:var(--gold);}

@@ -488,34 +488,51 @@
       </div>
       <div class="grp">
         <label class="lbl">Dimensions</label>
-        <select class="champ" id="sel-format">
-          <option value="">Choisir un format standard…</option>
-          <option value="35x27">F5 — 35×27 cm</option>
-          <option value="55x46">F10 — 55×46 cm</option>
-          <option value="65x54">F15 — 65×54 cm</option>
-          <option value="73x60">F20 — 73×60 cm</option>
-          <option value="81x65">F25 — 81×65 cm</option>
-          <option value="92x73">F30 — 92×73 cm</option>
-          <option value="73x50">P20 — 73×50 cm</option>
-          <option value="92x60">P30 — 92×60 cm</option>
-          <option value="50x50">Carré 50 — 50×50 cm</option>
-          <option value="60x60">Carré 60 — 60×60 cm</option>
-          <option value="ronde50">Ronde ⌀50 cm</option>
-          <option value="custom">Personnalisé…</option>
-        </select>
-        <div class="grp-row hidden" id="dims-custom">
-          <div class="grp"><label class="lbl">Largeur (cm)</label><input class="champ" type="number" id="inp-larg" min="1" max="500"></div>
-          <div class="grp"><label class="lbl">Hauteur (cm)</label><input class="champ" type="number" id="inp-haut" min="1" max="500"></div>
+        <!-- Favoris : dimensions déjà utilisées par l'artiste -->
+        <div id="dims-favoris" style="display:none;flex-wrap:wrap;gap:4px;margin-bottom:.4rem;"></div>
+        <!-- Champs L × H — source de vérité unique -->
+        <div class="grp-row" id="dims-lh">
+          <div class="grp"><label class="lbl">Largeur cm</label><input class="champ" type="number" id="inp-larg" min="1" max="500" placeholder="ex: 80"></div>
+          <div class="grp"><label class="lbl">Hauteur cm</label><input class="champ" type="number" id="inp-haut" min="1" max="500" placeholder="ex: 60"></div>
+        </div>
+        <!-- Formats châssis français (replié par défaut) -->
+        <button type="button" id="btn-toggle-chassis" class="chassis-toggle">▸ Formats châssis français</button>
+        <div id="dims-chassis" style="display:none;margin-top:.3rem;">
+          <select class="champ" id="sel-format">
+            <option value="">Choisir…</option>
+            <option value="35x27">F5 — 35×27 cm</option>
+            <option value="55x46">F10 — 55×46 cm</option>
+            <option value="65x54">F15 — 65×54 cm</option>
+            <option value="73x60">F20 — 73×60 cm</option>
+            <option value="81x65">F25 — 81×65 cm</option>
+            <option value="92x73">F30 — 92×73 cm</option>
+            <option value="73x50">P20 — 73×50 cm</option>
+            <option value="92x60">P30 — 92×60 cm</option>
+            <option value="50x50">Carré 50 — 50×50 cm</option>
+            <option value="60x60">Carré 60 — 60×60 cm</option>
+            <option value="ronde50">Ronde ⌀50 cm</option>
+          </select>
         </div>
       </div>
 
       <div class="grp">
-        <label class="lbl">Code taille</label>
-        <div style="display:flex;gap:.5rem;align-items:center;">
-          <select class="champ" id="sel-taille" style="flex:1;">
-            <option value="">— Choisir —</option>
-          </select>
-          <button type="button" id="btn-new-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;" title="Créer un nouveau code">＋</button>
+        <label class="lbl" style="display:flex;align-items:center;justify-content:space-between;">
+          Code taille
+          <button id="btn-guide-tailles" title="Guide des tailles" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;">?</button>
+        </label>
+        <!-- Badge auto (affiché par défaut) -->
+        <div id="taille-auto-wrap" style="display:flex;align-items:center;gap:.5rem;">
+          <span id="taille-auto-badge" class="taille-auto-badge vide">—</span>
+          <button type="button" id="btn-taille-modifier" class="taille-modifier-btn">Modifier ▾</button>
+        </div>
+        <!-- Select manuel (caché par défaut) -->
+        <div id="taille-manual-wrap" style="display:none;margin-top:.35rem;">
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <select class="champ" id="sel-taille" style="flex:1;">
+              <option value="">— Choisir —</option>
+            </select>
+            <button type="button" id="btn-new-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;" title="Créer un nouveau code">＋</button>
+          </div>
         </div>
       </div>
       <div class="grp" id="new-taille-wrap" style="display:none;">
