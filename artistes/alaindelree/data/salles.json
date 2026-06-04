@@ -14,7 +14,7 @@
       "positions": [
         {
           "id": 1,
-          "col": 4,
+          "col": 1,
           "row": 1,
           "w": 5,
           "h": 8
@@ -41,6 +41,17 @@
           "h": 8
         }
       ]
+    },
+    {
+      "id": 3,
+      "nom": "Salle C",
+      "theme": "",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
     }
   ]
 }
