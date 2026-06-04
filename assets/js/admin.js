@@ -1404,7 +1404,9 @@ function traiterPhoto(fichier) {
     const img = new Image(), url = URL.createObjectURL(fichier);
     img.onload = () => {
       let w = img.width, h = img.height;
-      if (w > MAX_PX) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
+      // Redimensionne si l'une ou l'autre dimension dépasse MAX_PX (gère les portraits)
+      const ratio = Math.min(MAX_PX / w, MAX_PX / h, 1);
+      if (ratio < 1) { w = Math.round(w * ratio); h = Math.round(h * ratio); }
       const c = document.createElement('canvas'); c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);

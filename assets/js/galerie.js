@@ -644,18 +644,48 @@ const GALERIE_CFG = {
       }
 
       // ── Préchargement de toutes les images en arrière-plan ──
-      // Déclenché 1s après l'affichage initial pour ne pas concurrencer
-      // la première salle. Le navigateur met en cache → navigation instantanée.
-      setTimeout(function() {
-        Object.values(toileMap).forEach(function(t) {
-          if (!t.photo) return;
-          var src = /^https?:\/\//.test(t.photo)
-            ? t.photo
-            : GALERIE_CFG.assetsBase + t.photo;
-          var img = new Image();
-          img.src = src;
+      // ── Préchargement intelligent — salle courante sans délai, reste en parallèle ──
+      // La salle courante est déterminée par le hash (#salle-ID) ou la première salle.
+      // Les autres salles sont chargées par ordre de proximité après 600ms.
+      (function() {
+        var salleActuelleIdx = 0;
+        var mHash = window.location.hash.match(/^#salle-(\d+)$/);
+        if (mHash) {
+          var hId = parseInt(mHash[1]);
+          var fi = salles.findIndex(function(s) { return s.id === hId; });
+          if (fi >= 0) salleActuelleIdx = fi;
+        }
+
+        // Ordre de chargement : salle courante en tête, puis voisines par proximité
+        var vus = new Set();
+        var photosPrio = [];   // salle courante → immédiat
+        var photosReste = [];  // autres salles → après 600ms
+
+        var idxOrdonnes = salles.map(function(_, i) { return i; }).sort(function(a, b) {
+          return Math.abs(a - salleActuelleIdx) - Math.abs(b - salleActuelleIdx);
         });
-      }, 1000);
+
+        idxOrdonnes.forEach(function(si) {
+          var salle = salles[si];
+          (salle.positions || []).forEach(function(p) {
+            if (!p.toile || vus.has(p.toile)) return;
+            vus.add(p.toile);
+            var t = toileMap[p.toile];
+            if (!t || !t.photo) return;
+            var src = /^https?:\/\//.test(t.photo) ? t.photo : GALERIE_CFG.assetsBase + t.photo;
+            if (si === salleActuelleIdx) photosPrio.push(src);
+            else photosReste.push(src);
+          });
+        });
+
+        // Salle courante : lancement immédiat (toutes en parallèle)
+        photosPrio.forEach(function(src) { var img = new Image(); img.src = src; });
+
+        // Autres salles : 600ms après pour ne pas concurrencer la salle visible
+        setTimeout(function() {
+          photosReste.forEach(function(src) { var img = new Image(); img.src = src; });
+        }, 600);
+      })();
     })
     .catch(() => {
       document.querySelectorAll('.mur').forEach(mur => {
