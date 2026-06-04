@@ -365,7 +365,15 @@ const GALERIE_CFG = {
 
       const wrap = document.getElementById('modalImageWrap');
       if (toile.photo) {
-        wrap.innerHTML = '<img src="' + ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo) + '" alt="' + (toile.titre || 'Toile') + '">';
+        const imgModal = document.createElement('img');
+        imgModal.src = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
+        imgModal.alt = toile.titre || 'Toile';
+        imgModal.onerror = function() {
+          const drap = creerDrapBlanc(); drap.style.minHeight = '260px';
+          wrap.replaceChild(drap, this);
+        };
+        wrap.innerHTML = '';
+        wrap.appendChild(imgModal);
       } else {
         wrap.innerHTML = '<div class="modal-placeholder-grand">' + toile.id + '</div>';
       }
@@ -392,6 +400,55 @@ const GALERIE_CFG = {
       swipeStartY = null;
     }, { passive:true });
 
+    // ── Drap blanc — affiché quand une image est introuvable ────────
+    function creerDrapBlanc(largeur, hauteur) {
+      var el = document.createElement('div');
+      Object.assign(el.style, {
+        width:          largeur ? largeur + 'px' : '100%',
+        height:         hauteur ? hauteur + 'px' : '100%',
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        justifyContent: 'center',
+        overflow:       'hidden',
+        position:       'relative',
+        // Tissu crème avec plis subtils
+        background:
+          'repeating-linear-gradient(172deg,rgba(0,0,0,.025) 0,rgba(0,0,0,.025) 1px,transparent 0,transparent 32px),' +
+          'repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0,rgba(255,255,255,.45) 1px,transparent 0,transparent 24px),' +
+          'linear-gradient(165deg,#f8f4ec 0%,#ede8de 40%,#f2ede3 65%,#e8e1d5 100%)'
+      });
+      // Ombre haut : suggère que le tissu est accroché/plié sur le bord du cadre
+      var ombre = document.createElement('div');
+      Object.assign(ombre.style, {
+        position: 'absolute', top: '0', left: '0', right: '0',
+        height: '18px',
+        background: 'linear-gradient(to bottom,rgba(0,0,0,.12),transparent)',
+        pointerEvents: 'none'
+      });
+      el.appendChild(ombre);
+      // Étiquette style cartel de musée
+      var etiq = document.createElement('div');
+      Object.assign(etiq.style, {
+        background:    'rgba(255,255,255,.88)',
+        border:        '0.5px solid rgba(0,0,0,.18)',
+        borderRadius:  '2px',
+        padding:       '4px 10px',
+        fontSize:      '9px',
+        fontFamily:    "'Playfair Display',Georgia,serif",
+        fontStyle:     'italic',
+        color:         '#5a4f42',
+        textAlign:     'center',
+        letterSpacing: '.06em',
+        boxShadow:     '0 1px 4px rgba(0,0,0,.12)',
+        whiteSpace:    'nowrap',
+        maxWidth:      '85%'
+      });
+      etiq.textContent = 'En cours de nettoyage';
+      el.appendChild(etiq);
+      return el;
+    }
+
     function creerTableau(toile, H) {
       H = H || 200;
       const dim = toile.dimensions;
@@ -414,6 +471,7 @@ const GALERIE_CFG = {
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
         img.style.display    = 'block';
+        img.onerror = function() { cadre.replaceChild(creerDrapBlanc(W, H), this); };
         cadre.appendChild(img);
       } else {
         const ph = document.createElement('div');
@@ -581,6 +639,10 @@ const GALERIE_CFG = {
             if (t.photo) {
               const img = document.createElement('img');
               img.src = ((/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo); img.alt = t.titre || ''; img.loading = 'lazy';
+              img.onerror = function() {
+                const drap = creerDrapBlanc(); drap.style.position = 'absolute'; drap.style.inset = '0';
+                cadre.replaceChild(drap, this);
+              };
               cadre.appendChild(img);
             } else {
               cadre.style.background = 'linear-gradient(135deg,rgba(255,255,255,.04),rgba(0,0,0,.1))';
