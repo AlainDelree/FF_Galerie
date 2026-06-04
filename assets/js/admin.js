@@ -2138,12 +2138,43 @@ function ouvrirGalerieArtiste(id) {
 
 async function supprimerArtiste(idx) {
   const a = artistesData[idx];
-  if (!confirm("Supprimer " + a.nom + " de la liste ?\n\nSes fichiers restent sur GitHub (dossier artistes/" + a.id + "/). Seule l'entrée dans artistes.json est supprimée.")) return;
+  if (!confirm("Supprimer définitivement " + a.nom + " ?\n\nTous ses fichiers seront supprimés de GitHub.")) return;
   artistesData.splice(idx, 1);
   try {
-    await sauvegarderArtistesJSON("Suppression artiste : " + a.nom);
+    /* Fichiers à supprimer */
+    const base = "artistes/" + a.id + "/";
+    const fichiersSup = [
+      base + "index.html", base + "galerie.html",
+      base + "infos.html", base + "contact.html", base + "admin.html",
+      base + "data/toiles.json", base + "data/salles.json",
+      base + "data/infos.json",  base + "data/contact.json"
+    ].map(path => ({ path, sha: null, mode: "100644", type: "blob" }));
+
+    /* Commit unique : suppression fichiers + MAJ artistes.json */
+    const ref        = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
+    const commitSha  = ref.object.sha;
+    const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
+
+    /* Ajouter artistes.json mis à jour au même tree */
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(artistesData, null, 2))));
+    const blob = await apiGH(`/repos/${REPO}/git/blobs`, "POST", { content: b64, encoding: "base64" });
+    const tree = await apiGH(`/repos/${REPO}/git/trees`, "POST", {
+      base_tree: baseCommit.tree.sha,
+      tree: [...fichiersSup, { path: "data/artistes.json", mode: "100644", type: "blob", sha: blob.sha }]
+    });
+    const commit = await apiGH(`/repos/${REPO}/git/commits`, "POST", {
+      message: "Suppression artiste : " + a.nom,
+      tree: tree.sha, parents: [commitSha]
+    });
+    try {
+      await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, "PATCH", { sha: commit.sha, force: false });
+    } catch(e) {
+      if (e.message && (e.message.includes("fast forward") || e.message.includes("Update is not"))) {
+        await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, "PATCH", { sha: commit.sha, force: true });
+      } else throw e;
+    }
+
     afficherArtistes();
-    /* Fermer le formulaire si on vient de supprimer l'artiste en cours d'édition */
     if (artisteEditIdx !== null && (artisteEditIdx === idx || artisteEditIdx >= artistesData.length)) {
       artisteEditIdx = null;
       document.getElementById("form-artiste-wrap").style.display = "none";
