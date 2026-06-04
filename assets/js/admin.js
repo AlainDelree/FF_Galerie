@@ -90,6 +90,9 @@ async function rapporterErreur(message, priorite, details) {
       details ? '**Détails :**\n```\n' + String(details).slice(0, 1200) + '\n```' : ''
     ].filter(Boolean).join('\n');
 
+    /* Envoi email via EmailJS */
+    try { await envoyerEmailJS(titre, priorite, message, details || ''); } catch(e) { /* silencieux */ }
+
     var issueResp = await fetch('https://api.github.com/repos/' + REPO + '/issues', {
       method: 'POST',
       headers: {
@@ -283,6 +286,7 @@ function apresLogin() {
   afficherEcran('ecran-principal');
   chargerTout();
   initTexturesUI();
+  chargerConfigEmailJS();
 }
 
 function initTexturesUI() {
@@ -3003,4 +3007,68 @@ function toggleModeSupprTexture() {
   });
   var btn = document.getElementById('btn-tex-del-toggle');
   if (btn) btn.style.color = _texDelMode ? '#c0392b' : '';
+}
+
+/* ── Configuration EmailJS ── */
+function chargerConfigEmailJS() {
+  var cfg = JSON.parse(localStorage.getItem('ff_emailjs') || 'null');
+  if (!cfg) return;
+  var s = document.getElementById('ejs-service');
+  var t = document.getElementById('ejs-template');
+  var p = document.getElementById('ejs-pubkey');
+  if (s) s.value = cfg.serviceId  || '';
+  if (t) t.value = cfg.templateId || '';
+  if (p) p.value = cfg.publicKey  || '';
+}
+
+function sauverEmailJS() {
+  var cfg = {
+    serviceId:  (document.getElementById('ejs-service')  || {}).value || '',
+    templateId: (document.getElementById('ejs-template') || {}).value || '',
+    publicKey:  (document.getElementById('ejs-pubkey')   || {}).value || ''
+  };
+  localStorage.setItem('ff_emailjs', JSON.stringify(cfg));
+  var st = document.getElementById('ejs-status');
+  if (st) { st.textContent = '✓ Sauvegardé'; setTimeout(function(){ st.textContent = ''; }, 2000); }
+}
+
+async function testerEmailJS() {
+  var st = document.getElementById('ejs-status');
+  if (st) st.textContent = 'Envoi en cours…';
+  try {
+    await envoyerEmailJS(
+      'Bug : [TEST] Email FF_Galerie',
+      'bug',
+      'Test manuel depuis Admin > Backup',
+      ''
+    );
+    if (st) st.textContent = '✓ Email envoyé — vérifie ta boîte';
+  } catch(e) {
+    if (st) st.textContent = '✗ Erreur : ' + e.message;
+  }
+}
+
+async function envoyerEmailJS(titre, priorite, message, details) {
+  var cfg = JSON.parse(localStorage.getItem('ff_emailjs') || 'null');
+  if (!cfg || !cfg.publicKey || !cfg.serviceId || !cfg.templateId) return;
+  var PREFIX = { bug: 'Bug', bloquant: 'Bloquant', effondrement: 'Effondrement' };
+  var resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service_id:  cfg.serviceId,
+      template_id: cfg.templateId,
+      user_id:     cfg.publicKey,
+      template_params: {
+        subject:  titre,
+        priorite: PREFIX[priorite] || 'Bug',
+        message:  message.slice(0, 300),
+        artiste:  ADMIN_CFG.nom,
+        url:      location.href,
+        date:     new Date().toLocaleString('fr-BE'),
+        details:  details ? String(details).slice(0, 500) : ''
+      }
+    })
+  });
+  if (!resp.ok) throw new Error('EmailJS ' + resp.status);
 }
