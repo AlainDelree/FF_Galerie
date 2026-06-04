@@ -2735,3 +2735,31 @@ const TPL_ADMIN = `<!DOCTYPE html>
 </head>
 <body></body>
 </html>`;
+
+/* ── Test du système de rapport d'erreurs ── */
+async function testerRapports() {
+  const res = document.getElementById('test-rapport-resultat');
+  const btn = document.getElementById('btn-test-rapport');
+  if (!token) { res.textContent = "⚠ Connectez-vous d'abord (token requis)."; return; }
+  btn.disabled = true;
+  res.textContent = 'Envoi de 4 issues test…';
+
+  /* Vider le cache session pour ce test */
+  const cleTest = 'Bug : [TEST] Rapport automatique — issue de test'.slice(0, 80);
+  delete _rapportCache[cleTest];
+
+  let crees = 0, bloques = 0;
+  for (let i = 1; i <= 4; i++) {
+    res.textContent = 'Envoi ' + i + '/4…';
+    const avantNb = crees;
+    /* On surveille si une issue est créée en comptant les appels réseau réussis */
+    const origFetch = window._testFetchCount = (window._testFetchCount || 0);
+    await rapporterErreur('[TEST] Rapport automatique — issue de test', 'bug', 'Envoi ' + i + '/4 — test du système anti-spam (3 max par 24h)');
+    /* Petit délai pour ne pas saturer l'API */
+    await new Promise(r => setTimeout(r, 800));
+  }
+  res.textContent = '✓ Terminé — vérifie tes emails et github.com/' + REPO + '/issues';
+  btn.disabled = false;
+}
+
+document.getElementById('btn-test-rapport').addEventListener('click', testerRapports);
