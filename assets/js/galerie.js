@@ -401,35 +401,73 @@ const GALERIE_CFG = {
     }, { passive:true });
 
     // ── Drap blanc — affiché quand une image est introuvable ────────
+    var _drapCpt = 0;
     function creerDrapBlanc(largeur, hauteur) {
+      var id = ++_drapCpt;
+      var gf = 'dgf' + id, gv = 'dgv' + id; // IDs uniques par instance
       var el = document.createElement('div');
       Object.assign(el.style, {
         width:          largeur ? largeur + 'px' : '100%',
         height:         hauteur ? hauteur + 'px' : '100%',
+        position:       'relative',
+        overflow:       'hidden',
         display:        'flex',
-        flexDirection:  'column',
         alignItems:     'center',
         justifyContent: 'center',
-        overflow:       'hidden',
-        position:       'relative',
-        // Tissu crème avec plis subtils
-        background:
-          'repeating-linear-gradient(172deg,rgba(0,0,0,.025) 0,rgba(0,0,0,.025) 1px,transparent 0,transparent 32px),' +
-          'repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0,rgba(255,255,255,.45) 1px,transparent 0,transparent 24px),' +
-          'linear-gradient(165deg,#f8f4ec 0%,#ede8de 40%,#f2ede3 65%,#e8e1d5 100%)'
+        flexShrink:     '0'
       });
-      // Ombre haut : suggère que le tissu est accroché/plié sur le bord du cadre
-      var ombre = document.createElement('div');
-      Object.assign(ombre.style, {
-        position: 'absolute', top: '0', left: '0', right: '0',
-        height: '18px',
-        background: 'linear-gradient(to bottom,rgba(0,0,0,.12),transparent)',
-        pointerEvents: 'none'
-      });
-      el.appendChild(ombre);
-      // Étiquette style cartel de musée
+      // SVG drapé : gradient horizontal (crêtes/vallées de plis) +
+      //             lignes de pli en courbes de Bézier +
+      //             fronces en haut (tissu sur le bord du cadre)
+      el.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"' +
+        ' viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice"' +
+        ' style="position:absolute;inset:0;display:block;">' +
+        '<defs>' +
+        '<linearGradient id="' + gf + '" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0"   stop-color="#a8a49c"/>' +
+        '<stop offset=".04" stop-color="#bfbbb3"/>' +
+        '<stop offset=".11" stop-color="#f3efe6"/>' +
+        '<stop offset=".17" stop-color="#e6e1d7"/>' +
+        '<stop offset=".24" stop-color="#c8c4bc"/>' +
+        '<stop offset=".32" stop-color="#d8d4ca"/>' +
+        '<stop offset=".40" stop-color="#f1ece4"/>' +
+        '<stop offset=".48" stop-color="#e4dfd5"/>' +
+        '<stop offset=".55" stop-color="#c6c2ba"/>' +
+        '<stop offset=".63" stop-color="#d6d2c8"/>' +
+        '<stop offset=".71" stop-color="#f0ebe3"/>' +
+        '<stop offset=".79" stop-color="#e2ddd3"/>' +
+        '<stop offset=".87" stop-color="#c8c4bc"/>' +
+        '<stop offset="1"   stop-color="#a4a09a"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="' + gv + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0"   stop-color="rgba(0,0,0,.22)"/>' +
+        '<stop offset=".09" stop-color="rgba(0,0,0,.06)"/>' +
+        '<stop offset=".68" stop-color="rgba(0,0,0,0)"/>' +
+        '<stop offset="1"   stop-color="rgba(0,0,0,.10)"/>' +
+        '</linearGradient>' +
+        '</defs>' +
+        '<rect width="200" height="300" fill="url(#' + gf + ')"/>' +
+        '<rect width="200" height="300" fill="url(#' + gv + ')"/>' +
+        // Lignes de pli — courbes de Bézier légèrement déviées (tissu naturel)
+        '<path d="M22,0 C20,75 24,155 21,235 C19,268 22,288 20,300" stroke="rgba(0,0,0,.10)" stroke-width="1.5" fill="none"/>' +
+        '<path d="M44,0 C46,65 43,148 45,228 C47,262 44,284 46,300" stroke="rgba(255,255,255,.42)" stroke-width="2" fill="none"/>' +
+        '<path d="M80,0 C78,85 82,165 80,248 C78,272 81,289 79,300" stroke="rgba(0,0,0,.09)" stroke-width="1.5" fill="none"/>' +
+        '<path d="M102,0 C104,78 101,158 103,240 C105,268 102,286 104,300" stroke="rgba(255,255,255,.40)" stroke-width="2" fill="none"/>' +
+        '<path d="M136,0 C134,72 138,152 136,234 C134,265 137,284 135,300" stroke="rgba(0,0,0,.09)" stroke-width="1.5" fill="none"/>' +
+        '<path d="M160,0 C162,82 159,162 161,244 C163,270 160,288 162,300" stroke="rgba(255,255,255,.36)" stroke-width="1.5" fill="none"/>' +
+        // Fronces du bord supérieur : tissu plié sur le cadre
+        '<path d="M0,0 L200,0 L200,16' +
+        ' C188,12 176,18 164,13 C152,18 140,11 128,15' +
+        ' C116,10 104,17 92,12 C80,17 68,10 56,14' +
+        ' C44,9 32,16 20,12 C10,16 0,12 0,12 Z"' +
+        ' fill="rgba(0,0,0,.13)"/>' +
+        '</svg>';
+      // Étiquette cartel — par-dessus le SVG
       var etiq = document.createElement('div');
       Object.assign(etiq.style, {
+        position:      'relative',
+        zIndex:        '1',
         background:    'rgba(255,255,255,.88)',
         border:        '0.5px solid rgba(0,0,0,.18)',
         borderRadius:  '2px',
