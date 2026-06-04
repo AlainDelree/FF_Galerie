@@ -2039,7 +2039,13 @@ async function sauverFormulaireEvent() {
   infosModifiees = true;
   afficherEvents();
   fermerFormulaireEvent();
-  await sauvegarderInfos(); /* sauvegarde directement sur GitHub */
+  /* Feedback visuel pendant la sauvegarde automatique */
+  const btnSauver = document.getElementById('btn-sauver-infos');
+  const texteOriginal = btnSauver ? btnSauver.textContent : '';
+  if (btnSauver) { btnSauver.textContent = '💾 Sauvegarde en cours…'; btnSauver.disabled = true; }
+  await sauvegarderInfos();
+  if (btnSauver) { btnSauver.textContent = '✓ Sauvegardé'; btnSauver.disabled = false; }
+  setTimeout(() => { if (btnSauver) btnSauver.textContent = texteOriginal; }, 2500);
 }
 
 async function supprimerEvent(idx) {
@@ -2047,7 +2053,12 @@ async function supprimerEvent(idx) {
   infosData.evenements.splice(idx, 1);
   infosModifiees = true;
   afficherEvents();
-  await sauvegarderInfos(); /* sauvegarde directement sur GitHub */
+  const btnSauverS = document.getElementById('btn-sauver-infos');
+  const texteOriginalS = btnSauverS ? btnSauverS.textContent : '';
+  if (btnSauverS) { btnSauverS.textContent = '💾 Sauvegarde en cours…'; btnSauverS.disabled = true; }
+  await sauvegarderInfos();
+  if (btnSauverS) { btnSauverS.textContent = '✓ Sauvegardé'; btnSauverS.disabled = false; }
+  setTimeout(() => { if (btnSauverS) btnSauverS.textContent = texteOriginalS; }, 2500);
 }
 
 async function sauvegarderInfos() {
