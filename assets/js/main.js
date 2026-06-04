@@ -48,7 +48,7 @@ function creerAudio() {
     localStorage.setItem(MUSIC_KEY, 'off');
     majIconeMusique();
     audio = null; // permet de réessayer
-    alert('Musique introuvable : ' + MUSIC_SRC + '\nVérifiez le nom du fichier et son emplacement.');
+    /* pas d'alerte — galerie sans musique, comportement normal */
   });
 }
 

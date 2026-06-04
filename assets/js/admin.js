@@ -2142,6 +2142,8 @@ async function supprimerEvent(idx) {
   infosData.evenements.splice(idx, 1);
   infosModifiees = true;
   afficherEvents();
+  /* Fermer le formulaire si ouvert */
+  fermerFormulaireEvent();
   const btnSauverS = document.getElementById('btn-sauver-infos');
   const texteOriginalS = btnSauverS ? btnSauverS.textContent : '';
   if (btnSauverS) { btnSauverS.textContent = '💾 Sauvegarde en cours…'; btnSauverS.disabled = true; }
