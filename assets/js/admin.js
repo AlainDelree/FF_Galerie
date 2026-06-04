@@ -269,15 +269,6 @@ function apresLogin() {
 }
 
 function initTexturesUI() {
-  /* Brancher le file input sur l'overlay de compression */
-  const inpTex = $('inp-texture-custom');
-  if (inpTex && !inpTex._texBound) {
-    inpTex._texBound = true;
-    inpTex.addEventListener('change', function(e) {
-      ouvrirOverlayTexture(e.target.files[0]);
-      e.target.value = '';
-    });
-  }
   /* Charger les textures GitHub (partagées + privées) */
   chargerTexturesGitHub();
 }
@@ -2029,7 +2020,7 @@ initTailleForm();
 // ═══════════════════════════════════════════════
 if (sessionStorage.getItem(K.auth) === '1') {
   token = localStorage.getItem(K.token) || '';
-  if (token) { afficherEcran('ecran-principal'); chargerTout(); }
+  if (token) { afficherEcran('ecran-principal'); chargerTout(); initTexturesUI(); }
   else afficherEcran('ecran-token');
 } else {
   if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
@@ -2909,3 +2900,17 @@ async function supprimerTextureGitHub(chemin) {
     toast('✓ Texture supprimée');
   } catch(e) { alert('Erreur : ' + e.message); }
 }
+
+/* ── Listener texture-custom : niveau module, garanti après chargement DOM ── */
+(function() {
+  var _inpTex = document.getElementById('inp-texture-custom');
+  if (_inpTex) {
+    _inpTex.addEventListener('change', function(e) {
+      if (typeof ouvrirOverlayTexture === 'function') {
+        ouvrirOverlayTexture(e.target.files[0]);
+        e.target.value = '';
+      }
+    });
+  }
+  /* _texBound_module */
+})();
