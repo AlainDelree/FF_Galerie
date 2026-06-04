@@ -551,38 +551,45 @@ textarea.champ{resize:vertical;min-height:65px;}
    Uniquement pour adapter le layout desktop — mobile inchangé.
    ============================================================= */
 @media (min-width: 860px) {
-  body { font-size: 13px; }
-  input,select,textarea,button { font-size: 13px; }
+  body { font-size: 12px; }
+  input,select,textarea,button { font-size: 12px; }
 
   /* Header */
-  .adm-hdr  { padding: .38rem 1.1rem; }
-  .adm-logo { font-size: .65rem; }
-  .onglets  { top: 42px; }
-  .onglet   { font-size: .6rem; letter-spacing: .15em; padding: .5rem 1rem; }
+  .adm-hdr  { padding: .3rem .9rem; }
+  .adm-logo { font-size: .6rem; }
+  .onglets  { top: 38px; }
+  .onglet   { font-size: .58rem; letter-spacing: .14em; padding: .42rem .8rem; }
 
   /* Plan des salles */
-  .plan-section { padding: .32rem .9rem; }
-  .chip { min-width: 58px; padding: .22rem .5rem; }
-  .chip .cn { font-size: 10px; }
-  .chip .cb { font-size: 9px; }
+  .plan-section { padding: .25rem .7rem; }
+  .plan-actions { min-width: 110px; gap: .25rem; }
+  .plan-btn     { font-size: 10px; padding: .24rem .5rem; }
+  .chip { min-width: 52px; padding: .18rem .45rem; border-radius: 6px; }
+  .chip .cn { font-size: 9.5px; }
+  .chip .cb { font-size: 8.5px; }
 
   /* Barre contrôle mur */
-  .mur-ctrl    { padding: .3rem .75rem; gap: .4rem; }
-  .ctrl-btn    { font-size: 9.5px; }
-  .salle-badge { font-size: 11px; }
+  .mur-ctrl    { padding: .25rem .6rem; gap: .35rem; }
+  .ctrl-btn    { font-size: 9px; padding: .22rem .5rem; }
+  .salle-badge { font-size: 10px; padding: .15rem .6rem; }
+  .rename-inp  { font-size: 10px; width: 80px; }
 
   /* Colonne stock */
-  .stock-col     { width: 125px; }
-  .stock-hdr     { font-size: .52rem; }
-  .stock-item .simg { height: 58px; }
+  .stock-col        { width: 105px; }
+  .stock-hdr        { font-size: .5rem; padding: .3rem .4rem; }
+  .stock-item .simg { height: 50px; }
+  .stock-item .snom { font-size: 7px; }
+  .taille-badge     { font-size: 9.5px; padding: 1px 4px; }
+  .stock-leg        { padding: .25rem .4rem; }
+  .leg-li           { font-size: 7.5px; }
 
-  /* Zone mur : on cap la largeur → la hauteur suit via aspect-ratio */
-  .mur-zone { padding: .4rem .55rem; }
-  .mur-bg   { max-width: calc(56vh * 1.5); } /* ≈ 850px sur 1080p */
+  /* Zone mur : capé à 520px → hauteur ~347px, proportion conservée */
+  .mur-zone { padding: .3rem .45rem; gap: .3rem; }
+  .mur-bg   { max-width: 520px; }
 
   /* Panneaux couleurs + musique : centrés, width limité */
   .coul-panel {
-    left: 50%; right: auto; width: min(520px, 90vw);
+    left: 50%; right: auto; width: min(480px, 90vw);
     transform: translateX(-50%);
   }
 }
