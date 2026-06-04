@@ -7,5 +7,15 @@
     "repoPath": "artistes/daw/data/",
     "prefix": "daw",
     "draft": true
+  },
+  {
+    "id": "alaindelree",
+    "nom": "Alain Delree",
+    "logo": "AD",
+    "lien": "artistes/alaindelree/",
+    "repoPath": "artistes/alaindelree/data/",
+    "prefix": "alaindelree",
+    "draft": true,
+    "genre": "m"
   }
 ]
