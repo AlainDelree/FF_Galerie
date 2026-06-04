@@ -7,15 +7,5 @@
     "repoPath": "artistes/daw/data/",
     "prefix": "daw",
     "draft": true
-  },
-  {
-    "id": "supermanette",
-    "nom": "Super Manette",
-    "logo": "SM",
-    "lien": "artistes/supermanette/",
-    "repoPath": "artistes/supermanette/data/",
-    "prefix": "supermanette",
-    "draft": true,
-    "genre": "f"
   }
 ]
