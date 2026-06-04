@@ -1860,7 +1860,7 @@ $('coul-overlay').addEventListener('click', () => {
 });
 
 // ── Panneau Musique ──────────────────────────────────────────────
-$('btn-musique-toggle').addEventListener('click', () => {
+$('btn-musique-toggle')?.addEventListener('click', () => {
   const ouvert = $('musique-panel').classList.toggle('ouvert');
   $('musique-overlay').classList.toggle('ouvert', ouvert);
   $('btn-musique-toggle').classList.toggle('on', ouvert);
@@ -1871,18 +1871,18 @@ $('btn-musique-toggle').addEventListener('click', () => {
     chargerEtAfficherMusique();
   }
 });
-$('btn-close-musique').addEventListener('click', () => {
+$('btn-close-musique')?.addEventListener('click', () => {
   $('musique-panel').classList.remove('ouvert');
   $('musique-overlay').classList.remove('ouvert');
   $('btn-musique-toggle').classList.remove('on');
 });
-$('musique-overlay').addEventListener('click', () => {
+$('musique-overlay')?.addEventListener('click', () => {
   $('musique-panel').classList.remove('ouvert');
   $('musique-overlay').classList.remove('ouvert');
   $('btn-musique-toggle').classList.remove('on');
 });
 // Bouton Changer → déclenche directement le file picker
-$('btn-musique-changer').addEventListener('click', () => {
+$('btn-musique-changer')?.addEventListener('click', () => {
   $('inp-musique-upload').click();
 });
 // Plan repliable
@@ -2994,7 +2994,7 @@ async function testerRapports() {
   btn.disabled = false;
 }
 
-document.getElementById('btn-test-rapport').addEventListener('click', testerRapports);
+document.getElementById('btn-test-rapport')?.addEventListener('click', testerRapports);
 
 
 // ═══════════════════════════════════════════════
