@@ -53,8 +53,8 @@
       "description": "",
       "dimensions": {
         "type": "carre",
-        "largeur": 50,
-        "hauteur": 50
+        "largeur": 150,
+        "hauteur": 150
       },
       "visible": true
     }
