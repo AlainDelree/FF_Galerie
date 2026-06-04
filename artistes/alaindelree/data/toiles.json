@@ -77,6 +77,23 @@
       },
       "taille": "XL",
       "visible": true
+    },
+    {
+      "id": 4,
+      "photo": "artistes/alaindelree/assets/images/toiles/toile-004.jpg",
+      "source_photo": "admin",
+      "titre": "L'œuvre du diable",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 40,
+        "hauteur": 100
+      },
+      "taille": "E",
+      "visible": true
     }
   ]
 }
