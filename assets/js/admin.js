@@ -42,32 +42,54 @@ const K = {
 // Crée une issue avec le titre Bug/Bloquant/Effondrement
 // GitHub envoie un email au propriétaire du repo
 // ═══════════════════════════════════════════════
+/* Cache session : évite les appels API répétés en rafale (30s) */
 const _rapportCache = {};
 
 async function rapporterErreur(message, priorite, details) {
-  if (!token) return; /* pas connecté, impossible de créer une issue */
-  /* Anti-spam : max 1 issue par type d'erreur par heure */
-  const cle = (priorite + message).slice(0, 80);
-  if (_rapportCache[cle] && Date.now() - _rapportCache[cle] < 3600000) return;
-  _rapportCache[cle] = Date.now();
+  if (!token) return;
 
   const PREFIX = { bug: 'Bug', bloquant: 'Bloquant', effondrement: 'Effondrement' };
   const titre = (PREFIX[priorite] || 'Bug') + ' : ' + message.slice(0, 90);
-  const corps = [
-    '### Rapport automatique FF_Galerie',
-    '',
-    '| | |',
-    '|---|---|',
-    '| **Message** | `' + message.replace(/`/g, "'").slice(0, 200) + '` |',
-    '| **Priorité** | **' + (PREFIX[priorite] || 'Bug') + '** |',
-    '| **Admin** | ' + ADMIN_CFG.nom + ' |',
-    '| **URL** | ' + location.href + ' |',
-    '| **Date** | ' + new Date().toLocaleString('fr-BE') + ' |',
-    '',
-    details ? '**Détails :**\n```\n' + String(details).slice(0, 1200) + '\n```' : ''
-  ].filter(Boolean).join('\n');
+
+  /* Verrou session court (30s) pour éviter les appels API en rafale */
+  const cle = titre.slice(0, 80);
+  if (_rapportCache[cle] && Date.now() - _rapportCache[cle] < 30000) return;
+  _rapportCache[cle] = Date.now();
 
   try {
+    /* Chercher les issues identiques créées dans les dernières 24h */
+    const depuis24h = new Date(Date.now() - 86400000).toISOString();
+    const q = encodeURIComponent('repo:' + REPO + ' is:issue in:title "' + titre.slice(0, 60) + '" created:>' + depuis24h.slice(0, 10));
+    const recherche = await fetch(
+      'https://api.github.com/search/issues?q=' + q + '&sort=created&order=desc&per_page=5',
+      { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }
+    ).then(function(r) { return r.ok ? r.json() : { items: [] }; });
+
+    const nbRecentes = (recherche.items || []).filter(function(i) {
+      return new Date(i.created_at) > new Date(Date.now() - 86400000);
+    }).length;
+
+    /* Silence si 3 issues ou plus dans la fenêtre de 24h */
+    if (nbRecentes >= 3) {
+      _rapportCache[cle] = Date.now() + 3570000; /* rallonge le verrou session */
+      return;
+    }
+
+    const corps = [
+      '### Rapport automatique FF_Galerie',
+      '',
+      '| | |',
+      '|---|---|',
+      '| **Message** | `' + message.replace(/`/g, "'").slice(0, 200) + '` |',
+      '| **Priorité** | **' + (PREFIX[priorite] || 'Bug') + '** |',
+      '| **Occurrence** | ' + (nbRecentes + 1) + '/3 dans les dernières 24h |',
+      '| **Admin** | ' + ADMIN_CFG.nom + ' |',
+      '| **URL** | ' + location.href + ' |',
+      '| **Date** | ' + new Date().toLocaleString('fr-BE') + ' |',
+      '',
+      details ? '**Détails :**\n```\n' + String(details).slice(0, 1200) + '\n```' : ''
+    ].filter(Boolean).join('\n');
+
     await fetch('https://api.github.com/repos/' + REPO + '/issues', {
       method: 'POST',
       headers: {
