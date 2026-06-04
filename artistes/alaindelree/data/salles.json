@@ -25,9 +25,9 @@
       "id": 2,
       "nom": "Salle B",
       "theme": "",
-      "couleur_mur": "#2e2e2e",
+      "couleur_mur": "#403030",
       "couleur_cadres": "#3a3a3a",
-      "texture": "none",
+      "texture": "assets/images/textures/1000014237_mpz1bv4e.jpg",
       "visible": true,
       "toiles": [],
       "positions": []
