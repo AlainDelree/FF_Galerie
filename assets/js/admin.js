@@ -1514,13 +1514,9 @@ function gererTextureCustom(fichier) {
     localStorage.setItem(K.textures, JSON.stringify(customs));
     afficherTexturesCustom();
   /* Brancher l'upload de texture custom */
-  /* Nouveau flux : clic sw-plus → fichier → overlay → upload GitHub */
-  const btnTexPlus = $('btn-tex-plus');
+  /* Label natif → input file (fonctionne sur mobile sans JS) */
   const inpTex = $('inp-texture-custom');
-  if (btnTexPlus && inpTex) {
-    btnTexPlus.addEventListener('click', () => inpTex.click());
-    inpTex.addEventListener('change', e => { ouvrirOverlayTexture(e.target.files[0]); e.target.value = ''; });
-  }
+  if (inpTex) inpTex.addEventListener('change', e => { ouvrirOverlayTexture(e.target.files[0]); e.target.value = ''; });
   $('btn-tex-confirmer')?.addEventListener('click', uploaderTextureConfirmee);
   $('btn-tex-annuler-upload')?.addEventListener('click', () => { $('overlay-tex-upload').style.display = 'none'; });
   chargerTexturesGitHub();
