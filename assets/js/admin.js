@@ -1513,6 +1513,9 @@ function gererTextureCustom(fichier) {
     if (customs.length > 5) customs.shift(); // garde max 5
     localStorage.setItem(K.textures, JSON.stringify(customs));
     afficherTexturesCustom();
+  /* Brancher l'upload de texture custom */
+  const inpTex = $('inp-texture-custom');
+  if (inpTex) inpTex.addEventListener('change', e => gererTextureCustom(e.target.files[0]));
     setTexture(key);
     toast('✓ Texture ajoutée');
   };
