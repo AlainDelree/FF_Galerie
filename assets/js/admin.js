@@ -2163,12 +2163,13 @@ async function supprimerArtiste(idx) {
   try {
     /* Fichiers à supprimer */
     const base = "artistes/" + a.id + "/";
+    /* Uniquement les fichiers garantis créés par genererFichiers() */
     const fichiersSup = [
       base + "index.html", base + "galerie.html",
       base + "infos.html", base + "contact.html", base + "admin.html",
       base + "data/toiles.json", base + "data/salles.json",
-      base + "data/infos.json",  base + "data/contact.json"
-    ].map(path => ({ path, sha: null, mode: "100644", type: "blob" }));
+      base + "data/infos.json", base + "data/contact.json"
+    ].map(path => ({ path, sha: null })); /* sha:null sans mode/type = suppression propre */
 
     /* Commit unique : suppression fichiers + MAJ artistes.json */
     const ref        = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
@@ -2388,10 +2389,16 @@ function genererFichiers(a) {
 
   const infos = JSON.stringify({ evenements: [], collegues: [] }, null, 2);
 
+  const contact = JSON.stringify({
+    email:"", telephone:"", instagram:"", facebook:"", tiktok:"",
+    pinterest:"", youtube:"", twitter:"", linkedin:"", site:""
+  }, null, 2);
+
   return [
-    { chemin: base + "data/toiles.json", contenu: toiles },
-    { chemin: base + "data/salles.json", contenu: salles },
-    { chemin: base + "data/infos.json",  contenu: infos  },
+    { chemin: base + "data/toiles.json",  contenu: toiles   },
+    { chemin: base + "data/salles.json",  contenu: salles   },
+    { chemin: base + "data/infos.json",   contenu: infos    },
+    { chemin: base + "data/contact.json", contenu: contact  },
     { chemin: base + "index.html",       contenu: r(TPL_INDEX)   },
     { chemin: base + "galerie.html",     contenu: r(TPL_GALERIE) },
     { chemin: base + "infos.html",       contenu: r(TPL_INFOS)   },
