@@ -2261,11 +2261,30 @@ function afficherArtistes() {
     const btnPublier = a.draft
       ? "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Publier</button>"
       : "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Masquer</button>";
+    const base = location.href.replace(/admin\.html.*$/, "");
+    const urlSite  = base + "artistes/" + a.id + "/";
+    const urlAdmin = base + "admin.html?artiste=" + a.id;
+    const btnCopier = function(url, id) {
+      return "<button class=\"event-btn\" title=\"Copier\" " +
+        "onclick=\"navigator.clipboard.writeText('" + url + "').then(function(){" +
+          "var b=document.getElementById('cp-" + id + "');b.textContent='✓';setTimeout(function(){b.textContent='⎘';},1500);" +
+        "})\" " +
+        "id=\"cp-" + id + "\">⎘</button>";
+    };
     return "<div class=\"artiste-card\">" +
       "<div class=\"artiste-logo-mini\">" + (a.logo || "?") + "</div>" +
       "<div class=\"artiste-infos\">" +
         "<div class=\"artiste-nom\">" + a.nom + " " + badge + "</div>" +
-        "<div class=\"artiste-meta\">artistes/" + a.id + "/  &nbsp;·&nbsp; prefix: " + a.prefix + "</div>" +
+        "<div class=\"artiste-meta\">" +
+          "<span class=\"artiste-url-lbl\">Site</span>" +
+          "<span class=\"artiste-url\">" + urlSite + "</span>" +
+          btnCopier(urlSite, "s" + i) +
+        "</div>" +
+        "<div class=\"artiste-meta\">" +
+          "<span class=\"artiste-url-lbl\">Admin</span>" +
+          "<span class=\"artiste-url\">" + urlAdmin + "</span>" +
+          btnCopier(urlAdmin, "a" + i) +
+        "</div>" +
       "</div>" +
       "<div class=\"artiste-actions\">" +
         btnPublier +
