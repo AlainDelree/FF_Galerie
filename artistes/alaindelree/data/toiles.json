@@ -111,6 +111,23 @@
       },
       "taille": "XL",
       "visible": true
+    },
+    {
+      "id": 6,
+      "photo": "artistes/alaindelree/assets/images/toiles/toile-006.jpg",
+      "source_photo": "admin",
+      "titre": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 60,
+        "hauteur": 80
+      },
+      "taille": "XL",
+      "visible": true
     }
   ]
 }
