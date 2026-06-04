@@ -346,13 +346,20 @@ async function commitMulti(fichiers, message) {
 }
 
 async function uploaderPhoto(id, b64) {
-  const chemin = `assets/images/toiles/toile-${String(id).padStart(3, '0')}.jpg`;
+  /* Dossier propre à chaque artiste, relatif à la racine du repo.
+     Frédérique : assets/images/toiles/
+     Alain      : artistes/alaindelree/assets/images/toiles/
+     Le chemin stocké dans toiles.json est TOUJOURS assets/images/toiles/toile-NNN.jpg
+     (relatif à la galerie.html de l'artiste) */
+  const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
+  const chemin = base + `toile-${String(id).padStart(3, '0')}.jpg`;
+  const stored = `assets/images/toiles/toile-${String(id).padStart(3, '0')}.jpg`;
   let sha = null;
   try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}`); sha = r.sha; } catch (_) {}
   const corps = { message: `Admin : Photo toile #${id}`, content: b64, branch: BRANCH };
   if (sha) corps.sha = sha;
   await apiGH(`/repos/${REPO}/contents/${chemin}`, 'PUT', corps);
-  return chemin;
+  return stored; /* chemin relatif stocké dans toiles.json */
 }
 
 // ═══════════════════════════════════════════════
