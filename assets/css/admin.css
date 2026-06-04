@@ -583,9 +583,10 @@ textarea.champ{resize:vertical;min-height:65px;}
   .stock-leg        { padding: .25rem .4rem; }
   .leg-li           { font-size: 7.5px; }
 
-  /* Zone mur : capé à 520px → hauteur ~347px, proportion conservée */
-  .mur-zone { padding: .3rem .45rem; gap: .3rem; }
-  .mur-bg   { max-width: 520px; }
+  /* Zone mur : max-width calculé pour que le mur tienne dans le viewport
+     sans scroll — 215px = hauteur de tout le chrome au-dessus+dessous */
+  .mur-zone { padding: .3rem .45rem; gap: .25rem; }
+  .mur-bg   { max-width: min(420px, calc((100dvh - 215px) * 1.5)); }
 
   /* Panneaux couleurs + musique : centrés, width limité */
   .coul-panel {
