@@ -1842,7 +1842,11 @@ $('btn-coul-toggle').addEventListener('click', () => {
   const ouvert = $('coul-panel').classList.toggle('ouvert');
   $('coul-overlay').classList.toggle('ouvert', ouvert);
   $('btn-coul-toggle').classList.toggle('on', ouvert);
-  if (ouvert) chargerEtAfficherMusique();
+  if (ouvert) {
+    $('musique-panel').classList.remove('ouvert');
+    $('musique-overlay').classList.remove('ouvert');
+    $('btn-musique-toggle').classList.remove('on');
+  }
 });
 $('btn-close-coul').addEventListener('click', () => {
   $('coul-panel').classList.remove('ouvert');
@@ -1853,6 +1857,33 @@ $('coul-overlay').addEventListener('click', () => {
   $('coul-panel').classList.remove('ouvert');
   $('coul-overlay').classList.remove('ouvert');
   $('btn-coul-toggle').classList.remove('on');
+});
+
+// ── Panneau Musique ──────────────────────────────────────────────
+$('btn-musique-toggle').addEventListener('click', () => {
+  const ouvert = $('musique-panel').classList.toggle('ouvert');
+  $('musique-overlay').classList.toggle('ouvert', ouvert);
+  $('btn-musique-toggle').classList.toggle('on', ouvert);
+  if (ouvert) {
+    $('coul-panel').classList.remove('ouvert');
+    $('coul-overlay').classList.remove('ouvert');
+    $('btn-coul-toggle').classList.remove('on');
+    chargerEtAfficherMusique();
+  }
+});
+$('btn-close-musique').addEventListener('click', () => {
+  $('musique-panel').classList.remove('ouvert');
+  $('musique-overlay').classList.remove('ouvert');
+  $('btn-musique-toggle').classList.remove('on');
+});
+$('musique-overlay').addEventListener('click', () => {
+  $('musique-panel').classList.remove('ouvert');
+  $('musique-overlay').classList.remove('ouvert');
+  $('btn-musique-toggle').classList.remove('on');
+});
+// Bouton Changer → déclenche directement le file picker
+$('btn-musique-changer').addEventListener('click', () => {
+  $('inp-musique-upload').click();
 });
 // Plan repliable
 let planOuvert = true;

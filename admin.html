@@ -105,6 +105,7 @@
       <div class="mur-ctrl">
         <span class="salle-badge" id="badge-salle">—</span>
         <button class="ctrl-btn" id="btn-coul-toggle">🎨 Couleurs/Textures</button>
+        <button class="ctrl-btn" id="btn-musique-toggle">🎵 Musique</button>
         <div class="rename-wrap">
           <input class="rename-inp" type="text" id="inp-rename" placeholder="Nouveau nom…">
           <button class="ok-btn" id="btn-rename">OK</button>
@@ -170,24 +171,29 @@
             <div id="textures-gh-partage" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
           </div>
         </div>
-        <!-- Séparateur + Musique du site -->
-        <div style="height:1px;background:var(--brd);margin:.5rem 0 .4rem;"></div>
-        <div class="coul-row" style="align-items:flex-start;flex-direction:column;gap:.3rem;">
-          <div style="display:flex;align-items:center;gap:.5rem;width:100%;">
-            <span class="coul-lbl" style="width:auto;flex-shrink:0;">🎵 Musique</span>
-            <span id="musique-nom" style="font-size:.72rem;color:var(--text-doux);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" title="">Aucune</span>
-            <button id="btn-musique-del" onclick="supprimerMusique()" title="Supprimer la musique" style="display:none;background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);padding:0;line-height:1;flex-shrink:0;">🗑</button>
-          </div>
-          <audio id="musique-prev" controls style="display:none;width:100%;height:26px;"></audio>
-          <label for="inp-musique-upload" class="ctrl-btn" style="font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-            ↑ Changer…
-            <input type="file" id="inp-musique-upload" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4" style="display:none;">
-          </label>
-        </div>
-
         <div class="coul-actions">
           <button class="ctrl-btn" id="btn-preset-sauver" style="font-size:11px;">⊙ Sauver preset</button>
           <button class="ctrl-btn" id="btn-preset-charger" style="font-size:11px;">▾ Preset…</button>
+        </div>
+      </div>
+
+      <!-- Panneau musique (caché par défaut) -->
+      <div class="coul-overlay" id="musique-overlay"></div>
+      <div class="coul-panel" id="musique-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
+          <span class="coul-titre">Musique de la galerie</span>
+          <button id="btn-close-musique" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+        </div>
+        <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .5rem;flex-shrink:0;"></div>
+        <div class="coul-row">
+          <span class="coul-lbl">Fichier</span>
+          <span id="musique-nom" style="font-size:.72rem;color:var(--text-doux);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="">Aucune</span>
+          <button id="btn-musique-del" onclick="supprimerMusique()" title="Supprimer" style="display:none;background:none;border:none;cursor:pointer;font-size:.85rem;color:var(--muted);padding:0;line-height:1;flex-shrink:0;">🗑</button>
+        </div>
+        <audio id="musique-prev" controls style="display:none;width:100%;height:32px;margin:.4rem 0 .2rem;"></audio>
+        <div class="coul-actions" style="margin-top:.5rem;">
+          <button class="ctrl-btn" id="btn-musique-changer" style="font-size:11px;">↑ Changer la musique</button>
+          <input type="file" id="inp-musique-upload" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4" style="display:none;">
         </div>
       </div>
 
