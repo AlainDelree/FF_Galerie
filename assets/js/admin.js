@@ -3011,14 +3011,33 @@ function toggleModeSupprTexture() {
 
 /* ── Configuration EmailJS ── */
 function chargerConfigEmailJS() {
-  var cfg = JSON.parse(localStorage.getItem('ff_emailjs') || 'null');
-  if (!cfg) return;
-  var s = document.getElementById('ejs-service');
-  var t = document.getElementById('ejs-template');
-  var p = document.getElementById('ejs-pubkey');
-  if (s) s.value = cfg.serviceId  || '';
-  if (t) t.value = cfg.templateId || '';
-  if (p) p.value = cfg.publicKey  || '';
+  /* Charger depuis GitHub en priorité (disponible pour tous les admins)
+     fallback : localStorage (valeurs saisies manuellement) */
+  fetch('data/emailjs.json?v=' + Date.now())
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(cfg) {
+      if (!cfg) cfg = JSON.parse(localStorage.getItem('ff_emailjs') || 'null');
+      if (!cfg) return;
+      /* Mettre en cache local pour les prochains accès */
+      localStorage.setItem('ff_emailjs', JSON.stringify(cfg));
+      var s = document.getElementById('ejs-service');
+      var t = document.getElementById('ejs-template');
+      var p = document.getElementById('ejs-pubkey');
+      if (s) s.value = cfg.serviceId  || '';
+      if (t) t.value = cfg.templateId || '';
+      if (p) p.value = cfg.publicKey  || '';
+    })
+    .catch(function() {
+      /* fallback localStorage si fetch échoue */
+      var cfg = JSON.parse(localStorage.getItem('ff_emailjs') || 'null');
+      if (!cfg) return;
+      var s = document.getElementById('ejs-service');
+      var t = document.getElementById('ejs-template');
+      var p = document.getElementById('ejs-pubkey');
+      if (s) s.value = cfg.serviceId  || '';
+      if (t) t.value = cfg.templateId || '';
+      if (p) p.value = cfg.publicKey  || '';
+    });
 }
 
 function sauverEmailJS() {
