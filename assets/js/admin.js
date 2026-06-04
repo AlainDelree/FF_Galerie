@@ -90,7 +90,7 @@ async function rapporterErreur(message, priorite, details) {
       details ? '**Détails :**\n```\n' + String(details).slice(0, 1200) + '\n```' : ''
     ].filter(Boolean).join('\n');
 
-    await fetch('https://api.github.com/repos/' + REPO + '/issues', {
+    var issueResp = await fetch('https://api.github.com/repos/' + REPO + '/issues', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + token,
@@ -100,6 +100,23 @@ async function rapporterErreur(message, priorite, details) {
       },
       body: JSON.stringify({ title: titre, body: corps, assignees: [REPO.split('/')[0]] })
     });
+    /* Ajouter un commentaire @mention pour forcer la notification email
+       GitHub supprime les notifs pour ses propres issues mais pas pour les mentions */
+    if (issueResp.ok) {
+      var issue = await issueResp.json();
+      if (issue.number) {
+        await fetch('https://api.github.com/repos/' + REPO + '/issues/' + issue.number + '/comments', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+            'X-GitHub-Api-Version': '2022-11-28'
+          },
+          body: JSON.stringify({ body: '@' + REPO.split('/')[0] + ' — rapport automatique FF_Galerie' })
+        });
+      }
+    }
   } catch(e) { /* silencieux — éviter la boucle infinie */ }
 }
 
