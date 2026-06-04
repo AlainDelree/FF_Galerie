@@ -2176,7 +2176,13 @@ function construireFavoris() {
     var key = d.largeur + 'x' + d.hauteur;
     if (!seen.has(key)) { seen.add(key); favoris.push({ l: d.largeur, h: d.hauteur, taille: t.taille || '' }); }
   });
-  favoris.sort(function(a, b) { return (b.l * b.h) - (a.l * a.h); });
+  // Portraits (h>l) en premier, paysages/carrés ensuite — surface croissante dans chaque groupe
+  favoris.sort(function(a, b) {
+    var aPort = a.h > a.l ? 0 : 1;
+    var bPort = b.h > b.l ? 0 : 1;
+    if (aPort !== bPort) return aPort - bPort;
+    return (a.l * a.h) - (b.l * b.h);
+  });
   if (!favoris.length) { cont.style.display = 'none'; return; }
   cont.style.display = 'flex';
   favoris.forEach(function(f) {
