@@ -2876,7 +2876,10 @@ function creerSwatchGH(chemin, url, suppressible) {
   if (suppressible) {
     var del = document.createElement('button');
     del.textContent = '✕';
-    del.style.cssText = 'position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:8px;cursor:pointer;line-height:14px;padding:0;z-index:2;';
+    del.className = 'tex-del-btn';
+    del.style.cssText = 'position:absolute;top:-5px;right:-5px;width:14px;height:14px;'
+      + 'border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:8px;'
+      + 'cursor:pointer;line-height:14px;padding:0;z-index:2;display:none;';
     del.title = 'Supprimer';
     del.addEventListener('click', async function(e) {
       e.stopPropagation();
@@ -2914,3 +2917,14 @@ async function supprimerTextureGitHub(chemin) {
   }
   /* _texBound_module */
 })();
+
+/* Mode suppression textures */
+let _texDelMode = false;
+function toggleModeSupprTexture() {
+  _texDelMode = !_texDelMode;
+  document.querySelectorAll('.tex-del-btn').forEach(function(b) {
+    b.style.display = _texDelMode ? '' : 'none';
+  });
+  var btn = document.getElementById('btn-tex-del-toggle');
+  if (btn) btn.style.color = _texDelMode ? '#c0392b' : '';
+}
