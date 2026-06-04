@@ -41,6 +41,22 @@
         "hauteur": 163
       },
       "visible": true
+    },
+    {
+      "id": 2,
+      "photo": "assets/images/toiles/toile-002.jpg",
+      "source_photo": "admin",
+      "titre": "Paraphe d'artiste",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "carre",
+        "largeur": 50,
+        "hauteur": 50
+      },
+      "visible": true
     }
   ]
 }
