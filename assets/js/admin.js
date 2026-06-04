@@ -1970,10 +1970,14 @@ $('btn-fiche-modifier').addEventListener('click', () => {
   if (id) ouvrirFormulaireEdition(id);
 });
 $('overlay-fiche').addEventListener('click', e => { if (e.target === $('overlay-fiche')) fermerFiche(); });
-let swFiche = null;
-$('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchstart', e => { swFiche = e.touches[0].clientY; }, { passive: true });
+let swFiche = null, swFicheHandle = false;
+$('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchstart', e => {
+  swFiche = e.touches[0].clientY;
+  swFicheHandle = !!e.target.closest('.modal-handle');
+}, { passive: true });
 $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e => {
-  if (swFiche && e.changedTouches[0].clientY - swFiche > 80) fermerFiche(); swFiche = null;
+  if (swFiche && swFicheHandle && e.changedTouches[0].clientY - swFiche > 60) fermerFiche();
+  swFiche = null; swFicheHandle = false;
 }, { passive: true });
 
 // ═══════════════════════════════════════════════
@@ -2281,11 +2285,15 @@ $('btn-taille-modifier').addEventListener('click', function() {
   this.textContent = open ? 'Modifier \u25be' : 'R\u00e9duire \u25b4';
 });
 
-// Swipe bas pour fermer modal toile
-let swY = null;
-$('overlay-toile').querySelector('.modal').addEventListener('touchstart', e => { swY = e.touches[0].clientY; }, { passive: true });
+// Swipe bas pour fermer modal toile — déclenché uniquement depuis la poignée
+let swY = null, swHandle = false;
+$('overlay-toile').querySelector('.modal').addEventListener('touchstart', e => {
+  swY = e.touches[0].clientY;
+  swHandle = !!e.target.closest('.modal-handle');
+}, { passive: true });
 $('overlay-toile').querySelector('.modal').addEventListener('touchend', e => {
-  if (swY && e.changedTouches[0].clientY - swY > 80) fermerModalToile(); swY = null;
+  if (swY && swHandle && e.changedTouches[0].clientY - swY > 60) fermerModalToile();
+  swY = null; swHandle = false;
 }, { passive: true });
 
 // Modal salle
