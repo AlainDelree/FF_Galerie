@@ -1071,7 +1071,7 @@ function ouvrirFormulaireNouvel() {
 }
 
 function construirePillsSalle(salleSelId) {
-  const pills = $('salle-pills'); pills.innerHTML = '';
+  const pills = $('salle-pills'); if (!pills) return; pills.innerHTML = '';
   salles.forEach(s => {
     const p = document.createElement('button');
     p.className = 'salle-pill'; p.type = 'button';
