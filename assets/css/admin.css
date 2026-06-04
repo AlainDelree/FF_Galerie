@@ -39,6 +39,8 @@ button{cursor:pointer;}
 .btn{padding:.85rem 1.5rem;border:none;border-radius:var(--r);font-weight:500;
   transition:opacity .2s,transform .1s;letter-spacing:.04em;}
 .btn:active{transform:scale(.97);}
+.btn:disabled,.btn-or:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.btn-sauver-flottant:disabled{opacity:.6;cursor:not-allowed;}
 .btn-or{background:var(--gold);color:#111;width:100%;}
 .btn-or:hover{opacity:.9;}
 .btn-sm{padding:.5rem .9rem;font-size:13px;}
@@ -135,6 +137,7 @@ button{cursor:pointer;}
 .rename-inp:focus{outline:none;border-color:rgba(200,160,80,.4);}
 .ok-btn{font-size:11px;padding:.26rem .6rem;border-radius:6px;
   background:rgba(200,160,80,.15);color:var(--gold);border:0.5px solid rgba(200,160,80,.3);}
+.ok-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
 
 /* Panneau couleurs */
 .coul-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:250;

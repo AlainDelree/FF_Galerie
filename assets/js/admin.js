@@ -1833,12 +1833,15 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   if (!confirm(`Supprimer "${salleActive.nom}" et toutes ses positions ? Réversible via le backup.`)) return;
   salles = salles.filter(s => s.id !== salleActive.id);
   salleActive = null;
+  const btnDel = $('btn-supprimer-salle');
+  btnDel.disabled = true;
   try {
     await sauvegarder(`[admin] Suppression salle`);
     afficherPlan();
     if (salles.length) selectSalle(salles[0].id);
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
+  finally { btnDel.disabled = false; }
 });
 // Contrôles mur
 $('btn-coul-toggle').addEventListener('click', () => {
@@ -1902,11 +1905,14 @@ $('btn-toggle-plan').addEventListener('click', () => {
 $('btn-rename').addEventListener('click', async () => {
   const nom = $('inp-rename').value.trim();
   if (!nom || !salleActive) return;
+  const btnRn = $('btn-rename');
   salleActive.nom = nom;
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
+  btnRn.disabled = true;
   try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
+  finally { btnRn.disabled = false; }
 });
 
 // Bouton arranger le mur
@@ -2360,7 +2366,9 @@ async function supprimerEvent(idx) {
 
 async function sauvegarderInfos() {
   const badge = document.getElementById('badge-infos');
+  const btnInf = document.getElementById('btn-sauver-infos');
   if (!token) { alert('Token GitHub requis pour sauvegarder.'); return; }
+  if (btnInf) btnInf.disabled = true;
   badge.textContent = '…';
   badge.className = 'sync-badge';
   try {
@@ -2377,6 +2385,8 @@ async function sauvegarderInfos() {
     badge.textContent = '✗';
     badge.className = 'sync-badge err';
     rapporterErreur('Sauvegarde infos/contact échouée : ' + e.message, 'bloquant', e.stack || '');
+  } finally {
+    if (btnInf) btnInf.disabled = false;
   }
 }
 
