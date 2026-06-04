@@ -20,10 +20,33 @@ async function chargerConfigMusique() {
     const r = await fetch('data/infos.json?v=' + Date.now());
     if (r.ok) {
       const d = await r.json();
-      if (d.musique && d.musique.fichier) MUSIC_SRC = d.musique.fichier;
+      if (d.musique) {
+        if (d.musique.fichier) MUSIC_SRC = d.musique.fichier;
+        // Crédit musique dans le footer (toutes les pages)
+        const credEl = document.querySelector('.mention-musique');
+        if (credEl) {
+          const txt = buildCreditMusique(d.musique);
+          if (txt) { credEl.innerHTML = txt; }
+        }
+      }
     }
-  } catch(e) { /* garde la valeur par défaut */ }
+  } catch(e) { /* garde valeur par défaut */ }
   _configMusiqueChargee = true;
+}
+
+function buildCreditMusique(m) {
+  if (!m || (!m.titre && !m.auteur)) return '';
+  var titre  = m.titre  ? '<em>' + m.titre + '</em>' : '';
+  var auteur = m.auteur || '';
+  var base   = [titre, auteur].filter(Boolean).join('\u00a0\u2014\u00a0');
+  var parts  = base ? [base] : [];
+  if (m.interprete) {
+    parts.push(m.lien
+      ? '<a href="' + m.lien + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' + m.interprete + '</a>'
+      : m.interprete);
+  }
+  if (m.licence) parts.push(m.licence.replace(' ', '\u00a0'));
+  return 'Musique\u00a0:\u00a0' + parts.join('\u00a0\u00b7\u00a0');
 }
 
 // ── Thème ──────────────────────────────────────────────────────
@@ -133,6 +156,9 @@ if (document.body.dataset.page === 'galerie') {
     document.addEventListener('click',      reprise, { once: true });
     document.addEventListener('touchstart', reprise, { once: true, passive: true });
   });
+} else {
+  // Sur les autres pages : charge quand même pour afficher les crédits footer
+  chargerConfigMusique();
 }
 
 // ── Init ───────────────────────────────────────────────────────

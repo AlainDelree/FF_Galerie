@@ -1602,6 +1602,11 @@ function afficherSectionMusique() {
     if (prevEl) { prevEl.src = ''; prevEl.style.display = 'none'; }
     if (delBtn) delBtn.style.display = 'none';
   }
+  // Remplir les champs crédits
+  var m = infosData.musique || {};
+  var setV = function(id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; };
+  setV('mus-titre', m.titre); setV('mus-auteur', m.auteur);
+  setV('mus-interprete', m.interprete); setV('mus-lien', m.lien); setV('mus-licence', m.licence);
 }
 
 async function uploaderMusique(fichier) {
@@ -1931,6 +1936,31 @@ $('musique-overlay')?.addEventListener('click', () => {
   $('musique-overlay').classList.remove('ouvert');
   $('btn-musique-toggle').classList.remove('on');
 });
+async function sauverCreditsMusique() {
+  if (!token) { toast('Token GitHub requis', 'err'); return; }
+  if (!infosData.musique) infosData.musique = {};
+  var getV = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  infosData.musique.titre      = getV('mus-titre');
+  infosData.musique.auteur     = getV('mus-auteur');
+  infosData.musique.interprete = getV('mus-interprete');
+  infosData.musique.lien       = getV('mus-lien');
+  infosData.musique.licence    = getV('mus-licence');
+  var btn = document.getElementById('btn-credits-sauver');
+  if (btn) btn.disabled = true;
+  try {
+    await commitMulti([
+      { chemin: ADMIN_CFG.repoPath + 'infos.json', contenu: JSON.stringify(infosData, null, 2) }
+    ], 'Admin : Crédits musique mis à jour');
+    toast('✓ Crédits sauvegardés');
+  } catch(e) {
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Câblage bouton crédits
+document.getElementById('btn-credits-sauver')?.addEventListener('click', sauverCreditsMusique);
 // Bouton Changer → déclenche directement le file picker
 $('btn-musique-changer')?.addEventListener('click', () => {
   $('inp-musique-upload').click();

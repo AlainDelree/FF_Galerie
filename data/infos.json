@@ -1,6 +1,11 @@
 {
     "musique": {
-        "fichier": "assets/music/musique.mp3"
+        "fichier": "assets/music/musique.mp3",
+        "titre": "Pictures at an Exhibition",
+        "auteur": "Mussorgsky",
+        "interprete": "Alexander Ghindin",
+        "lien": "https://musopen.org/music/performer/alexander-ghindin/",
+        "licence": "CC BY"
     },
     "evenements": [
         {

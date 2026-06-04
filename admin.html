@@ -195,6 +195,19 @@
           <button class="ctrl-btn" id="btn-musique-changer" style="font-size:11px;">↑ Changer la musique</button>
           <input type="file" id="inp-musique-upload" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4" style="display:none;">
         </div>
+        <!-- Crédits musique (footer du site) -->
+        <div style="height:1px;background:var(--brd);margin:.5rem 0 .4rem;"></div>
+        <div style="font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;">Crédits — footer du site</div>
+        <div style="display:flex;flex-direction:column;gap:.3rem;">
+          <input class="inp" type="text"  id="mus-titre"      placeholder="Titre de la pièce…"          style="font-size:11px;padding:.35rem .55rem;">
+          <input class="inp" type="text"  id="mus-auteur"     placeholder="Compositeur / auteur…"        style="font-size:11px;padding:.35rem .55rem;">
+          <input class="inp" type="text"  id="mus-interprete" placeholder="Interprète (optionnel)…"      style="font-size:11px;padding:.35rem .55rem;">
+          <input class="inp" type="url"   id="mus-lien"       placeholder="Lien interprète (optionnel)…" style="font-size:11px;padding:.35rem .55rem;">
+          <input class="inp" type="text"  id="mus-licence"    placeholder="Licence (ex : CC BY)…"        style="font-size:11px;padding:.35rem .55rem;">
+        </div>
+        <div class="coul-actions" style="margin-top:.4rem;">
+          <button class="ctrl-btn" id="btn-credits-sauver" style="font-size:11px;">💾 Sauver les crédits</button>
+        </div>
       </div>
 
       <!-- Corps : stock + mur -->
