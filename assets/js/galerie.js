@@ -504,7 +504,7 @@ const GALERIE_CFG = {
       cadre.className = 'cadre';
       if (toile.photo) {
         const img = document.createElement('img');
-        img.src = ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo); img.alt = toile.titre || 'Toile'; img.loading = 'lazy';
+        img.src = ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo); img.alt = toile.titre || 'Toile';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
@@ -557,6 +557,11 @@ const GALERIE_CFG = {
       // Génère les salles dynamiquement depuis le JSON
       const salles = sData.salles || [];
       TOTAL_SALLES = salles.length;
+      // Salle affichée en premier (hash ou salle 1) — utilisée pour fetchpriority
+      const _hm = window.location.hash.match(/^#salle-(\d+)$/);
+      const _hId = _hm ? parseInt(_hm[1]) : null;
+      const prioSalleId = (_hId && salles.some(function(s){ return s.id===_hId; }))
+        ? _hId : (salles[0] ? salles[0].id : null);
       // Largeur du conteneur = N salles × 100% de la fenêtre
       conteneur.style.width = (TOTAL_SALLES * 100) + '%';
       salles.forEach(salle => {
@@ -676,7 +681,8 @@ const GALERIE_CFG = {
 
             if (t.photo) {
               const img = document.createElement('img');
-              img.src = ((/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo); img.alt = t.titre || ''; img.loading = 'lazy';
+              img.src = ((/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo); img.alt = t.titre || '';
+              if (salle.id === prioSalleId) img.fetchPriority = 'high';
               img.onerror = function() {
                 const drap = creerDrapBlanc(); drap.style.position = 'absolute'; drap.style.inset = '0';
                 cadre.replaceChild(drap, this);
@@ -779,11 +785,12 @@ const GALERIE_CFG = {
         });
 
         // Salle courante : lancement immédiat (toutes en parallèle)
-        photosPrio.forEach(function(src) { var img = new Image(); img.src = src; });
+        window._ffPreload = window._ffPreload || [];
+        photosPrio.forEach(function(src) { var img = new Image(); img.src = src; window._ffPreload.push(img); });
 
         // Autres salles : 600ms après pour ne pas concurrencer la salle visible
         setTimeout(function() {
-          photosReste.forEach(function(src) { var img = new Image(); img.src = src; });
+          photosReste.forEach(function(src) { var img = new Image(); img.src = src; window._ffPreload.push(img); });
         }, 600);
       })();
     })
