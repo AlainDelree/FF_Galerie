@@ -373,12 +373,57 @@
         </div>
       </div>
 
-      <!-- Section Contact & Réseaux sociaux -->
+      <!-- Section Liens artistiques -->
       <div class="infos-section">
         <div class="infos-section-hdr">
-          <span class="infos-section-titre">Contact &amp; Réseaux sociaux</span>
+          <span class="infos-section-titre">Liens artistiques</span>
+          <button class="bas-btn" id="btn-ajouter-collegue">＋ Ajouter</button>
         </div>
-        <div style="padding:.7rem .8rem;display:flex;flex-direction:column;gap:.5rem;">
+        <div id="liste-collegues"></div>
+      </div>
+
+      <!-- Formulaire lien artistique (caché par défaut) -->
+      <div class="infos-form-wrap" id="form-collegue-wrap" style="display:none;">
+        <div class="infos-form-titre" id="form-collegue-titre">Nouveau lien</div>
+        <div class="infos-form-body">
+          <input type="hidden" id="form-collegue-id">
+          <div class="infos-champ">
+            <label class="lbl" for="col-nom">Nom</label>
+            <input class="inp" type="text" id="col-nom" placeholder="Nom de l'artiste ou du site…">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="col-desc">Description</label>
+            <input class="inp" type="text" id="col-desc" placeholder="Aquarelles et huiles sur toile…">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="col-lien">Lien</label>
+            <input class="inp" type="url" id="col-lien" placeholder="https://…">
+          </div>
+          <div class="infos-champ">
+            <label class="lbl" for="col-type">Type</label>
+            <select class="inp" id="col-type">
+              <option value="site">Site web</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="galerie">Galerie</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+          <div class="infos-form-actions">
+            <button class="btn btn-or" id="btn-sauver-collegue">Enregistrer</button>
+            <button class="bas-btn" id="btn-annuler-collegue">Annuler</button>
+          </div>
+          <div class="err-txt" id="form-collegue-err"></div>
+        </div>
+      </div>
+
+      <!-- Section Contact & Réseaux sociaux (collapsible) -->
+      <div class="infos-section">
+        <div class="infos-section-hdr" style="cursor:pointer;" id="contact-hdr">
+          <span class="infos-section-titre">Contact &amp; Réseaux sociaux</span>
+          <button id="btn-toggle-contact" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:0 2px;" title="Replier/Déplier">▼</button>
+        </div>
+        <div id="contact-body" style="display:none;padding:.7rem .8rem;flex-direction:column;gap:.5rem;">
           <div class="infos-champ">
             <label class="lbl" for="cnt-email">📧 Email</label>
             <input class="inp" type="email" id="cnt-email" placeholder="artiste@example.com">
@@ -432,8 +477,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Bouton sauvegarder tout (infos + contact) -->
       <div style="padding:1rem 0 .5rem;display:flex;gap:.5rem;align-items:center;">
         <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder infos &amp; contact</button>
         <span class="sync-badge hidden" id="badge-infos"></span>

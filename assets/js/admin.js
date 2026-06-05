@@ -2421,6 +2421,7 @@ async function chargerInfos() {
     infosData.presentation  = infosData.presentation  || { titre: '', texte: '', photo: '' };
     _musiqueChargee = true;
     afficherEvents();
+    afficherCollegues();
     remplirFormulairePresentation();
   } catch(e) {
     infosData = { evenements: [], collegues: [], musique: { fichier: '' }, presentation: { titre: '', texte: '', photo: '' } };
@@ -2587,6 +2588,90 @@ async function sauvegarderInfos() {
 document.getElementById('btn-ajouter-event').addEventListener('click', () => ouvrirFormulaireEvent(null));
 document.getElementById('btn-sauver-event').addEventListener('click', sauverFormulaireEvent);
 document.getElementById('btn-annuler-event').addEventListener('click', fermerFormulaireEvent);
+
+// ── Toggle section Contact ──────────────────────────────────────
+document.getElementById('contact-hdr').addEventListener('click', () => {
+  const body = document.getElementById('contact-body');
+  const btn  = document.getElementById('btn-toggle-contact');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'flex';
+  btn.textContent = open ? '▼' : '▲';
+});
+
+// ═══════════════════════════════════════════════
+// LIENS ARTISTIQUES (collegues)
+// ═══════════════════════════════════════════════
+let collegueEnEdition = null;
+
+function afficherCollegues() {
+  const liste = document.getElementById('liste-collegues');
+  if (!liste) return;
+  const cols = infosData.collegues || [];
+  if (!cols.length) {
+    liste.innerHTML = '<p style="font-size:.8rem;color:var(--muted);padding:.4rem .8rem;">Aucun lien pour l\'instant.</p>';
+    return;
+  }
+  liste.innerHTML = cols.map((c, i) => `
+    <div class="event-item">
+      <div class="event-info">
+        <span class="event-titre">${c.nom || '—'}</span>
+        <span class="event-date">${c.type || ''} ${c.lien ? '· <a href="' + c.lien + '" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none;">' + (c.lien.replace(/^https?:\/\//, '').split('/')[0]) + '</a>' : ''}</span>
+      </div>
+      <div style="display:flex;gap:.3rem;">
+        <button class="event-btn" onclick="ouvrirFormulaireCollegue(${i})">✏</button>
+        <button class="event-btn" onclick="supprimerCollegue(${i})" style="color:var(--danger);">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function ouvrirFormulaireCollegue(idx) {
+  collegueEnEdition = idx === undefined ? null : idx;
+  const c = idx !== undefined ? (infosData.collegues || [])[idx] : null;
+  document.getElementById('form-collegue-titre').textContent = c ? 'Modifier le lien' : 'Nouveau lien';
+  document.getElementById('form-collegue-id').value  = c ? idx : '';
+  document.getElementById('col-nom').value    = c?.nom    || '';
+  document.getElementById('col-desc').value   = c?.description || '';
+  document.getElementById('col-lien').value   = c?.lien   || '';
+  document.getElementById('col-type').value   = c?.type   || 'site';
+  document.getElementById('form-collegue-err').textContent = '';
+  document.getElementById('form-collegue-wrap').style.display = '';
+  document.getElementById('col-nom').focus();
+}
+
+function fermerFormulaireCollegue() {
+  document.getElementById('form-collegue-wrap').style.display = 'none';
+  collegueEnEdition = null;
+}
+
+async function sauverCollegue() {
+  const nom  = document.getElementById('col-nom').value.trim();
+  const lien = document.getElementById('col-lien').value.trim();
+  if (!nom) { document.getElementById('form-collegue-err').textContent = 'Le nom est requis.'; return; }
+  const obj = {
+    id:          collegueEnEdition !== null ? (infosData.collegues[collegueEnEdition]?.id || Date.now()) : Date.now(),
+    nom,
+    description: document.getElementById('col-desc').value.trim(),
+    lien,
+    type:        document.getElementById('col-type').value,
+  };
+  if (!infosData.collegues) infosData.collegues = [];
+  if (collegueEnEdition !== null) infosData.collegues[collegueEnEdition] = obj;
+  else infosData.collegues.push(obj);
+  fermerFormulaireCollegue();
+  infosModifiees = true;
+  afficherCollegues();
+}
+
+async function supprimerCollegue(idx) {
+  if (!confirm('Supprimer ce lien ?')) return;
+  infosData.collegues.splice(idx, 1);
+  infosModifiees = true;
+  afficherCollegues();
+}
+
+document.getElementById('btn-ajouter-collegue').addEventListener('click', () => ouvrirFormulaireCollegue());
+document.getElementById('btn-sauver-collegue').addEventListener('click', sauverCollegue);
+document.getElementById('btn-annuler-collegue').addEventListener('click', fermerFormulaireCollegue);
 document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
 
 
@@ -2730,8 +2815,31 @@ async function supprimerArtiste(idx) {
 }
 
 async function toggleDraftArtiste(idx) {
-  artistesData[idx].draft = !artistesData[idx].draft;
-  await sauvegarderArtistesJSON("Statut artiste mis à jour : " + artistesData[idx].nom);
+  const artiste = artistesData[idx];
+  artiste.draft = !artiste.draft;
+  const publier = !artiste.draft; // true = on publie (retire noindex)
+  const base = artiste.lien;     // ex: "artistes/daw/"
+  const NOINDEX = '  <meta name="robots" content="noindex, nofollow">\n';
+  const CHARSET = '  <meta charset="UTF-8">\n';
+  const modifs = [];
+  for (const page of ['index.html', 'galerie.html', 'infos.html', 'contact.html']) {
+    const chemin = base + page;
+    try {
+      const r = await apiGH('/repos/' + REPO + '/contents/' + chemin);
+      let c = decodeURIComponent(escape(atob(r.content.replace(/\s/g, ''))));
+      if (publier) {
+        c = c.replace(NOINDEX, '');
+      } else if (!c.includes('noindex')) {
+        c = c.replace(CHARSET, CHARSET + NOINDEX);
+      }
+      modifs.push({ chemin, contenu: c });
+    } catch(e) { /* page absente, on ignore */ }
+  }
+  const prefMsg = publier ? 'Publication artiste : ' : 'Masquage artiste : ';
+  await commitMulti([
+    ...modifs,
+    { chemin: 'data/artistes.json', contenu: JSON.stringify(artistesData, null, 2) }
+  ], prefMsg + artiste.nom);
   afficherArtistes();
 }
 
