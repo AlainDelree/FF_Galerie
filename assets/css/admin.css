@@ -624,3 +624,13 @@ textarea.champ{resize:vertical;min-height:65px;}
 .taille-modifier-btn{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;
   padding:.1rem .3rem;transition:color .15s;text-decoration:underline dotted;}
 .taille-modifier-btn:hover{color:var(--gold);}
+
+/* ── Sous-navigation Autres pages ── */
+.sous-nav{display:flex;align-items:center;gap:.4rem;padding:.45rem .8rem;
+  border-bottom:1px solid var(--brd);background:var(--bg2);flex-shrink:0;}
+.sous-nav-sep{color:var(--brd);user-select:none;font-size:.8rem;}
+.sous-nav-btn{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.28rem .65rem;border-radius:4px;border:0.5px solid var(--brd);
+  background:none;color:var(--muted);cursor:pointer;transition:all .15s;}
+.sous-nav-btn:hover:not(.actif){border-color:var(--text-doux);color:var(--text-doux);}
+.sous-nav-btn.actif{background:rgba(200,160,80,.12);border-color:var(--gold);color:var(--gold);}

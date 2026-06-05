@@ -79,7 +79,7 @@
 
   <nav class="onglets">
     <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
-    <button class="onglet" data-vue="vue-infos">Infos &amp; Contact</button>
+    <button class="onglet" data-vue="vue-pages">Autres pages</button>
     <button class="onglet" data-vue="vue-artistes" id="onglet-artistes" style="display:none">Artistes invités</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
   </nav>
@@ -307,183 +307,207 @@
   </div><!-- /vue-artistes -->
 
   <!-- ── VUE INFOS & AGENDA ── -->
-  <div id="vue-infos" class="vue" style="overflow-y:auto;max-height:calc(100vh - 120px);">
-    <div class="infos-adm-wrap">
+  <div id="vue-pages" class="vue" style="display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 120px);">
 
-      <!-- Section Présentation de l'artiste -->
-      <div class="infos-section">
-        <div class="infos-section-hdr">
-          <span class="infos-section-titre">Présentation (page À propos)</span>
-        </div>
-        <div style="padding:.5rem 0 .7rem;display:flex;flex-direction:column;gap:.45rem;">
-          <div>
-            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Sous-titre <span style="opacity:.5;">(ex : Peintre belge)</span></label>
-            <input class="champ" type="text" id="pres-titre" placeholder="Peintre belge" style="font-size:.88rem;">
-          </div>
-          <div>
-            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Texte de présentation <span style="opacity:.5;">(double saut de ligne = nouveau paragraphe)</span></label>
-            <textarea class="champ" id="pres-texte" rows="8" placeholder="Écrivez ici la présentation de l'artiste…" style="resize:vertical;font-size:.88rem;line-height:1.6;"></textarea>
-          </div>
-          <div>
-            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Photo portrait <span style="opacity:.5;">(URL ou laisser vide)</span></label>
-            <input class="champ" type="url" id="pres-photo" placeholder="https://…" style="font-size:.88rem;">
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Événements -->
-      <div class="infos-section">
-        <div class="infos-section-hdr">
-          <span class="infos-section-titre">Événements &amp; Agenda</span>
-          <button class="bas-btn" id="btn-ajouter-event">＋ Ajouter</button>
-        </div>
-        <div id="liste-events"></div>
-      </div>
-
-      <!-- Formulaire événement (caché par défaut) -->
-      <div class="infos-form-wrap" id="form-event-wrap" style="display:none;">
-        <div class="infos-form-titre" id="form-event-titre">Nouvel événement</div>
-        <div class="infos-form-body">
-          <input type="hidden" id="form-event-id">
-          <div class="infos-champ">
-            <label class="lbl" for="evt-titre">Titre</label>
-            <input class="inp" type="text" id="evt-titre" placeholder="Nom de l'exposition…">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="evt-date">Date</label>
-            <input class="inp" type="text" id="evt-date" placeholder="ex : 15 mars 2025">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="evt-lieu">Lieu</label>
-            <input class="inp" type="text" id="evt-lieu" placeholder="Ville, Pays…">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="evt-desc">Description</label>
-            <textarea class="inp" id="evt-desc" rows="3" placeholder="Quelques lignes…" style="resize:vertical;font-family:inherit;"></textarea>
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="evt-lien">Lien (optionnel)</label>
-            <input class="inp" type="url" id="evt-lien" placeholder="https://…">
-          </div>
-          <div class="infos-form-actions">
-            <button class="btn btn-or" id="btn-sauver-event">Enregistrer</button>
-            <button class="bas-btn" id="btn-annuler-event">Annuler</button>
-          </div>
-          <div class="err-txt" id="form-event-err"></div>
-        </div>
-      </div>
-
-      <!-- Section Liens artistiques -->
-      <div class="infos-section">
-        <div class="infos-section-hdr">
-          <span class="infos-section-titre">Liens artistiques</span>
-          <button class="bas-btn" id="btn-ajouter-collegue">＋ Ajouter</button>
-        </div>
-        <div id="liste-collegues"></div>
-      </div>
-
-      <!-- Formulaire lien artistique (caché par défaut) -->
-      <div class="infos-form-wrap" id="form-collegue-wrap" style="display:none;">
-        <div class="infos-form-titre" id="form-collegue-titre">Nouveau lien</div>
-        <div class="infos-form-body">
-          <input type="hidden" id="form-collegue-id">
-          <div class="infos-champ">
-            <label class="lbl" for="col-nom">Nom</label>
-            <input class="inp" type="text" id="col-nom" placeholder="Nom de l'artiste ou du site…">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="col-desc">Description</label>
-            <input class="inp" type="text" id="col-desc" placeholder="Aquarelles et huiles sur toile…">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="col-lien">Lien</label>
-            <input class="inp" type="url" id="col-lien" placeholder="https://…">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="col-type">Type</label>
-            <select class="inp" id="col-type">
-              <option value="site">Site web</option>
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-              <option value="galerie">Galerie</option>
-              <option value="autre">Autre</option>
-            </select>
-          </div>
-          <div class="infos-form-actions">
-            <button class="btn btn-or" id="btn-sauver-collegue">Enregistrer</button>
-            <button class="bas-btn" id="btn-annuler-collegue">Annuler</button>
-          </div>
-          <div class="err-txt" id="form-collegue-err"></div>
-        </div>
-      </div>
-
-      <!-- Section Contact & Réseaux sociaux (collapsible) -->
-      <div class="infos-section">
-        <div class="infos-section-hdr" style="cursor:pointer;" id="contact-hdr">
-          <span class="infos-section-titre">Contact &amp; Réseaux sociaux</span>
-          <button id="btn-toggle-contact" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:0 2px;" title="Replier/Déplier">▼</button>
-        </div>
-        <div id="contact-body" style="display:none;padding:.7rem .8rem;flex-direction:column;gap:.5rem;">
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-email">📧 Email</label>
-            <input class="inp" type="email" id="cnt-email" placeholder="artiste@example.com">
-          </div>
-          <div class="infos-champ">
-            <label class="lbl" for="cnt-tel">📞 Téléphone</label>
-            <input class="inp" type="tel" id="cnt-tel" placeholder="+32 xxx xx xx xx">
-          </div>
-          <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.4rem 0 0;">Réseaux sociaux — URL ou nom d'utilisateur</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-instagram">📸 Instagram</label>
-              <input class="inp" type="text" id="cnt-instagram" placeholder="instagram.com/...">
-              <input class="inp" type="text" id="cnt-instagram-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-facebook">👤 Facebook</label>
-              <input class="inp" type="text" id="cnt-facebook" placeholder="facebook.com/...">
-              <input class="inp" type="text" id="cnt-facebook-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-tiktok">🎵 TikTok</label>
-              <input class="inp" type="text" id="cnt-tiktok" placeholder="@username">
-              <input class="inp" type="text" id="cnt-tiktok-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-pinterest">📌 Pinterest</label>
-              <input class="inp" type="text" id="cnt-pinterest" placeholder="pinterest.com/...">
-              <input class="inp" type="text" id="cnt-pinterest-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-youtube">▶ YouTube</label>
-              <input class="inp" type="text" id="cnt-youtube" placeholder="youtube.com/@...">
-              <input class="inp" type="text" id="cnt-youtube-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-twitter">🐦 X / Twitter</label>
-              <input class="inp" type="text" id="cnt-twitter" placeholder="@username">
-              <input class="inp" type="text" id="cnt-twitter-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-linkedin">💼 LinkedIn</label>
-              <input class="inp" type="text" id="cnt-linkedin" placeholder="linkedin.com/in/...">
-              <input class="inp" type="text" id="cnt-linkedin-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-            <div class="infos-champ">
-              <label class="lbl" for="cnt-site">🌐 Site web</label>
-              <input class="inp" type="url" id="cnt-site" placeholder="https://...">
-              <input class="inp" type="text" id="cnt-site-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="padding:1rem 0 .5rem;display:flex;gap:.5rem;align-items:center;">
-        <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder infos &amp; contact</button>
-        <span class="sync-badge hidden" id="badge-infos"></span>
-      </div>
-
+    <!-- Sous-navigation -->
+    <div class="sous-nav" id="sous-nav-pages">
+      <button class="sous-nav-btn actif" data-sous="sous-apropos">À propos</button>
+      <span class="sous-nav-sep">|</span>
+      <button class="sous-nav-btn" data-sous="sous-infos-adm">Infos</button>
+      <span class="sous-nav-sep">|</span>
+      <button class="sous-nav-btn" data-sous="sous-contact-adm">Contact</button>
     </div>
-  </div><!-- /vue-infos -->
+
+    <!-- ── Sous-page : À propos ── -->
+    <div id="sous-apropos" class="sous-page" style="flex:1;overflow-y:auto;min-height:0;">
+      <div class="infos-adm-wrap">
+        <div class="infos-section">
+          <div class="infos-section-hdr">
+            <span class="infos-section-titre">Présentation (page À propos)</span>
+          </div>
+          <div style="padding:.5rem 0 .7rem;display:flex;flex-direction:column;gap:.45rem;">
+            <div>
+              <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Sous-titre <span style="opacity:.5;">(ex : Peintre belge)</span></label>
+              <input class="champ" type="text" id="pres-titre" placeholder="Peintre belge" style="font-size:.88rem;">
+            </div>
+            <div>
+              <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Texte de présentation <span style="opacity:.5;">(double saut de ligne = nouveau paragraphe)</span></label>
+              <textarea class="champ" id="pres-texte" rows="8" placeholder="Écrivez ici la présentation de l'artiste…" style="resize:vertical;font-size:.88rem;line-height:1.6;"></textarea>
+            </div>
+            <div>
+              <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Photo portrait <span style="opacity:.5;">(URL ou laisser vide)</span></label>
+              <input class="champ" type="url" id="pres-photo" placeholder="https://…" style="font-size:.88rem;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Sous-page : Infos ── -->
+    <div id="sous-infos-adm" class="sous-page" style="display:none;flex:1;overflow-y:auto;min-height:0;">
+      <div class="infos-adm-wrap">
+
+        <!-- Section Événements -->
+        <div class="infos-section">
+          <div class="infos-section-hdr">
+            <span class="infos-section-titre">Événements &amp; Agenda</span>
+            <button class="bas-btn" id="btn-ajouter-event">＋ Ajouter</button>
+          </div>
+          <div id="liste-events"></div>
+        </div>
+
+        <!-- Formulaire événement (caché par défaut) -->
+        <div class="infos-form-wrap" id="form-event-wrap" style="display:none;">
+          <div class="infos-form-titre" id="form-event-titre">Nouvel événement</div>
+          <div class="infos-form-body">
+            <input type="hidden" id="form-event-id">
+            <div class="infos-champ">
+              <label class="lbl" for="evt-titre">Titre</label>
+              <input class="inp" type="text" id="evt-titre" placeholder="Nom de l'exposition…">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="evt-date">Date</label>
+              <input class="inp" type="text" id="evt-date" placeholder="ex : 15 mars 2025">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="evt-lieu">Lieu</label>
+              <input class="inp" type="text" id="evt-lieu" placeholder="Ville, Pays…">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="evt-desc">Description</label>
+              <textarea class="inp" id="evt-desc" rows="3" placeholder="Quelques lignes…" style="resize:vertical;font-family:inherit;"></textarea>
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="evt-lien">Lien (optionnel)</label>
+              <input class="inp" type="url" id="evt-lien" placeholder="https://…">
+            </div>
+            <div class="infos-form-actions">
+              <button class="btn btn-or" id="btn-sauver-event">Enregistrer</button>
+              <button class="bas-btn" id="btn-annuler-event">Annuler</button>
+            </div>
+            <div class="err-txt" id="form-event-err"></div>
+          </div>
+        </div>
+
+        <!-- Section Liens artistiques -->
+        <div class="infos-section">
+          <div class="infos-section-hdr">
+            <span class="infos-section-titre">Liens artistiques</span>
+            <button class="bas-btn" id="btn-ajouter-collegue">＋ Ajouter</button>
+          </div>
+          <div id="liste-collegues"></div>
+        </div>
+
+        <!-- Formulaire lien artistique (caché par défaut) -->
+        <div class="infos-form-wrap" id="form-collegue-wrap" style="display:none;">
+          <div class="infos-form-titre" id="form-collegue-titre">Nouveau lien</div>
+          <div class="infos-form-body">
+            <input type="hidden" id="form-collegue-id">
+            <div class="infos-champ">
+              <label class="lbl" for="col-nom">Nom</label>
+              <input class="inp" type="text" id="col-nom" placeholder="Nom de l'artiste ou du site…">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="col-desc">Description</label>
+              <input class="inp" type="text" id="col-desc" placeholder="Aquarelles et huiles sur toile…">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="col-lien">Lien</label>
+              <input class="inp" type="url" id="col-lien" placeholder="https://…">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="col-type">Type</label>
+              <select class="inp" id="col-type">
+                <option value="site">Site web</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+                <option value="galerie">Galerie</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div class="infos-form-actions">
+              <button class="btn btn-or" id="btn-sauver-collegue">Enregistrer</button>
+              <button class="bas-btn" id="btn-annuler-collegue">Annuler</button>
+            </div>
+            <div class="err-txt" id="form-collegue-err"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Sous-page : Contact ── -->
+    <div id="sous-contact-adm" class="sous-page" style="display:none;flex:1;overflow-y:auto;min-height:0;">
+      <div class="infos-adm-wrap">
+        <div class="infos-section">
+          <div class="infos-section-hdr">
+            <span class="infos-section-titre">Contact &amp; Réseaux sociaux</span>
+          </div>
+          <div style="padding:.7rem .8rem;display:flex;flex-direction:column;gap:.5rem;">
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-email">📧 Email</label>
+              <input class="inp" type="email" id="cnt-email" placeholder="artiste@example.com">
+            </div>
+            <div class="infos-champ">
+              <label class="lbl" for="cnt-tel">📞 Téléphone</label>
+              <input class="inp" type="tel" id="cnt-tel" placeholder="+32 xxx xx xx xx">
+            </div>
+            <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.4rem 0 0;">Réseaux sociaux — URL ou nom d'utilisateur</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-instagram">📸 Instagram</label>
+                <input class="inp" type="text" id="cnt-instagram" placeholder="instagram.com/...">
+                <input class="inp" type="text" id="cnt-instagram-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-facebook">👤 Facebook</label>
+                <input class="inp" type="text" id="cnt-facebook" placeholder="facebook.com/...">
+                <input class="inp" type="text" id="cnt-facebook-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-tiktok">🎵 TikTok</label>
+                <input class="inp" type="text" id="cnt-tiktok" placeholder="@username">
+                <input class="inp" type="text" id="cnt-tiktok-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-pinterest">📌 Pinterest</label>
+                <input class="inp" type="text" id="cnt-pinterest" placeholder="pinterest.com/...">
+                <input class="inp" type="text" id="cnt-pinterest-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-youtube">▶ YouTube</label>
+                <input class="inp" type="text" id="cnt-youtube" placeholder="youtube.com/@...">
+                <input class="inp" type="text" id="cnt-youtube-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-twitter">🐦 X / Twitter</label>
+                <input class="inp" type="text" id="cnt-twitter" placeholder="@username">
+                <input class="inp" type="text" id="cnt-twitter-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-linkedin">💼 LinkedIn</label>
+                <input class="inp" type="text" id="cnt-linkedin" placeholder="linkedin.com/in/...">
+                <input class="inp" type="text" id="cnt-linkedin-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+              <div class="infos-champ">
+                <label class="lbl" for="cnt-site">🌐 Site web</label>
+                <input class="inp" type="url" id="cnt-site" placeholder="https://...">
+                <input class="inp" type="text" id="cnt-site-nom" placeholder="Nom affiché (optionnel)" style="margin-top:.2rem;font-size:.78rem;opacity:.8;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton sauvegarder partagé (toujours visible) -->
+    <div style="padding:.6rem .9rem;border-top:1px solid var(--brd);display:flex;gap:.5rem;align-items:center;flex-shrink:0;">
+      <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder</button>
+      <span class="sync-badge hidden" id="badge-infos"></span>
+    </div>
+
+  </div><!-- /vue-pages -->
+
 
   <!-- ── VUE BACKUP ── -->
   <div id="vue-backup" class="vue">

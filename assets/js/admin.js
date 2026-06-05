@@ -1870,8 +1870,19 @@ document.querySelectorAll('.onglet').forEach(o => {
     o.classList.add('actif');
     $(o.dataset.vue).classList.add('active');
     if (o.dataset.vue === 'vue-backup') chargerCommits();
-    if (o.dataset.vue === 'vue-infos') chargerInfos();
+    if (o.dataset.vue === 'vue-pages')  chargerInfos();
     if (o.dataset.vue === 'vue-artistes') chargerVueArtistes();
+  });
+});
+
+// Sous-navigation "Autres pages"
+document.querySelectorAll('.sous-nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sous-nav-btn').forEach(b => b.classList.remove('actif'));
+    document.querySelectorAll('.sous-page').forEach(p => p.style.display = 'none');
+    btn.classList.add('actif');
+    const cible = document.getElementById(btn.dataset.sous);
+    if (cible) { cible.style.display = 'flex'; cible.style.flexDirection = 'column'; }
   });
 });
 
@@ -2588,15 +2599,6 @@ async function sauvegarderInfos() {
 document.getElementById('btn-ajouter-event').addEventListener('click', () => ouvrirFormulaireEvent(null));
 document.getElementById('btn-sauver-event').addEventListener('click', sauverFormulaireEvent);
 document.getElementById('btn-annuler-event').addEventListener('click', fermerFormulaireEvent);
-
-// ── Toggle section Contact ──────────────────────────────────────
-document.getElementById('contact-hdr').addEventListener('click', () => {
-  const body = document.getElementById('contact-body');
-  const btn  = document.getElementById('btn-toggle-contact');
-  const open = body.style.display !== 'none';
-  body.style.display = open ? 'none' : 'flex';
-  btn.textContent = open ? '▼' : '▲';
-});
 
 // ═══════════════════════════════════════════════
 // LIENS ARTISTIQUES (collegues)
