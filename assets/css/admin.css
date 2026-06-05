@@ -635,3 +635,20 @@ textarea.champ{resize:vertical;min-height:65px;}
   background:none;color:var(--muted);cursor:pointer;transition:all .15s;}
 .sous-nav-btn:hover:not(.actif){border-color:var(--text-doux);color:var(--text-doux);}
 .sous-nav-btn.actif{background:rgba(200,160,80,.12);border-color:var(--gold);color:var(--gold);}
+
+/* ══ OVERLAY CHARGEMENT INITIAL ══ */
+#overlay-chargement{
+  display:none;position:fixed;inset:0;z-index:850;
+  background:rgba(245,240,232,.9);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:1.1rem;color:var(--muted);font-size:.88rem;
+  backdrop-filter:blur(2px);}
+#overlay-chargement.visible{display:flex;}
+#overlay-chargement .oc-spinner{
+  width:38px;height:38px;
+  border:3px solid var(--brd);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .8s linear infinite;}
+#overlay-chargement .oc-label{
+  letter-spacing:.06em;font-size:.82rem;}

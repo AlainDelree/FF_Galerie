@@ -408,6 +408,8 @@ async function uploaderPhoto(id, b64) {
 // DONNÉES
 // ═══════════════════════════════════════════════
 async function chargerTout() {
+  const _ov = document.getElementById('overlay-chargement');
+  if (_ov) _ov.classList.add('visible');
   try {
     const [tRes, sRes] = await Promise.all([
       lireFichierJSON(ADMIN_CFG.repoPath + 'toiles.json'),
@@ -433,6 +435,9 @@ async function chargerTout() {
     rapporterErreur('Chargement galerie échoué : ' + e.message, 'bloquant', e.stack || '');
     toast('Erreur chargement : ' + e.message, 'err', 4000);
     syncBadge('err');
+  } finally {
+    const _ov = document.getElementById('overlay-chargement');
+    if (_ov) _ov.classList.remove('visible');
   }
 }
 
@@ -714,7 +719,7 @@ function afficherStock() {
     simgDiv.style.cssText = 'width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;';
     if (t.photo) {
       const img = document.createElement('img');
-      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
+      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false; img.loading = 'lazy';
       simgDiv.appendChild(img);
     } else {
       const ph = document.createElement('div'); ph.className = 'sph';
@@ -988,7 +993,7 @@ function afficherStripPlacement() {
       + (estSelMur || estSelPlace ? ' sel' : '');
 
     const si = document.createElement('div'); si.className='simg';
-    if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; si.appendChild(img); }
+    if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; img.loading='lazy'; si.appendChild(img); }
     item.appendChild(si);
 
     // Badge taille
