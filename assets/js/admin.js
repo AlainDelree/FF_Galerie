@@ -441,6 +441,29 @@ async function chargerTout() {
     afficherPlan();
     if (salles.length > 0) selectSalle(salles[0].id);
     syncBadge('ok');
+
+    // Préchargement silencieux — salle courante immédiatement, reste après 800ms
+    window._adminPreload = [];
+    var _prioPhotos = new Set();
+    var _premSalle = salles[0];
+    if (_premSalle) {
+      (_premSalle.positions || []).forEach(function(p) {
+        var t = toiles.find(function(x){ return x.id === p.id; });
+        if (t && t.photo) {
+          var img = new Image(); img.src = t.photo;
+          window._adminPreload.push(img);
+          _prioPhotos.add(t.photo);
+        }
+      });
+    }
+    setTimeout(function() {
+      toiles.forEach(function(t) {
+        if (t.photo && !_prioPhotos.has(t.photo)) {
+          var img = new Image(); img.src = t.photo;
+          window._adminPreload.push(img);
+        }
+      });
+    }, 800);
   } catch (e) {
     rapporterErreur('Chargement galerie échoué : ' + e.message, 'bloquant', e.stack || '');
     toast('Erreur chargement : ' + e.message, 'err', 4000);
