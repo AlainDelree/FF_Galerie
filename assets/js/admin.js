@@ -2415,13 +2415,15 @@ async function chargerInfos() {
   try {
     const res = await lireFichierJSON(ADMIN_CFG.repoPath + 'infos.json');
     infosData = res.data || { evenements: [], collegues: [] };
-    infosData.evenements = infosData.evenements || [];
-    infosData.collegues  = infosData.collegues  || [];
-    infosData.musique    = infosData.musique    || { fichier: '' };
+    infosData.evenements    = infosData.evenements    || [];
+    infosData.collegues     = infosData.collegues     || [];
+    infosData.musique       = infosData.musique       || { fichier: '' };
+    infosData.presentation  = infosData.presentation  || { titre: '', texte: '', photo: '' };
     _musiqueChargee = true;
     afficherEvents();
+    remplirFormulairePresentation();
   } catch(e) {
-    infosData = { evenements: [], collegues: [], musique: { fichier: '' } };
+    infosData = { evenements: [], collegues: [], musique: { fichier: '' }, presentation: { titre: '', texte: '', photo: '' } };
     afficherEvents();
   }
   /* Charger contact.json */
@@ -2540,6 +2542,19 @@ async function supprimerEvent(idx) {
   setTimeout(() => { if (btnSauverS) btnSauverS.textContent = texteOriginalS; }, 2500);
 }
 
+function remplirFormulairePresentation() {
+  const p = infosData.presentation || {};
+  const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setV('pres-titre', p.titre);
+  setV('pres-texte', p.texte);
+  setV('pres-photo', p.photo);
+}
+
+function lireFormulairePresentation() {
+  const getV = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  return { titre: getV('pres-titre'), texte: getV('pres-texte'), photo: getV('pres-photo') };
+}
+
 async function sauvegarderInfos() {
   const badge = document.getElementById('badge-infos');
   const btnInf = document.getElementById('btn-sauver-infos');
@@ -2547,6 +2562,8 @@ async function sauvegarderInfos() {
   if (btnInf) btnInf.disabled = true;
   badge.textContent = '…';
   badge.className = 'sync-badge';
+  // Lire la présentation depuis le formulaire avant de sauvegarder
+  infosData.presentation = lireFormulairePresentation();
   try {
     const contactData = lireFormulaireContact();
     await commitMulti([
@@ -2918,6 +2935,7 @@ const TPL_INDEX = `<!DOCTYPE html>
 <head>
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Peintures</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2973,6 +2991,7 @@ const TPL_GALERIE = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Galerie — {{NOM}}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3057,6 +3076,7 @@ const TPL_INFOS = `<!DOCTYPE html>
 <head>
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Infos &amp; Agenda</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3105,6 +3125,7 @@ const TPL_CONTACT = `<!DOCTYPE html>
 <head>
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{{NOM}} — Contact</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">

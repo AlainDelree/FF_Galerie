@@ -25,5 +25,10 @@
             "lien": "https://example.com",
             "type": "site"
         }
-    ]
+    ],
+    "presentation": {
+        "titre": "Peintre belge",
+        "texte": "",
+        "photo": ""
+    }
 }

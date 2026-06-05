@@ -310,6 +310,27 @@
   <div id="vue-infos" class="vue" style="overflow-y:auto;max-height:calc(100vh - 120px);">
     <div class="infos-adm-wrap">
 
+      <!-- Section Présentation de l'artiste -->
+      <div class="infos-section">
+        <div class="infos-section-hdr">
+          <span class="infos-section-titre">Présentation (page À propos)</span>
+        </div>
+        <div style="padding:.5rem 0 .7rem;display:flex;flex-direction:column;gap:.45rem;">
+          <div>
+            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Sous-titre <span style="opacity:.5;">(ex : Peintre belge)</span></label>
+            <input class="champ" type="text" id="pres-titre" placeholder="Peintre belge" style="font-size:.88rem;">
+          </div>
+          <div>
+            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Texte de présentation <span style="opacity:.5;">(double saut de ligne = nouveau paragraphe)</span></label>
+            <textarea class="champ" id="pres-texte" rows="8" placeholder="Écrivez ici la présentation de l'artiste…" style="resize:vertical;font-size:.88rem;line-height:1.6;"></textarea>
+          </div>
+          <div>
+            <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Photo portrait <span style="opacity:.5;">(URL ou laisser vide)</span></label>
+            <input class="champ" type="url" id="pres-photo" placeholder="https://…" style="font-size:.88rem;">
+          </div>
+        </div>
+      </div>
+
       <!-- Section Événements -->
       <div class="infos-section">
         <div class="infos-section-hdr">
