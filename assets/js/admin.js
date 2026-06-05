@@ -347,6 +347,16 @@ async function lireFichierTexte(chemin) {
   return new TextDecoder('utf-8').decode(bytes);
 }
 
+/* Lecture rapide via raw.githubusercontent.com (CDN GitHub, sans auth).
+   À utiliser pour les lectures pures — ne renvoie pas le sha.
+   Les écritures (commitMulti, uploaderPhoto) restent sur l'API. */
+async function lireRaw(chemin) {
+  const url = "https://raw.githubusercontent.com/" + REPO + "/" + BRANCH + "/" + chemin + "?v=" + Date.now();
+  const rep = await fetch(url);
+  if (!rep.ok) throw new Error("Impossible de lire " + chemin + " (" + rep.status + ")");
+  return rep.json();
+}
+
 /* File d'attente : garantit que les commits s'exécutent
    séquentiellement même si plusieurs sont déclenchés en même temps.
    Élimine les conflits 'Update is not a fast forward'. */
@@ -411,14 +421,14 @@ async function chargerTout() {
   const _ov = document.getElementById('overlay-chargement');
   if (_ov) _ov.classList.add('visible');
   try {
-    const [tRes, sRes] = await Promise.all([
-      lireFichierJSON(ADMIN_CFG.repoPath + 'toiles.json'),
-      lireFichierJSON(ADMIN_CFG.repoPath + 'salles.json')
+    const [tData, sData] = await Promise.all([
+      lireRaw(ADMIN_CFG.repoPath + 'toiles.json'),
+      lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
-    toiles = tRes.data.toiles || [];
-    tailles = tRes.data.tailles || [];
+    toiles = tData.toiles || [];
+    tailles = tData.tailles || [];
     // Migre l'ancien format salles → nouveau format
-    salles = (sRes.data.salles || []).map(s => ({
+    salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
       theme: s.theme || '',
       couleur_mur: s.couleur_mur || '#2e2e2e',
@@ -1578,9 +1588,8 @@ let _musiqueChargee = false;
 async function chargerEtAfficherMusique() {
   if (!_musiqueChargee) {
     try {
-      var res = await lireFichierJSON(ADMIN_CFG.repoPath + 'infos.json');
-      var d = res.data || {};
-      infosData.musique = d.musique || { fichier: '' };
+      var d = await lireRaw(ADMIN_CFG.repoPath + "infos.json").catch(function(){ return {}; });
+      infosData.musique = d.musique || { fichier: "" };
       _musiqueChargee = true;
     } catch(e) {
       infosData.musique = infosData.musique || { fichier: '' };
@@ -2429,8 +2438,8 @@ let infosModifiees = false;
 /* Charge infos.json au passage sur l'onglet */
 async function chargerInfos() {
   try {
-    const res = await lireFichierJSON(ADMIN_CFG.repoPath + 'infos.json');
-    infosData = res.data || { evenements: [], collegues: [] };
+    const infos = await lireRaw(ADMIN_CFG.repoPath + 'infos.json');
+    infosData = infos || { evenements: [], collegues: [] };
     infosData.evenements    = infosData.evenements    || [];
     infosData.collegues     = infosData.collegues     || [];
     infosData.musique       = infosData.musique       || { fichier: '' };
@@ -2445,8 +2454,8 @@ async function chargerInfos() {
   }
   /* Charger contact.json */
   try {
-    const rc = await lireFichierJSON(ADMIN_CFG.repoPath + 'contact.json');
-    remplirFormulaireContact(rc.data || {});
+    const rc = await lireRaw(ADMIN_CFG.repoPath + 'contact.json');
+    remplirFormulaireContact(rc || {});
   } catch(e) { /* pas de contact.json encore */ }
 }
 
@@ -2699,8 +2708,8 @@ let artistesData = [];
 /* Chargement au clic sur l'onglet */
 async function chargerVueArtistes() {
   try {
-    const res = await lireFichierJSON("data/artistes.json");
-    artistesData = res.data || [];
+    const res = await lireRaw("data/artistes.json");
+    artistesData = res || [];
     afficherArtistes();
   } catch (e) {
     artistesData = [];
