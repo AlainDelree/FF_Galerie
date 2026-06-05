@@ -230,12 +230,12 @@ function toast(msg, type='ok', ms=2400) {
 
 function syncBadge(etat) {
   const b = $('badge-sync');
-  b.className = 'sync-badge';
-  if (!etat) { b.classList.add('hidden'); return; }
-  b.classList.remove('hidden');
-  if (etat === 'ok')  { b.classList.add('sync-ok');  b.textContent = '✓ Synchronisé'; }
-  if (etat === 'err') { b.classList.add('sync-ko');  b.textContent = '✗ Erreur'; }
-  if (etat === '...')  { b.classList.add('sync-enc'); b.textContent = '⟳ Sauvegarde…'; }
+  b.className = 'sync-barre';
+  if (!etat) { return; }
+  b.classList.add('visible');
+  if (etat === 'ok')  { b.classList.add('sync-ok');  b.textContent = '✓ Synchronisé'; setTimeout(function(){ b.classList.remove('visible'); }, 3000); }
+  if (etat === 'err') { b.classList.add('sync-ko');  b.textContent = '✗ Erreur de sauvegarde'; }
+  if (etat === '...')  { b.classList.add('sync-enc'); b.textContent = '⟳ Sauvegarde en cours…'; }
 }
 
 function afficherEcran(id) {
