@@ -35,12 +35,12 @@
       "materiaux": [],
       "description": "",
       "dimensions": {
-        "type": "paysage",
-        "largeur": 80,
-        "hauteur": 45
+        "type": "portrait",
+        "largeur": 40,
+        "hauteur": 50
       },
       "visible": true,
-      "taille": "XL"
+      "taille": "XS"
     },
     {
       "id": 3,
@@ -66,13 +66,14 @@
       "style": "",
       "materiaux": [],
       "dimensions": {
-        "type": "paysage",
-        "largeur": 100,
-        "hauteur": 75
+        "type": "portrait",
+        "largeur": 40,
+        "hauteur": 50
       },
       "source_photo": "gsm",
       "visible": true,
-      "taille": "XXL"
+      "taille": "XS",
+      "description": ""
     },
     {
       "id": 8,
