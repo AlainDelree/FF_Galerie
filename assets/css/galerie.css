@@ -566,13 +566,15 @@
       .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée : padding-bottom = hauteur nav (~60px) + home indicator iOS */
-      .salle { height:auto !important; min-height:unset !important; padding:.5rem .5rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
+      .salle { height:auto !important; min-height:100svh; padding:.5rem .5rem calc(5rem + env(safe-area-inset-bottom, 0px)); }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Clip horizontal : empêche la zone-basse de déborder sur la salle adjacente */
       .salle { overflow-x: clip; }
+      /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
+      .zone-basse { flex:1; }
       /* Plancher mobile : remplit l'espace jusqu'à la nav fixe */
-      .plancher-sol { min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
+      .plancher-sol { flex:1; min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
       /* Navigation mobile */
       .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
       body { overflow-x:hidden; }
