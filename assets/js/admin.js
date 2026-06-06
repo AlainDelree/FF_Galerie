@@ -1823,9 +1823,16 @@ async function supprimerMusique() {
 function getTextureName(key) {
   var nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
   if (nomsTex[key]) return nomsTex[key];
+  // Texture custom localStorage
   var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
   var found = customs.find(function(t){ return t.key === key; });
-  return found ? found.nom : (key ? key : 'Uni');
+  if (found) return found.nom;
+  // Texture GitHub : nom depuis le fichier (tirets/underscores → espaces, capitalize)
+  if (key && key.indexOf('/') >= 0) {
+    var fichier = key.split('/').pop().replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    return fichier.charAt(0).toUpperCase() + fichier.slice(1);
+  }
+  return key || 'Uni';
 }
 
 function ouvrirModalPreset() {
@@ -3747,25 +3754,33 @@ async function ouvrirOverlayTexture(file) {
     _texData = await compresserImageTexture(file);
     $('tex-prev').style.backgroundImage = 'url("' + _texData.dataUrl + '")';
     $('tex-info').textContent = _texData.origKB + ' KB → ' + _texData.finalKB + ' KB après compression';
+    // Suggestion de nom : fichier nettoyé
+    var suggestion = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+    $('inp-tex-upload-nom').value = suggestion;
     $('tex-partager').checked = false;
     $('tex-progress').textContent = '';
     $('overlay-tex-upload').style.display = 'flex';
+    setTimeout(function() { $('inp-tex-upload-nom').select(); }, 150);
   } catch(e) { alert('Erreur : ' + e); }
 }
 
 async function uploaderTextureConfirmee() {
   if (!_texData) { $('tex-progress').textContent = '⚠ Aucune image — réessayez'; return; }
   if (!token)    { $('tex-progress').textContent = '⚠ Token GitHub requis'; return; }
+  var nomSaisi = ($('inp-tex-upload-nom').value || '').trim();
+  if (!nomSaisi) { $('tex-progress').textContent = '⚠ Entrez un nom pour la texture'; return; }
+  var slug = nomSaisi.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40) || _texData.nom;
   var partager = $('tex-partager').checked;
   var dossier  = partager ? 'assets/images/textures/' : ADMIN_CFG.repoPath + 'textures/';
-  var chemin   = dossier + _texData.nom + '_' + Date.now().toString(36) + '.jpg';
+  var chemin   = dossier + slug + '.jpg';
   $('tex-progress').textContent = 'Upload en cours…';
   $('btn-tex-confirmer').disabled = true;
   try {
-    await commitMulti([{ chemin, contenu: _texData.b64, encoding: 'base64' }], 'Texture : ' + _texData.nom);
+    await commitMulti([{ chemin, contenu: _texData.b64, encoding: 'base64' }], 'Texture : ' + nomSaisi);
     $('overlay-tex-upload').style.display = 'none';
     _texData = null;
-    toast('✓ Texture uploadée');
+    toast('✓ Texture "' + nomSaisi + '" uploadée');
     await chargerTexturesGitHub();
   } catch(e) { $('tex-progress').textContent = 'Erreur : ' + e.message; }
   $('btn-tex-confirmer').disabled = false;
