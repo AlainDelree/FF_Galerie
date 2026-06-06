@@ -4,30 +4,29 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#8892c2",
+      "couleur_mur": "#613583",
       "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/ecorcelignes.jpg",
+      "epaisseur_cadres": 4,
+      "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": false,
       "toiles": [
+        16,
         4,
-        3,
-        2,
-        16
+        2
       ],
       "positions": [
         {
-          "id": 4,
+          "id": 16,
           "col": 1,
           "row": 1,
-          "w": 7,
-          "h": 5
+          "w": 3,
+          "h": 3
         },
         {
-          "id": 3,
-          "col": 9,
+          "id": 4,
+          "col": 6,
           "row": 1,
-          "w": 4,
+          "w": 7,
           "h": 5
         },
         {
@@ -35,13 +34,6 @@
           "col": 1,
           "row": 6,
           "w": 5,
-          "h": 3
-        },
-        {
-          "id": 16,
-          "col": 9,
-          "row": 6,
-          "w": 3,
           "h": 3
         }
       ]
