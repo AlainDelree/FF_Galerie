@@ -885,11 +885,12 @@ function entrerModePlacement() {
 function ouvrirArrangerApresConfirm() {
   if (!salleActive) return;
   const nbPlacees = (salleActive.positions||[]).length;
-  $('pl-salle-nom').textContent = salleActive.nom;
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
   history.pushState({ ff: 'arrangement' }, '');
-  grilleVisiblePl = false;
+  grilleVisiblePl = true;
+  $('btn-grille-pl').style.color       = 'var(--gold)';
+  $('btn-grille-pl').style.borderColor = 'var(--gold)';
   selectedToilePl = null;
   peintureSurMurSel = null;
   afficherMurPlacement();
