@@ -2232,6 +2232,8 @@ $('btn-coul-toggle').addEventListener('click', () => {
     $('musique-panel').classList.remove('ouvert');
     $('musique-overlay').classList.remove('ouvert');
     $('btn-musique-toggle').classList.remove('on');
+    // Charger les textures GitHub si pas encore fait (race au démarrage)
+    if (!window._texturesGHChargees) chargerTexturesGitHub();
   }
 });
 $('btn-close-coul').addEventListener('click', () => {
@@ -3810,6 +3812,7 @@ async function chargerTexturesGitHub() {
   }
   // Rafraîchir le mur si une texture GitHub est active (race avec chargerTout)
   if (salleActive) appliquerApparence();
+  window._texturesGHChargees = true;
 }
 
 function creerSwatchGH(chemin, url, suppressible) {
