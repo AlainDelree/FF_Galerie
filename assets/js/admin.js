@@ -989,6 +989,13 @@ function afficherMurPlacement() {
 
   majCtrlPanel();
 
+  // Overlay grille 12×8 si activé
+  if (grilleVisiblePl) {
+    var ov = document.createElement('div');
+    ov.className = 'grille-ov';
+    bg.appendChild(ov);
+  }
+
   // Cellules vides
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
     if (occupancy[`${c},${r}`]) continue;
@@ -2139,9 +2146,9 @@ $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
 $('btn-grille-pl').addEventListener('click', function() {
   grilleVisiblePl = !grilleVisiblePl;
-  $('mur-placement').classList.toggle('grille-on', grilleVisiblePl);
-  $('btn-grille-pl').style.color = grilleVisiblePl ? 'var(--gold)' : '';
+  $('btn-grille-pl').style.color       = grilleVisiblePl ? 'var(--gold)' : '';
   $('btn-grille-pl').style.borderColor = grilleVisiblePl ? 'var(--gold)' : '';
+  afficherMurPlacement();
   afficherStripPlacement();
 });
 
