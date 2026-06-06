@@ -1850,24 +1850,71 @@ function confirmerPreset() {
 function chargerPreset() {
   const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
   const noms = Object.keys(presets);
-  if (!noms.length) { toast('Aucun preset — sauvegardez-en un d\'abord', 'err'); return; }
-  const choix = noms.length === 1 ? noms[0] : prompt(`Presets disponibles :\n${noms.map((n,i) => `${i+1}. ${n}`).join('\n')}\n\nEntrez le nom :`);
-  if (!choix || !presets[choix]) { if(choix) toast('Preset non trouvé', 'err'); return; }
-  const p = presets[choix];
-  couleurMurActuel    = p.couleur_mur;
-  couleurCadresActuel = p.couleur_cadres;
-  epaisseurCadresActuel = p.epaisseur_cadres || 2;
-  textureActuelle = p.texture || 'none';
-  if (salleActive) {
-    salleActive.couleur_mur    = couleurMurActuel;
-    salleActive.couleur_cadres = couleurCadresActuel;
-    salleActive.epaisseur_cadres = epaisseurCadresActuel;
-    salleActive.texture        = textureActuelle;
-    marquerChangement();
-  }
-  appliquerApparence(); afficherMur();
-  toast(`✓ Preset "${choix}" appliqué`);
+  if (!noms.length) { toast("Aucun preset — sauvegardez-en un d'abord", 'err'); return; }
+
+  const liste = $('preset-charger-liste');
+  liste.innerHTML = '';
+  const nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
+
+  noms.forEach(function(nom) {
+    const p = presets[nom];
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:.65rem;padding:.55rem .6rem;border-radius:6px;cursor:pointer;border:1px solid var(--brd);background:var(--bg3);transition:border-color .15s;';
+    row.addEventListener('mouseenter', function(){ row.style.borderColor = 'var(--gold)'; });
+    row.addEventListener('mouseleave', function(){ row.style.borderColor = 'var(--brd)'; });
+
+    const prevMur = document.createElement('div');
+    prevMur.style.cssText = 'width:28px;height:28px;border-radius:4px;flex-shrink:0;';
+    prevMur.style.background = p.couleur_mur || '#2e2e2e';
+
+    const prevCad = document.createElement('div');
+    prevCad.style.cssText = 'width:14px;height:28px;border-radius:3px;flex-shrink:0;';
+    prevCad.style.background = p.couleur_cadres || '#3a3a3a';
+
+    const infos = document.createElement('div');
+    infos.style.cssText = 'flex:1;min-width:0;';
+    const ep = p.epaisseur_cadres && p.epaisseur_cadres !== 2 ? ' · ' + p.epaisseur_cadres + 'px' : '';
+    infos.innerHTML = '<div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + nom + '</div>'
+      + '<div style="font-size:.7rem;color:var(--muted);">' + (nomsTex[p.texture] || p.texture || 'Uni') + ep + '</div>';
+
+    const btnDel = document.createElement('button');
+    btnDel.textContent = '🗑';
+    btnDel.style.cssText = 'background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:2px 4px;flex-shrink:0;';
+    btnDel.title = 'Supprimer';
+    btnDel.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const ps = JSON.parse(localStorage.getItem(K.presets) || '{}');
+      delete ps[nom];
+      localStorage.setItem(K.presets, JSON.stringify(ps));
+      row.remove();
+      if (!liste.children.length) $('overlay-preset-charger').classList.remove('ouvert');
+    });
+
+    row.appendChild(prevMur); row.appendChild(prevCad); row.appendChild(infos); row.appendChild(btnDel);
+
+    row.addEventListener('click', function() {
+      couleurMurActuel      = p.couleur_mur || '#2e2e2e';
+      couleurCadresActuel   = p.couleur_cadres || '#3a3a3a';
+      epaisseurCadresActuel = p.epaisseur_cadres || 2;
+      textureActuelle       = p.texture || 'none';
+      if (salleActive) {
+        salleActive.couleur_mur      = couleurMurActuel;
+        salleActive.couleur_cadres   = couleurCadresActuel;
+        salleActive.epaisseur_cadres = epaisseurCadresActuel;
+        salleActive.texture          = textureActuelle;
+        marquerChangement();
+      }
+      appliquerApparence(); afficherMur();
+      $('overlay-preset-charger').classList.remove('ouvert');
+      toast("Preset \"" + nom + "\" appliqué");
+    });
+
+    liste.appendChild(row);
+  });
+
+  $('overlay-preset-charger').classList.add('ouvert');
 }
+
 
 function gererTextureCustom(fichier) {
   if (!fichier) return;
@@ -1982,6 +2029,9 @@ function initSwatches() {
   $('btn-preset-charger').addEventListener('click', chargerPreset);
   $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
   $('btn-annuler-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
+  $('btn-close-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
+  $('btn-annuler-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
+  $('overlay-preset-charger').addEventListener('click', function(e) { if(e.target===$('overlay-preset-charger')) $('overlay-preset-charger').classList.remove('ouvert'); });
   $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
   $('inp-preset-nom').addEventListener('keydown', function(e) { if(e.key==='Enter') confirmerPreset(); });
   $('overlay-preset').addEventListener('click', function(e) { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
