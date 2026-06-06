@@ -1440,6 +1440,72 @@ function ouvrirModalSalle() {
 
 function fermerModalSalle() { $('overlay-salle').classList.remove('ouvert'); }
 
+/* ══ VIDER SALLES ══ */
+function ouvrirModalViderSalles() {
+  var liste = $('vider-salles-liste');
+  liste.innerHTML = '';
+
+  if (!salles.length) { toast("Aucune salle disponible", "err"); return; }
+
+  // Ligne "Tout sélectionner"
+  var rowAll = document.createElement("label");
+  rowAll.className = "vider-row vider-row-all";
+  var cbAll = document.createElement("input");
+  cbAll.type = "checkbox"; cbAll.id = "cb-vider-all";
+  cbAll.addEventListener("change", function() {
+    liste.querySelectorAll(".cb-vider-salle:not(:disabled)").forEach(function(cb) { cb.checked = cbAll.checked; });
+  });
+  var spanAll = document.createElement("span"); spanAll.textContent = "Toutes les salles";
+  rowAll.appendChild(cbAll); rowAll.appendChild(spanAll);
+  liste.appendChild(rowAll);
+
+  salles.forEach(function(s) {
+    var nb = (s.positions || []).length;
+    var row = document.createElement("label");
+    row.className = "vider-row" + (nb === 0 ? " desactivee" : "");
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "cb-vider-salle";
+    cb.value = s.id; cb.dataset.nom = s.nom || ("Salle " + s.id);
+    if (nb === 0) cb.disabled = true;
+    var span = document.createElement("span"); span.textContent = s.nom || ("Salle " + s.id);
+    var count = document.createElement("span"); count.className = "vider-count";
+    count.textContent = nb === 0 ? "vide" : (nb + " toile" + (nb > 1 ? "s" : ""));
+    row.appendChild(cb); row.appendChild(span); row.appendChild(count);
+    liste.appendChild(row);
+  });
+
+  $("overlay-vider-salles").classList.add("ouvert");
+}
+
+function fermerModalViderSalles() {
+  $("overlay-vider-salles").classList.remove("ouvert");
+}
+
+async function validerViderSalles() {
+  var checks = document.querySelectorAll(".cb-vider-salle:checked");
+  if (!checks.length) { toast("Aucune salle sélectionnée", "err"); return; }
+
+  var ids = Array.from(checks).map(function(cb) { return parseInt(cb.value); });
+  var noms = Array.from(checks).map(function(cb) { return cb.dataset.nom; }).join(", ");
+
+  ids.forEach(function(id) {
+    var s = salles.find(function(x) { return x.id === id; });
+    if (s) { s.positions = []; s.toiles = []; }
+  });
+
+  fermerModalViderSalles();
+  afficherPlan();
+  if (salleActive && ids.indexOf(salleActive.id) >= 0) afficherMur();
+
+  try {
+    await sauvegarder("Vider salle(s) : " + noms);
+    toast("✓ " + ids.length + " salle" + (ids.length > 1 ? "s vidées" : " vidée"));
+  } catch(e) {
+    toast("Erreur lors de la sauvegarde", "err", 3000);
+  }
+}
+
+
 async function creerSalle() {
   const nom = $('inp-salle-nom').value.trim() || `Salle ${salles.length + 1}`;
   const theme = $('inp-salle-theme').value.trim();
@@ -1983,6 +2049,15 @@ $('musique-overlay')?.addEventListener('click', () => {
   $('musique-panel').classList.remove('ouvert');
   $('musique-overlay').classList.remove('ouvert');
   $('btn-musique-toggle').classList.remove('on');
+});
+
+// ── Modal Vider salles ───────────────────────────────────────────
+$('btn-vider-salles')?.addEventListener('click', ouvrirModalViderSalles);
+$('btn-close-vider')?.addEventListener('click', fermerModalViderSalles);
+$('btn-vider-annuler')?.addEventListener('click', fermerModalViderSalles);
+$('btn-vider-valider')?.addEventListener('click', validerViderSalles);
+$('overlay-vider-salles')?.addEventListener('click', function(e) {
+  if (e.target === this) fermerModalViderSalles();
 });
 async function sauverCreditsMusique() {
   if (!token) { toast('Token GitHub requis', 'err'); return; }

@@ -139,6 +139,15 @@ button{cursor:pointer;}
   border:0.5px solid var(--brd);background:transparent;color:var(--muted);
   transition:border-color .2s,color .2s;}
 .ctrl-btn:hover,.ctrl-btn.on{border-color:var(--gold);color:var(--gold);}
+.ctrl-btn-danger:hover{border-color:var(--danger);color:var(--danger);}
+/* Modal vider salles */
+.vider-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .2rem;
+  border-bottom:1px solid var(--brd);cursor:pointer;font-size:.88rem;}
+.vider-row:last-child{border-bottom:none;}
+.vider-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
+.vider-row-all{font-weight:600;border-bottom:2px solid var(--brd) !important;margin-bottom:.2rem;padding-bottom:.6rem;}
+.vider-row.desactivee{opacity:.35;cursor:default;}
+.vider-count{margin-left:auto;font-size:.75rem;color:var(--muted);flex-shrink:0;}
 .rename-wrap{display:flex;align-items:center;gap:.3rem;margin-left:auto;}
 .rename-inp{font-size:11px;padding:.26rem .55rem;border-radius:6px;
   border:0.5px solid var(--brd);background:var(--bg3);color:var(--text);width:90px;}

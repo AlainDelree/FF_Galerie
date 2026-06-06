@@ -112,6 +112,7 @@
         <span class="salle-badge" id="badge-salle">—</span>
         <button class="ctrl-btn" id="btn-coul-toggle">🎨 Couleurs/Textures</button>
         <button class="ctrl-btn" id="btn-musique-toggle">🎵 Musique</button>
+        <button class="ctrl-btn ctrl-btn-danger" id="btn-vider-salles" title="Retirer les toiles d'une ou plusieurs salles">🧹 Vider</button>
         <div class="rename-wrap">
           <input class="rename-inp" type="text" id="inp-rename" placeholder="Nouveau nom…">
           <button class="ok-btn" id="btn-rename">OK</button>
@@ -718,6 +719,25 @@
     <div class="modal-foot">
       <button class="btn btn-outline btn-sm" id="btn-annuler-salle">Annuler</button>
       <button class="btn btn-or" id="btn-creer-salle">Créer la salle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL VIDER SALLES ══ -->
+<div class="overlay" id="overlay-vider-salles">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-tit">🧹 Vider des salles</span>
+      <button class="btn-close" id="btn-close-vider">×</button>
+    </div>
+    <div class="modal-body" style="gap:.3rem;padding:.8rem 1.2rem;">
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .5rem;">Les toiles restent dans le stock — seule leur position sur le mur est effacée.</p>
+      <div id="vider-salles-liste"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" id="btn-vider-annuler">Annuler</button>
+      <button class="btn btn-danger" id="btn-vider-valider">🧹 Vider les salles sélectionnées</button>
     </div>
   </div>
 </div>
