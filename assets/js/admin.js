@@ -996,10 +996,12 @@ function afficherMurPlacement() {
     bg.appendChild(ov);
   }
 
-  // Cellules vides
+  // Cellules vides — colorées vert/rouge si une toile est en attente de placement
+  const _plWH = selectedToilePl ? calcCases(selectedToilePl.dimensions) : null;
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
     if (occupancy[`${c},${r}`]) continue;
     const cell = document.createElement('div'); cell.className='cellule';
+    if (_plWH) cell.classList.add(canPlace(c,r,_plWH.w,_plWH.h,null) ? 'cel-ok' : 'cel-ko');
     cell.style.gridColumn=c; cell.style.gridRow=r;
     cell.dataset.col=c; cell.dataset.row=r;
     cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
