@@ -2355,6 +2355,38 @@ $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e 
 // ═══════════════════════════════════════════════
 let cropperInst = null;
 let cropCallback = null;
+let _cropInitCanvas = null; // état initial du canvas pour reset zoom
+let _cropLastTap = 0;       // timestamp dernier tap pour double-tap
+
+/* ── Listeners permanents sur le crop-canvas-wrap ── */
+(function() {
+  const wrap = $('crop-canvas-wrap');
+
+  // Fix pan après pinch-zoom : Cropper.js ne réactive pas toujours dragMode
+  wrap.addEventListener('touchend', function(e) {
+    if (cropperInst && e.touches.length === 0) {
+      setTimeout(function() { cropperInst.setDragMode('move'); }, 30);
+    }
+  }, { passive: true });
+
+  // Double-tap mobile → reset zoom
+  wrap.addEventListener('touchstart', function(e) {
+    if (!cropperInst || e.touches.length !== 1) return;
+    const now = Date.now();
+    if (now - _cropLastTap < 300) {
+      e.preventDefault();
+      if (_cropInitCanvas) cropperInst.setCanvasData(Object.assign({}, _cropInitCanvas));
+    }
+    _cropLastTap = now;
+  }, { passive: false });
+
+  // Double-clic desktop → reset zoom
+  wrap.addEventListener('dblclick', function() {
+    if (cropperInst && _cropInitCanvas) {
+      cropperInst.setCanvasData(Object.assign({}, _cropInitCanvas));
+    }
+  });
+})();
 
 function ouvrirCrop(file, callback) {
   cropCallback = callback;
@@ -2389,6 +2421,7 @@ function ouvrirCrop(file, callback) {
         zoomable: true,
         zoomOnTouch: true,
         zoomOnWheel: false,
+        ready: function() { _cropInitCanvas = cropperInst.getCanvasData(); }
       });
       // Étape 1 visible, étape 2 cachée
       $('crop-etape1').style.display = '';
@@ -2404,6 +2437,7 @@ function fermerCrop() {
   $('overlay-crop').classList.remove('ouvert');
   if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
   cropCallback = null;
+  _cropInitCanvas = null;
   $('inp-photo').value = '';
 }
 
@@ -2443,6 +2477,7 @@ function ouvrirCropDepuisSrc(src, callback) {
       cropBoxMovable: true, cropBoxResizable: true,
       toggleDragModeOnDblclick: false, responsive: true,
       movable: true, zoomable: true, zoomOnTouch: true, zoomOnWheel: false,
+      ready: function() { _cropInitCanvas = cropperInst.getCanvasData(); }
     });
     $('crop-etape1').style.display = '';
     $('crop-etape2').style.display = 'none';
