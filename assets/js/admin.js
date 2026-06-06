@@ -1970,10 +1970,14 @@ function getColorHist(type) {
 
 function pushColorHist(type, color) {
   var key  = type === 'mur' ? K.mur_hist : K.cad_hist;
-  var hist = getColorHist(type).filter(function(c){ return c.toLowerCase() !== color.toLowerCase(); });
-  hist.unshift(color);
-  hist = hist.slice(0, 8);
-  try { localStorage.setItem(key, JSON.stringify(hist)); } catch(e) {}
+  var hist = getColorHist(type);
+  var alreadyIn = hist.some(function(c){ return c.toLowerCase() === color.toLowerCase(); });
+  if (!alreadyIn) {
+    hist = hist.filter(function(c){ return c.toLowerCase() !== color.toLowerCase(); });
+    hist.unshift(color);
+    hist = hist.slice(0, 8);
+    try { localStorage.setItem(key, JSON.stringify(hist)); } catch(e) {}
+  }
   renderColorSwatches(type);
 }
 
