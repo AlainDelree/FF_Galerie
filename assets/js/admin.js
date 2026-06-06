@@ -948,6 +948,20 @@ function quitterModePlacement() {
   buildOccupancy(); afficherMur();
 }
 
+/* Met à jour le panneau de contrôle fixe selon la toile sélectionnée sur le mur */
+function majCtrlPanel() {
+  var panel = $("pl-ctrl-panel");
+  var nomEl = $("pl-ctrl-nom");
+  if (!panel) return;
+  if (peintureSurMurSel === null) {
+    panel.classList.remove("active");
+    return;
+  }
+  var t = toiles.find(function(x){ return x.id === peintureSurMurSel; });
+  panel.classList.add("active");
+  if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
+}
+
 function afficherMurPlacement() {
   const bg = $('mur-placement');
   bg.innerHTML = '';
@@ -966,28 +980,14 @@ function afficherMurPlacement() {
     el.style.gridRow    = `${p.row} / span ${p.h}`;
     el.style.borderColor = couleurCadresActuel;
     if (t.photo) { const img = document.createElement('img'); img.src = t.photo; img.alt=''; img.draggable=false; el.appendChild(img); }
-    if (estSel) {
-      const ov = document.createElement('div'); ov.className = 'tp-arrows';
-      ov.innerHTML = `<button class="tp-arr" data-d="0,-1">↑</button><div class="tp-arrows-mid"><button class="tp-arr" data-d="-1,0">←</button><button class="tp-arr suppr" data-rm="1">✕</button><button class="tp-arr" data-d="1,0">→</button></div><button class="tp-arr" data-d="0,1">↓</button>`;
-      ov.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const [dc,dr]=b.dataset.d.split(',').map(Number); deplacerPeinture(p.id,dc,dr); afficherMurPlacement(); }));
-      ov.querySelector('[data-rm]').addEventListener('click', e => {
-        e.stopPropagation();
-        // Retire du mur MAIS reste dans le strip (ajout à toilesSelectionnees)
-        salleActive.positions = (salleActive.positions||[]).filter(x=>x.id!==p.id);
-        salleActive.toiles = salleActive.toiles.filter(id=>id!==p.id);
-        toilesSelectionnees.add(p.id); // reste visible dans le strip
-        peintureSurMurSel = null; selectedToilePl = null;
-        buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
-        marquerChangement();
-        $('pl-aide').textContent = '"' + (toiles.find(x=>x.id===p.id)?.titre||'—') + '" retirée — clique sur le mur pour la replacer';
-      });
-      el.appendChild(ov);
-    } else {
+    if (!estSel) {
       const lbl = document.createElement('div'); lbl.className = 'tp-lbl'; lbl.textContent = t.titre||'—'; el.appendChild(lbl);
     }
     el.addEventListener('click', () => { peintureSurMurSel = peintureSurMurSel===p.id?null:p.id; afficherMurPlacement(); });
     bg.appendChild(el);
   });
+
+  majCtrlPanel();
 
   // Cellules vides
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
@@ -2121,6 +2121,30 @@ $('btn-modifier-toile').addEventListener('click', () => {
 });
 $('btn-fin-placement').addEventListener('click', quitterModePlacement);
 $('btn-tout-mettre').addEventListener('click', autoPlacerTout);
+
+/* Panneau de contrôle fixe — déplacement et suppression de la toile sélectionnée */
+(function() {
+  function mvSel(dc, dr) {
+    if (peintureSurMurSel === null) return;
+    deplacerPeinture(peintureSurMurSel, dc, dr);
+    afficherMurPlacement();
+  }
+  $("pl-btn-up")   ?.addEventListener("click", function(){ mvSel( 0,-1); });
+  $("pl-btn-down") ?.addEventListener("click", function(){ mvSel( 0, 1); });
+  $("pl-btn-left") ?.addEventListener("click", function(){ mvSel(-1, 0); });
+  $("pl-btn-right")?.addEventListener("click", function(){ mvSel( 1, 0); });
+  $("pl-btn-rm")   ?.addEventListener("click", function() {
+    if (peintureSurMurSel === null) return;
+    var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || "—";
+    salleActive.positions = (salleActive.positions||[]).filter(function(x){ return x.id !== peintureSurMurSel; });
+    salleActive.toiles    = (salleActive.toiles||[]).filter(function(id){ return id !== peintureSurMurSel; });
+    toilesSelectionnees.add(peintureSurMurSel);
+    peintureSurMurSel = null; selectedToilePl = null;
+    buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
+    marquerChangement();
+    $("pl-aide").textContent = "\"" + titre + "\" retirée — clique sur le mur pour la replacer";
+  });
+})();
 
 // Intercepte le bouton retour Android quand le mode arrangement est ouvert
 window.addEventListener('popstate', () => {
