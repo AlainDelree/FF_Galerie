@@ -3781,9 +3781,19 @@ async function uploaderTextureConfirmee() {
   try {
     await commitMulti([{ chemin, contenu: _texData.b64, encoding: 'base64' }], 'Texture : ' + nomSaisi);
     $('overlay-tex-upload').style.display = 'none';
+    // Afficher le swatch immédiatement avec le dataUrl local
+    TEXTURES[chemin] = 'url("' + _texData.dataUrl + '")';
+    var _cont = partager ? $('textures-gh-partage') : $('textures-gh-prive');
+    var _wrap = partager ? $('tex-gh-partage-wrap') : $('tex-gh-prive-wrap');
+    if (_cont && _wrap) {
+      _wrap.style.display = '';
+      _cont.appendChild(creerSwatchGH(chemin, _texData.dataUrl, partager && ADMIN_CFG.prefix === 'ff'));
+    }
     _texData = null;
-    toast('✓ Texture "' + nomSaisi + '" uploadée');
-    await chargerTexturesGitHub();
+    toast('✓ Texture "' + nomSaisi + '" ajoutée');
+    // Refresh depuis GitHub après 3s (le temps que le commit soit indexé)
+    window._texturesGHChargees = false;
+    setTimeout(function() { chargerTexturesGitHub(); }, 3000);
   } catch(e) { $('tex-progress').textContent = 'Erreur : ' + e.message; }
   $('btn-tex-confirmer').disabled = false;
 }
@@ -3818,7 +3828,7 @@ async function chargerTexturesGitHub() {
 function creerSwatchGH(chemin, url, suppressible) {
   var sw = document.createElement('div');
   sw.className = 'sw tex-gh' + (textureActuelle === chemin ? ' sel' : '');
-  sw.style.cssText = 'background-image:url("' + url + '");background-size:cover;position:relative;overflow:visible;';
+  sw.style.cssText = 'background-image:url("' + url + '");background-size:cover;position:relative;';
   sw.dataset.val = chemin;
   sw.title = chemin.split('/').pop().replace(/_[a-z0-9]+\.jpg$/i, '');
   sw.addEventListener('click', function() {
@@ -3830,9 +3840,10 @@ function creerSwatchGH(chemin, url, suppressible) {
     var del = document.createElement('button');
     del.textContent = '✕';
     del.className = 'tex-del-btn';
-    del.style.cssText = 'position:absolute;top:-5px;right:-5px;width:14px;height:14px;'
+    del.style.cssText = 'position:absolute;top:1px;right:1px;width:13px;height:13px;'
       + 'border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:8px;'
-      + 'cursor:pointer;line-height:14px;padding:0;z-index:2;display:none;';
+      + 'cursor:pointer;line-height:13px;padding:0;z-index:2;display:none;'
+      + 'align-items:center;justify-content:center;';
     del.title = 'Supprimer';
     del.addEventListener('click', async function(e) {
       e.stopPropagation();
