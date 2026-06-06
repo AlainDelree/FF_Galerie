@@ -8,8 +8,34 @@
       "couleur_cadres": "#c8a050",
       "texture": "artistes/alaindelree/data/textures/1000014236_mpz15ibp.jpg",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        5,
+        7,
+        6
+      ],
+      "positions": [
+        {
+          "id": 5,
+          "col": 1,
+          "row": 2,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 7,
+          "col": 10,
+          "row": 1,
+          "w": 2,
+          "h": 3
+        },
+        {
+          "id": 6,
+          "col": 6,
+          "row": 4,
+          "w": 4,
+          "h": 5
+        }
+      ]
     },
     {
       "id": 2,
