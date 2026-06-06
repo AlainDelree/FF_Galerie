@@ -611,8 +611,9 @@ const GALERIE_CFG = {
         // Applique couleur/texture du mur depuis l'admin
         if (salle.couleur_mur) mur.style.backgroundColor = salle.couleur_mur;
 
-        // Détermine la couleur des cadres
-        const couleurCadres = salle.couleur_cadres || '#3a3a3a';
+        // Détermine la couleur et l'épaisseur des cadres
+        const couleurCadres  = salle.couleur_cadres  || '#3a3a3a';
+        const epaisseurCadres = salle.epaisseur_cadres || 2;
 
         const positions = salle.positions || [];
         const toilesSalle = (salle.toiles || []).map(id => toileMap[id]).filter(Boolean);
@@ -676,7 +677,7 @@ const GALERIE_CFG = {
 
             const cadre = document.createElement('div');
             cadre.className = 'cadre-grille';
-            cadre.style.border = `3px solid ${couleurCadres}`;
+            cadre.style.border = `${epaisseurCadres}px solid ${couleurCadres}`;
             cadre.style.boxShadow = `0 0 0 1px rgba(0,0,0,.5), 2px 4px 14px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.06)`;
 
             if (t.photo) {

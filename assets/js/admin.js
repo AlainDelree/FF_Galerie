@@ -218,6 +218,7 @@ function demarrerTimerAttente() {
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
 let couleurCadresActuel = '#3a3a3a';
+let epaisseurCadresActuel = 2;
 let textureActuelle = 'none';
 
 // ═══════════════════════════════════════════════
@@ -438,6 +439,7 @@ async function chargerTout() {
       theme: s.theme || '',
       couleur_mur: s.couleur_mur || '#2e2e2e',
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
+      epaisseur_cadres: s.epaisseur_cadres || 2,
       texture: s.texture || 'none',
       visible: s.visible !== false,
       toiles: s.toiles || [],
@@ -550,6 +552,7 @@ function selectSalle(id) {
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurCadresActuel = salleActive.couleur_cadres;
+  epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
   appliquerApparence();
   // Affiche mur + stock
@@ -1695,8 +1698,14 @@ function appliquerApparence() {
   document.querySelectorAll('#sw-texture .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
   // Met à jour les cadres affichés
   document.querySelectorAll('.toile-posee').forEach(el => {
-    if (!el.classList.contains('reserve-posee')) el.style.borderColor = couleurCadresActuel;
+    if (!el.classList.contains('reserve-posee')) {
+      el.style.borderColor = couleurCadresActuel;
+      el.style.borderWidth = epaisseurCadresActuel + 'px';
+    }
   });
+  // Sync slider épaisseur
+  var sl = $('ep-cadres'); if (sl) sl.value = epaisseurCadresActuel;
+  var vl = $('ep-cadres-val'); if (vl) vl.textContent = epaisseurCadresActuel + 'px';
 }
 
 // ═══════════════════════════════════════════════
@@ -1832,7 +1841,7 @@ function confirmerPreset() {
   const nom = $('inp-preset-nom').value.trim();
   if (!nom) { toast('Entrez un nom pour le preset', 'err'); return; }
   const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
-  presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, texture: textureActuelle };
+  presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, epaisseur_cadres: epaisseurCadresActuel, texture: textureActuelle };
   localStorage.setItem(K.presets, JSON.stringify(presets));
   $('overlay-preset').classList.remove('ouvert');
   toast(`✓ Preset "${nom}" sauvegardé`);
@@ -1845,13 +1854,15 @@ function chargerPreset() {
   const choix = noms.length === 1 ? noms[0] : prompt(`Presets disponibles :\n${noms.map((n,i) => `${i+1}. ${n}`).join('\n')}\n\nEntrez le nom :`);
   if (!choix || !presets[choix]) { if(choix) toast('Preset non trouvé', 'err'); return; }
   const p = presets[choix];
-  couleurMurActuel = p.couleur_mur;
+  couleurMurActuel    = p.couleur_mur;
   couleurCadresActuel = p.couleur_cadres;
+  epaisseurCadresActuel = p.epaisseur_cadres || 2;
   textureActuelle = p.texture || 'none';
   if (salleActive) {
-    salleActive.couleur_mur = couleurMurActuel;
+    salleActive.couleur_mur    = couleurMurActuel;
     salleActive.couleur_cadres = couleurCadresActuel;
-    salleActive.texture = textureActuelle;
+    salleActive.epaisseur_cadres = epaisseurCadresActuel;
+    salleActive.texture        = textureActuelle;
     marquerChangement();
   }
   appliquerApparence(); afficherMur();
@@ -1962,6 +1973,11 @@ function initSwatches() {
     setCouleurCadres(e.target.value);
   });
 
+  // Slider épaisseur cadres
+  $('ep-cadres').addEventListener('input', function() {
+    setEpaisseurCadres(parseInt(this.value));
+  });
+
   $('btn-preset-sauver').addEventListener('click', ouvrirModalPreset);
   $('btn-preset-charger').addEventListener('click', chargerPreset);
   $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
@@ -1983,6 +1999,15 @@ function setCouleurCadres(col) {
   if (salleActive) { salleActive.couleur_cadres = col; marquerChangement(); }
   appliquerApparence();
   afficherMur();
+}
+
+function setEpaisseurCadres(ep) {
+  epaisseurCadresActuel = ep;
+  if (salleActive) { salleActive.epaisseur_cadres = ep; marquerChangement(); }
+  var val = $('ep-cadres-val'); if (val) val.textContent = ep + 'px';
+  document.querySelectorAll('.toile-posee').forEach(function(el) {
+    if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
+  });
 }
 
 function setTexture(val) {
