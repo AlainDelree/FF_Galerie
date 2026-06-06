@@ -1027,6 +1027,22 @@ function afficherStripPlacement() {
 
     const si = document.createElement('div'); si.className='simg';
     if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; img.loading='lazy'; si.appendChild(img); }
+
+    // Grille W×H sur la miniature quand mode grille actif
+    if (grilleVisiblePl) {
+      var _pos = (salleActive.positions||[]).find(function(p){ return p.id===id; });
+      var _wh  = _pos ? {w:_pos.w, h:_pos.h} : calcCases(t.dimensions);
+      si.style.position = 'relative';
+      si.style.backgroundImage = [
+        'repeating-linear-gradient(to right,rgba(255,255,255,.55) 0,rgba(255,255,255,.55) 1px,transparent 1px,transparent calc(100%/' + _wh.w + '))',
+        'repeating-linear-gradient(to bottom,rgba(255,255,255,.55) 0,rgba(255,255,255,.55) 1px,transparent 1px,transparent calc(100%/' + _wh.h + '))'
+      ].join(',');
+      var _dim = document.createElement('div');
+      _dim.style.cssText = 'position:absolute;bottom:2px;right:2px;font-size:7px;font-weight:700;color:#fff;background:rgba(0,0,0,.65);padding:0 3px;border-radius:2px;pointer-events:none;z-index:1;line-height:1.6;';
+      _dim.textContent = _wh.w + '\u00d7' + _wh.h;
+      si.appendChild(_dim);
+    }
+
     item.appendChild(si);
 
     // Badge taille
@@ -2126,6 +2142,7 @@ $('btn-grille-pl').addEventListener('click', function() {
   $('mur-placement').classList.toggle('grille-on', grilleVisiblePl);
   $('btn-grille-pl').style.color = grilleVisiblePl ? 'var(--gold)' : '';
   $('btn-grille-pl').style.borderColor = grilleVisiblePl ? 'var(--gold)' : '';
+  afficherStripPlacement();
 });
 
 /* Panneau de contrôle fixe — déplacement et suppression de la toile sélectionnée */

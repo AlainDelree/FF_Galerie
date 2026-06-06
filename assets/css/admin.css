@@ -259,7 +259,7 @@ button{cursor:pointer;}
 .pl-titre strong{color:var(--text);}
 .placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;}
 .placement-mur-bg{border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(26px,1fr));grid-template-rows:repeat(8,minmax(26px,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
-.placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
+.placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.35)!important;border-width:1px!important;}
 .placement-aide{padding:.3rem;font-size:11px;color:var(--muted);text-align:center;flex-shrink:0;}
 /* Strip toiles sélectionnées */
 .placement-strip{height:96px;flex-shrink:0;border-top:1px solid var(--brd);background:var(--bg2);display:flex;align-items:center;gap:6px;padding:.4rem .7rem;overflow-x:auto;overflow-y:hidden;}
