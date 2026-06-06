@@ -3808,6 +3808,8 @@ async function chargerTexturesGitHub() {
       });
     } catch(e) { if (d.wrap) d.wrap.style.display = 'none'; }
   }
+  // Rafraîchir le mur si une texture GitHub est active (race avec chargerTout)
+  if (salleActive) appliquerApparence();
 }
 
 function creerSwatchGH(chemin, url, suppressible) {
