@@ -6,6 +6,7 @@
       "theme": "",
       "couleur_mur": "#8892c2",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": false,
       "toiles": [
@@ -51,6 +52,7 @@
       "theme": "",
       "couleur_mur": "#29275e",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "damier",
       "visible": true,
       "toiles": [
@@ -88,6 +90,7 @@
       "theme": "",
       "couleur_mur": "#571b1b",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "assets/images/textures/1000014237_mpz1bv4e.jpg",
       "visible": true,
       "toiles": [
@@ -125,6 +128,7 @@
       "theme": "",
       "couleur_mur": "#2c2535",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -178,6 +182,7 @@
       "theme": "",
       "couleur_mur": "#25dbdb",
       "couleur_cadres": "#1c1c1c",
+      "epaisseur_cadres": 2,
       "texture": "velours",
       "visible": true,
       "toiles": [
@@ -215,6 +220,7 @@
       "theme": "",
       "couleur_mur": "#e8e4dc",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -252,6 +258,7 @@
       "theme": "",
       "couleur_mur": "#f5f5f5",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -297,6 +304,7 @@
       "theme": "",
       "couleur_mur": "#b178b3",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -326,6 +334,7 @@
       "theme": "",
       "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "damier",
       "visible": true,
       "toiles": [
