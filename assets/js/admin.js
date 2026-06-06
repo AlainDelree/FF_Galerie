@@ -37,8 +37,13 @@ const K = {
   auth:     ADMIN_CFG.prefix + '_auth',
   token:    'ff_gh_token',          /* token partagé — même repo */
   presets:  ADMIN_CFG.prefix + '_presets',
-  textures: ADMIN_CFG.prefix + '_textures_custom'
+  textures: ADMIN_CFG.prefix + '_textures_custom',
+  mur_hist: ADMIN_CFG.prefix + '_mur_hist',
+  cad_hist: ADMIN_CFG.prefix + '_cad_hist'
 };
+
+const MUR_DEFAULTS = ['#2e2e2e','#1c1c1c','#2a2420','#2c2535','#1e3a2a','#3a2a1e','#e8e4dc','#f5f5f5'];
+const CAD_DEFAULTS = ['#3a3a3a','#c8a050','#f0f0f0','#1c1c1c','#5c3d2e'];
 
 // ═══════════════════════════════════════════════
 // RAPPORT D'ERREURS AUTOMATIQUE → GitHub Issues
@@ -1685,8 +1690,8 @@ function appliquerApparence() {
     ? `${tex}, ${couleurMurActuel}`
     : couleurMurActuel;
   // Swatches
-  document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurMurActuel));
-  document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === couleurCadresActuel));
+  renderColorSwatches('mur');
+  renderColorSwatches('cadres');
   document.querySelectorAll('#sw-texture .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
   // Met à jour les cadres affichés
   document.querySelectorAll('.toile-posee').forEach(el => {
@@ -1806,6 +1811,10 @@ async function supprimerMusique() {
 // PRESETS
 // ═══════════════════════════════════════════════
 function ouvrirModalPreset() {
+  // Fermer le panneau couleurs pour ne pas gêner la saisie
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
   // Prérempli la preview
   $('preset-prev-mur').style.background = couleurMurActuel;
   $('preset-prev-mur-val').textContent = couleurMurActuel;
@@ -1894,31 +1903,72 @@ function swSelect(el, groupe) {
   el.classList.add('sel');
 }
 
+/* ── Historique couleurs ── */
+function getColorHist(type) {
+  var key = type === 'mur' ? K.mur_hist : K.cad_hist;
+  var def = type === 'mur' ? MUR_DEFAULTS : CAD_DEFAULTS;
+  try { return JSON.parse(localStorage.getItem(key)) || def.slice(); } catch(e) { return def.slice(); }
+}
+
+function pushColorHist(type, color) {
+  var key  = type === 'mur' ? K.mur_hist : K.cad_hist;
+  var hist = getColorHist(type).filter(function(c){ return c.toLowerCase() !== color.toLowerCase(); });
+  hist.unshift(color);
+  hist = hist.slice(0, 8);
+  try { localStorage.setItem(key, JSON.stringify(hist)); } catch(e) {}
+  renderColorSwatches(type);
+}
+
+function renderColorSwatches(type) {
+  var containerId = type === 'mur' ? 'sw-mur' : 'sw-cadres';
+  var container   = $(containerId);
+  var current     = type === 'mur' ? couleurMurActuel : couleurCadresActuel;
+  var plus        = container.querySelector('.sw-plus');
+  container.innerHTML = '';
+  getColorHist(type).forEach(function(col) {
+    var sw = document.createElement('div');
+    sw.className = 'sw' + (col.toLowerCase() === current.toLowerCase() ? ' sel' : '');
+    sw.style.background = col;
+    sw.dataset.val = col;
+    sw.addEventListener('click', function() {
+      pushColorHist(type, col);
+      if (type === 'mur') setCouleurMur(col);
+      else setCouleurCadres(col);
+    });
+    container.appendChild(sw);
+  });
+  if (plus) container.appendChild(plus);
+}
+
 function initSwatches() {
-  document.querySelectorAll('#sw-mur .sw').forEach(sw => {
-    sw.addEventListener('click', () => { swSelect(sw, 'mur'); setCouleurMur(sw.dataset.val); });
+  renderColorSwatches('mur');
+  renderColorSwatches('cadres');
+
+  document.querySelectorAll('#sw-texture .sw').forEach(function(sw) {
+    sw.addEventListener('click', function() { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
   });
-  document.querySelectorAll('#sw-cadres .sw').forEach(sw => {
-    sw.addEventListener('click', () => { swSelect(sw, 'cadres'); setCouleurCadres(sw.dataset.val); });
-  });
-  document.querySelectorAll('#sw-texture .sw').forEach(sw => {
-    sw.addEventListener('click', () => { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
-  });
-  $('mur-custom').addEventListener('change', e => {
-    document.querySelectorAll('#sw-mur .sw').forEach(s => s.classList.remove('sel'));
+
+  // Picker mur : initialisé à la couleur courante
+  $('mur-custom').addEventListener('click', function() { this.value = couleurMurActuel; });
+  $('mur-custom').addEventListener('change', function(e) {
+    pushColorHist('mur', e.target.value);
     setCouleurMur(e.target.value);
   });
-  $('btn-preset-sauver').addEventListener('click', ouvrirModalPreset);
-  $('btn-preset-charger').addEventListener('click', chargerPreset);
-  $('btn-close-preset').addEventListener('click', () => $('overlay-preset').classList.remove('ouvert'));
-  $('btn-annuler-preset').addEventListener('click', () => $('overlay-preset').classList.remove('ouvert'));
-  $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
-  $('inp-preset-nom').addEventListener('keydown', e => { if(e.key==='Enter') confirmerPreset(); });
-  $('overlay-preset').addEventListener('click', e => { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
-  $('cadres-custom').addEventListener('change', e => {
-    document.querySelectorAll('#sw-cadres .sw').forEach(s => s.classList.remove('sel'));
+
+  // Picker cadres : initialisé à la couleur courante
+  $('cadres-custom').addEventListener('click', function() { this.value = couleurCadresActuel; });
+  $('cadres-custom').addEventListener('change', function(e) {
+    pushColorHist('cadres', e.target.value);
     setCouleurCadres(e.target.value);
   });
+
+  $('btn-preset-sauver').addEventListener('click', ouvrirModalPreset);
+  $('btn-preset-charger').addEventListener('click', chargerPreset);
+  $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
+  $('btn-annuler-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
+  $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
+  $('inp-preset-nom').addEventListener('keydown', function(e) { if(e.key==='Enter') confirmerPreset(); });
+  $('overlay-preset').addEventListener('click', function(e) { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
   afficherTexturesCustom();
 }
 
