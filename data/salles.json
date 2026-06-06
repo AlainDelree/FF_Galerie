@@ -86,9 +86,9 @@
       "id": 7,
       "nom": "Cuisine",
       "theme": "",
-      "couleur_mur": "#6a80b8",
+      "couleur_mur": "#571b1b",
       "couleur_cadres": "#3a3a3a",
-      "texture": "damier",
+      "texture": "assets/images/textures/1000014237_mpz1bv4e.jpg",
       "visible": true,
       "toiles": [
         13,
