@@ -1819,6 +1819,15 @@ async function supprimerMusique() {
 // ═══════════════════════════════════════════════
 // PRESETS
 // ═══════════════════════════════════════════════
+/* Retourne le nom lisible d'une texture (builtin ou custom) */
+function getTextureName(key) {
+  var nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
+  if (nomsTex[key]) return nomsTex[key];
+  var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
+  var found = customs.find(function(t){ return t.key === key; });
+  return found ? found.nom : (key ? key : 'Uni');
+}
+
 function ouvrirModalPreset() {
   // Fermer le panneau couleurs pour ne pas gêner la saisie
   $('coul-panel').classList.remove('ouvert');
@@ -1830,7 +1839,7 @@ function ouvrirModalPreset() {
   $('preset-prev-cadres').style.background = couleurCadresActuel;
   $('preset-prev-cadres-val').textContent = couleurCadresActuel;
   const nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
-  $('preset-prev-texture-val').textContent = nomsTex[textureActuelle] || textureActuelle;
+  $('preset-prev-texture-val').textContent = getTextureName(textureActuelle);
   if (TEXTURES[textureActuelle]) $('preset-prev-texture').style.background = TEXTURES[textureActuelle] + ',#555';
   $('inp-preset-nom').value = '';
   $('overlay-preset').classList.add('ouvert');
@@ -1848,13 +1857,16 @@ function confirmerPreset() {
 }
 
 function chargerPreset() {
+  // Fermer le panneau couleurs pour ne pas le laisser devant
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
   const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
   const noms = Object.keys(presets);
   if (!noms.length) { toast("Aucun preset — sauvegardez-en un d'abord", 'err'); return; }
 
   const liste = $('preset-charger-liste');
   liste.innerHTML = '';
-  const nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
 
   noms.forEach(function(nom) {
     const p = presets[nom];
@@ -1875,7 +1887,7 @@ function chargerPreset() {
     infos.style.cssText = 'flex:1;min-width:0;';
     const ep = p.epaisseur_cadres && p.epaisseur_cadres !== 2 ? ' · ' + p.epaisseur_cadres + 'px' : '';
     infos.innerHTML = '<div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + nom + '</div>'
-      + '<div style="font-size:.7rem;color:var(--muted);">' + (nomsTex[p.texture] || p.texture || 'Uni') + ep + '</div>';
+      + '<div style="font-size:.7rem;color:var(--muted);">' + getTextureName(p.texture) + ep + '</div>';
 
     const btnDel = document.createElement('button');
     btnDel.textContent = '🗑';
@@ -1916,21 +1928,48 @@ function chargerPreset() {
 }
 
 
+let _pendingTextureFile = null;
+
 function gererTextureCustom(fichier) {
   if (!fichier) return;
+  _pendingTextureFile = fichier;
+  var suggestion = fichier.name.replace(/\.[^.]+$/, '').replace(/[_\-]/g, ' ').replace(/\s+/g, ' ').trim();
+  $('inp-tex-nom').value = suggestion;
+  $('overlay-tex-nom').classList.add('ouvert');
+  setTimeout(function() { $('inp-tex-nom').select(); }, 150);
+}
+
+function confirmerTextureNom() {
+  var nom = $('inp-tex-nom').value.trim();
+  if (!nom) { toast("Entrez un nom pour la texture", "err"); return; }
+  if (!_pendingTextureFile) return;
+  $('overlay-tex-nom').classList.remove('ouvert');
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = function(e) {
     const dataUrl = e.target.result;
     const key = 'tex_custom_' + Date.now();
     const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
-    customs.push({ key, url: dataUrl, nom: fichier.name.split('.')[0] });
-    if (customs.length > 5) customs.shift(); // garde max 5
+    customs.push({ key, url: dataUrl, nom });
+    if (customs.length > 5) customs.shift();
     localStorage.setItem(K.textures, JSON.stringify(customs));
     afficherTexturesCustom();
     setTexture(key);
-    toast('✓ Texture ajoutée');
+    toast("✓ Texture \"" + nom + "\" ajoutée");
+    _pendingTextureFile = null;
   };
-  reader.readAsDataURL(fichier);
+  reader.readAsDataURL(_pendingTextureFile);
+}
+
+function renommerTexture(key) {
+  var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
+  var t = customs.find(function(x){ return x.key === key; });
+  if (!t) return;
+  var nouveau = prompt("Nouveau nom pour \"" + t.nom + "\" :", t.nom);
+  if (!nouveau || !nouveau.trim()) return;
+  t.nom = nouveau.trim();
+  localStorage.setItem(K.textures, JSON.stringify(customs));
+  afficherTexturesCustom();
+  toast("✓ Renommé en \"" + t.nom + "\"");
 }
 
 function afficherTexturesCustom() {
@@ -1939,6 +1978,8 @@ function afficherTexturesCustom() {
   const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
   customs.forEach(t => {
     TEXTURES[t.key] = `url("${t.url}")`;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block;';
     const sw = document.createElement('div');
     sw.className = 'sw' + (textureActuelle === t.key ? ' sel' : '');
     sw.style.backgroundImage = `url("${t.url}")`;
@@ -1949,7 +1990,17 @@ function afficherTexturesCustom() {
       document.querySelectorAll('#sw-texture .sw, #textures-custom .sw').forEach(s => s.classList.remove('sel'));
       sw.classList.add('sel'); setTexture(t.key);
     });
-    cont.appendChild(sw);
+    // Bouton renommer (petit crayon au survol)
+    const btnRen = document.createElement('button');
+    btnRen.textContent = '✎';
+    btnRen.title = 'Renommer';
+    btnRen.style.cssText = 'position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;border:none;background:var(--gold);color:#111;font-size:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;opacity:0;transition:opacity .15s;';
+    wrap.addEventListener('mouseenter', function(){ btnRen.style.opacity='1'; });
+    wrap.addEventListener('mouseleave', function(){ btnRen.style.opacity='0'; });
+    btnRen.addEventListener('click', function(e){ e.stopPropagation(); renommerTexture(t.key); });
+    wrap.appendChild(sw);
+    wrap.appendChild(btnRen);
+    cont.appendChild(wrap);
   });
 }
 
@@ -2033,6 +2084,10 @@ function initSwatches() {
   $('btn-preset-charger').addEventListener('click', chargerPreset);
   $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
   $('btn-annuler-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
+  $('btn-close-tex-nom').addEventListener('click', function() { $('overlay-tex-nom').classList.remove('ouvert'); _pendingTextureFile = null; });
+  $('btn-annuler-tex-nom').addEventListener('click', function() { $('overlay-tex-nom').classList.remove('ouvert'); _pendingTextureFile = null; });
+  $('btn-confirmer-tex-nom').addEventListener('click', confirmerTextureNom);
+  $('inp-tex-nom').addEventListener('keydown', function(e){ if(e.key==='Enter') confirmerTextureNom(); });
   $('btn-close-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('btn-annuler-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('overlay-preset-charger').addEventListener('click', function(e) { if(e.target===$('overlay-preset-charger')) $('overlay-preset-charger').classList.remove('ouvert'); });
