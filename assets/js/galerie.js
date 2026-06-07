@@ -193,7 +193,11 @@ const GALERIE_CFG = {
       requestAnimationFrame(function() {
         var h = sol.clientHeight;
         if (h > 30) {
-          var vhSvg = Math.round(h * 420 / (sol.clientWidth || 375));
+          // Exclut la zone nav (= padding-bottom de la salle) du VH
+          var salle = sol.closest(".salle");
+          var navH = salle ? parseInt(getComputedStyle(salle).paddingBottom) || 80 : 80;
+          var visH = Math.max(h - navH, Math.round(h * 0.60));
+          var vhSvg = Math.round(visH * 420 / (sol.clientWidth || 375));
           sv.innerHTML = genererSilhouettes(vhSvg);
         }
       });
@@ -328,7 +332,7 @@ const GALERIE_CFG = {
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:100%;">'+
+        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:auto;">'+
         svgParts.join("")+"</svg>";
     }
 
