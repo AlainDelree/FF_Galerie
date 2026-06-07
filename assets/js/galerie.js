@@ -193,11 +193,7 @@ const GALERIE_CFG = {
       requestAnimationFrame(function() {
         var h = sol.clientHeight;
         if (h > 30) {
-          // Exclut la zone nav (= padding-bottom de la salle) du VH
-          var salle = sol.closest(".salle");
-          var navH = salle ? parseInt(getComputedStyle(salle).paddingBottom) || 80 : 80;
-          var visH = Math.max(h - navH, Math.round(h * 0.60));
-          var vhSvg = Math.round(visH * 420 / (sol.clientWidth || 375));
+          var vhSvg = Math.round(h * 420 / (sol.clientWidth || 375));
           sv.innerHTML = genererSilhouettes(vhSvg);
         }
       });
@@ -239,11 +235,13 @@ const GALERIE_CFG = {
       // Très lointain restauré sur GSM (supprimé desktop : trop petit + conflits panneaux)
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
+      // FLOOR : niveau des pieds avant-scène (0.78 × VH = marge nav ~22%)
+      const FLOOR = VH * 0.78;
       const PLANS = [
-        { yFloor: VH * 0.21, hBase: 32, opacite: 0.55, nbMax: isMobile ? nb.tl : 0 }, // très lointain
-        { yFloor: VH * 0.35, hBase: 42, opacite: 0.68, nbMax: nb.lo },                 // lointain
-        { yFloor: VH * 0.65, hBase: 64, opacite: 0.75, nbMax: nb.mi },                 // milieu
-        { yFloor: VH,        hBase: 128, opacite: 0.88, nbMax: nb.av }                 // avant-scène
+        { yFloor: FLOOR * 0.21, hBase: 32, opacite: 0.55, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: FLOOR * 0.35, hBase: 42, opacite: 0.68, nbMax: nb.lo },                 // lointain
+        { yFloor: FLOOR * 0.65, hBase: 64, opacite: 0.75, nbMax: nb.mi },                 // milieu
+        { yFloor: FLOOR,        hBase: 128, opacite: 0.88, nbMax: nb.av }                 // avant-scène
       ];
 
       // Distribue avec pool cyclique : si total > 8, réutilise des silhouettes
@@ -332,7 +330,7 @@ const GALERIE_CFG = {
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:auto;">'+
+        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:100%;">'+
         svgParts.join("")+"</svg>";
     }
 
