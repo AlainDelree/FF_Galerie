@@ -189,14 +189,16 @@ const GALERIE_CFG = {
       sol.appendChild(sv);
       zone.appendChild(sol);
 
-      // 2e passe : mesure la hauteur réelle du plancher après rendu CSS
-      requestAnimationFrame(function() {
-        var h = sol.clientHeight;
-        if (h > 30) {
-          var vhSvg = Math.round(h * 420 / (sol.clientWidth || 375));
-          sv.innerHTML = genererSilhouettes(vhSvg);
-        }
-      });
+      // 2e passe mobile : mesure la hauteur réelle du plancher (flex:1 variable)
+      if (window.innerWidth < 901) {
+        requestAnimationFrame(function() {
+          var h = sol.clientHeight;
+          if (h > 30) {
+            var vhSvg = Math.round(h * 420 / (sol.clientWidth || 375));
+            sv.innerHTML = genererSilhouettes(vhSvg);
+          }
+        });
+      }
 
       // Panneaux de navigation sur pied (visibles desktop via CSS)
       [
@@ -235,8 +237,8 @@ const GALERIE_CFG = {
       // Très lointain restauré sur GSM (supprimé desktop : trop petit + conflits panneaux)
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
-      // FLOOR : niveau des pieds avant-scène (0.78 × VH = marge nav ~22%)
-      const FLOOR = VH * 0.78;
+      // FLOOR : marge nav sur mobile (22%), desktop garde VH plein
+      const FLOOR = isMobile ? VH * 0.78 : VH;
       const PLANS = [
         { yFloor: FLOOR * 0.21, hBase: 32, opacite: 0.55, nbMax: isMobile ? nb.tl : 0 }, // très lointain
         { yFloor: FLOOR * 0.35, hBase: 42, opacite: 0.68, nbMax: nb.lo },                 // lointain
