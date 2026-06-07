@@ -185,9 +185,18 @@ const GALERIE_CFG = {
       sol.className = "plancher-sol";
       const sv = document.createElement("div");
       sv.className = "silhouettes-sol";
-      sv.innerHTML = genererSilhouettes();
+      sv.innerHTML = genererSilhouettes(150); // placeholder — remplacé après layout
       sol.appendChild(sv);
       zone.appendChild(sol);
+
+      // 2e passe : mesure la hauteur réelle du plancher après rendu CSS
+      requestAnimationFrame(function() {
+        var h = sol.clientHeight;
+        if (h > 30) {
+          var vhSvg = Math.round(h * 420 / (sol.clientWidth || 375));
+          sv.innerHTML = genererSilhouettes(vhSvg);
+        }
+      });
 
       // Panneaux de navigation sur pied (visibles desktop via CSS)
       [
@@ -207,12 +216,12 @@ const GALERIE_CFG = {
       return zone;
     }
 
-    function genererSilhouettes() {
+    function genererSilhouettes(vhParam) {
       const pool = [...SIL_DATA].sort(() => Math.random() - 0.5);
 
       // ── 4 plans de profondeur ──────────────────────────────────────
       // Rendu arrière → avant (algorithme du peintre)
-      const VW = 420, VH = 150;
+      const VW = 420, VH = (vhParam && vhParam > 30) ? vhParam : 150;
 
       // Nombre aléatoire de silhouettes par plan
       const isMobile = window.innerWidth < 901;
@@ -227,7 +236,7 @@ const GALERIE_CFG = {
       // Toujours 4 entrées → ZONES[planIdx] jamais undefined
       // nbMax:0 sur desktop → plan.sils vide → forEach le saute
       const PLANS = [
-        { yFloor: 32,        hBase: 32, opacite: 0.55, nbMax: isMobile ? nb.tl : 0 }, // très lointain
+        { yFloor: VH * 0.21, hBase: 32, opacite: 0.55, nbMax: isMobile ? nb.tl : 0 }, // très lointain
         { yFloor: VH * 0.35, hBase: 42, opacite: 0.68, nbMax: nb.lo },                 // lointain
         { yFloor: VH * 0.65, hBase: 64, opacite: 0.75, nbMax: nb.mi },                 // milieu
         { yFloor: VH,        hBase: 128, opacite: 0.88, nbMax: nb.av }                 // avant-scène
@@ -319,7 +328,7 @@ const GALERIE_CFG = {
       });
 
       return '<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg" '+
-        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:auto;vertical-align:bottom">'+
+        'aria-hidden="true" overflow="visible" style="display:block;width:100%;height:100%;">'+
         svgParts.join("")+"</svg>";
     }
 

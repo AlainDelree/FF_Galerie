@@ -297,7 +297,7 @@
       background:linear-gradient(to bottom, rgba(255,240,200,.15), transparent);
       pointer-events:none;
     }
-    .silhouettes-sol { width:100%; position:relative; z-index:4; overflow:visible; }
+    .silhouettes-sol { position:absolute; inset:0; z-index:4; overflow:visible; }
 
     /* ── Plancher galerie (ancien, conservé pour compatibilité) ── */
     .plancher-galerie {
@@ -505,7 +505,8 @@
 
       /* Plancher */
       .plancher-sol    { min-height:120px !important; max-height:175px !important; }
-      .silhouettes-sol { max-width:600px; margin:0 auto; width:100%; }
+      /* Desktop : plancher hauteur fixe → silhouettes en flux normal, centrées */
+      .silhouettes-sol { position:relative; inset:auto; max-width:600px; margin:0 auto; width:100%; }
     }
 
         /* Navigation mobile flèches */
