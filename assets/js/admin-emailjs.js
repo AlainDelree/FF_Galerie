@@ -190,13 +190,7 @@ async function supprimerTextureGitHub(chemin) {
       }
     });
   }
-  var _inpMusique = document.getElementById('inp-musique-upload');
-  if (_inpMusique) {
-    _inpMusique.addEventListener('change', function() {
-      if (this.files[0]) uploaderMusique(this.files[0]);
-      this.value = '';
-    });
-  }
+
   /* _texBound_module */
 })();
 
