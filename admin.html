@@ -977,6 +977,8 @@
         s.src = "assets/js/admin-artistes.js?v=" + Date.now();
         document.body.appendChild(s);
       }
+      /* Tous les modules sont chargés — init différée sûre */
+      if (typeof chargerConfigEmailJS === 'function') chargerConfigEmailJS();
     })();
   </script>
 

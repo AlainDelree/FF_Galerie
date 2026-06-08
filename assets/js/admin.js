@@ -325,7 +325,7 @@ function apresLogin() {
   afficherEcran('ecran-principal');
   chargerTout();
   initTexturesUI();
-  chargerConfigEmailJS();
+  // chargerConfigEmailJS() appelé après chargement de admin-emailjs.js (admin.html)
 }
 
 function initTexturesUI() {
