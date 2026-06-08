@@ -518,22 +518,22 @@ const GALERIE_CFG = {
       if (toile.photo) {
         const img = document.createElement('img');
         // Mur : miniature WebP (fallback → JPG original → drap blanc)
-        var _srcOrig = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
+        var _srcOrig  = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
         var _srcThumb = /^https?:\/\//.test(toile.photo) ? toile.photo
                         : (GALERIE_CFG.assetsBase + toile.photo).replace(/\.jpg$/i, '-thumb.webp');
-        img.src     = _srcThumb;
-        img.alt     = toile.titre || 'Toile';
-        img.loading  = 'lazy';
+        img.alt      = toile.titre || 'Toile';
+        img.loading  = 'lazy';   // AVANT src pour que lazy soit actif dès le chargement
         img.decoding = 'async';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
         img.style.display    = 'block';
         img.onerror = function() {
-          if (!this._fbDone && this.src !== _srcOrig) {
+          if (!this._fbDone) {
             this._fbDone = true; this.src = _srcOrig; // essai JPG original
           } else { cadre.replaceChild(creerDrapBlanc(W, H), this); }
         };
+        img.src = _srcThumb;     // src en dernier — lazy déjà configuré
         cadre.appendChild(img);
       } else {
         const ph = document.createElement('div');
@@ -803,7 +803,8 @@ const GALERIE_CFG = {
             vus.add(p.toile);
             var t = toileMap[p.toile];
             if (!t || !t.photo) return;
-            var src = /^https?:\/\//.test(t.photo) ? t.photo : GALERIE_CFG.assetsBase + t.photo;
+            var src = /^https?:\/\//.test(t.photo) ? t.photo
+                        : (GALERIE_CFG.assetsBase + t.photo).replace(/\.jpg$/i, '-thumb.webp');
             if (si === salleActuelleIdx) photosPrio.push(src);
             else photosReste.push(src);
           });
