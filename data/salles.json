@@ -10,8 +10,7 @@
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": false,
       "toiles": [
-        16,
-        34
+        16
       ],
       "positions": [
         {
@@ -20,13 +19,6 @@
           "row": 1,
           "w": 3,
           "h": 3
-        },
-        {
-          "id": 34,
-          "col": 7,
-          "row": 4,
-          "w": 2,
-          "h": 2
         }
       ]
     },
