@@ -517,14 +517,23 @@ const GALERIE_CFG = {
       cadre.className = 'cadre';
       if (toile.photo) {
         const img = document.createElement('img');
-        img.src = ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo); img.alt = toile.titre || 'Toile';
+        // Mur : miniature WebP (fallback → JPG original → drap blanc)
+        var _srcOrig = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
+        var _srcThumb = /^https?:\/\//.test(toile.photo) ? toile.photo
+                        : (GALERIE_CFG.assetsBase + toile.photo).replace(/\.jpg$/i, '-thumb.webp');
+        img.src     = _srcThumb;
+        img.alt     = toile.titre || 'Toile';
         img.loading  = 'lazy';
         img.decoding = 'async';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
         img.style.display    = 'block';
-        img.onerror = function() { cadre.replaceChild(creerDrapBlanc(W, H), this); };
+        img.onerror = function() {
+          if (!this._fbDone && this.src !== _srcOrig) {
+            this._fbDone = true; this.src = _srcOrig; // essai JPG original
+          } else { cadre.replaceChild(creerDrapBlanc(W, H), this); }
+        };
         cadre.appendChild(img);
       } else {
         const ph = document.createElement('div');
