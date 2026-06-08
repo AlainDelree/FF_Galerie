@@ -958,10 +958,16 @@
         s.onload = resolve;
         document.body.appendChild(s);
       });
-      /* Charge admin-vue-artistes.js + admin-emailjs.js après admin.js */
+      /* Charge les modules après admin.js (ordre : media avant emailjs) */
       await new Promise(resolve => {
         const s = document.createElement("script");
         s.src = "assets/js/admin-vue-artistes.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-media.js?v=" + Date.now();
         s.onload = resolve;
         document.body.appendChild(s);
       });
