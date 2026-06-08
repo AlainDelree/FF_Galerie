@@ -518,6 +518,8 @@ const GALERIE_CFG = {
       if (toile.photo) {
         const img = document.createElement('img');
         img.src = ((/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo); img.alt = toile.titre || 'Toile';
+        img.loading  = 'lazy';
+        img.decoding = 'async';
         img.style.width      = W + 'px';
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
