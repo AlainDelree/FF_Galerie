@@ -329,8 +329,8 @@ function apresLogin() {
 }
 
 function initTexturesUI() {
-  /* Charger les textures GitHub (partagées + privées) */
-  chargerTexturesGitHub();
+  /* Charger les textures GitHub — guard si admin-emailjs.js pas encore chargé */
+  if (typeof chargerTexturesGitHub === 'function') chargerTexturesGitHub();
 }
 
 function deconnecter() {

@@ -983,8 +983,9 @@
         s.src = "assets/js/admin-artistes.js?v=" + Date.now();
         document.body.appendChild(s);
       }
-      /* Tous les modules sont chargés — init différée sûre */
-      if (typeof chargerConfigEmailJS === 'function') chargerConfigEmailJS();
+      /* Tous les modules sont chargés — inits différées sûres */
+      if (typeof chargerConfigEmailJS  === 'function') chargerConfigEmailJS();
+      if (typeof chargerTexturesGitHub === 'function') chargerTexturesGitHub();
     })();
   </script>
 
