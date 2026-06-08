@@ -958,6 +958,19 @@
         s.onload = resolve;
         document.body.appendChild(s);
       });
+      /* Charge admin-vue-artistes.js + admin-emailjs.js après admin.js */
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-vue-artistes.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-emailjs.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
       /* Charge admin-artistes.js (combobox login) uniquement pour Frédérique */
       if (!id) {
         const s = document.createElement("script");
