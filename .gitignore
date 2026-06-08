@@ -2,3 +2,8 @@ data/prix.json
 node_modules/
 .DS_Store
 FF_Galerie_projet.md
+
+# Notes et fichiers de travail personnels
+Notes perso/
+Site Fred.md
+*.old.*
