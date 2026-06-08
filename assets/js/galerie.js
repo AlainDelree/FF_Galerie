@@ -706,12 +706,23 @@ const GALERIE_CFG = {
 
             if (t.photo) {
               const img = document.createElement('img');
-              img.src = ((/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo); img.alt = t.titre || '';
+              // Mur desktop : miniature WebP (fallback → JPG original → drap blanc)
+              var _srcOrigD  = (/^https?:\/\//.test(t.photo)) ? t.photo : GALERIE_CFG.assetsBase + t.photo;
+              var _srcThumbD = /^https?:\/\//.test(t.photo) ? t.photo
+                               : (GALERIE_CFG.assetsBase + t.photo).replace(/\.jpg$/i, '-thumb.webp');
+              img.alt      = t.titre || '';
+              img.loading  = 'lazy';    // AVANT src
+              img.decoding = 'async';
               if (salle.id === prioSalleId) img.fetchPriority = 'high';
               img.onerror = function() {
-                const drap = creerDrapBlanc(); drap.style.position = 'absolute'; drap.style.inset = '0';
-                cadre.replaceChild(drap, this);
+                if (!this._fbDone) {
+                  this._fbDone = true; this.src = _srcOrigD; // essai JPG original
+                } else {
+                  const drap = creerDrapBlanc(); drap.style.position = 'absolute'; drap.style.inset = '0';
+                  cadre.replaceChild(drap, this);
+                }
               };
+              img.src = _srcThumbD;    // src en dernier
               cadre.appendChild(img);
             } else {
               cadre.style.background = 'linear-gradient(135deg,rgba(255,255,255,.04),rgba(0,0,0,.1))';
