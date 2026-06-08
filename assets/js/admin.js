@@ -2191,7 +2191,7 @@ document.querySelectorAll('.onglet').forEach(o => {
     $(o.dataset.vue).classList.add('active');
     if (o.dataset.vue === 'vue-backup') chargerCommits();
     if (o.dataset.vue === 'vue-pages')  chargerInfos();
-    if (o.dataset.vue === 'vue-artistes') chargerVueArtistes();
+    if (o.dataset.vue === 'vue-artistes') { chargerVueArtistes(); chargerTemplates(); }
   });
 });
 
@@ -3362,7 +3362,7 @@ async function creerArtiste() {
     prefix: id, draft };
 
   try {
-    const fichiers = genererFichiers(artiste);
+    const fichiers = await genererFichiers(artiste);
     /* Inclure artistes.json dans le même commit — évite le conflit "not a fast forward" */
     const { lien, repoPath, prefix } = artiste;
     const nouveauxArtistes = artistesData.concat([{ id, nom, logo, lien, repoPath, prefix, draft, genre }]);
@@ -3387,8 +3387,25 @@ async function sauvegarderArtistesJSON(message) {
   ], message);
 }
 
+/* ── Chargement et cache des templates HTML ── */
+let _tplCache = null;
+async function chargerTemplates() {
+  if (_tplCache) return _tplCache;
+  const noms = ['index', 'galerie', 'infos', 'contact', 'admin'];
+  const resultats = await Promise.all(
+    noms.map(n => fetch('templates/artiste-' + n + '.html?v=1').then(r => {
+      if (!r.ok) throw new Error('Template introuvable : artiste-' + n + '.html');
+      return r.text();
+    }))
+  );
+  _tplCache = {};
+  noms.forEach((n, i) => { _tplCache[n] = resultats[i]; });
+  return _tplCache;
+}
+
 /* ── Générateur de fichiers ── */
-function genererFichiers(a) {
+async function genererFichiers(a) {
+  const tpls = await chargerTemplates();
   const invite = a.genre === "m" ? "Invité" : a.genre === "n" ? "Invité·e" : "Invitée";
   const emailU = a.email ? a.email.split("@")[0] : "";
   const emailD = a.email ? a.email.split("@")[1] : "";
@@ -3428,264 +3445,14 @@ function genererFichiers(a) {
     { chemin: base + "data/salles.json",  contenu: salles   },
     { chemin: base + "data/infos.json",   contenu: infos    },
     { chemin: base + "data/contact.json", contenu: contact  },
-    { chemin: base + "index.html",       contenu: r(TPL_INDEX)   },
-    { chemin: base + "galerie.html",     contenu: r(TPL_GALERIE) },
-    { chemin: base + "infos.html",       contenu: r(TPL_INFOS)   },
-    { chemin: base + "contact.html",     contenu: r(TPL_CONTACT) },
-    { chemin: base + "admin.html",       contenu: r(TPL_ADMIN)   },
+    { chemin: base + "index.html",       contenu: r(tpls.index)   },
+    { chemin: base + "galerie.html",     contenu: r(tpls.galerie) },
+    { chemin: base + "infos.html",       contenu: r(tpls.infos)   },
+    { chemin: base + "contact.html",     contenu: r(tpls.contact) },
+    { chemin: base + "admin.html",       contenu: r(tpls.admin)   },
   ];
 }
 
-/* ── Templates HTML ── */
-const TPL_INDEX = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{{NOM}} — Peintures</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/plan.css">
-  <link rel="stylesheet" href="../../assets/css/invite.css">
-</head>
-<body class="theme-sombre">
-  <div class="bandeau-invite">
-    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
-  </div>
-  <div class="scene-entree">
-    <header class="entete">
-      <nav class="nav-pages">
-        <a href="index.html" class="lien-contact actif">Accueil</a>
-        <span class="nav-sep">|</span>
-        <a href="infos.html" class="lien-contact">Infos</a>
-        <span class="nav-sep">|</span>
-        <a href="contact.html" class="lien-contact">Contact</a>
-      </nav>
-    </header>
-    <main class="contenu-principal">
-      <div class="encadre-titre">
-        <h1 class="nom-artiste">{{NOM}}</h1>
-        <p class="sous-titre">Peintures</p>
-        <div class="separateur"></div>
-        <p class="titre-galerie">Galerie</p>
-        <div class="plan-galerie" id="plan-galerie">
-          <div id="plan-svg-wrap" style="width:100%;"></div>
-          <p class="plan-legende">Cliquez sur une salle pour y entrer</p>
-        </div>
-      </div>
-    </main>
-    <footer class="pied">
-      <div class="signature-artiste">{{LOGO}}</div>
-      <span class="mention">&copy; {{NOM}}</span>
-    </footer>
-  </div>
-  <script>
-    window.PLAN_SALLES_PATH  = "data/salles.json";
-    window.PLAN_GALERIE_PATH = "galerie.html";
-  </script>
-  <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/plan.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-</body>
-</html>`;
-
-const TPL_GALERIE = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Galerie — {{NOM}}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/galerie.css">
-  <link rel="stylesheet" href="../../assets/css/invite.css">
-  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
-</head>
-<body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
-  <div class="bandeau-invite">
-    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
-  </div>
-  <header class="entete" style="margin-top:1.6rem;">
-    <nav class="nav-pages">
-      <a href="index.html" class="lien-contact">Accueil</a>
-      <span class="nav-sep">|</span>
-      <a href="infos.html" class="lien-contact">Infos</a>
-      <span class="nav-sep">|</span>
-      <a href="contact.html" class="lien-contact">Contact</a>
-    </nav>
-    <div class="controles">
-      <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
-        <span id="iconeMusique">&#9835;</span>
-      </button>
-    </div>
-  </header>
-  <main class="galerie-principale">
-    <nav class="barre-navigation" aria-label="Navigation entre les salles">
-      <button class="btn-nav-salle" id="btnPrecedent" aria-label="Salle précédente" disabled>&#8249;</button>
-      <span class="indicateur-salle">Salle <span id="numSalle">1</span>&thinsp;/&thinsp;1</span>
-      <button class="btn-nav-salle" id="btnSuivant" aria-label="Salle suivante">&#8250;</button>
-    </nav>
-    <div class="dots" id="dotsNav" aria-hidden="true"><div class="dot actif"></div></div>
-    <div class="conteneur-salles" id="conteneurSalles"></div>
-    <div class="nav-mobile" id="navMobile">
-      <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)">&#8249;</button>
-      <span class="nav-mobile-info" id="navMobInfo"></span>
-      <button class="nav-mobile-btn" id="navMobD" onclick="allerSalle(salleCourante+1)">&#8250;</button>
-    </div>
-  </main>
-  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitre">
-    <div class="modal-contenu">
-      <button class="modal-fermer" id="modalFermer" aria-label="Fermer">
-        <svg viewBox="0 0 14 14" width="13" height="13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none">
-          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
-        </svg>
-      </button>
-      <div class="modal-image-wrap" id="modalImageWrap"></div>
-      <div class="modal-fiche">
-        <h2 class="modal-titre" id="modalTitre"></h2>
-        <div class="modal-separateur"></div>
-        <div class="modal-ligne"><span class="modal-label">Date</span><span class="modal-valeur" id="modalDate"></span></div>
-        <div class="modal-ligne"><span class="modal-label">Style</span><span class="modal-valeur" id="modalStyle"></span></div>
-        <div class="modal-ligne"><span class="modal-label">Matériaux</span><span class="modal-valeur" id="modalMateriaux"></span></div>
-        <div class="modal-ligne"><span class="modal-label">Dimensions</span><span class="modal-valeur" id="modalDimensions"></span></div>
-        <div class="modal-ligne" id="modalDescLigne"><span class="modal-label">Description</span><span class="modal-valeur" id="modalDesc"></span></div>
-      </div>
-    </div>
-  </div>
-  <footer class="pied"><span class="mention">&copy; {{NOM}}</span></footer>
-  <script>
-    window.GALERIE_TOILES_PATH  = "data/toiles.json";
-    window.GALERIE_SALLES_PATH  = "data/salles.json";
-    window.GALERIE_ASSETS_BASE  = "../../";
-    window.GALERIE_ASSETS_BASE  = "../../";
-    window.PLAN_TOILES_PATH     = "data/toiles.json";
-    window.GALERIE_HOME         = "index.html";
-    window.GALERIE_INFOS_PATH   = "infos.html";
-    window.GALERIE_CONTACT_PATH = "contact.html";
-  </script>
-  <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/galerie.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-</body>
-</html>`;
-
-const TPL_INFOS = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{{NOM}} — Infos &amp; Agenda</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/infos.css">
-  <link rel="stylesheet" href="../../assets/css/invite.css">
-</head>
-<body class="theme-sombre">
-  <div class="bandeau-invite">
-    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
-  </div>
-  <div class="scene-entree">
-    <header class="entete">
-      <nav class="nav-pages">
-        <a href="index.html" class="lien-contact">Accueil</a>
-        <span class="nav-sep">|</span>
-        <a href="infos.html" class="lien-contact actif">Infos</a>
-        <span class="nav-sep">|</span>
-        <a href="contact.html" class="lien-contact">Contact</a>
-      </nav>
-    </header>
-    <main class="contenu-principal">
-      <div class="encadre-titre">
-        <h1 class="contact-titre" style="font-family:'Cinzel',serif;font-weight:400;font-size:1.6rem;letter-spacing:.38em;text-transform:uppercase;background:linear-gradient(135deg,#c8a050 0%,#f0d080 40%,#c8a050 60%,#e8c060 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 1.2rem;">Infos &amp; Agenda</h1>
-        <div class="separateur"></div>
-        <div class="infos-wrap" id="infosWrap"><p class="vide">Chargement…</p></div>
-      </div>
-    </main>
-    <footer class="pied">
-      <div class="signature-artiste">{{LOGO}}</div>
-      <span class="mention">&copy; {{NOM}}</span>
-    </footer>
-  </div>
-  <script>window.INFOS_DATA_PATH = "data/infos.json";</script>
-  <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/infos.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-</body>
-</html>`;
-
-const TPL_CONTACT = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{{NOM}} — Contact</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/contact.css">
-  <link rel="stylesheet" href="../../assets/css/invite.css">
-</head>
-<body class="theme-sombre">
-  <div class="bandeau-invite">
-    {{INVITE}} de <a href="../../index.html">Frédérique Ferette</a>
-  </div>
-  <div class="scene-entree">
-    <header class="entete">
-      <nav class="nav-pages">
-        <a href="index.html" class="lien-contact">Accueil</a>
-        <span class="nav-sep">|</span>
-        <a href="infos.html" class="lien-contact">Infos</a>
-        <span class="nav-sep">|</span>
-        <a href="contact.html" class="lien-contact actif">Contact</a>
-      </nav>
-    </header>
-    <main class="contenu-principal">
-      <div class="encadre-titre">
-        <h1 class="contact-titre">Contact</h1>
-        <p class="contact-accroche">Pour tout renseignement</p>
-        <div class="separateur"></div>
-        <div class="contact-bloc"><p style="color:var(--text-doux);font-style:italic;font-size:.85rem;">Chargement…</p></div>
-      </div>
-    </main>
-    <footer class="pied">
-      <div class="signature-artiste">{{LOGO}}</div>
-      <span class="mention">&copy; {{NOM}}</span>
-    </footer>
-  </div>
-  <script>window.CONTACT_DATA_PATH = "data/contact.json";</script>
-  <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/contact.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-  <script src="../../assets/js/artiste-info.js"></script>
-</body>
-</html>`;
-
-const TPL_ADMIN = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=../../admin.html?artiste={{ID}}">
-  <script>window.location.replace("../../admin.html?artiste={{ID}}");<\/script>
-</head>
-<body></body>
-</html>`;
 
 /* ── Test du système de rapport d'erreurs ── */
 async function testerRapports() {
