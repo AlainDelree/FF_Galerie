@@ -264,3 +264,4 @@ document.getElementById('btn-ajouter-collegue').addEventListener('click', () => 
 document.getElementById('btn-sauver-collegue').addEventListener('click', sauverCollegue);
 document.getElementById('btn-annuler-collegue').addEventListener('click', fermerFormulaireCollegue);
 document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
+// build: 1780947709
