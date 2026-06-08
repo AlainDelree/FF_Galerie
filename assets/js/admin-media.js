@@ -160,18 +160,22 @@ async function supprimerMusique() {
 
 async function sauverCreditsMusique() {
   if (!token) { toast('Token GitHub requis', 'err'); return; }
-  if (!infosData.musique) infosData.musique = {};
   var getV = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-  infosData.musique.titre      = getV('mus-titre');
-  infosData.musique.auteur     = getV('mus-auteur');
-  infosData.musique.interprete = getV('mus-interprete');
-  infosData.musique.lien       = getV('mus-lien');
-  infosData.musique.licence    = getV('mus-licence');
   var btn = document.getElementById('btn-credits-sauver');
   if (btn) btn.disabled = true;
   try {
+    // Charge infos.json complet pour ne modifier QUE la section musique
+    var infosComplet = await lireRaw(ADMIN_CFG.repoPath + 'infos.json').catch(function() { return {}; });
+    if (!infosComplet.musique) infosComplet.musique = {};
+    infosComplet.musique.titre      = getV('mus-titre');
+    infosComplet.musique.auteur     = getV('mus-auteur');
+    infosComplet.musique.interprete = getV('mus-interprete');
+    infosComplet.musique.lien       = getV('mus-lien');
+    infosComplet.musique.licence    = getV('mus-licence');
+    // Met à jour infosData local pour cohérence
+    infosData.musique = infosComplet.musique;
     await commitMulti([
-      { chemin: ADMIN_CFG.repoPath + 'infos.json', contenu: JSON.stringify(infosData, null, 2) }
+      { chemin: ADMIN_CFG.repoPath + 'infos.json', contenu: JSON.stringify(infosComplet, null, 2) }
     ], 'Admin : Crédits musique mis à jour');
     toast('✓ Crédits sauvegardés');
   } catch(e) {
