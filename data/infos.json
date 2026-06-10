@@ -23,18 +23,11 @@
       "description": "Aquarelles et huiles sur toile",
       "lien": "https://example.com",
       "type": "site"
-    },
-    {
-      "id": 1781126429862,
-      "nom": "Dinso",
-      "description": "Sculpteurs",
-      "lien": "",
-      "type": "site"
     }
   ],
   "presentation": {
-    "titre": "Peintre belge",
-    "texte": "Frédérique",
-    "photo": "frederiqueferette.be"
+    "titre": "",
+    "texte": "",
+    "photo": ""
   }
 }
