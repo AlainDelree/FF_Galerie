@@ -23,6 +23,13 @@
       "description": "Aquarelles et huiles sur toile",
       "lien": "https://example.com",
       "type": "site"
+    },
+    {
+      "id": 1781126303468,
+      "nom": "Dinso",
+      "description": "sculpteur",
+      "lien": "",
+      "type": "site"
     }
   ],
   "presentation": {
