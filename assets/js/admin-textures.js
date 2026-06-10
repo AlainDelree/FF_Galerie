@@ -405,7 +405,7 @@ function ouvrirCrop(file, callback) {
     $('overlay-crop').classList.add('ouvert');
     // onload AVANT src pour éviter le race condition mobile
     img.onload = () => {
-      _origPhotoMaxDim = Math.max(img.width, img.height); // capture avant compression/crop
+      _origPhotoMaxDim = Math.max(img.naturalWidth, img.naturalHeight); // dimensions réelles avant compression/crop
       if (typeof Cropper === "undefined") {
         // Fallback si Cropper.js pas chargé : utilise la photo sans recadrage
         fermerCrop();
