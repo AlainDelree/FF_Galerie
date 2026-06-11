@@ -100,6 +100,7 @@ function afficherMur() {
     el.style.gridColumn = `${p.col} / span ${p.w}`;
     el.style.gridRow    = `${p.row} / span ${p.h}`;
     el.style.borderColor = t.visible === false ? '' : couleurCadresActuel;
+    if (t.visible !== false) el.style.borderWidth = epaisseurCadresActuel + 'px';
     if (t.photo) {
       const img = document.createElement('img');
       img.src = t.photo; img.alt = t.titre || ''; img.draggable = false;
@@ -484,6 +485,7 @@ function afficherMurPlacement() {
     el.style.gridColumn = `${p.col} / span ${p.w}`;
     el.style.gridRow    = `${p.row} / span ${p.h}`;
     el.style.borderColor = couleurCadresActuel;
+    el.style.borderWidth = epaisseurCadresActuel + 'px';
     if (t.photo) { const img = document.createElement('img'); img.src = t.photo; img.alt=''; img.draggable=false; el.appendChild(img); }
     if (!estSel) {
       const lbl = document.createElement('div'); lbl.className = 'tp-lbl'; lbl.textContent = t.titre||'—'; el.appendChild(lbl);
