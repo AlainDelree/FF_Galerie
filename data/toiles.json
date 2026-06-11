@@ -537,23 +537,6 @@
       "description": "",
       "dimensions": null,
       "visible": true
-    },
-    {
-      "id": 37,
-      "photo": "assets/images/toiles/toile-037.jpg",
-      "source_photo": "admin",
-      "titre": "",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 75,
-        "hauteur": 55
-      },
-      "taille": "M",
-      "visible": true
     }
   ]
 }

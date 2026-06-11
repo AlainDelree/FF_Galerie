@@ -4,35 +4,19 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#2a2420",
+      "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#c8a050",
-      "epaisseur_cadres": 14,
+      "epaisseur_cadres": 8,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": false,
       "toiles": [
-        16,
-        35,
-        15
+        16
       ],
       "positions": [
         {
           "id": 16,
           "col": 3,
           "row": 3,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 35,
-          "col": 8,
-          "row": 1,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 15,
-          "col": 7,
-          "row": 6,
           "w": 3,
           "h": 3
         }
@@ -171,7 +155,8 @@
       "visible": true,
       "toiles": [
         8,
-        11
+        11,
+        15
       ],
       "positions": [
         {
@@ -187,6 +172,13 @@
           "row": 4,
           "w": 5,
           "h": 4
+        },
+        {
+          "id": 15,
+          "col": 10,
+          "row": 1,
+          "w": 3,
+          "h": 3
         }
       ]
     },
