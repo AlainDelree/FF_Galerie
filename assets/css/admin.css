@@ -292,6 +292,8 @@ button{cursor:pointer;}
   border-radius:8px;background:var(--bg3);color:var(--text);transition:border-color .2s,opacity .2s;cursor:pointer;}
 .bas-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
 .bas-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
+.bas-btn-danger{color:var(--rouge,#c0392b);}
+.bas-btn-danger:hover:not(:disabled){border-color:var(--rouge,#c0392b)!important;color:var(--rouge,#c0392b)!important;}
 
 /* ══ FICHE CONSULTATION ══ */
 #overlay-fiche{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);
@@ -638,6 +640,10 @@ textarea.champ{resize:vertical;min-height:65px;}
   .coul-panel {
     left: 50%; right: auto; width: min(480px, 90vw);
     transform: translateX(-50%);
+    max-height: min(80vh, 700px);
+  }
+  #musique-panel {
+    max-height: min(90vh, 850px);
   }
 }
 

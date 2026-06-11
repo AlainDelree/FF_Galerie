@@ -124,7 +124,7 @@
 <div class="coul-panel" id="coul-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
           <span class="coul-titre">Apparence de la salle</span>
-          <button id="btn-close-coul" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+
         </div>
         <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .3rem;flex-shrink:0;"></div>
         <div class="coul-row">
@@ -186,6 +186,10 @@
         <div class="coul-actions">
           <button class="ctrl-btn" id="btn-preset-sauver" style="font-size:11px;">⊙ Sauver preset</button>
           <button class="ctrl-btn" id="btn-preset-charger" style="font-size:11px;">▾ Preset…</button>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;padding-top:.5rem;border-top:1px solid var(--brd);flex-shrink:0;">
+          <button class="btn btn-outline btn-sm" id="btn-annuler-coul" style="flex:1;">Annuler</button>
+          <button class="btn btn-or btn-sm" id="btn-sauver-coul" style="flex:2;">💾 Sauvegarder</button>
         </div>
       </div>
 
@@ -254,6 +258,7 @@
       <div class="bas-barre">
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
         <button class="bas-btn" id="btn-modifier-toile" disabled>✏️ Modifier toile</button>
+        <button class="bas-btn bas-btn-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
       </div>
 
     </div><!-- /edit-section -->
@@ -676,10 +681,6 @@
       <div class="grp" style="flex-direction:row;align-items:center;justify-content:space-between;">
         <label class="lbl" style="margin:0">Visible sur le site</label>
         <input type="checkbox" id="inp-visible" checked style="width:1.2rem;height:1.2rem;accent-color:var(--gold);">
-      </div>
-      <div class="zone-suppr hidden" id="zone-suppr">
-        <hr style="border:none;border-top:1px solid var(--brd);">
-        <button class="btn-suppr-toile" id="btn-suppr-toile">🗑 Supprimer cette toile</button>
       </div>
     </div>
     <div class="modal-foot">

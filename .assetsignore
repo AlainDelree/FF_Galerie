@@ -6,3 +6,4 @@ wrangler.toml
 _headers
 *.md
 .gitignore
+package-lock.json

@@ -304,7 +304,8 @@ function majBtnPlacer() { /* bouton Placer supprimé — Arranger le mur le remp
 
 function majBoutons() {
   const n = toilesSelectionnees.size;
-  $('btn-modifier-toile').disabled = (n !== 1);
+  $('btn-modifier-toile').disabled  = (n !== 1);
+  $('btn-supprimer-toile').disabled = (n !== 1);
 }
 
 function afficherConfirmAutreSalle(toile, nomAutre) {
@@ -684,7 +685,6 @@ function initTailleForm() {
 function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
   $('modal-toile-tit').textContent = 'Nouvelle toile';
-  $('zone-suppr').classList.add('hidden');
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
@@ -713,7 +713,6 @@ function ouvrirFormulaireEdition(id) {
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = 'Modifier la toile';
-  $('zone-suppr').classList.remove('hidden');
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
@@ -943,17 +942,19 @@ async function sauverToile() {
 }
 
 async function supprimerToile() {
-  if (!toileEnEdition) return;
-  const t = toiles.find(x => x.id === toileEnEdition);
+  const idCible = toileEnEdition || selectedToile?.id;
+  if (!idCible) return;
+  const t = toiles.find(x => x.id === idCible);
   if (!confirm(`Supprimer "${t?.titre || 'cette toile'}" ? Réversible via le backup.`)) return;
-  toiles = toiles.filter(x => x.id !== toileEnEdition);
+  toiles = toiles.filter(x => x.id !== idCible);
   salles.forEach(s => {
-    s.toiles = s.toiles.filter(id => id !== toileEnEdition);
-    s.positions = (s.positions || []).filter(p => p.id !== toileEnEdition);
+    s.toiles = s.toiles.filter(id => id !== idCible);
+    s.positions = (s.positions || []).filter(p => p.id !== idCible);
   });
-  fermerModalToile();
+  if (toileEnEdition) fermerModalToile();
+  toilesSelectionnees.clear(); selectedToile = null; majBoutons();
   try {
-    await sauvegarder(`[admin] Suppression toile #${toileEnEdition}${t?.titre ? ' — ' + t.titre : ''}`);
+    await sauvegarder(`[admin] Suppression toile #${idCible}${t?.titre ? ' — ' + t.titre : ''}`);
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
