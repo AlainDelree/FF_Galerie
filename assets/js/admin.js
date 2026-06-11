@@ -240,9 +240,13 @@ function demarrerTimerAttente() {
   timerAttenteInterval = setInterval(() => {
     const now = Date.now();
     toilesEnAttente.forEach((ts, id) => {
+      const elapsed = Math.floor((now - ts) / 1000);
+      const restant = Math.max(0, 60 - elapsed);
+      // Met à jour uniquement le badge sans reconstruire tout le stock
+      const sb = document.querySelector(`.sync-badge[data-sync-id="${id}"]`);
+      if (sb) sb.textContent = restant > 0 ? `⏳ ${restant}s` : '✓ publié';
       if (now - ts >= 65000) toilesEnAttente.delete(id);
     });
-    afficherStock();
     if (toilesEnAttente.size === 0) {
       clearInterval(timerAttenteInterval);
       timerAttenteInterval = null;

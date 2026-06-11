@@ -276,11 +276,12 @@ function afficherStock() {
       item.appendChild(badge);
     }
 
+    item.dataset.toileId = t.id;
     if (toilesEnAttente.has(t.id)) {
       const elapsed = Math.floor((Date.now() - toilesEnAttente.get(t.id)) / 1000);
       const restant = Math.max(0, 60 - elapsed);
       const sb = document.createElement('div');
-      sb.className = 'sync-badge';
+      sb.className = 'sync-badge'; sb.dataset.syncId = t.id;
       sb.textContent = restant > 0 ? `⏳ ${restant}s` : '✓ publié';
       item.appendChild(sb);
     }
