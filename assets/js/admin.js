@@ -1615,8 +1615,13 @@ async function validerToken() {
   const btn = $('btn-token'); btn.disabled = true; btn.textContent = 'Vérification…';
   $('token-err').textContent = '';
   try {
-    const old = token; token = t;
-    await apiGH(`/repos/${REPO}`);
+    token = t;
+    // Test sur /user : endpoint authentifié (public repo = 200 sans token → test insuffisant)
+    // 401 = token invalide/révoqué ; 200 ou 403 = token valide (scope peut être limité)
+    const rep = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'Bearer ' + t, 'User-Agent': 'FF-Admin' }
+    });
+    if (rep.status === 401) throw new Error('token révoqué ou invalide');
     localStorage.setItem(K.token, t);
     afficherEcran('ecran-principal');
     chargerTout();
