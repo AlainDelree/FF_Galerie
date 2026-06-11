@@ -601,7 +601,7 @@ function selectSalle(id) {
   couleurCadresActuel = salleActive.couleur_cadres;
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
-  appliquerApparence();
+  if (typeof appliquerApparence === 'function') appliquerApparence();
   // Affiche mur + stock
   buildOccupancy();
   afficherMur();
