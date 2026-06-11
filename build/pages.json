@@ -1,0 +1,88 @@
+{
+  "_comment": "Configuration par page pour le script de propagation du <head>. Lancer build/propagate_head.py après modification.",
+  "_fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap",
+  "_goatcounter_ff": "frederiqueferette",
+
+  "pages": [
+    {
+      "file": "index.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "Frédérique Ferette — Peintures",
+      "description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/",
+      "og_title": "Frédérique Ferette — Peintures",
+      "og_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "og_url": "https://frederiqueferette.be/",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "Frédérique Ferette — Peintures",
+      "tw_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    },
+    {
+      "file": "galerie.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "Galerie — Frédérique Ferette",
+      "description": "Galerie de peintures de Frédérique Ferette. Explorez les salles virtuelles et découvrez ses œuvres.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/galerie.html",
+      "og_title": "Galerie — Frédérique Ferette",
+      "og_description": "Galerie de peintures de Frédérique Ferette. Explorez les salles virtuelles et découvrez ses œuvres.",
+      "og_url": "https://frederiqueferette.be/galerie.html",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "Galerie — Frédérique Ferette",
+      "tw_description": "Galerie de peintures de Frédérique Ferette. Explorez les salles virtuelles et découvrez ses œuvres.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    },
+    {
+      "file": "contact.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "Frédérique Ferette — Contact",
+      "description": "Contactez Frédérique Ferette, artiste peintre belge.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/contact.html",
+      "og_title": "Frédérique Ferette — Contact",
+      "og_description": "Contactez Frédérique Ferette, artiste peintre belge.",
+      "og_url": "https://frederiqueferette.be/contact.html",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "Frédérique Ferette — Contact",
+      "tw_description": "Contactez Frédérique Ferette, artiste peintre belge.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    },
+    {
+      "file": "infos.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "Frédérique Ferette — Infos & Agenda",
+      "description": "Informations et agenda des expositions de Frédérique Ferette, artiste peintre belge.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/infos.html",
+      "og_title": "Frédérique Ferette — Infos & Agenda",
+      "og_description": "Informations et agenda des expositions de Frédérique Ferette, artiste peintre belge.",
+      "og_url": "https://frederiqueferette.be/infos.html",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "Frédérique Ferette — Infos & Agenda",
+      "tw_description": "Informations et agenda des expositions de Frédérique Ferette, artiste peintre belge.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    },
+    {
+      "file": "apropos.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "À propos — Frédérique Ferette",
+      "description": "À propos de Frédérique Ferette, artiste peintre belge.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/apropos.html",
+      "og_title": "À propos — Frédérique Ferette",
+      "og_description": "À propos de Frédérique Ferette, artiste peintre belge.",
+      "og_url": "https://frederiqueferette.be/apropos.html",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "À propos — Frédérique Ferette",
+      "tw_description": "À propos de Frédérique Ferette, artiste peintre belge.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    }
+  ]
+}
