@@ -4,9 +4,9 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#2a2420",
+      "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#c8a050",
-      "epaisseur_cadres": 8,
+      "epaisseur_cadres": 12,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": false,
       "toiles": [
