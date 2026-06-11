@@ -373,8 +373,8 @@ async function apiGH(url, methode = 'GET', corps = null) {
   const rep = await fetch(API + url, opts);
   if (!rep.ok) {
     const e = await rep.json().catch(() => ({ message: rep.statusText }));
-    if (rep.status === 401) {
-      /* Token invalide ou révoqué → vider le token et aller à l'écran token */
+    if (rep.status === 401 && methode !== 'GET') {
+      /* 401 sur écriture → token révoqué, redirection obligatoire */
       localStorage.removeItem(K.token);
       token = '';
       rapporterErreur('Token GitHub invalide ou révoqué — admin inaccessible', 'effondrement', url);
