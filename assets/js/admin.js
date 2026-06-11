@@ -842,8 +842,8 @@ if (sessionStorage.getItem(K.auth) === '1') {
         }
       } catch (e) { /* réseau — on tente quand même */ }
       afficherEcran('ecran-principal');
-      chargerTout();
-      initTexturesUI();
+      // chargerTout() et initTexturesUI() sont appelés dans le post-load d'admin.html
+      // après que tous les modules soient chargés (évite race condition galerie)
     })();
   }
 } else {
