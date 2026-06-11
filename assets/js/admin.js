@@ -324,9 +324,22 @@ async function creerMotDePasse() {
   apresLogin();
 }
 
-function apresLogin() {
+async function apresLogin() {
   token = localStorage.getItem(K.token) || '';
   if (!token) { afficherEcran('ecran-token'); return; }
+  // Vérifie que le token stocké est encore valide avant de lancer les appels API
+  try {
+    const rep = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
+    });
+    if (rep.status === 401) {
+      localStorage.removeItem(K.token);
+      token = '';
+      afficherEcran('ecran-token');
+      document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
+      return;
+    }
+  } catch (e) { /* réseau indisponible — on tente quand même */ }
   afficherEcran('ecran-principal');
   chargerTout();
   initTexturesUI();
