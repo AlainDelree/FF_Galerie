@@ -4,9 +4,9 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#1e3a2a",
-      "couleur_cadres": "#5c3d2e",
-      "epaisseur_cadres": 20,
+      "couleur_mur": "#2a2420",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 4,
       "texture": "brique",
       "visible": false,
       "toiles": [
