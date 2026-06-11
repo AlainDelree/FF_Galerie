@@ -253,7 +253,9 @@ function afficherStock() {
     simgDiv.style.cssText = 'width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;';
     if (t.photo) {
       const img = document.createElement('img');
-      img.src = t.photo; img.alt = t.titre || ''; img.draggable = false; img.loading = 'lazy';
+      img.alt = t.titre || ''; img.draggable = false; img.loading = 'lazy';
+      img.onerror = function() { this.onerror=null; };
+      img.src = t._preview || t.photo;
       simgDiv.appendChild(img);
     } else {
       const ph = document.createElement('div'); ph.className = 'sph';
@@ -537,7 +539,17 @@ function afficherStripPlacement() {
       + (estSelMur || estSelPlace ? ' sel' : '');
 
     const si = document.createElement('div'); si.className='simg';
-    if (t.photo) { const img=document.createElement('img'); img.src=t.photo; img.alt=''; img.loading='lazy'; si.appendChild(img); }
+    if (t.photo || t._preview) {
+      const img=document.createElement('img');
+      img.alt=''; img.loading='lazy';
+      if (t._preview) {
+        img.src = t._preview;
+      } else {
+        img.onerror = function() { this.onerror=null; this.style.display='none'; };
+        img.src = t.photo;
+      }
+      si.appendChild(img);
+    }
 
     // Grille W×H sur la miniature quand mode grille actif
     if (grilleVisiblePl) {
@@ -877,6 +889,7 @@ async function sauverToile() {
       let photo = '';
       if (photoB64) photo = await uploaderPhoto(id, photoB64);
       const t = { id, photo, source_photo: 'admin', ...donnees };
+      if (photoB64) t._preview = 'data:image/jpeg;base64,' + photoB64; // aperçu immédiat avant propagation CDN
       toiles.push(t);
       if (salleCibleToile) {
         const s = salles.find(x => x.id === salleCibleToile);
