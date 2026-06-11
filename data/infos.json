@@ -15,6 +15,14 @@
       "lieu": "Dinant, Belgique",
       "description": "Edition spéciale 30 ans.\nDinant Montmartre accueille et rassemble près de 200 artistes et attire plus de 7000 visiteurs pour une exposition d'art dans les ruelles du vieux Dinant.",
       "lien": "https://dinant-montmartre.odoo.com/"
+    },
+    {
+      "titre": "tes court",
+      "dateAffichage": "",
+      "lieu": "",
+      "description": "",
+      "lien": "",
+      "id": 1781198548645
     }
   ],
   "collegues": [
@@ -24,11 +32,18 @@
       "description": "Aquarelles et huiles sur toile",
       "lien": "https://example.com",
       "type": "site"
+    },
+    {
+      "id": 1781198557098,
+      "nom": "ggggrrr",
+      "description": "",
+      "lien": "",
+      "type": "site"
     }
   ],
   "presentation": {
-    "titre": "Peintre belge",
-    "texte": "",
+    "titre": "Peintre belge r",
+    "texte": "rrrrrr",
     "photo": ""
   }
 }
