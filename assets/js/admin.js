@@ -185,7 +185,12 @@ window.addEventListener('unhandledrejection', function(e) {
 // CONFIG
 // ═══════════════════════════════════════════════
 const REPO   = 'AlainDelree/FF_Galerie';
-const BRANCH = 'main';
+// Branche dynamique : dev sur les URLs de développement, main sinon
+const BRANCH = (
+  location.hostname === 'dev.frederiqueferette.be' ||
+  location.hostname.endsWith('.workers.dev') ||
+  location.hostname === 'localhost'
+) ? 'dev' : 'main';
 const API    = 'https://api.github.com';
 const MAX_PX = 1400;
 const JPEG_Q = 0.83;
@@ -319,9 +324,22 @@ async function creerMotDePasse() {
   apresLogin();
 }
 
-function apresLogin() {
+async function apresLogin() {
   token = localStorage.getItem(K.token) || '';
   if (!token) { afficherEcran('ecran-token'); return; }
+  // Vérifie que le token stocké est encore valide avant de lancer les appels API
+  try {
+    const rep = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
+    });
+    if (rep.status === 401) {
+      localStorage.removeItem(K.token);
+      token = '';
+      afficherEcran('ecran-token');
+      document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
+      return;
+    }
+  } catch (e) { /* réseau indisponible — on tente quand même */ }
   afficherEcran('ecran-principal');
   chargerTout();
   initTexturesUI();
@@ -355,8 +373,8 @@ async function apiGH(url, methode = 'GET', corps = null) {
   const rep = await fetch(API + url, opts);
   if (!rep.ok) {
     const e = await rep.json().catch(() => ({ message: rep.statusText }));
-    if (rep.status === 401) {
-      /* Token invalide ou révoqué → vider le token et aller à l'écran token */
+    if (rep.status === 401 && methode !== 'GET') {
+      /* 401 sur écriture → token révoqué, redirection obligatoire */
       localStorage.removeItem(K.token);
       token = '';
       rapporterErreur('Token GitHub invalide ou révoqué — admin inaccessible', 'effondrement', url);
@@ -583,7 +601,7 @@ function selectSalle(id) {
   couleurCadresActuel = salleActive.couleur_cadres;
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
-  appliquerApparence();
+  if (typeof appliquerApparence === 'function') appliquerApparence();
   // Affiche mur + stock
   buildOccupancy();
   afficherMur();
@@ -1610,8 +1628,13 @@ async function validerToken() {
   const btn = $('btn-token'); btn.disabled = true; btn.textContent = 'Vérification…';
   $('token-err').textContent = '';
   try {
-    const old = token; token = t;
-    await apiGH(`/repos/${REPO}`);
+    token = t;
+    // Test sur /user : endpoint authentifié (public repo = 200 sans token → test insuffisant)
+    // 401 = token invalide/révoqué ; 200 ou 403 = token valide (scope peut être limité)
+    const rep = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'Bearer ' + t, 'User-Agent': 'FF-Admin' }
+    });
+    if (rep.status === 401) throw new Error('token révoqué ou invalide');
     localStorage.setItem(K.token, t);
     afficherEcran('ecran-principal');
     chargerTout();
@@ -1854,8 +1877,26 @@ $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e 
 // ═══════════════════════════════════════════════
 if (sessionStorage.getItem(K.auth) === '1') {
   token = localStorage.getItem(K.token) || '';
-  if (token) { afficherEcran('ecran-principal'); chargerTout(); initTexturesUI(); }
-  else afficherEcran('ecran-token');
+  if (!token) { afficherEcran('ecran-token'); }
+  else {
+    // Valide le token stocké avant de lancer les appels API
+    (async () => {
+      try {
+        const rep = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
+        });
+        if (rep.status === 401) {
+          localStorage.removeItem(K.token); token = '';
+          afficherEcran('ecran-token');
+          document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
+          return;
+        }
+      } catch (e) { /* réseau — on tente quand même */ }
+      afficherEcran('ecran-principal');
+      chargerTout();
+      initTexturesUI();
+    })();
+  }
 } else {
   if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
 }
