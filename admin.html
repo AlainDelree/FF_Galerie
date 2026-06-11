@@ -1009,12 +1009,13 @@
       }
       /* Tous les modules sont chargés — inits différées sûres */
       if (typeof chargerConfigEmailJS  === 'function') chargerConfigEmailJS();
-      if (typeof chargerTexturesGitHub === 'function') chargerTexturesGitHub();
       if (typeof initTailleForm         === 'function') initTailleForm();
-      // Si déjà connecté (F5) : chargerTout + initTexturesUI maintenant que tous les modules sont chargés
+      // Si déjà connecté (F5) : chargerTout + initTexturesUI après que tous les modules soient chargés
       if (typeof chargerTout === 'function' && typeof K !== 'undefined' && sessionStorage.getItem(K.auth) === '1') {
         chargerTout();
         if (typeof initTexturesUI === 'function') initTexturesUI();
+      } else if (typeof chargerTexturesGitHub === 'function') {
+        chargerTexturesGitHub(); // non connecté : charge quand même les textures partagées
       }
     })();
   </script>

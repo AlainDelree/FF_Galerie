@@ -460,7 +460,7 @@ async function uploaderPhoto(id, b64) {
   const chemin = base + `toile-${String(id).padStart(3, '0')}.jpg`;
   const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
-  try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}`); sha = r.sha; } catch (_) {}
+  try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}?ref=${BRANCH}`); sha = r.sha; } catch (_) {}
   const corps = { message: `Admin : Photo toile #${id}`, content: b64, branch: BRANCH };
   if (sha) corps.sha = sha;
   await apiGH(`/repos/${REPO}/contents/${chemin}`, 'PUT', corps);
