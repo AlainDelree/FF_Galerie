@@ -404,14 +404,13 @@ async function lireFichierTexte(chemin) {
   return new TextDecoder('utf-8').decode(bytes);
 }
 
-/* Lecture rapide via raw.githubusercontent.com (CDN GitHub, sans auth).
-   À utiliser pour les lectures pures — ne renvoie pas le sha.
+/* Lecture via l'API GitHub (toujours frais, pas de cache CDN).
+   Décode le contenu base64 retourné par l'API.
    Les écritures (commitMulti, uploaderPhoto) restent sur l'API. */
 async function lireRaw(chemin) {
-  const url = "https://raw.githubusercontent.com/" + REPO + "/" + BRANCH + "/" + chemin + "?v=" + Date.now();
-  const rep = await fetch(url);
-  if (!rep.ok) throw new Error("Impossible de lire " + chemin + " (" + rep.status + ")");
-  return rep.json();
+  const r = await apiGH("/repos/" + REPO + "/contents/" + chemin + "?ref=" + BRANCH);
+  const bytes = Uint8Array.from(atob(r.content.replace(/\n/g, '')), function(c) { return c.charCodeAt(0); });
+  return JSON.parse(new TextDecoder().decode(bytes));
 }
 
 /* File d'attente : garantit que les commits s'exécutent
