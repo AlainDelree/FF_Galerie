@@ -1363,6 +1363,10 @@ function remplirFormToile(t) {
       afficherQualitePhoto(Math.max(this.naturalWidth, this.naturalHeight), false);
       this.onload = null;
     };
+    prevImg.onerror = function() {
+      var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
+      this.onerror = null;
+    };
     prevImg.src = t.photo; prevImg.style.display = 'block';
     $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
