@@ -185,7 +185,12 @@ window.addEventListener('unhandledrejection', function(e) {
 // CONFIG
 // ═══════════════════════════════════════════════
 const REPO   = 'AlainDelree/FF_Galerie';
-const BRANCH = 'main';
+// Branche dynamique : dev sur les URLs de développement, main sinon
+const BRANCH = (
+  location.hostname === 'dev.frederiqueferette.be' ||
+  location.hostname.endsWith('.workers.dev') ||
+  location.hostname === 'localhost'
+) ? 'dev' : 'main';
 const API    = 'https://api.github.com';
 const MAX_PX = 1400;
 const JPEG_Q = 0.83;
