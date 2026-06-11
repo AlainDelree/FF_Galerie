@@ -1877,8 +1877,26 @@ $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e 
 // ═══════════════════════════════════════════════
 if (sessionStorage.getItem(K.auth) === '1') {
   token = localStorage.getItem(K.token) || '';
-  if (token) { afficherEcran('ecran-principal'); chargerTout(); initTexturesUI(); }
-  else afficherEcran('ecran-token');
+  if (!token) { afficherEcran('ecran-token'); }
+  else {
+    // Valide le token stocké avant de lancer les appels API
+    (async () => {
+      try {
+        const rep = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
+        });
+        if (rep.status === 401) {
+          localStorage.removeItem(K.token); token = '';
+          afficherEcran('ecran-token');
+          document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
+          return;
+        }
+      } catch (e) { /* réseau — on tente quand même */ }
+      afficherEcran('ecran-principal');
+      chargerTout();
+      initTexturesUI();
+    })();
+  }
 } else {
   if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
 }
