@@ -10,7 +10,7 @@
   "evenements": [
     {
       "titre": "Exposition Montmartre à Dinant",
-      "dateAffichage": "27 septembre 2026",
+      "dateAffichage": "",
       "lieu": "Dinant, Belgique",
       "description": "Edition spéciale 30 ans.\nDinant Montmartre accueille et rassemble près de 200 artistes et attire plus de 7000 visiteurs pour une exposition d'art dans les ruelles du vieux Dinant.",
       "lien": "https://dinant-montmartre.odoo.com/"
