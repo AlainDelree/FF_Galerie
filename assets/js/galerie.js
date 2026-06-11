@@ -379,8 +379,14 @@ const GALERIE_CFG = {
       const wrap = document.getElementById('modalImageWrap');
       if (toile.photo) {
         const imgModal = document.createElement('img');
-        imgModal.src = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
-        imgModal.alt = toile.titre || 'Toile';
+        var _mSrcJpg   = (/^https?:\/\//.test(toile.photo)) ? toile.photo : GALERIE_CFG.assetsBase + toile.photo;
+        var _mSrcWebP  = /^https?:\/\//.test(toile.photo) ? toile.photo : _mSrcJpg.replace(/\.jpg$/i, '.webp');
+        var _mSrcThumb = /^https?:\/\//.test(toile.photo) ? toile.photo : _mSrcJpg.replace(/\.jpg$/i, '-thumb.webp');
+        imgModal.srcset = _mSrcThumb + ' 400w, ' + _mSrcWebP + ' 1200w';
+        imgModal.sizes  = '(max-width: 600px) 400px, min(90vw, 1200px)';
+        imgModal.src    = _mSrcJpg;
+        imgModal.alt    = toile.titre || 'Toile';
+        imgModal.decoding = 'async';
         imgModal.onerror = function() {
           const drap = creerDrapBlanc(); drap.style.minHeight = '260px';
           wrap.replaceChild(drap, this);
@@ -528,9 +534,11 @@ const GALERIE_CFG = {
         img.style.height     = H + 'px';
         img.style.objectFit  = 'cover';
         img.style.display    = 'block';
+        img.srcset  = _srcThumb + ' 400w, ' + _srcOrig.replace(/\.jpg$/i, '.webp') + ' 1200w';
+        img.sizes   = '400px';
         img.onerror = function() {
           if (!this._fbDone) {
-            this._fbDone = true; this.src = _srcOrig; // essai JPG original
+            this._fbDone = true; this.loading = 'lazy'; this.srcset = ''; this.src = _srcOrig;
           } else { cadre.replaceChild(creerDrapBlanc(W, H), this); }
         };
         img.src = _srcThumb;     // src en dernier — lazy déjà configuré
@@ -714,9 +722,11 @@ const GALERIE_CFG = {
               img.loading  = 'lazy';    // AVANT src
               img.decoding = 'async';
               if (salle.id === prioSalleId) img.fetchPriority = 'high';
+              img.srcset  = _srcThumbD + ' 400w, ' + _srcOrigD.replace(/\.jpg$/i, '.webp') + ' 1200w';
+              img.sizes   = '400px';
               img.onerror = function() {
                 if (!this._fbDone) {
-                  this._fbDone = true; this.src = _srcOrigD; // essai JPG original
+                  this._fbDone = true; this.loading = 'lazy'; this.srcset = ''; this.src = _srcOrigD;
                 } else {
                   const drap = creerDrapBlanc(); drap.style.position = 'absolute'; drap.style.inset = '0';
                   cadre.replaceChild(drap, this);
