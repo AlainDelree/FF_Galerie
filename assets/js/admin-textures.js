@@ -718,9 +718,9 @@ $('overlay-toile').querySelector('.modal').addEventListener('touchend', e => {
 }, { passive: true });
 
 // Modal salle
-$('btn-close-salle').addEventListener('click', fermerModalSalle);
-$('btn-annuler-salle').addEventListener('click', fermerModalSalle);
-$('btn-creer-salle').addEventListener('click', creerSalle);
+$('btn-close-salle').addEventListener('click', () => fermerModalSalle());
+$('btn-annuler-salle').addEventListener('click', () => fermerModalSalle());
+$('btn-creer-salle').addEventListener('click', () => creerSalle());
 $('overlay-salle').addEventListener('click', e => { if (e.target === $('overlay-salle')) fermerModalSalle(); });
 
 // Restore
@@ -738,4 +738,4 @@ $('overlay-restore').addEventListener('click', e => { if (e.target === $('overla
 
 // Init swatches couleurs
 initSwatches();
-initTailleForm();
+// initTailleForm() appelé dans admin.html après chargement admin-galerie.js
