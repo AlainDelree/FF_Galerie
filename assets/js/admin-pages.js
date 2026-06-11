@@ -261,6 +261,6 @@ async function supprimerCollegue(idx) {
 document.getElementById('btn-ajouter-collegue').addEventListener('click', () => ouvrirFormulaireCollegue());
 document.getElementById('btn-sauver-collegue').addEventListener('click', sauverCollegue);
 document.getElementById('btn-annuler-collegue').addEventListener('click', fermerFormulaireCollegue);
-document.getElementById('btn-gh-sauver-contact')?.addEventListener('click', sauvegarderContact);
-document.getElementById('btn-gh-sauver-pres')?.addEventListener('click', sauvegarderPresentation);
+document.getElementById('btn-enregistrer-contact')?.addEventListener('click', sauvegarderContact);
+document.getElementById('btn-enregistrer-pres')?.addEventListener('click', sauvegarderPresentation);
 // build: 1780947709
