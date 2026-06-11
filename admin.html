@@ -355,8 +355,12 @@
               <label class="lbl" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;">Photo portrait <span style="opacity:.5;">(URL ou laisser vide)</span></label>
               <input class="champ" type="url" id="pres-photo" placeholder="https://…" style="font-size:.88rem;">
             </div>
+
           </div>
         </div>
+          <div style="padding:.6rem 0 0;display:flex;justify-content:flex-end;">
+              <button class="btn btn-or" id="btn-enregistrer-pres">Enregistrer</button>
+            </div>
       </div>
     </div>
 
@@ -513,15 +517,12 @@
               </div>
             </div>
           </div>
+          <div style="padding:.6rem .8rem .8rem;display:flex;justify-content:flex-end;">
+          <button class="btn btn-or" id="btn-enregistrer-contact">Enregistrer</button>
         </div>
       </div>
     </div>
 
-    <!-- Bouton sauvegarder partagé (toujours visible) -->
-    <div style="padding:.6rem .9rem;border-top:1px solid var(--brd);display:flex;gap:.5rem;align-items:center;flex-shrink:0;">
-      <button class="btn btn-or" id="btn-sauver-infos" style="flex:1;">💾 Sauvegarder</button>
-      <span class="sync-badge hidden" id="badge-infos"></span>
-    </div>
 
   </div><!-- /vue-pages -->
 

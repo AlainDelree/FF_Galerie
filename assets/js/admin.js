@@ -279,7 +279,7 @@ function syncBadge(etat) {
   b.classList.add('visible');
   if (etat === 'ok')  { b.classList.add('sync-ok');  b.textContent = '✓ Synchronisé'; setTimeout(function(){ b.classList.remove('visible'); }, 3000); }
   if (etat === 'err') { b.classList.add('sync-ko');  b.textContent = '✗ Erreur de sauvegarde'; }
-  if (etat === '...')  { b.classList.add('sync-enc'); b.textContent = '⟳ Sauvegarde en cours…'; }
+  if (etat === '...')  { b.classList.add('sync-enc'); b.textContent = 'En cours…'; }
 }
 
 function afficherEcran(id) {
@@ -685,7 +685,7 @@ $('coul-overlay').addEventListener('click', annulerPanneauCoul);
 // Sauvegarder : écrit sur GitHub et ferme
 $('btn-sauver-coul').addEventListener('click', async () => {
   const btn = $('btn-sauver-coul');
-  btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
+  btn.textContent = 'En cours…'; btn.disabled = true;
   try {
     await sauvegarder('[admin] Couleurs/texture salle');
     _snapshotApparence = null;
@@ -798,7 +798,7 @@ window.addEventListener('popstate', () => {
 });
 $('btn-sauver-flottant').addEventListener('click', async () => {
   const btn = $('btn-sauver-flottant');
-  btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
+  btn.textContent = 'En cours…'; btn.disabled = true;
   try { await sauvegarder('[admin] Mise à jour galerie'); marquerSalleEnAttente(salleActive?.id); }
   catch (_) {}
   btn.textContent = '💾 Sauvegarder'; btn.disabled = false;

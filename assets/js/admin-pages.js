@@ -119,13 +119,7 @@ async function sauverFormulaireEvent() {
   infosModifiees = true;
   afficherEvents();
   fermerFormulaireEvent();
-  /* Feedback visuel pendant la sauvegarde automatique */
-  const btnSauver = document.getElementById('btn-sauver-infos');
-  const texteOriginal = btnSauver ? btnSauver.textContent : '';
-  if (btnSauver) { btnSauver.textContent = '💾 Sauvegarde en cours…'; btnSauver.disabled = true; }
-  await sauvegarderInfos();
-  if (btnSauver) { btnSauver.textContent = '✓ Sauvegardé'; btnSauver.disabled = false; }
-  setTimeout(() => { if (btnSauver) btnSauver.textContent = texteOriginal; }, 2500);
+  await _sauvegarderTout('badge-agenda', 'btn-sauver-event');
 }
 
 async function supprimerEvent(idx) {
@@ -133,14 +127,8 @@ async function supprimerEvent(idx) {
   infosData.evenements.splice(idx, 1);
   infosModifiees = true;
   afficherEvents();
-  /* Fermer le formulaire si ouvert */
   fermerFormulaireEvent();
-  const btnSauverS = document.getElementById('btn-sauver-infos');
-  const texteOriginalS = btnSauverS ? btnSauverS.textContent : '';
-  if (btnSauverS) { btnSauverS.textContent = '💾 Sauvegarde en cours…'; btnSauverS.disabled = true; }
-  await sauvegarderInfos();
-  if (btnSauverS) { btnSauverS.textContent = '✓ Sauvegardé'; btnSauverS.disabled = false; }
-  setTimeout(() => { if (btnSauverS) btnSauverS.textContent = texteOriginalS; }, 2500);
+  await _sauvegarderTout('badge-agenda', null);
 }
 
 function remplirFormulairePresentation() {
@@ -156,14 +144,13 @@ function lireFormulairePresentation() {
   return { titre: getV('pres-titre'), texte: getV('pres-texte'), photo: getV('pres-photo') };
 }
 
-async function sauvegarderInfos() {
-  const badge = document.getElementById('badge-infos');
-  const btnInf = document.getElementById('btn-sauver-infos');
+async function _sauvegarderTout(badgeId, btnId) {
+  const badge    = document.getElementById(badgeId);
+  const btn      = document.getElementById(btnId);
+  const lblOrig  = btn ? btn.textContent : '';
   if (!token) { alert('Token GitHub requis pour sauvegarder.'); return; }
-  if (btnInf) btnInf.disabled = true;
-  badge.textContent = '…';
-  badge.className = 'sync-badge';
-  // Lire la présentation depuis le formulaire avant de sauvegarder
+  if (btn) { btn.disabled = true; btn.textContent = 'En cours…'; }
+  if (badge) { badge.textContent = '…'; badge.className = 'sync-badge'; badge.classList.remove('hidden'); }
   infosData.presentation = lireFormulairePresentation();
   try {
     const contactData = lireFormulaireContact();
@@ -171,18 +158,28 @@ async function sauvegarderInfos() {
       { chemin: ADMIN_CFG.repoPath + 'infos.json',   contenu: JSON.stringify(infosData, null, 2) },
       { chemin: ADMIN_CFG.repoPath + 'contact.json', contenu: JSON.stringify(contactData, null, 2) }
     ], 'Mise à jour infos + contact');
-    badge.textContent = '✓';
-    badge.className = 'sync-badge ok';
+    if (badge) { badge.textContent = '✓'; badge.className = 'sync-badge ok'; setTimeout(() => badge.classList.add('hidden'), 3000); }
     infosModifiees = false;
-    setTimeout(() => badge.classList.add('hidden'), 3000);
+    toast('✓ Sauvegardé');
   } catch(e) {
-    badge.textContent = '✗';
-    badge.className = 'sync-badge err';
+    if (badge) { badge.textContent = '✗'; badge.className = 'sync-badge err'; }
     rapporterErreur('Sauvegarde infos/contact échouée : ' + e.message, 'bloquant', e.stack || '');
+    toast('Erreur : ' + e.message, 'err', 4000);
   } finally {
-    if (btnInf) btnInf.disabled = false;
+    if (btn) { btn.disabled = false; btn.textContent = lblOrig || 'Enregistrer'; }
   }
 }
+async function sauvegarderInfos() { await _sauvegarderTout('badge-infos', null); }
+async function sauvegarderAgenda() {
+  if (document.getElementById('form-event-wrap')?.style.display !== 'none') sauverFormulaireEvent();
+  await _sauvegarderTout('badge-agenda', 'btn-gh-sauver-agenda');
+}
+async function sauvegarderLiens() {
+  if (document.getElementById('form-collegue-wrap')?.style.display !== 'none') sauverCollegue();
+  await _sauvegarderTout('badge-liens', 'btn-gh-sauver-liens');
+}
+async function sauvegarderContact() { await _sauvegarderTout('badge-contact', 'btn-gh-sauver-contact'); }
+async function sauvegarderPresentation() { await _sauvegarderTout('badge-pres', 'btn-gh-sauver-pres'); }
 
 /* Wirer les boutons */
 document.getElementById('btn-ajouter-event').addEventListener('click', () => ouvrirFormulaireEvent(null));
@@ -251,6 +248,7 @@ async function sauverCollegue() {
   fermerFormulaireCollegue();
   infosModifiees = true;
   afficherCollegues();
+  await _sauvegarderTout('badge-liens', 'btn-sauver-collegue');
 }
 
 async function supprimerCollegue(idx) {
@@ -258,10 +256,12 @@ async function supprimerCollegue(idx) {
   infosData.collegues.splice(idx, 1);
   infosModifiees = true;
   afficherCollegues();
+  await _sauvegarderTout('badge-liens', null);
 }
 
 document.getElementById('btn-ajouter-collegue').addEventListener('click', () => ouvrirFormulaireCollegue());
 document.getElementById('btn-sauver-collegue').addEventListener('click', sauverCollegue);
 document.getElementById('btn-annuler-collegue').addEventListener('click', fermerFormulaireCollegue);
-document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
+document.getElementById('btn-enregistrer-contact')?.addEventListener('click', sauvegarderContact);
+document.getElementById('btn-enregistrer-pres')?.addEventListener('click', sauvegarderPresentation);
 // build: 1780947709
