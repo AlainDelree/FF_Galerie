@@ -304,7 +304,8 @@ function majBtnPlacer() { /* bouton Placer supprimé — Arranger le mur le remp
 
 function majBoutons() {
   const n = toilesSelectionnees.size;
-  $('btn-modifier-toile').disabled = (n !== 1);
+  $('btn-modifier-toile').disabled  = (n !== 1);
+  $('btn-supprimer-toile').disabled = (n !== 1);
 }
 
 function afficherConfirmAutreSalle(toile, nomAutre) {
@@ -684,7 +685,6 @@ function initTailleForm() {
 function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
   $('modal-toile-tit').textContent = 'Nouvelle toile';
-  $('zone-suppr').classList.add('hidden');
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
@@ -713,7 +713,6 @@ function ouvrirFormulaireEdition(id) {
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = 'Modifier la toile';
-  $('zone-suppr').classList.remove('hidden');
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');

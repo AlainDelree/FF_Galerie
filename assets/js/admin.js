@@ -801,7 +801,7 @@ $('btn-ajouter-toile').addEventListener('click', () => {
 $('btn-close-toile').addEventListener('click', () => fermerModalToile());
 $('btn-annuler-toile').addEventListener('click', () => fermerModalToile());
 $('btn-sauver-toile').addEventListener('click', () => sauverToile());
-$('btn-suppr-toile').addEventListener('click', () => supprimerToile());
+$('btn-supprimer-toile').addEventListener('click', () => supprimerToile());
 $('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
 
 // Fiche consultation
