@@ -255,7 +255,7 @@ async function creerArtiste() {
     a.draft = draft;
     err.textContent = "";
     prog.style.display = "";
-    prog.textContent = "Sauvegarde…";
+    prog.textContent = "En cours…";
     document.getElementById("btn-sauver-artiste").disabled = true;
     try {
       /* artiste-info.js rend les pages dynamiques → seul artistes.json à mettre à jour */

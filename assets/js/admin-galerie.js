@@ -884,7 +884,7 @@ function lireFormToile() {
 async function sauverToile() {
   const donnees = lireFormToile();
   const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile');
-  btn.disabled = true; lbl.textContent = '⟳ Sauvegarde…';
+  btn.disabled = true; lbl.textContent = 'En cours…';
   try {
     if (toileEnEdition === null) {
       const id = prochainId();

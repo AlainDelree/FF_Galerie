@@ -145,10 +145,11 @@ function lireFormulairePresentation() {
 }
 
 async function _sauvegarderTout(badgeId, btnId) {
-  const badge = document.getElementById(badgeId);
-  const btn   = document.getElementById(btnId);
+  const badge    = document.getElementById(badgeId);
+  const btn      = document.getElementById(btnId);
+  const lblOrig  = btn ? btn.textContent : '';
   if (!token) { alert('Token GitHub requis pour sauvegarder.'); return; }
-  if (btn) { btn.disabled = true; btn.textContent = '⟳ Sauvegarde…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'En cours…'; }
   if (badge) { badge.textContent = '…'; badge.className = 'sync-badge'; badge.classList.remove('hidden'); }
   infosData.presentation = lireFormulairePresentation();
   try {
@@ -165,7 +166,7 @@ async function _sauvegarderTout(badgeId, btnId) {
     rapporterErreur('Sauvegarde infos/contact échouée : ' + e.message, 'bloquant', e.stack || '');
     toast('Erreur : ' + e.message, 'err', 4000);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || '💾 Sauvegarder'; }
+    if (btn) { btn.disabled = false; btn.textContent = lblOrig || 'Enregistrer'; }
   }
 }
 async function sauvegarderInfos() { await _sauvegarderTout('badge-infos', null); }
