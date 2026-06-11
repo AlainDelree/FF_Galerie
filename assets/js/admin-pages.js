@@ -156,14 +156,12 @@ function lireFormulairePresentation() {
   return { titre: getV('pres-titre'), texte: getV('pres-texte'), photo: getV('pres-photo') };
 }
 
-async function sauvegarderInfos() {
-  const badge = document.getElementById('badge-infos');
-  const btnInf = document.getElementById('btn-sauver-infos');
+async function _sauvegarderTout(badgeId, btnId) {
+  const badge = document.getElementById(badgeId);
+  const btn   = document.getElementById(btnId);
   if (!token) { alert('Token GitHub requis pour sauvegarder.'); return; }
-  if (btnInf) btnInf.disabled = true;
-  badge.textContent = '…';
-  badge.className = 'sync-badge';
-  // Lire la présentation depuis le formulaire avant de sauvegarder
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ Sauvegarde…'; }
+  if (badge) { badge.textContent = '…'; badge.className = 'sync-badge'; badge.classList.remove('hidden'); }
   infosData.presentation = lireFormulairePresentation();
   try {
     const contactData = lireFormulaireContact();
@@ -171,18 +169,28 @@ async function sauvegarderInfos() {
       { chemin: ADMIN_CFG.repoPath + 'infos.json',   contenu: JSON.stringify(infosData, null, 2) },
       { chemin: ADMIN_CFG.repoPath + 'contact.json', contenu: JSON.stringify(contactData, null, 2) }
     ], 'Mise à jour infos + contact');
-    badge.textContent = '✓';
-    badge.className = 'sync-badge ok';
+    if (badge) { badge.textContent = '✓'; badge.className = 'sync-badge ok'; setTimeout(() => badge.classList.add('hidden'), 3000); }
     infosModifiees = false;
-    setTimeout(() => badge.classList.add('hidden'), 3000);
+    toast('✓ Sauvegardé');
   } catch(e) {
-    badge.textContent = '✗';
-    badge.className = 'sync-badge err';
+    if (badge) { badge.textContent = '✗'; badge.className = 'sync-badge err'; }
     rapporterErreur('Sauvegarde infos/contact échouée : ' + e.message, 'bloquant', e.stack || '');
+    toast('Erreur : ' + e.message, 'err', 4000);
   } finally {
-    if (btnInf) btnInf.disabled = false;
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || '💾 Sauvegarder'; }
   }
 }
+async function sauvegarderInfos() { await _sauvegarderTout('badge-infos', null); }
+async function sauvegarderAgenda() {
+  if (document.getElementById('form-event-wrap')?.style.display !== 'none') sauverFormulaireEvent();
+  await _sauvegarderTout('badge-agenda', 'btn-gh-sauver-agenda');
+}
+async function sauvegarderLiens() {
+  if (document.getElementById('form-collegue-wrap')?.style.display !== 'none') sauverCollegue();
+  await _sauvegarderTout('badge-liens', 'btn-gh-sauver-liens');
+}
+async function sauvegarderContact() { await _sauvegarderTout('badge-contact', 'btn-gh-sauver-contact'); }
+async function sauvegarderPresentation() { await _sauvegarderTout('badge-pres', 'btn-gh-sauver-pres'); }
 
 /* Wirer les boutons */
 document.getElementById('btn-ajouter-event').addEventListener('click', () => ouvrirFormulaireEvent(null));
@@ -263,5 +271,8 @@ async function supprimerCollegue(idx) {
 document.getElementById('btn-ajouter-collegue').addEventListener('click', () => ouvrirFormulaireCollegue());
 document.getElementById('btn-sauver-collegue').addEventListener('click', sauverCollegue);
 document.getElementById('btn-annuler-collegue').addEventListener('click', fermerFormulaireCollegue);
-document.getElementById('btn-sauver-infos').addEventListener('click', sauvegarderInfos);
+document.getElementById('btn-gh-sauver-agenda')?.addEventListener('click', sauvegarderAgenda);
+document.getElementById('btn-gh-sauver-liens')?.addEventListener('click', sauvegarderLiens);
+document.getElementById('btn-gh-sauver-contact')?.addEventListener('click', sauvegarderContact);
+document.getElementById('btn-gh-sauver-pres')?.addEventListener('click', sauvegarderPresentation);
 // build: 1780947709
