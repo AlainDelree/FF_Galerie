@@ -1,6 +1,32 @@
 // ═══════════════════════════════════════════════
 // ADMIN-TEXTURES.JS — Presets / Couleurs / Textures + Recadrage Cropper.js
 // Dépend de : afficherMur, marquerChangement, toast, $, ADMIN_CFG (admin.js)
+
+let _snapshotApparence = null;
+
+function prendreSnapshotApparence() {
+  _snapshotApparence = {
+    couleur_mur:     couleurMurActuel,
+    couleur_cadres:  couleurCadresActuel,
+    epaisseur_cadres:epaisseurCadresActuel,
+    texture:         textureActuelle
+  };
+}
+
+function restaurerSnapshotApparence() {
+  if (!_snapshotApparence || !salleActive) return;
+  couleurMurActuel      = _snapshotApparence.couleur_mur;
+  couleurCadresActuel   = _snapshotApparence.couleur_cadres;
+  epaisseurCadresActuel = _snapshotApparence.epaisseur_cadres;
+  textureActuelle       = _snapshotApparence.texture;
+  salleActive.couleur_mur      = couleurMurActuel;
+  salleActive.couleur_cadres   = couleurCadresActuel;
+  salleActive.epaisseur_cadres = epaisseurCadresActuel;
+  salleActive.texture          = textureActuelle;
+  appliquerApparence();
+  if (typeof afficherMur === 'function') afficherMur();
+  _snapshotApparence = null;
+}
 //             afficherQualitePhoto (admin-media.js)
 //             photoB64, _origPhotoMaxDim, toiles, salles (admin.js globals)
 // ═══════════════════════════════════════════════
@@ -333,20 +359,20 @@ function initSwatches() {
 
 function setCouleurMur(col) {
   couleurMurActuel = col;
-  if (salleActive) { salleActive.couleur_mur = col; marquerChangement(); }
+  if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
 }
 
 function setCouleurCadres(col) {
   couleurCadresActuel = col;
-  if (salleActive) { salleActive.couleur_cadres = col; marquerChangement(); }
+  if (salleActive) { salleActive.couleur_cadres = col; }
   appliquerApparence();
   afficherMur();
 }
 
 function setEpaisseurCadres(ep) {
   epaisseurCadresActuel = ep;
-  if (salleActive) { salleActive.epaisseur_cadres = ep; marquerChangement(); }
+  if (salleActive) { salleActive.epaisseur_cadres = ep; }
   var val = $('ep-cadres-val'); if (val) val.textContent = ep + 'px';
   document.querySelectorAll('.toile-posee').forEach(function(el) {
     if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
@@ -355,7 +381,7 @@ function setEpaisseurCadres(ep) {
 
 function setTexture(val) {
   textureActuelle = val;
-  if (salleActive) { salleActive.texture = val; marquerChangement(); }
+  if (salleActive) { salleActive.texture = val; }
   appliquerApparence();
 }
 

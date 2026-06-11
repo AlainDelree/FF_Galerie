@@ -658,6 +658,11 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   finally { btnDel.disabled = false; }
 });
 // Contrôles mur
+function fermerPanneauCoul() {
+  $('coul-panel').classList.remove('ouvert');
+  $('coul-overlay').classList.remove('ouvert');
+  $('btn-coul-toggle').classList.remove('on');
+}
 $('btn-coul-toggle').addEventListener('click', () => {
   const ouvert = $('coul-panel').classList.toggle('ouvert');
   $('coul-overlay').classList.toggle('ouvert', ouvert);
@@ -666,19 +671,27 @@ $('btn-coul-toggle').addEventListener('click', () => {
     $('musique-panel').classList.remove('ouvert');
     $('musique-overlay').classList.remove('ouvert');
     $('btn-musique-toggle').classList.remove('on');
-    // Charger les textures GitHub si pas encore fait (race au démarrage)
     if (!window._texturesGHChargees) chargerTexturesGitHub();
+    if (typeof prendreSnapshotApparence === 'function') prendreSnapshotApparence();
   }
 });
-$('btn-close-coul').addEventListener('click', () => {
-  $('coul-panel').classList.remove('ouvert');
-  $('coul-overlay').classList.remove('ouvert');
-  $('btn-coul-toggle').classList.remove('on');
-});
-$('coul-overlay').addEventListener('click', () => {
-  $('coul-panel').classList.remove('ouvert');
-  $('coul-overlay').classList.remove('ouvert');
-  $('btn-coul-toggle').classList.remove('on');
+// Annuler : restaure le snapshot et ferme
+function annulerPanneauCoul() {
+  if (typeof restaurerSnapshotApparence === 'function') restaurerSnapshotApparence();
+  fermerPanneauCoul();
+}
+$('btn-annuler-coul').addEventListener('click', annulerPanneauCoul);
+$('coul-overlay').addEventListener('click', annulerPanneauCoul);
+// Sauvegarder : écrit sur GitHub et ferme
+$('btn-sauver-coul').addEventListener('click', async () => {
+  const btn = $('btn-sauver-coul');
+  btn.textContent = '⟳ Sauvegarde…'; btn.disabled = true;
+  try {
+    await sauvegarder('[admin] Couleurs/texture salle');
+    _snapshotApparence = null;
+    fermerPanneauCoul();
+  } catch (_) {}
+  btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
 });
 
 // ── Panneau Musique ──────────────────────────────────────────────
