@@ -640,6 +640,10 @@ textarea.champ{resize:vertical;min-height:65px;}
   .coul-panel {
     left: 50%; right: auto; width: min(480px, 90vw);
     transform: translateX(-50%);
+    max-height: min(80vh, 700px);
+  }
+  #musique-panel {
+    max-height: min(90vh, 850px);
   }
 }
 
