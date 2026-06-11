@@ -942,17 +942,19 @@ async function sauverToile() {
 }
 
 async function supprimerToile() {
-  if (!toileEnEdition) return;
-  const t = toiles.find(x => x.id === toileEnEdition);
+  const idCible = toileEnEdition || selectedToile?.id;
+  if (!idCible) return;
+  const t = toiles.find(x => x.id === idCible);
   if (!confirm(`Supprimer "${t?.titre || 'cette toile'}" ? Réversible via le backup.`)) return;
-  toiles = toiles.filter(x => x.id !== toileEnEdition);
+  toiles = toiles.filter(x => x.id !== idCible);
   salles.forEach(s => {
-    s.toiles = s.toiles.filter(id => id !== toileEnEdition);
-    s.positions = (s.positions || []).filter(p => p.id !== toileEnEdition);
+    s.toiles = s.toiles.filter(id => id !== idCible);
+    s.positions = (s.positions || []).filter(p => p.id !== idCible);
   });
-  fermerModalToile();
+  if (toileEnEdition) fermerModalToile();
+  toilesSelectionnees.clear(); selectedToile = null; majBoutons();
   try {
-    await sauvegarder(`[admin] Suppression toile #${toileEnEdition}${t?.titre ? ' — ' + t.titre : ''}`);
+    await sauvegarder(`[admin] Suppression toile #${idCible}${t?.titre ? ' — ' + t.titre : ''}`);
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
