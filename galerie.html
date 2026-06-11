@@ -36,6 +36,15 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
+  <noscript>
+    <style>#app,main,.galerie-wrap,.plan-wrap,.contact-wrap,.infos-wrap,.apropos-wrap{display:none!important}</style>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center;">
+      <div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem;">Ce site nécessite JavaScript pour fonctionner.</p>
+        <p style="font-size:.9rem;color:#888;">Veuillez activer JavaScript dans votre navigateur.</p>
+      </div>
+    </div>
+  </noscript>
 
   <header class="entete">
     <nav class="nav-pages">
@@ -68,9 +77,9 @@
     </div>
     <div class="conteneur-salles" id="conteneurSalles"></div>
     <div class="nav-mobile" id="navMobile">
-      <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)">&#8249;</button>
+      <button class="nav-mobile-btn" id="navMobG" onclick="allerSalle(salleCourante-1)" aria-label="Salle précédente">&#8249;</button>
       <span class="nav-mobile-info" id="navMobInfo"></span>
-      <button class="nav-mobile-btn" id="navMobD" onclick="allerSalle(salleCourante+1)">&#8250;</button>
+      <button class="nav-mobile-btn" id="navMobD" onclick="allerSalle(salleCourante+1)" aria-label="Salle suivante">&#8250;</button>
     </div>
   </main>
 
