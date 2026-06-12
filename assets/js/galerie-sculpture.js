@@ -10,7 +10,7 @@
   if (!document.getElementById(id)) {
     const lnk = document.createElement('link');
     lnk.id = id; lnk.rel = 'stylesheet';
-    lnk.href = (window.GALERIE_ASSETS_BASE || '') + 'assets/css/galerie-sculpture.css?v=20260612e';
+    lnk.href = (window.GALERIE_ASSETS_BASE || '') + 'assets/css/galerie-sculpture.css?v=20260612f';
     document.head.appendChild(lnk);
   }
 })();
@@ -25,10 +25,10 @@
   document.head.appendChild(s);
 })();
 
-/* ── Hauteurs du viewer inline par gabarit ── */
-const VIEWER_H = { s: 90, m: 120, l: 160, sol: 130 };
+/* ── Hauteurs du viewer par gabarit (calées pour rester dans la zone parquet) ── */
+const VIEWER_H = { s: 80, m: 105, l: 140, sol: 110 };
 
-/* ── creerSocle : piédestal + photo + viewer inline + titre + ombre ── */
+/* ── creerSocle : model-viewer auto-rotatif + piédestal + titre ── */
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -43,40 +43,28 @@ function creerSocle(piece, gabarit, pos) {
   wrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
   wrapper.style.zIndex    = String(Math.round((100 - pos.y) * 10));
 
-  const hasGlb = !!piece.glb;
-
   const socle = document.createElement('div');
   socle.className = 'socle socle--' + gCode;
-  socle.tabIndex  = hasGlb ? 0 : -1;
-  socle.dataset.glb = hasGlb ? '1' : '0';
-  socle.setAttribute('role', hasGlb ? 'button' : 'img');
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
-  /* Badge 3D */
-  if (hasGlb) {
-    const badge = document.createElement('span');
-    badge.className = 'socle-badge-3d';
-    badge.textContent = '3D';
-    socle.appendChild(badge);
-  }
+  /* Model-viewer directement si GLB disponible, placeholder sinon */
+  if (piece.glb) {
+    const glbSrc = /^https?:\/\//.test(piece.glb)
+      ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
 
-  /* Photo principale */
-  if (piece.photo) {
-    const img = document.createElement('img');
-    img.className = 'socle-photo';
-    img.alt = piece.titre || '';
-    img.loading = 'lazy'; img.decoding = 'async';
-    const src = /^https?:\/\//.test(piece.photo)
-      ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
-    img.onerror = function () {
-      if (!this._fbDone) { this._fbDone = true; this.loading = 'lazy'; this.src = src; }
-      else { this.style.display = 'none'; }
-    };
-    img.src = src;
-    socle.appendChild(img);
+    const viewer = document.createElement('model-viewer');
+    viewer.setAttribute('src',              glbSrc);
+    viewer.setAttribute('alt',              piece.titre || '');
+    viewer.setAttribute('auto-rotate',      '');
+    viewer.setAttribute('camera-controls',  '');
+    viewer.setAttribute('shadow-intensity', '0.8');
+    viewer.className    = 'socle-viewer-inline';
+    viewer.style.height = (VIEWER_H[gCode] || 105) + 'px';
+    socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');
-    ph.className = 'socle-placeholder';
+    ph.className    = 'socle-placeholder';
+    ph.style.height = (VIEWER_H[gCode] || 105) + 'px';
     socle.appendChild(ph);
   }
 
@@ -91,44 +79,9 @@ function creerSocle(piece, gabarit, pos) {
   /* Titre */
   if (piece.titre) {
     const titre = document.createElement('div');
-    titre.className = 'socle-titre';
+    titre.className   = 'socle-titre';
     titre.textContent = piece.titre;
     socle.appendChild(titre);
-  }
-
-  /* ── Viewer inline (créé au premier clic, lazy) ── */
-  let viewerEl = null;
-
-  if (hasGlb) {
-    const glbSrc = /^https?:\/\//.test(piece.glb)
-      ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
-
-    socle.addEventListener('click', () => {
-      const isActif = socle.classList.toggle('socle--active');
-
-      if (isActif && !viewerEl) {
-        /* Premier clic : créer le model-viewer */
-        viewerEl = document.createElement('model-viewer');
-        viewerEl.setAttribute('src',              glbSrc);
-        viewerEl.setAttribute('alt',              piece.titre || '');
-        viewerEl.setAttribute('auto-rotate',      '');
-        viewerEl.setAttribute('camera-controls',  '');
-        viewerEl.setAttribute('shadow-intensity', '0.8');
-        viewerEl.className     = 'socle-viewer-inline';
-        viewerEl.style.height  = (VIEWER_H[gCode] || 120) + 'px';
-        socle.insertBefore(viewerEl, ped);
-      }
-
-      /* Pause/reprise de la rotation */
-      if (viewerEl) {
-        if (isActif) viewerEl.setAttribute('auto-rotate', '');
-        else         viewerEl.removeAttribute('auto-rotate');
-      }
-    });
-
-    socle.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); socle.click(); }
-    });
   }
 
   wrapper.appendChild(socle);
@@ -150,7 +103,6 @@ Promise.all([
   TOTAL_SALLES = salles.length;
 
   const _hm = window.location.hash.match(/^#salle-(\d+)$/);
-
   conteneur.style.width = (TOTAL_SALLES * 100) + '%';
 
   salles.forEach((salle, si) => {
@@ -162,7 +114,7 @@ Promise.all([
     if (salle.couleur_mur) salleDiv.style.setProperty('--salle-mur', salle.couleur_mur);
 
     const nomEl = document.createElement('p');
-    nomEl.className = 'nom-salle';
+    nomEl.className   = 'nom-salle';
     nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
     salleDiv.appendChild(nomEl);
 

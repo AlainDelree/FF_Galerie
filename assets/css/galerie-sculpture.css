@@ -3,7 +3,7 @@
    Styles spécifiques au rendu galerie sculpture
    ============================================================= */
 
-/* ── Salle sculpture : pas de padding latéral (scène plein-largeur) ── */
+/* ── Salle sculpture : pas de padding latéral ── */
 .salle.salle-sculpture {
   padding: 1rem 0 0;
   align-items: stretch;
@@ -13,37 +13,33 @@
   padding: 0 2rem;
 }
 
-/* ── Scène principale (fond mur + sol) ── */
+/* ── Scène principale ── */
 .scene-sculpture {
   position: relative;
   width: 100%;
   height: 360px;
   flex: none;
-  overflow: visible; /* les grandes sculptures percent naturellement dans la zone mur */
+  overflow: visible;
   background-color: #2a2520;
 }
 
-/* Légère ombre intérieure en haut (profondeur du plafond) */
+/* Ombre plafond */
 .scene-sculpture::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 40px;
+  top: 0; left: 0; right: 0; height: 40px;
   background: linear-gradient(to bottom, rgba(0,0,0,.20), transparent);
-  pointer-events: none;
-  z-index: 5;
+  pointer-events: none; z-index: 5;
 }
 
-/* ── Sol (occupe le bas de la scène) ── */
+/* ── Sol : 70% de la scène ── */
 .sol-sculpture {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 65%; /* 65% : assez haut pour que les socles restent au sol */
+  height: 70%;
   background-color: #b8a890;
   background-image: linear-gradient(to bottom,
-    rgba(0,0,0,.22) 0%,
-    rgba(0,0,0,.06) 40%,
-    transparent 100%);
+    rgba(0,0,0,.22) 0%, rgba(0,0,0,.06) 40%, transparent 100%);
   overflow: visible;
 }
 
@@ -51,26 +47,21 @@
 .sol-sculpture::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: rgba(0,0,0,.30);
-  z-index: 1;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: rgba(0,0,0,.30); z-index: 1;
 }
 
-/* Reflet du sol (lattes légères) */
+/* Lattes parquet */
 .sol-sculpture::after {
   content: '';
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: repeating-linear-gradient(
-    90deg,
-    transparent 0, transparent 55px,
-    rgba(0,0,0,.06) 55px, rgba(0,0,0,.06) 56px
-  );
+    90deg, transparent 0, transparent 55px,
+    rgba(0,0,0,.06) 55px, rgba(0,0,0,.06) 56px);
   pointer-events: none;
 }
 
-/* ── Socle wrapper (positionnement sur le sol) ── */
+/* ── Wrapper positionné sur le sol ── */
 .socle-wrapper {
   position: absolute;
   transform-origin: bottom center;
@@ -81,34 +72,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  cursor: pointer;
-  transition: transform .3s ease, filter .3s ease;
   position: relative;
+  cursor: default;
 }
 
-.socle:hover,
-.socle--hover { transform: translateY(-5px); filter: brightness(1.10); }
-
-.socle:focus-visible {
-  outline: 2px solid var(--accent, #c8a050);
-  outline-offset: 4px;
-  border-radius: 2px;
-}
-
-/* ── Photo de la pièce ── */
-.socle-photo {
+/* ── Viewer 3D inline (toujours visible) ── */
+.socle-viewer-inline {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 150px;
-  object-fit: contain;
   border-radius: 2px 2px 0 0;
+  background: transparent;
+  --poster-color: transparent;
 }
 
-/* ── Placeholder si pas de photo ── */
+/* ── Placeholder si pas de GLB ── */
 .socle-placeholder {
   width: 100%;
-  height: 110px;
   background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
   border-radius: 2px 2px 0 0;
 }
@@ -121,25 +100,20 @@
   background: linear-gradient(to bottom, #d0c7b5, #9a8f7e);
 }
 
-/* Face latérale droite (illusion de volume) */
+/* Face latérale droite */
 .socle-piedestal::after {
   content: '';
   position: absolute;
-  right: -4px;
-  top: 3px;
-  width: 4px;
-  height: 100%;
+  right: -4px; top: 3px;
+  width: 4px; height: 100%;
   background: linear-gradient(to bottom, #8a7f6e, #5a5040);
 }
 
-/* Face supérieure (dessus du piédestal) */
+/* Dessus du piédestal */
 .socle-piedestal::before {
   content: '';
   position: absolute;
-  top: -4px;
-  right: -4px;
-  left: 0;
-  height: 4px;
+  top: -4px; right: -4px; left: 0; height: 4px;
   background: linear-gradient(to right, #c8bfae, #a89880);
   transform: skewX(-45deg);
   transform-origin: right top;
@@ -157,46 +131,7 @@
 .socle--l   { width: 150px; }
 .socle--sol { width: 185px; }
 
-/* ── Viewer 3D inline (remplace la photo au clic) ── */
-.socle-viewer-inline {
-  display: none;
-  width: 100%;
-  border-radius: 2px 2px 0 0;
-  background: transparent;
-  --poster-color: transparent;
-}
-
-.socle--active .socle-photo,
-.socle--active .socle-placeholder {
-  display: none !important;
-}
-
-.socle--active .socle-viewer-inline {
-  display: block;
-}
-
-/* Curseur différent selon disponibilité GLB */
-.socle[data-glb='0'] { cursor: default; }
-
-/* ── Badge "3D" sur les pièces avec fichier GLB ── */
-.socle-badge-3d {
-  position: absolute;
-  top: .3rem;
-  right: .3rem;
-  font-size: .58rem;
-  font-family: 'Lato', sans-serif;
-  font-weight: 400;
-  letter-spacing: .12em;
-  color: var(--accent, #c8a050);
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(200,160,80,.35);
-  border-radius: 2px;
-  padding: 1px 4px;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* ── Titre sous le piédestal ── */
+/* ── Titre ── */
 .socle-titre {
   margin-top: .4rem;
   font-size: .67rem;
@@ -210,42 +145,35 @@
   max-width: 140%;
 }
 
-/* ── Ombre portée au sol (bas du piédestal) ── */
+/* ── Ombre portée au sol ── */
 .socle-ombre {
   position: absolute;
-  bottom: -6px;
-  left: 50%;
+  bottom: -6px; left: 50%;
   transform: translateX(-50%);
-  width: 130%;
-  height: 10px;
+  width: 130%; height: 10px;
   background: radial-gradient(ellipse, rgba(0,0,0,.40) 0%, transparent 70%);
   filter: blur(4px);
   pointer-events: none;
 }
 
-/* ── Jonction visuelle scène → zone-basse ── */
-/* Le mur-inférieur de creerPlancher hérite la couleur via propriété CSS */
+/* ── Jonction scène → zone-basse ── */
 .salle-sculpture .mur-inferieur {
   background-color: var(--salle-mur, #2a2520) !important;
 }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .scene-sculpture   { height: 300px; }
-  .sol-sculpture     { height: 68%; }
-  .socle-photo       { max-height: 120px; }
-  .socle-placeholder { height:  85px; }
+  .scene-sculpture { height: 300px; }
+  .sol-sculpture   { height: 72%; }
 }
 
 @media (max-width: 600px) {
-  .scene-sculpture   { height: 240px; }
-  .sol-sculpture     { height: 70%; }
+  .scene-sculpture { height: 240px; }
+  .sol-sculpture   { height: 75%; }
   .socle--s   { width:  60px; }
   .socle--m   { width:  80px; }
   .socle--l   { width: 110px; }
   .socle--sol { width: 140px; }
-  .socle-photo       { max-height: 90px; }
-  .socle-placeholder { height: 70px; }
   .socle-piedestal--s   { height: 20px; }
   .socle-piedestal--m   { height: 26px; }
   .socle-piedestal--l   { height: 36px; }
