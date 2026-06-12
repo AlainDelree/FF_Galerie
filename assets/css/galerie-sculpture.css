@@ -19,8 +19,8 @@
   width: 100%;
   height: 360px;
   flex: none;
-  overflow: hidden;
-  background-color: #2a2520; /* remplacé dynamiquement via JS */
+  overflow: visible; /* les grandes sculptures percent naturellement dans la zone mur */
+  background-color: #2a2520;
 }
 
 /* Légère ombre intérieure en haut (profondeur du plafond) */
@@ -38,8 +38,8 @@
 .sol-sculpture {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 58%;
-  background-color: #b8a890; /* remplacé dynamiquement via JS */
+  height: 65%; /* 65% : assez haut pour que les socles restent au sol */
+  background-color: #b8a890;
   background-image: linear-gradient(to bottom,
     rgba(0,0,0,.22) 0%,
     rgba(0,0,0,.06) 40%,
@@ -157,6 +157,27 @@
 .socle--l   { width: 150px; }
 .socle--sol { width: 185px; }
 
+/* ── Viewer 3D inline (remplace la photo au clic) ── */
+.socle-viewer-inline {
+  display: none;
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  --poster-color: transparent;
+}
+
+.socle--active .socle-photo,
+.socle--active .socle-placeholder {
+  display: none !important;
+}
+
+.socle--active .socle-viewer-inline {
+  display: block;
+}
+
+/* Curseur différent selon disponibilité GLB */
+.socle[data-glb='0'] { cursor: default; }
+
 /* ── Badge "3D" sur les pièces avec fichier GLB ── */
 .socle-badge-3d {
   position: absolute;
@@ -211,14 +232,14 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .scene-sculpture   { height: 300px; }
-  .sol-sculpture     { height: 60%; }
+  .sol-sculpture     { height: 68%; }
   .socle-photo       { max-height: 120px; }
   .socle-placeholder { height:  85px; }
 }
 
 @media (max-width: 600px) {
   .scene-sculpture   { height: 240px; }
-  .sol-sculpture     { height: 62%; }
+  .sol-sculpture     { height: 70%; }
   .socle--s   { width:  60px; }
   .socle--m   { width:  80px; }
   .socle--l   { width: 110px; }

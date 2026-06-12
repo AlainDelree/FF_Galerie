@@ -9,116 +9,26 @@
   const id = 'css-galerie-sculpture';
   if (!document.getElementById(id)) {
     const lnk = document.createElement('link');
-    lnk.id   = id;
-    lnk.rel  = 'stylesheet';
+    lnk.id = id; lnk.rel = 'stylesheet';
     lnk.href = (window.GALERIE_ASSETS_BASE || '') + 'assets/css/galerie-sculpture.css';
     document.head.appendChild(lnk);
   }
 })();
 
-/* ── Pré-chargement de <model-viewer> dès le démarrage de la galerie ── */
+/* ── Pré-chargement de <model-viewer> dès le démarrage ── */
 (function () {
   const id = 'script-model-viewer';
   if (document.getElementById(id)) return;
   const s = document.createElement('script');
-  s.id   = id;
-  s.type = 'module';
-  s.src  = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+  s.id = id; s.type = 'module';
+  s.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
   document.head.appendChild(s);
 })();
 
-/* ── Modal sculpture ───────────────────────────────────────────
-   Fonction dédiée (pas d'override global) :
-   - dimensions 3D (L × l × H)
-   - <model-viewer> si piece.glb présent, photo sinon
-   - libellé "Style" → "Technique"
-   ─────────────────────────────────────────────────────────── */
-function ouvrirModalSculpture(piece) {
-  document.getElementById('modalTitre').textContent = piece.titre || 'Sans titre';
+/* ── Hauteurs du viewer inline par gabarit ── */
+const VIEWER_H = { s: 90, m: 120, l: 160, sol: 130 };
 
-  function setChamp(id, valeur) {
-    const el    = document.getElementById(id);
-    const ligne = el && el.closest('.modal-ligne');
-    if (valeur) { el.textContent = valeur; if (ligne) ligne.style.display = ''; }
-    else        { if (ligne) ligne.style.display = 'none'; }
-  }
-
-  /* Adapter le libellé "Style" → "Technique" (une seule fois) */
-  const elStyle = document.getElementById('modalStyle');
-  if (elStyle) {
-    const lbl = elStyle.closest('.modal-ligne') && elStyle.closest('.modal-ligne').querySelector('.modal-label');
-    if (lbl && lbl.textContent === 'Style') lbl.textContent = 'Technique';
-  }
-
-  setChamp('modalDate',      piece.date   || '');
-  setChamp('modalStyle',     piece.style  || '');
-  setChamp('modalMateriaux',
-    (piece.materiaux && piece.materiaux.length) ? piece.materiaux.join(', ') : '');
-
-  /* Dimensions 3D : L × l × H cm */
-  const dim = piece.dimensions;
-  let dimTexte = '';
-  if (dim) {
-    const parts = [dim.largeur, dim.profondeur, dim.hauteur].filter(Boolean);
-    if (parts.length) dimTexte = parts.join(' \u00d7 ') + ' cm';
-  }
-  setChamp('modalDimensions', dimTexte);
-
-  /* Description */
-  const descLigne = document.getElementById('modalDescLigne');
-  const descVal   = document.getElementById('modalDesc');
-  if (piece.description) {
-    descVal.textContent     = piece.description;
-    descLigne.style.display = '';
-  } else {
-    descLigne.style.display = 'none';
-  }
-
-  /* Zone image / viewer */
-  const wrap = document.getElementById('modalImageWrap');
-  wrap.innerHTML = '';
-
-  if (piece.glb) {
-    /* ── Viewer 3D ── */
-    const glbSrc = /^https?:\/\//.test(piece.glb)
-      ? piece.glb
-      : (GALERIE_CFG.assetsBase || '') + piece.glb;
-    const viewer = document.createElement('model-viewer');
-    viewer.setAttribute('src',              glbSrc);
-    viewer.setAttribute('alt',              piece.titre || 'Sculpture');
-    viewer.setAttribute('ar',               '');
-    viewer.setAttribute('auto-rotate',      '');
-    viewer.setAttribute('camera-controls',  '');
-    viewer.setAttribute('shadow-intensity', '1');
-    viewer.style.cssText = 'width:100%;height:340px;background:transparent;--poster-color:transparent;';
-    wrap.appendChild(viewer);
-
-  } else if (piece.photo) {
-    /* ── Photo fallback ── */
-    const img = document.createElement('img');
-    const src = /^https?:\/\//.test(piece.photo)
-      ? piece.photo
-      : GALERIE_CFG.assetsBase + piece.photo;
-    img.src      = src;
-    img.alt      = piece.titre || '';
-    img.decoding = 'async';
-    img.onerror  = function () {
-      const drap = creerDrapBlanc(); drap.style.minHeight = '260px';
-      wrap.replaceChild(drap, this);
-    };
-    wrap.appendChild(img);
-
-  } else {
-    const drap = creerDrapBlanc();
-    drap.style.minHeight = '260px';
-    wrap.appendChild(drap);
-  }
-
-  modalOverlay.classList.add('visible');
-  document.body.style.overflow = 'hidden';
-}
-
-/* ── creerSocle : piédestal + photo + titre + ombre ── */
+/* ── creerSocle : piédestal + photo + viewer inline + titre + ombre ── */
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -133,16 +43,19 @@ function creerSocle(piece, gabarit, pos) {
   wrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
   wrapper.style.zIndex    = String(Math.round((100 - pos.y) * 10));
 
+  const hasGlb = !!piece.glb;
+
   const socle = document.createElement('div');
   socle.className = 'socle socle--' + gCode;
-  socle.tabIndex  = 0;
-  socle.setAttribute('role',       'button');
+  socle.tabIndex  = hasGlb ? 0 : -1;
+  socle.dataset.glb = hasGlb ? '1' : '0';
+  socle.setAttribute('role', hasGlb ? 'button' : 'img');
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
-  /* Badge 3D si fichier GLB disponible */
-  if (piece.glb) {
+  /* Badge 3D */
+  if (hasGlb) {
     const badge = document.createElement('span');
-    badge.className   = 'socle-badge-3d';
+    badge.className = 'socle-badge-3d';
     badge.textContent = '3D';
     socle.appendChild(badge);
   }
@@ -151,12 +64,10 @@ function creerSocle(piece, gabarit, pos) {
   if (piece.photo) {
     const img = document.createElement('img');
     img.className = 'socle-photo';
-    img.alt       = piece.titre || '';
-    img.loading   = 'lazy';
-    img.decoding  = 'async';
+    img.alt = piece.titre || '';
+    img.loading = 'lazy'; img.decoding = 'async';
     const src = /^https?:\/\//.test(piece.photo)
-      ? piece.photo
-      : GALERIE_CFG.assetsBase + piece.photo;
+      ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
     img.onerror = function () {
       if (!this._fbDone) { this._fbDone = true; this.loading = 'lazy'; this.src = src; }
       else { this.style.display = 'none'; }
@@ -180,17 +91,45 @@ function creerSocle(piece, gabarit, pos) {
   /* Titre */
   if (piece.titre) {
     const titre = document.createElement('div');
-    titre.className   = 'socle-titre';
+    titre.className = 'socle-titre';
     titre.textContent = piece.titre;
     socle.appendChild(titre);
   }
 
-  /* Interactions — utilise ouvrirModalSculpture, pas ouvrirModal */
-  const ouvrir = () => ouvrirModalSculpture(piece);
-  socle.addEventListener('click',   ouvrir);
-  socle.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); }
-  });
+  /* ── Viewer inline (créé au premier clic, lazy) ── */
+  let viewerEl = null;
+
+  if (hasGlb) {
+    const glbSrc = /^https?:\/\//.test(piece.glb)
+      ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
+
+    socle.addEventListener('click', () => {
+      const isActif = socle.classList.toggle('socle--active');
+
+      if (isActif && !viewerEl) {
+        /* Premier clic : créer le model-viewer */
+        viewerEl = document.createElement('model-viewer');
+        viewerEl.setAttribute('src',              glbSrc);
+        viewerEl.setAttribute('alt',              piece.titre || '');
+        viewerEl.setAttribute('auto-rotate',      '');
+        viewerEl.setAttribute('camera-controls',  '');
+        viewerEl.setAttribute('shadow-intensity', '0.8');
+        viewerEl.className     = 'socle-viewer-inline';
+        viewerEl.style.height  = (VIEWER_H[gCode] || 120) + 'px';
+        socle.insertBefore(viewerEl, ped);
+      }
+
+      /* Pause/reprise de la rotation */
+      if (viewerEl) {
+        if (isActif) viewerEl.setAttribute('auto-rotate', '');
+        else         viewerEl.removeAttribute('auto-rotate');
+      }
+    });
+
+    socle.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); socle.click(); }
+    });
+  }
 
   wrapper.appendChild(socle);
   return wrapper;
@@ -220,26 +159,22 @@ Promise.all([
     salleDiv.id          = 'salle' + salle.id;
     salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
     salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
-
-    /* Couleur mur en propriété CSS pour que la zone-basse la récupère */
     if (salle.couleur_mur) salleDiv.style.setProperty('--salle-mur', salle.couleur_mur);
 
     const nomEl = document.createElement('p');
-    nomEl.className   = 'nom-salle';
+    nomEl.className = 'nom-salle';
     nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
     salleDiv.appendChild(nomEl);
 
-    /* Scène principale */
     const scene = document.createElement('div');
     scene.className = 'scene-sculpture';
     if (salle.couleur_mur) scene.style.backgroundColor = salle.couleur_mur;
 
-    /* Sol */
     const sol = document.createElement('div');
     sol.className = 'sol-sculpture';
     if (salle.couleur_sol) sol.style.backgroundColor = salle.couleur_sol;
 
-    /* Socles triés arrière → avant (z-order correct) */
+    /* Socles triés arrière → avant (z-order) */
     (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gabarit = gabarits[pos.gabarit] || gabarits['M'];
@@ -251,13 +186,11 @@ Promise.all([
     salleDiv.appendChild(scene);
     conteneur.appendChild(salleDiv);
 
-    /* Zone basse : portes de navigation + silhouettes */
     salleDiv.appendChild(creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur));
   });
 
   mettreAJourNav();
 
-  /* Navigation depuis hash #salle-ID */
   const hashId = parseInt((_hm || [])[1]);
   if (hashId) {
     const hashIdx = salles.findIndex(s => s.id === hashId) + 1;
