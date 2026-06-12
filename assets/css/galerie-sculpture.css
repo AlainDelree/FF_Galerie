@@ -157,6 +157,24 @@
 .socle--l   { width: 150px; }
 .socle--sol { width: 185px; }
 
+/* ── Badge "3D" sur les pièces avec fichier GLB ── */
+.socle-badge-3d {
+  position: absolute;
+  top: .3rem;
+  right: .3rem;
+  font-size: .58rem;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  letter-spacing: .12em;
+  color: var(--accent, #c8a050);
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(200,160,80,.35);
+  border-radius: 2px;
+  padding: 1px 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* ── Titre sous le piédestal ── */
 .socle-titre {
   margin-top: .4rem;
