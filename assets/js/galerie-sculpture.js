@@ -1,10 +1,8 @@
 /* =============================================================
    FF_Galerie — galerie-sculpture.js
    Rendu galerie sculpture — nécessite galerie-core.js chargé avant
-   Layout : mur-inférieur (portes) + grand parquet avec socles
    ============================================================= */
 
-/* ── CSS sculpture (anti-cache Date.now) ── */
 (function () {
   const id = 'css-galerie-sculpture';
   if (!document.getElementById(id)) {
@@ -15,7 +13,6 @@
   }
 })();
 
-/* ── Pré-chargement model-viewer ── */
 (function () {
   const id = 'script-model-viewer';
   if (document.getElementById(id)) return;
@@ -25,10 +22,9 @@
   document.head.appendChild(s);
 })();
 
-/* ── Hauteurs viewer par gabarit ── */
-const VIEWER_H = { s: 90, m: 120, l: 165, sol: 130 };
+/* ── Viewers plus grands ── */
+const VIEWER_H = { s: 110, m: 155, l: 210, sol: 160 };
 
-/* ── creerSocle ── */
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -56,12 +52,12 @@ function creerSocle(piece, gabarit, pos) {
     viewer.setAttribute('camera-controls',  '');
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
-    viewer.style.height = (VIEWER_H[gCode] || 120) + 'px';
+    viewer.style.height = (VIEWER_H[gCode] || 155) + 'px';
     socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');
     ph.className    = 'socle-placeholder';
-    ph.style.height = (VIEWER_H[gCode] || 120) + 'px';
+    ph.style.height = (VIEWER_H[gCode] || 155) + 'px';
     socle.appendChild(ph);
   }
 
@@ -83,7 +79,6 @@ function creerSocle(piece, gabarit, pos) {
   return wrapper;
 }
 
-/* ── Init principale ── */
 Promise.all([
   fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
   fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -112,10 +107,13 @@ Promise.all([
     nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
     salleDiv.appendChild(nomEl);
 
-    /* Plancher via creerPlancher (mur-inférieur + parquet + silhouettes + nav) */
     const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
 
-    /* Placer les socles directement sur le plancher-sol */
+    /* Supprimer les silhouettes — elles gênent les sculptures */
+    const sils = plancher.querySelector('.silhouettes-sol');
+    if (sils) sils.remove();
+
+    /* Socles sur le parquet */
     const plancherSol = plancher.querySelector('.plancher-sol');
     if (plancherSol) {
       (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {

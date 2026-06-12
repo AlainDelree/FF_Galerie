@@ -1,9 +1,7 @@
 /* =============================================================
    FF_Galerie — galerie-sculpture.css
-   Layout : mur-inférieur (portes) + grand parquet avec socles
    ============================================================= */
 
-/* ── Salle sculpture ── */
 .salle.salle-sculpture {
   padding: 1rem 0 0;
   align-items: stretch;
@@ -13,11 +11,36 @@
   padding: 0 2rem;
 }
 
-/* ── Grand parquet sculpture — même apparence que le plancher peinture ── */
+/* ── Grand parquet — priorité sur les overrides desktop de galerie.css ── */
 .salle-sculpture .plancher-sol {
-  min-height: 320px !important;
-  max-height: 420px !important;
-  position: relative; /* pour les socles absolus */
+  min-height: 300px !important;
+  max-height: 400px !important;
+  position: relative;
+}
+
+/* ── Panneaux nav cachés en sculpture (position problématique) ── */
+.salle-sculpture .panneau-nav {
+  display: none !important;
+}
+
+/* ── Portes plus grandes ── */
+.salle-sculpture .mur-inferieur {
+  height: 80px !important;
+}
+
+.salle-sculpture .porte-mur {
+  width:  55px !important;
+  height: 76px !important;
+}
+
+.salle-sculpture .pm-ouverture {
+  width:       42px !important;
+  height:      58px !important;
+  border-radius: 21px 21px 0 0 !important;
+}
+
+.salle-sculpture .pm-nom {
+  font-size: .55rem !important;
 }
 
 /* ── Wrapper positionné sur le parquet ── */
@@ -44,7 +67,7 @@
   --poster-color: transparent;
 }
 
-/* ── Placeholder si pas de GLB ── */
+/* ── Placeholder ── */
 .socle-placeholder {
   width: 100%;
   background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(0,0,0,.15));
@@ -81,16 +104,15 @@
 .socle-piedestal--l   { height: 50px; }
 .socle-piedestal--sol { height:  8px; }
 
-/* ── Largeurs par gabarit ── */
-.socle--s   { width:  80px; }
-.socle--m   { width: 110px; }
-.socle--l   { width: 150px; }
-.socle--sol { width: 185px; }
+.socle--s   { width:  90px; }
+.socle--m   { width: 125px; }
+.socle--l   { width: 170px; }
+.socle--sol { width: 200px; }
 
-/* ── Titre (sombre, lisible sur parquet chaud) ── */
+/* ── Titre ── */
 .socle-titre {
   margin-top: .4rem;
-  font-size: .67rem;
+  font-size: .7rem;
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
   color: rgba(60,40,20,.80);
@@ -115,9 +137,12 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .salle-sculpture .plancher-sol {
-    min-height: 250px !important;
+    min-height: 240px !important;
     max-height: 320px !important;
   }
+  .salle-sculpture .mur-inferieur { height: 70px !important; }
+  .salle-sculpture .porte-mur     { width: 48px !important; height: 66px !important; }
+  .salle-sculpture .pm-ouverture  { width: 36px !important; height: 50px !important; }
 }
 
 @media (max-width: 600px) {
@@ -125,10 +150,10 @@
     min-height: 200px !important;
     max-height: none !important;
   }
-  .socle--s   { width:  60px; }
-  .socle--m   { width:  80px; }
-  .socle--l   { width: 110px; }
-  .socle--sol { width: 140px; }
+  .socle--s   { width:  70px; }
+  .socle--m   { width:  95px; }
+  .socle--l   { width: 130px; }
+  .socle--sol { width: 160px; }
   .socle-piedestal--m { height: 26px; }
   .socle-piedestal--l { height: 36px; }
 }
