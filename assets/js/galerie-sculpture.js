@@ -218,6 +218,17 @@ function creerSocle(piece, gabarit, pos) {
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
     viewer.style.height = viewerH + 'px';
+
+    /* Redimensionner le modèle à sa vraie hauteur en cm */
+    const targetHm = (dim.hauteur || 50) / 100; /* cm → mètres */
+    viewer.addEventListener('load', () => {
+      const dims = viewer.getDimensions();
+      if (dims && dims.y > 0.001) {
+        const f = (targetHm / dims.y).toFixed(4);
+        viewer.setAttribute('scale', f + ' ' + f + ' ' + f);
+      }
+    });
+
     socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');
