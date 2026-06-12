@@ -8,11 +8,12 @@
       "couleur_sol": "#b8a890",
       "texture": "none",
       "visible": true,
-      "pieces": [1, 2, 3],
+      "pieces": [1, 2, 3, 4],
       "positions": [
-        { "id": 1, "x": 28, "y": 22, "gabarit": "M" },
-        { "id": 2, "x": 58, "y": 42, "gabarit": "S" },
-        { "id": 3, "x": 74, "y": 18, "gabarit": "L" }
+        { "id": 1, "x": 20, "y": 22, "gabarit": "M" },
+        { "id": 2, "x": 45, "y": 40, "gabarit": "S" },
+        { "id": 3, "x": 65, "y": 18, "gabarit": "L" },
+        { "id": 4, "x": 80, "y": 38, "gabarit": "M" }
       ]
     }
   ]
