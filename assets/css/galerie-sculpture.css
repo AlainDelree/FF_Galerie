@@ -99,10 +99,10 @@
   transform-origin: right top;
 }
 
-.socle-piedestal--s   { height: 26px; }
-.socle-piedestal--m   { height: 36px; }
-.socle-piedestal--l   { height: 50px; }
-.socle-piedestal--sol { height:  8px; }
+.socle-piedestal--s   { height:  65px; }
+.socle-piedestal--m   { height:  90px; }
+.socle-piedestal--l   { height: 125px; }
+.socle-piedestal--sol { height:  20px; }
 
 .socle--s   { width: 225px; }
 .socle--m   { width: 313px; }
@@ -154,6 +154,6 @@
   .socle--m   { width: 230px; }
   .socle--l   { width: 270px; }
   .socle--sol { width: 290px; }
-  .socle-piedestal--m { height: 34px; }
-  .socle-piedestal--l { height: 46px; }
+  .socle-piedestal--m { height: 84px; }
+  .socle-piedestal--l { height: 115px; }
 }
