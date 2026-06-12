@@ -5,5 +5,39 @@
     { "code": "L",   "label": "Grand",  "largeur_cm": 55 },
     { "code": "SOL", "label": "Au sol", "largeur_cm": 70 }
   ],
-  "pieces": []
+  "pieces": [
+    {
+      "id": 1,
+      "titre": "Équilibre I",
+      "photo": "https://picsum.photos/seed/sculpt01/300/400",
+      "date": "2025",
+      "materiaux": ["Métal"],
+      "description": "",
+      "dimensions": { "largeur": 22, "hauteur": 38, "profondeur": 15 },
+      "disponibilite": "disponible",
+      "prix": ""
+    },
+    {
+      "id": 2,
+      "titre": "Fragment",
+      "photo": "https://picsum.photos/seed/sculpt02/250/350",
+      "date": "2025",
+      "materiaux": ["Bois"],
+      "description": "",
+      "dimensions": { "largeur": 18, "hauteur": 25, "profondeur": 12 },
+      "disponibilite": "disponible",
+      "prix": ""
+    },
+    {
+      "id": 3,
+      "titre": "Tension",
+      "photo": "https://picsum.photos/seed/sculpt03/400/300",
+      "date": "2024",
+      "materiaux": ["Métal", "Bois"],
+      "description": "",
+      "dimensions": { "largeur": 45, "hauteur": 32, "profondeur": 20 },
+      "disponibilite": "disponible",
+      "prix": ""
+    }
+  ]
 }

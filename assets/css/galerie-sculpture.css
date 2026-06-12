@@ -1,0 +1,214 @@
+/* =============================================================
+   FF_Galerie — galerie-sculpture.css
+   Styles spécifiques au rendu galerie sculpture
+   ============================================================= */
+
+/* ── Salle sculpture : pas de padding latéral (scène plein-largeur) ── */
+.salle.salle-sculpture {
+  padding: 1rem 0 0;
+  align-items: stretch;
+}
+
+.salle-sculpture .nom-salle {
+  padding: 0 2rem;
+}
+
+/* ── Scène principale (fond mur + sol) ── */
+.scene-sculpture {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  flex: none;
+  overflow: hidden;
+  background-color: #2a2520; /* remplacé dynamiquement via JS */
+}
+
+/* Légère ombre intérieure en haut (profondeur du plafond) */
+.scene-sculpture::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.20), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Sol (occupe le bas de la scène) ── */
+.sol-sculpture {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 58%;
+  background-color: #b8a890; /* remplacé dynamiquement via JS */
+  background-image: linear-gradient(to bottom,
+    rgba(0,0,0,.22) 0%,
+    rgba(0,0,0,.06) 40%,
+    transparent 100%);
+  overflow: visible;
+}
+
+/* Ligne de jonction mur / sol */
+.sol-sculpture::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(0,0,0,.30);
+  z-index: 1;
+}
+
+/* Reflet du sol (lattes légères) */
+.sol-sculpture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0, transparent 55px,
+    rgba(0,0,0,.06) 55px, rgba(0,0,0,.06) 56px
+  );
+  pointer-events: none;
+}
+
+/* ── Socle wrapper (positionnement sur le sol) ── */
+.socle-wrapper {
+  position: absolute;
+  transform-origin: bottom center;
+}
+
+/* ── Socle ── */
+.socle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform .3s ease, filter .3s ease;
+  position: relative;
+}
+
+.socle:hover,
+.socle--hover { transform: translateY(-5px); filter: brightness(1.10); }
+
+.socle:focus-visible {
+  outline: 2px solid var(--accent, #c8a050);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ── Photo de la pièce ── */
+.socle-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Placeholder si pas de photo ── */
+.socle-placeholder {
+  width: 100%;
+  height: 110px;
+  background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Piédestal ── */
+.socle-piedestal {
+  position: relative;
+  width: 100%;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, #d0c7b5, #9a8f7e);
+}
+
+/* Face latérale droite (illusion de volume) */
+.socle-piedestal::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 3px;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #8a7f6e, #5a5040);
+}
+
+/* Face supérieure (dessus du piédestal) */
+.socle-piedestal::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(to right, #c8bfae, #a89880);
+  transform: skewX(-45deg);
+  transform-origin: right top;
+}
+
+/* Hauteurs par gabarit */
+.socle-piedestal--s   { height: 26px; }
+.socle-piedestal--m   { height: 36px; }
+.socle-piedestal--l   { height: 50px; }
+.socle-piedestal--sol { height:  8px; }
+
+/* ── Largeurs par gabarit ── */
+.socle--s   { width:  80px; }
+.socle--m   { width: 110px; }
+.socle--l   { width: 150px; }
+.socle--sol { width: 185px; }
+
+/* ── Titre sous le piédestal ── */
+.socle-titre {
+  margin-top: .4rem;
+  font-size: .67rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  color: rgba(255,255,255,.60);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140%;
+}
+
+/* ── Ombre portée au sol (bas du piédestal) ── */
+.socle-ombre {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130%;
+  height: 10px;
+  background: radial-gradient(ellipse, rgba(0,0,0,.40) 0%, transparent 70%);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+/* ── Jonction visuelle scène → zone-basse ── */
+/* Le mur-inférieur de creerPlancher hérite la couleur via propriété CSS */
+.salle-sculpture .mur-inferieur {
+  background-color: var(--salle-mur, #2a2520) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .scene-sculpture   { height: 300px; }
+  .sol-sculpture     { height: 60%; }
+  .socle-photo       { max-height: 120px; }
+  .socle-placeholder { height:  85px; }
+}
+
+@media (max-width: 600px) {
+  .scene-sculpture   { height: 240px; }
+  .sol-sculpture     { height: 62%; }
+  .socle--s   { width:  60px; }
+  .socle--m   { width:  80px; }
+  .socle--l   { width: 110px; }
+  .socle--sol { width: 140px; }
+  .socle-photo       { max-height: 90px; }
+  .socle-placeholder { height: 70px; }
+  .socle-piedestal--s   { height: 20px; }
+  .socle-piedestal--m   { height: 26px; }
+  .socle-piedestal--l   { height: 36px; }
+  .socle-piedestal--sol { height:  6px; }
+}
