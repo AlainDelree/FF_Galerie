@@ -1,10 +1,10 @@
 /* =============================================================
    FF_Galerie — galerie-sculpture.js
    Rendu galerie sculpture — nécessite galerie-core.js chargé avant
-   Positions socles : x/y en % du sol (x = gauche-droite, y = avant-arrière)
+   Layout : mur-inférieur (portes) + grand parquet avec socles
    ============================================================= */
 
-/* ── Chargement du CSS sculpture (auto, une seule fois) ── */
+/* ── CSS sculpture (anti-cache Date.now) ── */
 (function () {
   const id = 'css-galerie-sculpture';
   if (!document.getElementById(id)) {
@@ -15,7 +15,7 @@
   }
 })();
 
-/* ── Pré-chargement de <model-viewer> dès le démarrage ── */
+/* ── Pré-chargement model-viewer ── */
 (function () {
   const id = 'script-model-viewer';
   if (document.getElementById(id)) return;
@@ -25,10 +25,10 @@
   document.head.appendChild(s);
 })();
 
-/* ── Hauteurs du viewer par gabarit (calées pour rester dans la zone parquet) ── */
-const VIEWER_H = { s: 80, m: 105, l: 140, sol: 110 };
+/* ── Hauteurs viewer par gabarit ── */
+const VIEWER_H = { s: 90, m: 120, l: 165, sol: 130 };
 
-/* ── creerSocle : model-viewer auto-rotatif + piédestal + titre ── */
+/* ── creerSocle ── */
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -38,7 +38,6 @@ function creerSocle(piece, gabarit, pos) {
   wrapper.style.bottom          = pos.y + '%';
   wrapper.style.transformOrigin = 'bottom center';
 
-  /* Échelle de profondeur : y=0 avant (×1), y=100 arrière (×0.58) */
   const scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
   wrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
   wrapper.style.zIndex    = String(Math.round((100 - pos.y) * 10));
@@ -47,11 +46,9 @@ function creerSocle(piece, gabarit, pos) {
   socle.className = 'socle socle--' + gCode;
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
-  /* Model-viewer directement si GLB disponible, placeholder sinon */
   if (piece.glb) {
     const glbSrc = /^https?:\/\//.test(piece.glb)
       ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
-
     const viewer = document.createElement('model-viewer');
     viewer.setAttribute('src',              glbSrc);
     viewer.setAttribute('alt',              piece.titre || '');
@@ -59,16 +56,15 @@ function creerSocle(piece, gabarit, pos) {
     viewer.setAttribute('camera-controls',  '');
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
-    viewer.style.height = (VIEWER_H[gCode] || 105) + 'px';
+    viewer.style.height = (VIEWER_H[gCode] || 120) + 'px';
     socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');
     ph.className    = 'socle-placeholder';
-    ph.style.height = (VIEWER_H[gCode] || 105) + 'px';
+    ph.style.height = (VIEWER_H[gCode] || 120) + 'px';
     socle.appendChild(ph);
   }
 
-  /* Piédestal + ombre portée */
   const ped = document.createElement('div');
   ped.className = 'socle-piedestal socle-piedestal--' + gCode;
   const ombre = document.createElement('div');
@@ -76,7 +72,6 @@ function creerSocle(piece, gabarit, pos) {
   ped.appendChild(ombre);
   socle.appendChild(ped);
 
-  /* Titre */
   if (piece.titre) {
     const titre = document.createElement('div');
     titre.className   = 'socle-titre';
@@ -111,34 +106,28 @@ Promise.all([
     salleDiv.id          = 'salle' + salle.id;
     salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
     salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
-    if (salle.couleur_mur) salleDiv.style.setProperty('--salle-mur', salle.couleur_mur);
 
     const nomEl = document.createElement('p');
     nomEl.className   = 'nom-salle';
     nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
     salleDiv.appendChild(nomEl);
 
-    const scene = document.createElement('div');
-    scene.className = 'scene-sculpture';
-    if (salle.couleur_mur) scene.style.backgroundColor = salle.couleur_mur;
+    /* Plancher via creerPlancher (mur-inférieur + parquet + silhouettes + nav) */
+    const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
 
-    const sol = document.createElement('div');
-    sol.className = 'sol-sculpture';
-    if (salle.couleur_sol) sol.style.backgroundColor = salle.couleur_sol;
+    /* Placer les socles directement sur le plancher-sol */
+    const plancherSol = plancher.querySelector('.plancher-sol');
+    if (plancherSol) {
+      (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
+        const piece   = pieces[pos.id];
+        const gabarit = gabarits[pos.gabarit] || gabarits['M'];
+        if (!piece) return;
+        plancherSol.appendChild(creerSocle(piece, gabarit, pos));
+      });
+    }
 
-    /* Socles triés arrière → avant (z-order) */
-    (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
-      const piece   = pieces[pos.id];
-      const gabarit = gabarits[pos.gabarit] || gabarits['M'];
-      if (!piece) return;
-      sol.appendChild(creerSocle(piece, gabarit, pos));
-    });
-
-    scene.appendChild(sol);
-    salleDiv.appendChild(scene);
+    salleDiv.appendChild(plancher);
     conteneur.appendChild(salleDiv);
-
-    salleDiv.appendChild(creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur));
   });
 
   mettreAJourNav();

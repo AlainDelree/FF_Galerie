@@ -1,6 +1,6 @@
 /* =============================================================
    FF_Galerie — galerie-sculpture.css
-   Styles spécifiques au rendu galerie sculpture
+   Layout : mur-inférieur (portes) + grand parquet avec socles
    ============================================================= */
 
 /* ── Salle sculpture ── */
@@ -13,67 +13,14 @@
   padding: 0 2rem;
 }
 
-/* ── Scène principale : mince bande de mur en haut ── */
-.scene-sculpture {
-  position: relative;
-  width: 100%;
-  height: 320px;
-  flex: none;
-  overflow: visible;
-  background-color: #2a2520;
+/* ── Grand parquet sculpture — même apparence que le plancher peinture ── */
+.salle-sculpture .plancher-sol {
+  min-height: 320px !important;
+  max-height: 420px !important;
+  position: relative; /* pour les socles absolus */
 }
 
-/* Ombre plafond */
-.scene-sculpture::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 30px;
-  background: linear-gradient(to bottom, rgba(0,0,0,.25), transparent);
-  pointer-events: none; z-index: 5;
-}
-
-/* ── Sol : 92% de la scène — presque toute la hauteur ── */
-.sol-sculpture {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 92%;
-  background-color: #b8a890;
-  background-image: linear-gradient(to bottom,
-    rgba(0,0,0,.06) 0%, transparent 20%);
-  overflow: visible;
-}
-
-/* Ligne de jonction mur / sol */
-.sol-sculpture::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 2px;
-  background: rgba(0,0,0,.25); z-index: 1;
-}
-
-/* Lattes parquet */
-.sol-sculpture::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    90deg, transparent 0, transparent 55px,
-    rgba(0,0,0,.05) 55px, rgba(0,0,0,.05) 56px);
-  pointer-events: none;
-}
-
-/* ── Fusionner visuellement le mur-inférieur avec le sol ──
-   Plus de bande sombre entre la scène et le parquet bas    ── */
-.salle-sculpture .mur-inferieur {
-  background-color: #b8a890 !important;
-  height: 44px !important;
-}
-
-.salle-sculpture .mur-inferieur::before,
-.salle-sculpture .mur-inferieur::after {
-  display: none !important;
-}
-
-/* ── Wrapper positionné sur le sol ── */
+/* ── Wrapper positionné sur le parquet ── */
 .socle-wrapper {
   position: absolute;
   transform-origin: bottom center;
@@ -100,7 +47,7 @@
 /* ── Placeholder si pas de GLB ── */
 .socle-placeholder {
   width: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
+  background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(0,0,0,.15));
   border-radius: 2px 2px 0 0;
 }
 
@@ -140,13 +87,13 @@
 .socle--l   { width: 150px; }
 .socle--sol { width: 185px; }
 
-/* ── Titre ── */
+/* ── Titre (sombre, lisible sur parquet chaud) ── */
 .socle-titre {
   margin-top: .4rem;
   font-size: .67rem;
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
-  color: rgba(80,60,40,.75);
+  color: rgba(60,40,20,.80);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -167,19 +114,21 @@
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .scene-sculpture { height: 280px; }
-  .sol-sculpture   { height: 93%; }
+  .salle-sculpture .plancher-sol {
+    min-height: 250px !important;
+    max-height: 320px !important;
+  }
 }
 
 @media (max-width: 600px) {
-  .scene-sculpture { height: 220px; }
-  .sol-sculpture   { height: 94%; }
+  .salle-sculpture .plancher-sol {
+    min-height: 200px !important;
+    max-height: none !important;
+  }
   .socle--s   { width:  60px; }
   .socle--m   { width:  80px; }
   .socle--l   { width: 110px; }
   .socle--sol { width: 140px; }
-  .socle-piedestal--s   { height: 20px; }
-  .socle-piedestal--m   { height: 26px; }
-  .socle-piedestal--l   { height: 36px; }
-  .socle-piedestal--sol { height:  6px; }
+  .socle-piedestal--m { height: 26px; }
+  .socle-piedestal--l { height: 36px; }
 }
