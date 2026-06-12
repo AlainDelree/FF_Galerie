@@ -22,8 +22,10 @@
   document.head.appendChild(s);
 })();
 
-/* ── Viewers plus grands ── */
-const VIEWER_H = { s: 110, m: 155, l: 210, sol: 160 };
+/* ── Facteur d'échelle px/cm (desktop vs mobile) ── */
+const ECHELLE      = window.innerWidth <= 600 ? 1.4 : 2.2;
+const ECHELLE_MIN  = window.innerWidth <= 600 ? 35  : 50;
+const ECHELLE_MAXH = window.innerWidth <= 600 ? 180 : 290;
 
 /* ── Grille de repérage (outil de travail) ──────────────────────
    10 colonnes A→J (x 5,15,25...95%) · 5 rangées 1→5 (y 10,30,50,70,90%)
@@ -113,6 +115,12 @@ function creerSocle(piece, gabarit, pos) {
   socle.className = 'socle socle--' + gCode;
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
+  /* Dimensions visuelles proportionnelles aux vraies mesures cm */
+  const dim    = piece.dimensions || {};
+  const viewerH = Math.min(ECHELLE_MAXH, Math.max(ECHELLE_MIN, Math.round((dim.hauteur || 50) * ECHELLE)));
+  const socleW  = Math.max(ECHELLE_MIN,  Math.round((dim.largeur  || 30) * ECHELLE));
+  socle.style.width = socleW + 'px';
+
   if (piece.glb) {
     const glbSrc = /^https?:\/\//.test(piece.glb)
       ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
@@ -123,12 +131,12 @@ function creerSocle(piece, gabarit, pos) {
     viewer.setAttribute('camera-controls',  '');
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
-    viewer.style.height = (VIEWER_H[gCode] || 155) + 'px';
+    viewer.style.height = viewerH + 'px';
     socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');
     ph.className    = 'socle-placeholder';
-    ph.style.height = (VIEWER_H[gCode] || 155) + 'px';
+    ph.style.height = viewerH + 'px';
     socle.appendChild(ph);
   }
 
