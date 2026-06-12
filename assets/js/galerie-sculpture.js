@@ -85,6 +85,17 @@ function ajouterGrilleDevParquet(sol) {
   sol.appendChild(btn);
 }
 
+/* ── Gabarit automatique depuis la hauteur de la pièce ──────────
+   ≤ 25 cm → S  |  26–50 cm → M  |  51–100 cm → L  |  > 100 cm → SOL
+   ──────────────────────────────────────────────────────────────── */
+function gabaritDepuisHauteur(hauteurCm) {
+  if (!hauteurCm)      return 'M';
+  if (hauteurCm <= 25) return 'S';
+  if (hauteurCm <= 50) return 'M';
+  if (hauteurCm <= 100) return 'L';
+  return 'SOL';
+}
+
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -177,9 +188,11 @@ Promise.all([
     const plancherSol = plancher.querySelector('.plancher-sol');
     if (plancherSol) {
       (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
-        const piece   = pieces[pos.id];
-        const gabarit = gabarits[pos.gabarit] || gabarits['M'];
+        const piece = pieces[pos.id];
         if (!piece) return;
+        /* Gabarit : explicite dans positions, sinon calculé depuis dimensions.hauteur */
+        const gCode   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+        const gabarit = gabarits[gCode] || gabarits['M'];
         plancherSol.appendChild(creerSocle(piece, gabarit, pos));
       });
       /* Grille de repérage — outil de travail */

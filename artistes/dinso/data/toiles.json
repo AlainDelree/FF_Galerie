@@ -1,9 +1,9 @@
 {
   "gabarits": [
-    { "code": "S",   "label": "Petit",  "largeur_cm": 20 },
-    { "code": "M",   "label": "Moyen",  "largeur_cm": 35 },
-    { "code": "L",   "label": "Grand",  "largeur_cm": 55 },
-    { "code": "SOL", "label": "Au sol", "largeur_cm": 70 }
+    { "code": "S",   "label": "Miniature",  "hauteur_max_cm": 25  },
+    { "code": "M",   "label": "Petite",     "hauteur_max_cm": 50  },
+    { "code": "L",   "label": "Moyenne",    "hauteur_max_cm": 100 },
+    { "code": "SOL", "label": "Grande",     "hauteur_max_cm": 999 }
   ],
   "pieces": [
     {
@@ -26,7 +26,7 @@
       "date": "2025",
       "materiaux": ["Bois"],
       "description": "",
-      "dimensions": { "largeur": 18, "hauteur": 25, "profondeur": 12 },
+      "dimensions": { "largeur": 18, "hauteur": 20, "profondeur": 12 },
       "disponibilite": "disponible",
       "prix": ""
     },
@@ -38,7 +38,7 @@
       "date": "2024",
       "materiaux": ["Métal", "Bois"],
       "description": "",
-      "dimensions": { "largeur": 45, "hauteur": 32, "profondeur": 20 },
+      "dimensions": { "largeur": 45, "hauteur": 75, "profondeur": 20 },
       "disponibilite": "disponible",
       "prix": ""
     },
