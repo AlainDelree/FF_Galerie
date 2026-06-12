@@ -32,14 +32,14 @@
   pointer-events: none; z-index: 5;
 }
 
-/* ── Sol : 70% de la scène ── */
+/* ── Sol : 85% de la scène — galerie sculpture = tout au sol ── */
 .sol-sculpture {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 70%;
+  height: 85%;
   background-color: #b8a890;
   background-image: linear-gradient(to bottom,
-    rgba(0,0,0,.22) 0%, rgba(0,0,0,.06) 40%, transparent 100%);
+    rgba(0,0,0,.08) 0%, transparent 30%);
   overflow: visible;
 }
 
@@ -164,12 +164,12 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .scene-sculpture { height: 300px; }
-  .sol-sculpture   { height: 72%; }
+  .sol-sculpture   { height: 86%; }
 }
 
 @media (max-width: 600px) {
   .scene-sculpture { height: 240px; }
-  .sol-sculpture   { height: 75%; }
+  .sol-sculpture   { height: 88%; }
   .socle--s   { width:  60px; }
   .socle--m   { width:  80px; }
   .socle--l   { width: 110px; }

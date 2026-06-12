@@ -10,7 +10,7 @@
   if (!document.getElementById(id)) {
     const lnk = document.createElement('link');
     lnk.id = id; lnk.rel = 'stylesheet';
-    lnk.href = (window.GALERIE_ASSETS_BASE || '') + 'assets/css/galerie-sculpture.css?v=20260612f';
+    lnk.href = (window.GALERIE_ASSETS_BASE || '') + 'assets/css/galerie-sculpture.css?v=20260612g';
     document.head.appendChild(lnk);
   }
 })();
