@@ -1,0 +1,15 @@
+{
+  "salles": [
+    {
+      "id": 1,
+      "nom": "Salle I",
+      "theme": "",
+      "couleur_mur": "#2a2520",
+      "couleur_sol": "#b8a890",
+      "texture": "none",
+      "visible": true,
+      "pieces": [],
+      "positions": []
+    }
+  ]
+}

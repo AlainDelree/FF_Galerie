@@ -186,6 +186,7 @@ document.getElementById("btn-ajouter-artiste").addEventListener("click", () => {
   document.getElementById("art-id").value    = "";
   document.getElementById("art-logo").value  = "";
   document.getElementById("art-genre").value = "f";
+  document.getElementById("art-type").value  = "peinture";
   document.getElementById("art-draft").checked = true;
   document.getElementById("art-id").removeAttribute("readonly");
   document.getElementById("art-id").style.opacity = "";
@@ -204,6 +205,7 @@ function ouvrirModifierArtiste(idx) {
   document.getElementById("art-id").value    = a.id    || "";
   document.getElementById("art-logo").value  = a.logo  || "";
   document.getElementById("art-genre").value = a.genre || "f";
+  document.getElementById("art-type").value  = a.type  || "peinture";
   document.getElementById("art-draft").checked = !!a.draft;
   /* id non modifiable en édition */
   document.getElementById("art-id").setAttribute("readonly", true);
@@ -238,6 +240,7 @@ async function creerArtiste() {
   const id    = document.getElementById("art-id").value.trim().toLowerCase();
   const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,4).toUpperCase();
   const genre = document.getElementById("art-genre").value;
+  const type  = document.getElementById("art-type").value;
   const draft = document.getElementById("art-draft").checked;
   const err   = document.getElementById("form-artiste-err");
   const prog  = document.getElementById("artiste-progress");
@@ -252,6 +255,7 @@ async function creerArtiste() {
     a.nom   = nom;
     a.logo  = logo;
     a.genre = genre;
+    a.type  = type;
     a.draft = draft;
     err.textContent = "";
     prog.style.display = "";
@@ -280,7 +284,7 @@ async function creerArtiste() {
   prog.textContent = "Génération des fichiers…";
   document.getElementById("btn-sauver-artiste").disabled = true;
 
-  const artiste = { id, nom, logo, genre,
+  const artiste = { id, nom, logo, genre, type,
     lien: "artistes/" + id + "/",
     repoPath: "artistes/" + id + "/data/",
     prefix: id, draft };
@@ -289,7 +293,7 @@ async function creerArtiste() {
     const fichiers = await genererFichiers(artiste);
     /* Inclure artistes.json dans le même commit — évite le conflit "not a fast forward" */
     const { lien, repoPath, prefix } = artiste;
-    const nouveauxArtistes = artistesData.concat([{ id, nom, logo, lien, repoPath, prefix, draft, genre }]);
+    const nouveauxArtistes = artistesData.concat([{ id, nom, logo, lien, repoPath, prefix, draft, genre, type }]);
     fichiers.push({ chemin: "data/artistes.json", contenu: JSON.stringify(nouveauxArtistes, null, 2) });
     prog.textContent = "Création sur GitHub (" + fichiers.length + " fichiers)…";
     await commitMulti(fichiers, "Nouvel artiste invité : " + nom);
@@ -334,28 +338,51 @@ async function genererFichiers(a) {
   const emailU = a.email ? a.email.split("@")[0] : "";
   const emailD = a.email ? a.email.split("@")[1] : "";
   const base   = "artistes/" + a.id + "/";
+  const renderer = (a.type === "sculpture") ? "galerie-sculpture.js" : "galerie-peinture.js";
 
   function r(tpl) {
     return tpl
-      .replace(/{{NOM}}/g,     a.nom)
-      .replace(/{{LOGO}}/g,    a.logo)
-      .replace(/{{ID}}/g,      a.id)
-      .replace(/{{INVITE}}/g,  invite)
-      .replace(/{{EMAIL_U}}/g, emailU)
-      .replace(/{{EMAIL_D}}/g, emailD);
+      .replace(/{{NOM}}/g,              a.nom)
+      .replace(/{{LOGO}}/g,             a.logo)
+      .replace(/{{ID}}/g,               a.id)
+      .replace(/{{INVITE}}/g,           invite)
+      .replace(/{{EMAIL_U}}/g,          emailU)
+      .replace(/{{EMAIL_D}}/g,          emailD)
+      .replace(/{{GALERIE_RENDERER}}/g, renderer);
   }
 
-  const toiles = JSON.stringify({
+  /* ── JSON peinture ── */
+  const toilesPeinture = JSON.stringify({
     tailles: [{code:"XXS",label:"Très petite"},{code:"XS",label:"Petite"},
               {code:"M",label:"Moyenne"},{code:"XL",label:"Grande"},
               {code:"XXL",label:"Très grande"},{code:"E",label:"Étirée"}],
     toiles: []
   }, null, 2);
 
-  const salles = JSON.stringify({
+  const sallesPeinture = JSON.stringify({
     salles: [{id:1,nom:"Salle I",theme:"",couleur_mur:"#1e1e1e",
       couleur_cadres:"#3a3a3a",texture:"none",visible:true,toiles:[],positions:[]}]
   }, null, 2);
+
+  /* ── JSON sculpture ── */
+  const toilesScupture = JSON.stringify({
+    gabarits: [
+      { code: "S",   label: "Petit",  largeur_cm: 20 },
+      { code: "M",   label: "Moyen",  largeur_cm: 35 },
+      { code: "L",   label: "Grand",  largeur_cm: 55 },
+      { code: "SOL", label: "Au sol", largeur_cm: 70 }
+    ],
+    pieces: []
+  }, null, 2);
+
+  const sallesSculpture = JSON.stringify({
+    salles: [{id:1,nom:"Salle I",theme:"",couleur_mur:"#2a2520",couleur_sol:"#b8a890",
+      texture:"none",visible:true,pieces:[],positions:[]}]
+  }, null, 2);
+
+  const estSculpture = a.type === "sculpture";
+  const toiles = estSculpture ? toilesScupture  : toilesPeinture;
+  const salles = estSculpture ? sallesSculpture : sallesPeinture;
 
   const infos = JSON.stringify({ evenements: [], collegues: [] }, null, 2);
 

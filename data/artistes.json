@@ -6,7 +6,8 @@
     "lien": "artistes/daw/",
     "repoPath": "artistes/daw/data/",
     "prefix": "daw",
-    "draft": true
+    "draft": true,
+    "type": "peinture"
   },
   {
     "id": "alaindelree",
@@ -16,7 +17,8 @@
     "repoPath": "artistes/alaindelree/data/",
     "prefix": "alaindelree",
     "draft": true,
-    "genre": "m"
+    "genre": "m",
+    "type": "peinture"
   },
   {
     "id": "raoul",
@@ -26,6 +28,18 @@
     "repoPath": "artistes/raoul/data/",
     "prefix": "raoul",
     "draft": true,
-    "genre": "m"
+    "genre": "m",
+    "type": "peinture"
+  },
+  {
+    "id": "dinso",
+    "nom": "Dinso",
+    "logo": "DS",
+    "lien": "artistes/dinso/",
+    "repoPath": "artistes/dinso/data/",
+    "prefix": "dinso",
+    "draft": true,
+    "genre": "m",
+    "type": "sculpture"
   }
 ]
