@@ -3,7 +3,7 @@
    Styles spécifiques au rendu galerie sculpture
    ============================================================= */
 
-/* ── Salle sculpture : pas de padding latéral ── */
+/* ── Salle sculpture ── */
 .salle.salle-sculpture {
   padding: 1rem 0 0;
   align-items: stretch;
@@ -13,11 +13,11 @@
   padding: 0 2rem;
 }
 
-/* ── Scène principale ── */
+/* ── Scène principale : mince bande de mur en haut ── */
 .scene-sculpture {
   position: relative;
   width: 100%;
-  height: 360px;
+  height: 320px;
   flex: none;
   overflow: visible;
   background-color: #2a2520;
@@ -27,19 +27,19 @@
 .scene-sculpture::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 40px;
-  background: linear-gradient(to bottom, rgba(0,0,0,.20), transparent);
+  top: 0; left: 0; right: 0; height: 30px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.25), transparent);
   pointer-events: none; z-index: 5;
 }
 
-/* ── Sol : 85% de la scène — galerie sculpture = tout au sol ── */
+/* ── Sol : 92% de la scène — presque toute la hauteur ── */
 .sol-sculpture {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 85%;
+  height: 92%;
   background-color: #b8a890;
   background-image: linear-gradient(to bottom,
-    rgba(0,0,0,.08) 0%, transparent 30%);
+    rgba(0,0,0,.06) 0%, transparent 20%);
   overflow: visible;
 }
 
@@ -48,7 +48,7 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; height: 2px;
-  background: rgba(0,0,0,.30); z-index: 1;
+  background: rgba(0,0,0,.25); z-index: 1;
 }
 
 /* Lattes parquet */
@@ -57,8 +57,20 @@
   position: absolute; inset: 0;
   background: repeating-linear-gradient(
     90deg, transparent 0, transparent 55px,
-    rgba(0,0,0,.06) 55px, rgba(0,0,0,.06) 56px);
+    rgba(0,0,0,.05) 55px, rgba(0,0,0,.05) 56px);
   pointer-events: none;
+}
+
+/* ── Fusionner visuellement le mur-inférieur avec le sol ──
+   Plus de bande sombre entre la scène et le parquet bas    ── */
+.salle-sculpture .mur-inferieur {
+  background-color: #b8a890 !important;
+  height: 44px !important;
+}
+
+.salle-sculpture .mur-inferieur::before,
+.salle-sculpture .mur-inferieur::after {
+  display: none !important;
 }
 
 /* ── Wrapper positionné sur le sol ── */
@@ -76,7 +88,7 @@
   cursor: default;
 }
 
-/* ── Viewer 3D inline (toujours visible) ── */
+/* ── Viewer 3D inline ── */
 .socle-viewer-inline {
   display: block;
   width: 100%;
@@ -100,7 +112,6 @@
   background: linear-gradient(to bottom, #d0c7b5, #9a8f7e);
 }
 
-/* Face latérale droite */
 .socle-piedestal::after {
   content: '';
   position: absolute;
@@ -109,7 +120,6 @@
   background: linear-gradient(to bottom, #8a7f6e, #5a5040);
 }
 
-/* Dessus du piédestal */
 .socle-piedestal::before {
   content: '';
   position: absolute;
@@ -119,7 +129,6 @@
   transform-origin: right top;
 }
 
-/* Hauteurs par gabarit */
 .socle-piedestal--s   { height: 26px; }
 .socle-piedestal--m   { height: 36px; }
 .socle-piedestal--l   { height: 50px; }
@@ -137,7 +146,7 @@
   font-size: .67rem;
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
-  color: rgba(255,255,255,.60);
+  color: rgba(80,60,40,.75);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -145,31 +154,26 @@
   max-width: 140%;
 }
 
-/* ── Ombre portée au sol ── */
+/* ── Ombre portée ── */
 .socle-ombre {
   position: absolute;
   bottom: -6px; left: 50%;
   transform: translateX(-50%);
   width: 130%; height: 10px;
-  background: radial-gradient(ellipse, rgba(0,0,0,.40) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(0,0,0,.35) 0%, transparent 70%);
   filter: blur(4px);
   pointer-events: none;
 }
 
-/* ── Jonction scène → zone-basse ── */
-.salle-sculpture .mur-inferieur {
-  background-color: var(--salle-mur, #2a2520) !important;
-}
-
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .scene-sculpture { height: 300px; }
-  .sol-sculpture   { height: 86%; }
+  .scene-sculpture { height: 280px; }
+  .sol-sculpture   { height: 93%; }
 }
 
 @media (max-width: 600px) {
-  .scene-sculpture { height: 240px; }
-  .sol-sculpture   { height: 88%; }
+  .scene-sculpture { height: 220px; }
+  .sol-sculpture   { height: 94%; }
   .socle--s   { width:  60px; }
   .socle--m   { width:  80px; }
   .socle--l   { width: 110px; }
