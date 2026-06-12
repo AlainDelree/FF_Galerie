@@ -25,6 +25,66 @@
 /* ── Viewers plus grands ── */
 const VIEWER_H = { s: 275, m: 388, l: 525, sol: 400 };
 
+/* ── Grille de repérage (outil de travail) ──────────────────────
+   10 colonnes A→J (x 5,15,25...95%) · 5 rangées 1→5 (y 10,30,50,70,90%)
+   Correspondance JSON : case D3 → x:35, y:50
+   ─────────────────────────────────────────────────────────────── */
+function ajouterGrilleDevParquet(sol) {
+  const COLS = 'ABCDEFGHIJ'.split('');
+  const NC = COLS.length, NR = 5;
+  const cw = (100 / NC).toFixed(3);
+  const ch = (100 / NR).toFixed(3);
+
+  /* Overlay grille */
+  const overlay = document.createElement('div');
+  overlay.className = 'grille-dev';
+
+  for (let r = 0; r < NR; r++) {
+    for (let c = 0; c < NC; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'grille-cell' + ((r + c) % 2 === 0 ? ' grille-cell--alt' : '');
+      cell.style.cssText =
+        'left:'   + (c * 100 / NC).toFixed(3) + '%;' +
+        'bottom:' + (r * 100 / NR).toFixed(3) + '%;' +
+        'width:'  + cw + '%;height:' + ch + '%;';
+
+      /* Coordonnée au centre de chaque case */
+      const coord = document.createElement('span');
+      coord.className   = 'grille-coord';
+      coord.textContent = COLS[c] + (r + 1);
+      cell.appendChild(coord);
+
+      /* Lettre colonne sur la rangée du bas */
+      if (r === 0) {
+        const lbl = document.createElement('span');
+        lbl.className   = 'grille-col-lbl';
+        lbl.textContent = COLS[c];
+        cell.appendChild(lbl);
+      }
+
+      /* Chiffre rangée sur la colonne de gauche */
+      if (c === 0) {
+        const lbl = document.createElement('span');
+        lbl.className   = 'grille-row-lbl';
+        lbl.textContent = r + 1;
+        cell.appendChild(lbl);
+      }
+
+      overlay.appendChild(cell);
+    }
+  }
+
+  /* Bouton toggle ⊞ — hors overlay pour rester visible même grille masquée */
+  const btn = document.createElement('button');
+  btn.className   = 'grille-toggle';
+  btn.title       = 'Afficher / masquer la grille de repérage';
+  btn.textContent = '⊞';
+  btn.addEventListener('click', () => overlay.classList.toggle('grille-masquee'));
+
+  sol.appendChild(overlay);
+  sol.appendChild(btn);
+}
+
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -122,6 +182,8 @@ Promise.all([
         if (!piece) return;
         plancherSol.appendChild(creerSocle(piece, gabarit, pos));
       });
+      /* Grille de repérage — outil de travail */
+      ajouterGrilleDevParquet(plancherSol);
     }
 
     salleDiv.appendChild(plancher);
