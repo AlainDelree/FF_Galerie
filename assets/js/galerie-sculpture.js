@@ -27,64 +27,150 @@ const ECHELLE      = window.innerWidth <= 600 ? 1.4 : 2.2;
 const ECHELLE_MIN  = window.innerWidth <= 600 ? 35  : 50;
 const ECHELLE_MAXH = window.innerWidth <= 600 ? 180 : 290;
 
-/* ── Grille de repérage (outil de travail) ──────────────────────
-   10 colonnes A→J (x 5,15,25...95%) · 5 rangées 1→5 (y 10,30,50,70,90%)
+/* ── Grille de repérage avec perspective (SVG) ─────────────────
+   10 colonnes A→J · 5 rangées 1→5
    Correspondance JSON : case D3 → x:35, y:50
    ─────────────────────────────────────────────────────────────── */
 function ajouterGrilleDevParquet(sol) {
   const COLS = 'ABCDEFGHIJ'.split('');
   const NC = COLS.length, NR = 5;
-  const cw = (100 / NC).toFixed(3);
-  const ch = (100 / NR).toFixed(3);
 
-  /* Overlay grille */
+  /* Overlay + bouton toggle */
   const overlay = document.createElement('div');
   overlay.className = 'grille-dev';
 
-  for (let r = 0; r < NR; r++) {
-    for (let c = 0; c < NC; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'grille-cell' + ((r + c) % 2 === 0 ? ' grille-cell--alt' : '');
-      cell.style.cssText =
-        'left:'   + (c * 100 / NC).toFixed(3) + '%;' +
-        'bottom:' + (r * 100 / NR).toFixed(3) + '%;' +
-        'width:'  + cw + '%;height:' + ch + '%;';
-
-      /* Coordonnée au centre de chaque case */
-      const coord = document.createElement('span');
-      coord.className   = 'grille-coord';
-      coord.textContent = COLS[c] + (r + 1);
-      cell.appendChild(coord);
-
-      /* Lettre colonne sur la rangée du bas */
-      if (r === 0) {
-        const lbl = document.createElement('span');
-        lbl.className   = 'grille-col-lbl';
-        lbl.textContent = COLS[c];
-        cell.appendChild(lbl);
-      }
-
-      /* Chiffre rangée sur la colonne de gauche */
-      if (c === 0) {
-        const lbl = document.createElement('span');
-        lbl.className   = 'grille-row-lbl';
-        lbl.textContent = r + 1;
-        cell.appendChild(lbl);
-      }
-
-      overlay.appendChild(cell);
-    }
-  }
-
-  /* Bouton toggle ⊞ — hors overlay pour rester visible même grille masquée */
   const btn = document.createElement('button');
   btn.className   = 'grille-toggle';
-  btn.title       = 'Afficher / masquer la grille de repérage';
+  btn.title       = 'Afficher / masquer la grille';
   btn.textContent = '⊞';
   btn.addEventListener('click', () => overlay.classList.toggle('grille-masquee'));
 
   sol.appendChild(overlay);
   sol.appendChild(btn);
+
+  /* Génération SVG après layout (dimensions réelles disponibles) */
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const W = sol.clientWidth  || 1000;
+    const H = sol.clientHeight || 300;
+
+    /* ── Calcul des frontières de rangée en perspective ──
+       Chaque rangée a une hauteur visuelle proportionnelle à son échelle
+       (même formule que les socles : scale = 1 - t*0.42)             */
+    const scaleAt = t => 1 - t * 0.42; /* t=0 avant(bas), t=1 fond(haut) */
+
+    const rowScales = Array.from({ length: NR }, (_, r) => scaleAt((r + 0.5) / NR));
+    const totalS    = rowScales.reduce((a, b) => a + b, 0);
+
+    const rowBounds = [0]; /* fractions cumulées depuis le bas */
+    rowScales.forEach(s => rowBounds.push(rowBounds.at(-1) + s / totalS));
+
+    /* Coordonnées écran depuis les fractions perspective */
+    const sY = t  => H * (1 - t);                                  /* bas→haut */
+    const sX = (xN, t) => W * (0.5 + (xN - 0.5) * scaleAt(t));   /* convergence centrale */
+
+    const SVG = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('width',  '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:visible;';
+
+    const mk = tag => document.createElementNS(SVG, tag);
+
+    /* 1. Damier — cellules trapézoïdales alternées */
+    for (let r = 0; r < NR; r++) {
+      for (let c = 0; c < NC; c++) {
+        if ((r + c) % 2 === 0) continue;
+        const t0 = rowBounds[r], t1 = rowBounds[r + 1];
+        const x0 = c / NC,      x1 = (c + 1) / NC;
+        const pts = [
+          sX(x0, t0), sY(t0),
+          sX(x1, t0), sY(t0),
+          sX(x1, t1), sY(t1),
+          sX(x0, t1), sY(t1),
+        ].join(',');
+        const poly = mk('polygon');
+        poly.setAttribute('points', pts);
+        poly.setAttribute('fill', 'rgba(0,0,0,.06)');
+        svg.appendChild(poly);
+      }
+    }
+
+    /* 2. Lignes horizontales */
+    rowBounds.forEach(t => {
+      const ln = mk('line');
+      ln.setAttribute('x1', sX(0, t)); ln.setAttribute('y1', sY(t));
+      ln.setAttribute('x2', sX(1, t)); ln.setAttribute('y2', sY(t));
+      ln.setAttribute('stroke', 'rgba(0,0,0,.50)');
+      ln.setAttribute('stroke-width', '1.8');
+      svg.appendChild(ln);
+    });
+
+    /* 3. Lignes verticales (convergentes) */
+    for (let c = 0; c <= NC; c++) {
+      const xN = c / NC;
+      const ln = mk('line');
+      ln.setAttribute('x1', sX(xN, 0)); ln.setAttribute('y1', sY(0));
+      ln.setAttribute('x2', sX(xN, 1)); ln.setAttribute('y2', sY(1));
+      ln.setAttribute('stroke', 'rgba(0,0,0,.50)');
+      ln.setAttribute('stroke-width', '1.8');
+      svg.appendChild(ln);
+    }
+
+    /* 4. Coordonnées dans chaque case */
+    for (let r = 0; r < NR; r++) {
+      for (let c = 0; c < NC; c++) {
+        const tC  = (rowBounds[r] + rowBounds[r + 1]) / 2;
+        const xNC = (c + 0.5) / NC;
+        const rowH = (rowBounds[r + 1] - rowBounds[r]) * H;
+        const fs   = Math.max(7, Math.min(11, Math.round(rowH * 0.28)));
+        const txt  = mk('text');
+        txt.setAttribute('x', sX(xNC, tC));
+        txt.setAttribute('y', sY(tC));
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('dominant-baseline', 'middle');
+        txt.setAttribute('font-size', fs);
+        txt.setAttribute('font-family', 'monospace');
+        txt.setAttribute('font-weight', 'bold');
+        txt.setAttribute('fill', 'rgba(0,0,0,.30)');
+        txt.textContent = COLS[c] + (r + 1);
+        svg.appendChild(txt);
+      }
+    }
+
+    /* 5. Lettres colonnes (bas) */
+    COLS.forEach((col, c) => {
+      const xNC = (c + 0.5) / NC;
+      const txt  = mk('text');
+      txt.setAttribute('x', sX(xNC, 0.01));
+      txt.setAttribute('y', sY(0.01) - 5);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-size', '12');
+      txt.setAttribute('font-family', 'monospace');
+      txt.setAttribute('font-weight', 'bold');
+      txt.setAttribute('fill', 'rgba(0,0,0,.55)');
+      txt.textContent = col;
+      svg.appendChild(txt);
+    });
+
+    /* 6. Chiffres rangées (gauche) */
+    for (let r = 0; r < NR; r++) {
+      const tC = (rowBounds[r] + rowBounds[r + 1]) / 2;
+      const txt = mk('text');
+      txt.setAttribute('x', sX(0.015, tC) + 5);
+      txt.setAttribute('y', sY(tC));
+      txt.setAttribute('dominant-baseline', 'middle');
+      txt.setAttribute('font-size', '12');
+      txt.setAttribute('font-family', 'monospace');
+      txt.setAttribute('font-weight', 'bold');
+      txt.setAttribute('fill', 'rgba(0,0,0,.55)');
+      txt.textContent = r + 1;
+      svg.appendChild(txt);
+    }
+
+    overlay.appendChild(svg);
+  }));
 }
 
 /* ── Gabarit automatique depuis la hauteur de la pièce ──────────
