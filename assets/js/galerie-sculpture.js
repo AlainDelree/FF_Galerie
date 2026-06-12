@@ -16,8 +16,8 @@
   }
 })();
 
-/* ── Chargement de <model-viewer> Google (module ES, une seule fois) ── */
-function chargerModelViewer() {
+/* ── Pré-chargement de <model-viewer> dès le démarrage de la galerie ── */
+(function () {
   const id = 'script-model-viewer';
   if (document.getElementById(id)) return;
   const s = document.createElement('script');
@@ -25,14 +25,15 @@ function chargerModelViewer() {
   s.type = 'module';
   s.src  = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
   document.head.appendChild(s);
-}
+})();
 
-/* ── Override ouvrirModal pour sculpture ──────────────────────
-   Remplace la version de galerie-core.js :
+/* ── Modal sculpture ───────────────────────────────────────────
+   Fonction dédiée (pas d'override global) :
    - dimensions 3D (L × l × H)
    - <model-viewer> si piece.glb présent, photo sinon
+   - libellé "Style" → "Technique"
    ─────────────────────────────────────────────────────────── */
-ouvrirModal = function (piece) {
+function ouvrirModalSculpture(piece) {
   document.getElementById('modalTitre').textContent = piece.titre || 'Sans titre';
 
   function setChamp(id, valeur) {
@@ -43,9 +44,9 @@ ouvrirModal = function (piece) {
   }
 
   /* Adapter le libellé "Style" → "Technique" (une seule fois) */
-  const ligneStyle = document.getElementById('modalStyle');
-  if (ligneStyle) {
-    const lbl = ligneStyle.closest('.modal-ligne')?.querySelector('.modal-label');
+  const elStyle = document.getElementById('modalStyle');
+  if (elStyle) {
+    const lbl = elStyle.closest('.modal-ligne') && elStyle.closest('.modal-ligne').querySelector('.modal-label');
     if (lbl && lbl.textContent === 'Style') lbl.textContent = 'Technique';
   }
 
@@ -67,8 +68,8 @@ ouvrirModal = function (piece) {
   const descLigne = document.getElementById('modalDescLigne');
   const descVal   = document.getElementById('modalDesc');
   if (piece.description) {
-    descVal.textContent      = piece.description;
-    descLigne.style.display  = '';
+    descVal.textContent     = piece.description;
+    descLigne.style.display = '';
   } else {
     descLigne.style.display = 'none';
   }
@@ -79,17 +80,16 @@ ouvrirModal = function (piece) {
 
   if (piece.glb) {
     /* ── Viewer 3D ── */
-    chargerModelViewer();
-    const viewer = document.createElement('model-viewer');
     const glbSrc = /^https?:\/\//.test(piece.glb)
       ? piece.glb
       : (GALERIE_CFG.assetsBase || '') + piece.glb;
-    viewer.setAttribute('src',             glbSrc);
-    viewer.setAttribute('alt',             piece.titre || 'Sculpture');
-    viewer.setAttribute('ar',              '');
-    viewer.setAttribute('auto-rotate',     '');
-    viewer.setAttribute('camera-controls', '');
-    viewer.setAttribute('shadow-intensity','1');
+    const viewer = document.createElement('model-viewer');
+    viewer.setAttribute('src',              glbSrc);
+    viewer.setAttribute('alt',              piece.titre || 'Sculpture');
+    viewer.setAttribute('ar',               '');
+    viewer.setAttribute('auto-rotate',      '');
+    viewer.setAttribute('camera-controls',  '');
+    viewer.setAttribute('shadow-intensity', '1');
     viewer.style.cssText = 'width:100%;height:340px;background:transparent;--poster-color:transparent;';
     wrap.appendChild(viewer);
 
@@ -116,7 +116,7 @@ ouvrirModal = function (piece) {
 
   modalOverlay.classList.add('visible');
   document.body.style.overflow = 'hidden';
-};
+}
 
 /* ── creerSocle : piédestal + photo + titre + ombre ── */
 function creerSocle(piece, gabarit, pos) {
@@ -139,7 +139,7 @@ function creerSocle(piece, gabarit, pos) {
   socle.setAttribute('role',       'button');
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
-  /* Indicateur GLB */
+  /* Badge 3D si fichier GLB disponible */
   if (piece.glb) {
     const badge = document.createElement('span');
     badge.className   = 'socle-badge-3d';
@@ -185,8 +185,8 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(titre);
   }
 
-  /* Interactions */
-  const ouvrir = () => ouvrirModal(piece);
+  /* Interactions — utilise ouvrirModalSculpture, pas ouvrirModal */
+  const ouvrir = () => ouvrirModalSculpture(piece);
   socle.addEventListener('click',   ouvrir);
   socle.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); }
@@ -210,7 +210,7 @@ Promise.all([
   const salles = sData.salles || [];
   TOTAL_SALLES = salles.length;
 
-  const _hm  = window.location.hash.match(/^#salle-(\d+)$/);
+  const _hm = window.location.hash.match(/^#salle-(\d+)$/);
 
   conteneur.style.width = (TOTAL_SALLES * 100) + '%';
 
@@ -221,7 +221,7 @@ Promise.all([
     salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
     salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
 
-    /* Couleur mur exposée en prop CSS pour que zone-basse la récupère */
+    /* Couleur mur en propriété CSS pour que la zone-basse la récupère */
     if (salle.couleur_mur) salleDiv.style.setProperty('--salle-mur', salle.couleur_mur);
 
     const nomEl = document.createElement('p');
@@ -239,7 +239,7 @@ Promise.all([
     sol.className = 'sol-sculpture';
     if (salle.couleur_sol) sol.style.backgroundColor = salle.couleur_sol;
 
-    /* Socles triés arrière → avant (z-order) */
+    /* Socles triés arrière → avant (z-order correct) */
     (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gabarit = gabarits[pos.gabarit] || gabarits['M'];
