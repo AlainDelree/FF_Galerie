@@ -23,7 +23,7 @@
 })();
 
 /* ── Viewers plus grands ── */
-const VIEWER_H = { s: 275, m: 388, l: 525, sol: 400 };
+const VIEWER_H = { s: 110, m: 155, l: 210, sol: 160 };
 
 /* ── Grille de repérage (outil de travail) ──────────────────────
    10 colonnes A→J (x 5,15,25...95%) · 5 rangées 1→5 (y 10,30,50,70,90%)
