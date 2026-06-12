@@ -23,7 +23,7 @@
 })();
 
 /* ── Viewers plus grands ── */
-const VIEWER_H = { s: 110, m: 155, l: 210, sol: 160 };
+const VIEWER_H = { s: 275, m: 388, l: 525, sol: 400 };
 
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
