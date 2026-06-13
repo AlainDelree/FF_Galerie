@@ -109,6 +109,19 @@ function creerMurSVG() {
   </defs>
   <rect width="${W}" height="${H}" fill="url(#tx)"/>`;
 
+  /* ── Porte en arc — x=490→555, arche à y=44, base à y=100 ── */
+  /* Cadre extérieur or */
+  s += `<path d="M487,${H} L487,45 A36,36,0,0,0,558,45 L558,${H}" fill="none" stroke="#c8a050" stroke-width="3.5"/>`;
+  /* Ouverture (ombre profonde) */
+  s += `<path d="M490,${H} L490,44 A32.5,32.5,0,0,0,555,44 L555,${H} Z" fill="#060402"/>`;
+  /* Moulure intérieure */
+  s += `<path d="M494,${H} L494,48 A28.5,28.5,0,0,0,551,48 L551,${H}" fill="none" stroke="rgba(200,160,80,.35)" stroke-width="1.5"/>`;
+  /* Cimaise (bandeau au-dessus de la porte) */
+  s += `<rect x="481" y="5" width="83" height="6" rx="1" fill="#c8a050" opacity="0.55"/>`;
+  /* Poignée */
+  s += `<circle cx="549" cy="73" r="3.5" fill="#f0d080"/>`;
+  s += `<circle cx="549" cy="73" r="2" fill="#c8a050"/>`;
+
   s += '</svg>';
   const blob = new Blob([s], { type:'image/svg+xml' });
   return URL.createObjectURL(blob);
@@ -192,6 +205,45 @@ function ouvrirSalleObservation(piece) {
   })();
 
   contenu.appendChild(viewer);
+
+  /* ── Cordage musée avec piquets dorés ── */
+  const barriere = document.createElement('div');
+  barriere.className = 'obs-barriere';
+  barriere.innerHTML = `<svg viewBox="0 0 600 75" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gp" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#6a4010"/>
+        <stop offset="25%"  stop-color="#f0d080"/>
+        <stop offset="50%"  stop-color="#e8c060"/>
+        <stop offset="75%"  stop-color="#f0d080"/>
+        <stop offset="100%" stop-color="#6a4010"/>
+      </linearGradient>
+    </defs>
+    <!-- Piquets arrière (plus petits — perspective) -->
+    <rect x="162" y="16" width="7" height="40" rx="1.5" fill="url(#gp)"/>
+    <ellipse cx="165.5" cy="13" rx="7" ry="7" fill="#f0d080"/><circle cx="165.5" cy="13" r="4" fill="#c8a050"/>
+    <rect x="431" y="16" width="7" height="40" rx="1.5" fill="url(#gp)"/>
+    <ellipse cx="434.5" cy="13" rx="7" ry="7" fill="#f0d080"/><circle cx="434.5" cy="13" r="4" fill="#c8a050"/>
+    <!-- Corde arrière -->
+    <path d="M165,20 Q300,28 435,20" fill="none" stroke="#8b6010" stroke-width="3.5"/>
+    <path d="M165,20 Q300,28 435,20" fill="none" stroke="#c8a050" stroke-width="2" opacity=".8"/>
+    <!-- Cordes latérales -->
+    <path d="M56,35 Q110,26 165,22" fill="none" stroke="#8b6010" stroke-width="3"/>
+    <path d="M56,35 Q110,26 165,22" fill="none" stroke="#c8a050" stroke-width="1.8" opacity=".8"/>
+    <path d="M544,35 Q490,26 435,22" fill="none" stroke="#8b6010" stroke-width="3"/>
+    <path d="M544,35 Q490,26 435,22" fill="none" stroke="#c8a050" stroke-width="1.8" opacity=".8"/>
+    <!-- Piquets avant (plus grands) -->
+    <rect x="49"  y="24" width="9" height="51" rx="2" fill="url(#gp)"/>
+    <ellipse cx="53.5" cy="20" rx="9.5" ry="9.5" fill="#f0d080"/><circle cx="53.5" cy="20" r="5.5" fill="#e8c060"/><circle cx="53.5" cy="20" r="2.5" fill="#c8a050"/>
+    <rect x="542" y="24" width="9" height="51" rx="2" fill="url(#gp)"/>
+    <ellipse cx="546.5" cy="20" rx="9.5" ry="9.5" fill="#f0d080"/><circle cx="546.5" cy="20" r="5.5" fill="#e8c060"/><circle cx="546.5" cy="20" r="2.5" fill="#c8a050"/>
+    <!-- Corde avant double brin avec sac naturel -->
+    <path d="M53,32 Q300,52 547,32" fill="none" stroke="#6a4008" stroke-width="5"/>
+    <path d="M53,32 Q300,52 547,32" fill="none" stroke="#c8a050" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M53,27 Q300,45 547,27" fill="none" stroke="#6a4008" stroke-width="4"/>
+    <path d="M53,27 Q300,45 547,27" fill="none" stroke="#d4a840" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`;
+  contenu.appendChild(barriere);
 
   /* Métadonnées */
   const meta = document.createElement('div');
