@@ -42,18 +42,18 @@
     },
     {
       "id": 2,
-      "titre": "Maison",
+      "titre": "Rose séchée",
       "photo": "https://picsum.photos/seed/sculpt02/250/350",
-      "glb": "artistes/dinso/assets/models/brick_shop_building__lowpoly.glb",
+      "glb": "artistes/dinso/assets/models/dried_yellow_rose.glb",
       "date": "2025",
       "materiaux": [
-        "Bois"
+        "Végétal séché"
       ],
       "description": "",
       "dimensions": {
-        "largeur": 35,
-        "hauteur": 20,
-        "profondeur": 25
+        "largeur": 11,
+        "hauteur": 15,
+        "profondeur": 8
       },
       "disponibilite": "disponible",
       "prix": ""
