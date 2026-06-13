@@ -42,65 +42,72 @@ function gabaritDepuisHauteur(h) {
 /* ══════════════════════════════════════════════════════════════
    SALLE D'OBSERVATION
    ══════════════════════════════════════════════════════════════ */
-/* ── Génère le mur en SVG mosaïque (3 rangées, cellules irrégulières) ── */
+/* ── Génère le mur en SVG — polygones géométriques irréguliers ──
+   6 lignes diagonales → 15 polygones jointifs, lignes claires séparantes
+   Coordonnées calculées depuis les vraies intersections des lignes
+   ─────────────────────────────────────────────────────────────── */
 function creerMurSVG() {
   const W = 1080, H = 100;
-  const C = ['#7a2525','#1a3055','#2a5035','#a04820','#1a4555','#4a2060','#805020','#2a1a55'];
-  const GOLD = '#c8a050';
-  const DARK = '#0e0905';
 
-  const rows = [
-    { y:0,  h:35, cells:[
-      [0,175,0],[175,140,1],[315,130,2],[445,120,3],
-      [565,145,4],[710,110,5],[820,135,6],[955,125,7]
-    ]},
-    { y:35, h:32, cells:[
-      [0,130,4],[130,155,2],[285,140,5],[425,130,7],
-      [555,160,0],[715,120,3],[835,145,6],[980,100,1]
-    ]},
-    { y:67, h:33, cells:[
-      [0,160,5],[160,125,7],[285,150,1],[435,140,6],
-      [575,130,2],[705,155,0],[860,110,4],[970,110,3]
-    ]}
+  /* 10 couleurs de galerie — aucune adjacente de même couleur */
+  const C = [
+    '#7a2525', /* C0 bordeaux     */
+    '#1a3055', /* C1 marine       */
+    '#2a5035', /* C2 vert forêt   */
+    '#a04820', /* C3 terre cuite  */
+    '#1a4555', /* C4 teal         */
+    '#4a2060', /* C5 prune        */
+    '#805020', /* C6 ambre        */
+    '#2a1a55', /* C7 indigo       */
+    '#405010', /* C8 olive        */
+    '#5c2040', /* C9 merlot       */
+  ];
+
+  /* 15 polygones issus de 6 lignes diagonales sur 1080×100
+     Points-clés calculés depuis les intersections réelles :
+       L1 : (0,40)→(1080,25)   L2 : (0,70)→(1080,55)
+       L3 : (200,0)→(350,100)  L4 : (520,0)→(620,100)
+       L5 : (780,0)→(680,100)  L6 : (960,0)→(860,100)
+     Intersections (arrondi) :
+       L1∩L3=(255,37) L1∩L4=(552,32) L1∩L5=(750,30) L1∩L6=(933,27)
+       L2∩L3=(299,66) L2∩L4=(582,62) L2∩L5=(720,60) L2∩L6=(903,58) */
+  const polys = [
+    /* ── Zone haute (au-dessus de L1) ── */
+    { p:[0,0, 200,0, 255,37, 0,40],                   c:0 },
+    { p:[200,0, 520,0, 552,32, 255,37],                c:2 },
+    { p:[520,0, 780,0, 750,30, 552,32],                c:4 },
+    { p:[780,0, 960,0, 933,27, 750,30],                c:6 },
+    { p:[960,0, 1080,0, 1080,25, 933,27],              c:1 },
+    /* ── Zone médiane (entre L1 et L2) ── */
+    { p:[0,40, 255,37, 299,66, 0,70],                  c:3 },
+    { p:[255,37, 552,32, 582,62, 299,66],              c:5 },
+    { p:[552,32, 750,30, 720,60, 582,62],              c:7 },
+    { p:[750,30, 933,27, 903,58, 720,60],              c:8 },
+    { p:[933,27, 1080,25, 1080,55, 903,58],            c:6 },
+    /* ── Zone basse (sous L2) ── */
+    { p:[0,70, 299,66, 350,100, 0,100],                c:9 },
+    { p:[299,66, 582,62, 620,100, 350,100],            c:0 },
+    { p:[582,62, 720,60, 680,100, 620,100],            c:2 },
+    { p:[720,60, 903,58, 860,100, 680,100],            c:5 },
+    { p:[903,58, 1080,55, 1080,100, 860,100],          c:1 },
   ];
 
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
-  s += `<rect width="${W}" height="${H}" fill="${DARK}"/>`;
+
+  /* Polygones colorés avec lignes séparatrices claires */
+  for (const { p, c } of polys) {
+    const pts = [];
+    for (let i = 0; i < p.length; i += 2) pts.push(`${p[i]},${p[i+1]}`);
+    s += `<polygon points="${pts.join(' ')}" fill="${C[c]}" stroke="#e8e0cc" stroke-width="2.5" stroke-linejoin="round"/>`;
+  }
+
+  /* Texture diagonale subtile */
   s += `<defs>
-    <pattern id="diag" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)">
-      <line x1="0" y1="0" x2="0" y2="24" stroke="rgba(255,255,255,.045)" stroke-width="3"/>
+    <pattern id="tx" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)">
+      <line x1="0" y1="0" x2="0" y2="22" stroke="rgba(255,255,255,.04)" stroke-width="3"/>
     </pattern>
-  </defs>`;
-
-  for (const row of rows) {
-    for (const [x, w, ci] of row.cells) {
-      s += `<rect x="${x}" y="${row.y}" width="${w}" height="${row.h}" fill="${C[ci]}"/>`;
-      s += `<rect x="${x + w*0.25}" y="${row.y}" width="${w*0.5}" height="${row.h}" fill="rgba(255,255,255,.04)"/>`;
-    }
-  }
-
-  s += `<rect width="${W}" height="${H}" fill="url(#diag)"/>`;
-  s += `<rect x="0" y="33" width="${W}" height="3" fill="${GOLD}"/>`;
-  s += `<rect x="0" y="65" width="${W}" height="3" fill="${GOLD}"/>`;
-
-  for (const row of rows) {
-    for (let i = 1; i < row.cells.length; i++) {
-      const x = row.cells[i][0];
-      s += `<rect x="${x-1}" y="${row.y}" width="2" height="${row.h}" fill="${GOLD}"/>`;
-    }
-  }
-
-  const hlines = [33, 65];
-  for (const row of rows) {
-    for (let i = 1; i < row.cells.length; i++) {
-      const x = row.cells[i][0];
-      for (const hy of hlines) {
-        if (hy >= row.y && hy <= row.y + row.h) {
-          s += `<rect x="${x-3}" y="${hy-2}" width="6" height="5" fill="${GOLD}"/>`;
-        }
-      }
-    }
-  }
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#tx)"/>`;
 
   s += '</svg>';
   const blob = new Blob([s], { type:'image/svg+xml' });
