@@ -111,9 +111,15 @@ function ouvrirSalleObservation(piece) {
     })();
   });
 
-  /* Pause manuelle */
+  /* Pause manuelle — resync theta à la reprise */
   viewer.addEventListener('pointerdown', () => { _obsPaused = true;  });
-  viewer.addEventListener('pointerup',   () => { _obsPaused = false; });
+  viewer.addEventListener('pointerup',   () => {
+    try {
+      const orbit = viewer.getCameraOrbit();
+      if (orbit) _obsTheta = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+    } catch(e) {}
+    _obsPaused = false;
+  });
   viewer.addEventListener('pointerleave',() => { _obsPaused = false; });
 
   contenu.appendChild(viewer);
