@@ -143,4 +143,4 @@
 
 ---
 
-*Mis à jour 2026-06-12 · Tout mergé sur main · admin.js 3984 → 852l · srcset + WebP + noscript · build ~20s · galerie.js → core + peinture*
+*Mis à jour 2026-06-13 · Auto-deploy dev → Cloudflare Workers via GitHub Action (wrangler 4, Node 22) · plus de `wrangler deploy` manuel nécessaire*
