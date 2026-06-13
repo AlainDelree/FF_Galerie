@@ -194,8 +194,9 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('shadow-intensity',   '1');
   viewer.setAttribute('auto-rotate-speed', '20deg/s');
   viewer.className = 'obs-viewer';
+  contenu.appendChild(viewer); /* ← était manquant */
 
-  /* ── Piquets & corde dans l'overlay (pas dans contenu) ── */
+  /* ── Piquets & corde dans l'overlay (centrés sur le viewer) ── */
   const piquetsWrap = document.createElement('div');
   piquetsWrap.style.cssText =
     'position:absolute;top:50%;left:50%;width:0;height:0;pointer-events:none;z-index:15;';
