@@ -254,12 +254,44 @@
       rgba(130,90,40,.22) 73%);
 }
 
-/* Corniche plafond */
-.obs-chambre::after {
+/* Pilastres + panneaux (animés par JS) */
+.obs-chambre::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 5px;
+  top: 0; left: 0; right: 0;
+  height: 5px;
   background: linear-gradient(to bottom, rgba(255,200,100,.12), transparent);
+}
+
+/* ── Murs mobiles avec pilastres ── */
+.obs-murs-mobiles {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  bottom: 27%; /* zone mur uniquement, au-dessus du sol */
+  pointer-events: none;
+  /* Panneau de mur + pilastre en or — période 220px */
+  background-image: linear-gradient(
+    to right,
+    #161008 0%,                        /* niche sombre */
+    #161008 6%,
+    #2a1c0c 8%, #1e1408 10%,           /* bord panneau */
+    #1e1408 46%,                       /* panneau gauche */
+    #1a1208 50%,                       /* ligne centrale */
+    #1e1408 54%,                       /* panneau droit */
+    #2a1c0c 92%, #161008 94%,          /* bord panneau */
+    /* ── Pilastre ── */
+    #2e2210 94%,
+    #4a3415 96%,
+    #6a4e1c 97%,
+    rgba(255,230,130,.30) 97.5%,       /* highlight doré */
+    #6a4e1c 98%,
+    #4a3415 99%,
+    #2e2210 99.5%,
+    #161008 100%
+  );
+  background-size: 220px 100%;
+  background-repeat: repeat-x;
+  background-position-x: 0px; /* mis à jour par le RAF */
 }
 
 /* ── Contenu central ── */

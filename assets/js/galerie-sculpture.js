@@ -42,7 +42,12 @@ function gabaritDepuisHauteur(h) {
 /* ══════════════════════════════════════════════════════════════
    SALLE D'OBSERVATION
    ══════════════════════════════════════════════════════════════ */
-let _obsRAF = null; /* réservé pour usage futur */
+let _obsRAF    = null;
+let _obsTheta  = 0;
+let _obsPaused = false;
+const OBS_SPEED  = 0.3;          /* °/frame — vitesse orbite caméra */
+const OBS_BG_W   = 220;          /* px — période d'un pilastre */
+const OBS_SCALE  = OBS_BG_W / 90; /* 4 pilastres par révolution (360°/4 = 90°) */
 
 function ouvrirSalleObservation(piece) {
   /* Éviter les doublons */
@@ -63,6 +68,12 @@ function ouvrirSalleObservation(piece) {
   /* ── Décor de salle ── */
   const chambre = document.createElement('div');
   chambre.className = 'obs-chambre';
+
+  /* Couche murs avec pilastres (animée en JS) */
+  const murs = document.createElement('div');
+  murs.className = 'obs-murs-mobiles';
+  chambre.appendChild(murs);
+
   overlay.appendChild(chambre);
 
   /* ── Contenu central ── */
@@ -87,7 +98,7 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('camera-orbit',     '0deg 75deg auto');
   viewer.className = 'obs-viewer';
 
-  /* Scale réel au chargement */
+  /* Scale réel + démarrage orbite + murs au chargement */
   const targetHm = ((piece.dimensions && piece.dimensions.hauteur) || 50) / 100;
   viewer.addEventListener('load', () => {
     const dims = viewer.getDimensions();
@@ -98,7 +109,29 @@ function ouvrirSalleObservation(piece) {
         viewer.setAttribute('scale', fs + ' ' + fs + ' ' + fs);
       }
     }
+    _obsTheta = 0; _obsPaused = false;
+    (function frame() {
+      if (!_obsPaused) {
+        _obsTheta = (_obsTheta + OBS_SPEED) % 360;
+        viewer.setAttribute('camera-orbit', _obsTheta + 'deg 75deg auto');
+        /* Murs défilent en sens inverse → illusion de marche */
+        const bgX = (((-_obsTheta * OBS_SCALE) % OBS_BG_W) + OBS_BG_W) % OBS_BG_W;
+        murs.style.backgroundPositionX = bgX + 'px';
+      }
+      _obsRAF = requestAnimationFrame(frame);
+    })();
   });
+
+  /* Pause sur interaction manuelle, resync à la reprise */
+  viewer.addEventListener('pointerdown', () => { _obsPaused = true; });
+  viewer.addEventListener('pointerup', () => {
+    try {
+      const orbit = viewer.getCameraOrbit();
+      if (orbit) _obsTheta = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+    } catch (e) {}
+    _obsPaused = false;
+  });
+  viewer.addEventListener('pointerleave', () => { _obsPaused = false; });
 
   contenu.appendChild(viewer);
 
@@ -123,6 +156,7 @@ function ouvrirSalleObservation(piece) {
   overlay.appendChild(btnFermer);
 
   function fermer() {
+    if (_obsRAF) { cancelAnimationFrame(_obsRAF); _obsRAF = null; }
     overlay.style.opacity = '0';
     setTimeout(() => {
       overlay.remove();
