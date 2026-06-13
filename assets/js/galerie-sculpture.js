@@ -42,6 +42,71 @@ function gabaritDepuisHauteur(h) {
 /* ══════════════════════════════════════════════════════════════
    SALLE D'OBSERVATION
    ══════════════════════════════════════════════════════════════ */
+/* ── Génère le mur en SVG mosaïque (3 rangées, cellules irrégulières) ── */
+function creerMurSVG() {
+  const W = 1080, H = 100;
+  const C = ['#7a2525','#1a3055','#2a5035','#a04820','#1a4555','#4a2060','#805020','#2a1a55'];
+  const GOLD = '#c8a050';
+  const DARK = '#0e0905';
+
+  const rows = [
+    { y:0,  h:35, cells:[
+      [0,175,0],[175,140,1],[315,130,2],[445,120,3],
+      [565,145,4],[710,110,5],[820,135,6],[955,125,7]
+    ]},
+    { y:35, h:32, cells:[
+      [0,130,4],[130,155,2],[285,140,5],[425,130,7],
+      [555,160,0],[715,120,3],[835,145,6],[980,100,1]
+    ]},
+    { y:67, h:33, cells:[
+      [0,160,5],[160,125,7],[285,150,1],[435,140,6],
+      [575,130,2],[705,155,0],[860,110,4],[970,110,3]
+    ]}
+  ];
+
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+  s += `<rect width="${W}" height="${H}" fill="${DARK}"/>`;
+  s += `<defs>
+    <pattern id="diag" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)">
+      <line x1="0" y1="0" x2="0" y2="24" stroke="rgba(255,255,255,.045)" stroke-width="3"/>
+    </pattern>
+  </defs>`;
+
+  for (const row of rows) {
+    for (const [x, w, ci] of row.cells) {
+      s += `<rect x="${x}" y="${row.y}" width="${w}" height="${row.h}" fill="${C[ci]}"/>`;
+      s += `<rect x="${x + w*0.25}" y="${row.y}" width="${w*0.5}" height="${row.h}" fill="rgba(255,255,255,.04)"/>`;
+    }
+  }
+
+  s += `<rect width="${W}" height="${H}" fill="url(#diag)"/>`;
+  s += `<rect x="0" y="33" width="${W}" height="3" fill="${GOLD}"/>`;
+  s += `<rect x="0" y="65" width="${W}" height="3" fill="${GOLD}"/>`;
+
+  for (const row of rows) {
+    for (let i = 1; i < row.cells.length; i++) {
+      const x = row.cells[i][0];
+      s += `<rect x="${x-1}" y="${row.y}" width="2" height="${row.h}" fill="${GOLD}"/>`;
+    }
+  }
+
+  const hlines = [33, 65];
+  for (const row of rows) {
+    for (let i = 1; i < row.cells.length; i++) {
+      const x = row.cells[i][0];
+      for (const hy of hlines) {
+        if (hy >= row.y && hy <= row.y + row.h) {
+          s += `<rect x="${x-3}" y="${hy-2}" width="6" height="5" fill="${GOLD}"/>`;
+        }
+      }
+    }
+  }
+
+  s += '</svg>';
+  const blob = new Blob([s], { type:'image/svg+xml' });
+  return URL.createObjectURL(blob);
+}
+
 let _obsRAF    = null;
 let _obsTheta  = 0;
 let _obsPaused = false;
@@ -69,9 +134,11 @@ function ouvrirSalleObservation(piece) {
   const chambre = document.createElement('div');
   chambre.className = 'obs-chambre';
 
-  /* Couche murs avec pilastres (animée en JS) */
+  /* Couche murs avec mosaïque SVG (animée en JS) */
   const murs = document.createElement('div');
   murs.className = 'obs-murs-mobiles';
+  const murUrl = creerMurSVG();
+  murs.style.backgroundImage = `url('${murUrl}')`;
   chambre.appendChild(murs);
 
   overlay.appendChild(chambre);
@@ -131,6 +198,7 @@ function ouvrirSalleObservation(piece) {
 
   function fermer() {
     if (_obsRAF) { cancelAnimationFrame(_obsRAF); _obsRAF = null; }
+    URL.revokeObjectURL(murUrl);
     overlay.style.opacity = '0';
     setTimeout(() => {
       overlay.remove();

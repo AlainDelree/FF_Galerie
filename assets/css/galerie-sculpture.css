@@ -263,72 +263,12 @@
   background: linear-gradient(to bottom, rgba(255,200,100,.12), transparent);
 }
 
-/* ── Murs mobiles — 6 sections colorées, période 1080px = 1 tour ── */
+/* ── Murs mobiles — fond généré en JS (SVG mosaïque) ── */
 .obs-murs-mobiles {
   position: absolute;
   top: 0; left: 0; right: 0;
   bottom: 27%;
   pointer-events: none;
-  background-image:
-    /* Couche 3 : texture diagonale géométrique */
-    repeating-linear-gradient(
-      -55deg,
-      transparent 0px, transparent 18px,
-      rgba(255,255,255,.028) 18px, rgba(255,255,255,.028) 20px
-    ),
-    /* Couche 2 : lignes verticales internes (panneaux) */
-    repeating-linear-gradient(
-      to right,
-      transparent 0px, transparent 52px,
-      rgba(0,0,0,.10) 52px, rgba(0,0,0,.10) 54px
-    ),
-    /* Couche 1 : sections colorées — 1080px = 1 tour complet */
-    linear-gradient(
-      to right,
-      /* ┤ Bordeaux ├──────────────────────────── 0→150 */
-      #1a0505 0px,
-      #6b1f1f 6px, #7d2424 75px, #6b1f1f 144px,
-      /* ┤ Séparateur doré ├──────────────────── 144→168 */
-      #1a0505 144px,
-      #c8a050 147px, #f0d080 155px, rgba(255,220,80,.4) 158px,
-      #f0d080 161px, #c8a050 165px,
-      #1a0505 168px,
-      /* ┤ Marine ├────────────────────────────── 168→318 */
-      #0a1828 168px, #0d2040 243px, #0a1828 318px,
-      /* ┤ Séparateur chevron ├────────────────── 318→358 */
-      #1a0505 318px,
-      #3a2808 328px, #c8a050 338px, #3a2808 348px,
-      #1a0505 358px,
-      /* ┤ Vert forêt ├─────────────────────────── 358→498 */
-      #0a2218 358px, #1a3d28 428px, #0a2218 498px,
-      /* ┤ Séparateur doré ├──────────────────── 498→522 */
-      #1a0505 498px,
-      #c8a050 501px, #f0d080 509px, rgba(255,220,80,.4) 512px,
-      #f0d080 515px, #c8a050 519px,
-      #1a0505 522px,
-      /* ┤ Terre cuite ├────────────────────────── 522→652 */
-      #1e0a04 522px, #8b3a1e 528px, #a04420 587px, #8b3a1e 652px,
-      /* ┤ Séparateur large ├─────────────────── 652→700 */
-      #1a0505 652px,
-      #3a2808 662px, #c8a050 672px, rgba(255,220,80,.5) 676px,
-      #c8a050 680px, #3a2808 690px,
-      #1a0505 700px,
-      /* ┤ Teal profond ├────────────────────────── 700→840 */
-      #041820 700px, #0f3545 770px, #041820 840px,
-      /* ┤ Séparateur doré ├──────────────────── 840→864 */
-      #1a0505 840px,
-      #c8a050 843px, #f0d080 851px, rgba(255,220,80,.4) 854px,
-      #f0d080 857px, #c8a050 861px,
-      #1a0505 864px,
-      /* ┤ Prune ├──────────────────────────────── 864→1008 */
-      #120818 864px, #3d1545 870px, #4a1a55 936px, #3d1545 1008px,
-      /* ┤ Séparateur final ├─────────────────── 1008→1040 */
-      #1a0505 1008px,
-      #3a2808 1018px, #c8a050 1028px, #3a2808 1032px,
-      #1a0505 1040px,
-      /* ┤ Transition retour bordeaux ├────────── 1040→1080 */
-      #3a1010 1040px, #1a0505 1080px
-    );
   background-size: 1080px 100%;
   background-repeat: repeat-x;
   background-position-x: 0px;
