@@ -78,18 +78,18 @@
     },
     {
       "id": 4,
-      "titre": "Fusil",
+      "titre": "Tiki",
       "photo": "https://picsum.photos/seed/sculpt04/300/380",
-      "glb": "artistes/dinso/assets/models/hd_rocket_launcher.glb",
+      "glb": "artistes/dinso/assets/models/tiki.glb",
       "date": "2024",
       "materiaux": [
-        "Métal"
+        "Bois sculpté"
       ],
       "description": "",
       "dimensions": {
-        "largeur": 85,
-        "hauteur": 22,
-        "profondeur": 12
+        "largeur": 50,
+        "hauteur": 120,
+        "profondeur": 44
       },
       "disponibilite": "disponible",
       "prix": ""
