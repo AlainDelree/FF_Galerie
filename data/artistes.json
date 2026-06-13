@@ -27,5 +27,15 @@
     "prefix": "raoul",
     "draft": true,
     "genre": "m"
+  },
+  {
+    "id": "ee",
+    "nom": "EE",
+    "logo": "E",
+    "lien": "artistes/ee/",
+    "repoPath": "artistes/ee/data/",
+    "prefix": "ee",
+    "draft": true,
+    "genre": "f"
   }
 ]
