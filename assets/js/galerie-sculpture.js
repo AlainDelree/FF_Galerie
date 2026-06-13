@@ -77,19 +77,19 @@ function creerMurSVG() {
     { p:[200,0, 520,0, 552,32, 255,37],                c:2 },
     { p:[520,0, 780,0, 750,30, 552,32],                c:4 },
     { p:[780,0, 960,0, 933,27, 750,30],                c:6 },
-    { p:[960,0, 1080,0, 1080,25, 933,27],              c:1 },
+    { p:[960,0, 1080,0, 1080,25, 933,27],              c:0 }, /* bord droit = bord gauche */
     /* ── Zone médiane (entre L1 et L2) ── */
     { p:[0,40, 255,37, 299,66, 0,70],                  c:3 },
     { p:[255,37, 552,32, 582,62, 299,66],              c:5 },
     { p:[552,32, 750,30, 720,60, 582,62],              c:7 },
     { p:[750,30, 933,27, 903,58, 720,60],              c:8 },
-    { p:[933,27, 1080,25, 1080,55, 903,58],            c:6 },
+    { p:[933,27, 1080,25, 1080,55, 903,58],            c:3 }, /* bord droit = bord gauche */
     /* ── Zone basse (sous L2) ── */
     { p:[0,70, 299,66, 350,100, 0,100],                c:9 },
     { p:[299,66, 582,62, 620,100, 350,100],            c:0 },
     { p:[582,62, 720,60, 680,100, 620,100],            c:2 },
     { p:[720,60, 903,58, 860,100, 680,100],            c:5 },
-    { p:[903,58, 1080,55, 1080,100, 860,100],          c:1 },
+    { p:[903,58, 1080,55, 1080,100, 860,100],          c:9 }, /* bord droit = bord gauche */
   ];
 
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
@@ -195,10 +195,11 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('auto-rotate-speed', '20deg/s');
   viewer.className = 'obs-viewer';
 
-  /* ── Piquets & corde elliptique autour du modèle ── */
+  /* ── Piquets & corde dans l'overlay (pas dans contenu) ── */
   const piquetsWrap = document.createElement('div');
-  piquetsWrap.className = 'obs-piquets-wrap';
-  contenu.appendChild(piquetsWrap);
+  piquetsWrap.style.cssText =
+    'position:absolute;top:50%;left:50%;width:0;height:0;pointer-events:none;z-index:15;';
+  overlay.appendChild(piquetsWrap);
 
   const piquets = Array.from({ length: 4 }, () => {
     const el = document.createElement('div');
@@ -209,24 +210,15 @@ function ouvrirSalleObservation(piece) {
 
   const cordeEl = document.createElement('div');
   cordeEl.className = 'obs-corde-ellipse';
-  contenu.appendChild(cordeEl);
+  cordeEl.style.cssText =
+    'position:absolute;top:50%;left:50%;border:3px solid #6b0020;' +
+    'border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:14;' +
+    'width:400px;height:80px;box-shadow:0 0 6px rgba(107,0,32,.4);';
+  overlay.appendChild(cordeEl);
 
-  /* Murs + piquets : RAF autonome calibré sur auto-rotate-speed=20°/s
-     20°/s → 18s/tour → 1080px/18s @ 60fps = 1px/frame */
+  /* Murs + piquets : RAF autonome calibré sur auto-rotate-speed=20°/s */
   let wallPos = 0;
-  let RX = 200, RY = 55; /* rayons orbite — mis à jour après layout */
-
-  requestAnimationFrame(() => {
-    const vw = viewer.offsetWidth  || 400;
-    const vh = viewer.offsetHeight || 280;
-    RX = Math.round(vw  * 0.62);
-    RY = Math.round(vh  * 0.14);
-    cordeEl.style.width  = (RX * 2) + 'px';
-    cordeEl.style.height = (RY * 2) + 'px';
-    /* Positionner la corde verticalement sur le bas du viewer */
-    cordeEl.style.top  = '50%';
-    cordeEl.style.marginTop = Math.round(vh * 0.38) + 'px';
-  });
+  const RX = 200, RY = 40; /* rayons orbite piquets */
 
   (function wallFrame() {
     wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
@@ -235,14 +227,13 @@ function ouvrirSalleObservation(piece) {
     /* Orbite des piquets en ellipse perspective */
     const theta = (wallPos / OBS_BG_W) * Math.PI * 2;
     piquets.forEach((el, i) => {
-      const a   = theta + i * (Math.PI / 2);
-      const x   = Math.cos(a) * RX;
-      const y   = Math.sin(a) * RY;
-      const z   = (Math.sin(a) + 1) / 2;           /* 0=arrière 1=avant */
-      const sc  = (0.65 + 0.35 * z).toFixed(3);
-      const op  = (0.35 + 0.65 * z).toFixed(2);
+      const a  = theta + i * (Math.PI / 2);
+      const x  = Math.cos(a) * RX;
+      const y  = Math.sin(a) * RY;
+      const z  = (Math.sin(a) + 1) / 2;
+      const sc = (0.65 + 0.35 * z).toFixed(3);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${sc})`;
-      el.style.opacity   = op;
+      el.style.opacity   = (0.35 + 0.65 * z).toFixed(2);
       el.style.zIndex    = Math.round(z * 10);
     });
 
