@@ -173,13 +173,18 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('shadow-intensity',   '1');
   viewer.className = 'obs-viewer';
 
-  /* Murs : RAF autonome — indépendant de model-viewer */
-  let wallPos = 0;
-  (function wallFrame() {
-    wallPos = (wallPos - 1.5 + OBS_BG_W) % OBS_BG_W;
-    murs.style.backgroundPositionX = wallPos + 'px';
-    _obsRAF = requestAnimationFrame(wallFrame);
-  })();
+  /* Murs : synchronisés sur la rotation réelle de la caméra */
+  viewer.addEventListener('load', () => {
+    (function wallFrame() {
+      try {
+        const orbit    = viewer.getCameraOrbit();
+        const thetaDeg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+        const bgX      = ((- thetaDeg / 360 * OBS_BG_W) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
+        murs.style.backgroundPositionX = bgX + 'px';
+      } catch (e) {}
+      _obsRAF = requestAnimationFrame(wallFrame);
+    })();
+  });
 
   contenu.appendChild(viewer);
 
