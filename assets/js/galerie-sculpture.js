@@ -201,10 +201,14 @@ function creerSocle(piece, gabarit, pos) {
   socle.className = 'socle socle--' + gCode;
   socle.setAttribute('aria-label', piece.titre || 'Sculpture');
 
-  /* Dimensions visuelles proportionnelles aux vraies mesures cm */
+  /* Dimensions visuelles — dimension dominante (horizontal ou vertical) */
   const dim    = piece.dimensions || {};
-  const viewerH = Math.min(ECHELLE_MAXH, Math.max(ECHELLE_MIN, Math.round((dim.hauteur || 50) * ECHELLE)));
-  const socleW  = Math.max(ECHELLE_MIN,  Math.round((dim.largeur  || 30) * ECHELLE));
+  const hCm    = dim.hauteur || 50;
+  const lCm    = dim.largeur || 30;
+  const ratio  = hCm / lCm;
+  const socleW = Math.max(ECHELLE_MIN, Math.round(lCm * ECHELLE));
+  const viewerH = Math.min(ECHELLE_MAXH,
+    Math.max(ECHELLE_MIN, Math.round(hCm * ECHELLE * (ratio < 1 ? ratio : 1))));
   socle.style.width = socleW + 'px';
 
   if (piece.glb) {
