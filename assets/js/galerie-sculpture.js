@@ -47,12 +47,20 @@ let _obsTheta  = 0;
 let _obsPaused = false;
 
 function ouvrirSalleObservation(piece) {
+  /* Éviter les doublons */
+  if (document.querySelector('.obs-overlay')) return;
+
   chargerModelViewer();
 
   const overlay = document.createElement('div');
   overlay.className = 'obs-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
+  /* Forcer position et dimensions en inline pour contourner les bugs overflow:hidden */
+  overlay.style.cssText =
+    'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;' +
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+    'background:#1a1510;opacity:0;transition:opacity .35s ease;';
 
   /* ── Décor de salle ── */
   const chambre = document.createElement('div');
@@ -132,12 +140,12 @@ function ouvrirSalleObservation(piece) {
 
   function fermer() {
     if (_obsRAF) { cancelAnimationFrame(_obsRAF); _obsRAF = null; }
-    overlay.classList.add('obs-sortie');
-    overlay.addEventListener('animationend', () => {
+    overlay.style.opacity = '0';
+    setTimeout(() => {
       overlay.remove();
-      document.body.style.overflow = '';
-    }, { once: true });
-    document.body.style.overflow = '';
+      document.body.style.overflow            = '';
+      document.documentElement.style.overflow = '';
+    }, 300);
   }
 
   btnFermer.addEventListener('click', fermer);
@@ -147,8 +155,10 @@ function ouvrirSalleObservation(piece) {
   document.addEventListener('keydown', onKey);
 
   document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => overlay.classList.add('obs-entree'));
+  document.body.style.overflow             = 'hidden';
+  document.documentElement.style.overflow  = 'hidden';
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => { overlay.style.opacity = '1'; });
 }
 
 /* ══════════════════════════════════════════════════════════════
