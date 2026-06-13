@@ -218,6 +218,19 @@ function creerSocle(piece, gabarit, pos) {
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
     viewer.style.height = viewerH + 'px';
+
+    /* Scale réel : cible dimensions.hauteur cm, bornes de sécurité 0.05–50 */
+    const targetHm = (dim.hauteur || 50) / 100;
+    viewer.addEventListener('load', () => {
+      const dims = viewer.getDimensions();
+      if (dims && dims.y > 0) {
+        const f = targetHm / dims.y;
+        if (f > 0.05 && f < 50) {
+          viewer.setAttribute('scale', f.toFixed(4) + ' ' + f.toFixed(4) + ' ' + f.toFixed(4));
+        }
+      }
+    });
+
     socle.appendChild(viewer);
   } else {
     const ph = document.createElement('div');

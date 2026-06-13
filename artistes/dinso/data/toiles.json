@@ -1,20 +1,42 @@
 {
   "gabarits": [
-    { "code": "S",   "label": "Miniature",  "hauteur_max_cm": 25  },
-    { "code": "M",   "label": "Petite",     "hauteur_max_cm": 50  },
-    { "code": "L",   "label": "Moyenne",    "hauteur_max_cm": 100 },
-    { "code": "SOL", "label": "Grande",     "hauteur_max_cm": 999 }
+    {
+      "code": "S",
+      "label": "Miniature",
+      "hauteur_max_cm": 25
+    },
+    {
+      "code": "M",
+      "label": "Petite",
+      "hauteur_max_cm": 50
+    },
+    {
+      "code": "L",
+      "label": "Moyenne",
+      "hauteur_max_cm": 100
+    },
+    {
+      "code": "SOL",
+      "label": "Grande",
+      "hauteur_max_cm": 999
+    }
   ],
   "pieces": [
     {
       "id": 1,
-      "titre": "Équilibre I",
+      "titre": "Statue jardin",
       "photo": "https://picsum.photos/seed/sculpt01/300/400",
-      "glb": "artistes/dinso/assets/models/Untitled.glb",
+      "glb": "artistes/dinso/assets/models/photogrammetrie_statue_jardin.glb",
       "date": "2025",
-      "materiaux": ["Métal"],
+      "materiaux": [
+        "Métal"
+      ],
       "description": "",
-      "dimensions": { "largeur": 22, "hauteur": 40, "profondeur": 15 },
+      "dimensions": {
+        "largeur": 42,
+        "hauteur": 60,
+        "profondeur": 38
+      },
       "disponibilite": "disponible",
       "prix": ""
     },
@@ -24,9 +46,15 @@
       "photo": "https://picsum.photos/seed/sculpt02/250/350",
       "glb": "artistes/dinso/assets/models/brick_shop_building__lowpoly.glb",
       "date": "2025",
-      "materiaux": ["Bois"],
+      "materiaux": [
+        "Bois"
+      ],
       "description": "",
-      "dimensions": { "largeur": 35, "hauteur": 20, "profondeur": 25 },
+      "dimensions": {
+        "largeur": 35,
+        "hauteur": 20,
+        "profondeur": 25
+      },
       "disponibilite": "disponible",
       "prix": ""
     },
@@ -36,9 +64,16 @@
       "photo": "https://picsum.photos/seed/sculpt03/400/300",
       "glb": "artistes/dinso/assets/models/captain_clark_backrooms.glb",
       "date": "2024",
-      "materiaux": ["Métal", "Bois"],
+      "materiaux": [
+        "Métal",
+        "Bois"
+      ],
       "description": "",
-      "dimensions": { "largeur": 40, "hauteur": 80, "profondeur": 20 },
+      "dimensions": {
+        "largeur": 40,
+        "hauteur": 80,
+        "profondeur": 20
+      },
       "disponibilite": "disponible",
       "prix": ""
     },
@@ -48,9 +83,15 @@
       "photo": "https://picsum.photos/seed/sculpt04/300/380",
       "glb": "artistes/dinso/assets/models/hd_rocket_launcher.glb",
       "date": "2024",
-      "materiaux": ["Métal"],
+      "materiaux": [
+        "Métal"
+      ],
       "description": "",
-      "dimensions": { "largeur": 85, "hauteur": 22, "profondeur": 12 },
+      "dimensions": {
+        "largeur": 85,
+        "hauteur": 22,
+        "profondeur": 12
+      },
       "disponibilite": "disponible",
       "prix": ""
     }
