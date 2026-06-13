@@ -187,3 +187,162 @@
   .socle-piedestal--l { height: 115px; }
 }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SALLE D'OBSERVATION
+   ══════════════════════════════════════════════════════════════ */
+
+.obs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a1510;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+.obs-overlay.obs-entree { opacity: 1; }
+
+.obs-overlay.obs-sortie {
+  opacity: 0 !important;
+  animation: obsSort .25s ease forwards;
+}
+
+@keyframes obsSort { to { opacity: 0; } }
+
+/* ── Décor salle (murs, sol, éclairage) ── */
+.obs-chambre {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Spotlight central depuis le haut */
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -5%,
+      rgba(255,210,120,.08) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 25% at 50% 100%,
+      rgba(160,120,60,.08) 0%, transparent 60%);
+}
+
+/* Pilastres verticaux + plinthe + sol */
+.obs-chambre::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Pilastre gauche */
+    linear-gradient(to right,
+      transparent 16%,
+      rgba(255,255,255,.03) 16.5%, rgba(255,255,255,.05) 17%, rgba(255,255,255,.03) 17.5%,
+      transparent 18%),
+    /* Pilastre droit */
+    linear-gradient(to right,
+      transparent 82%,
+      rgba(255,255,255,.03) 82.5%, rgba(255,255,255,.05) 83%, rgba(255,255,255,.03) 83.5%,
+      transparent 84%),
+    /* Plinthe */
+    linear-gradient(to bottom,
+      transparent 71%,
+      rgba(255,255,255,.03) 71.5%, rgba(255,255,255,.03) 72%,
+      transparent 72.5%),
+    /* Sol */
+    linear-gradient(to bottom,
+      transparent 73%,
+      rgba(130,90,40,.22) 73%);
+}
+
+/* Corniche plafond */
+.obs-chambre::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(to bottom, rgba(255,200,100,.12), transparent);
+}
+
+/* ── Contenu central ── */
+.obs-contenu {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: .75rem 1.5rem 1.25rem;
+  gap: .6rem;
+}
+
+.obs-titre {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: .2em;
+  color: rgba(240,208,128,.85);
+  text-align: center;
+  margin: 0;
+}
+
+.obs-viewer {
+  width: min(88vw, 580px);
+  height: min(58vh, 480px);
+  background: transparent;
+  --poster-color: transparent;
+  border-radius: 2px;
+}
+
+.obs-meta {
+  font-family: 'Lato', sans-serif;
+  font-size: .75rem;
+  letter-spacing: .08em;
+  color: rgba(255,255,255,.38);
+  text-align: center;
+}
+
+/* ── Bouton fermer ── */
+.obs-fermer {
+  position: absolute;
+  top: .9rem;
+  right: .9rem;
+  z-index: 20;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.65);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, color .2s;
+  line-height: 1;
+}
+
+.obs-fermer:hover { background: rgba(255,255,255,.16); color: #fff; }
+
+/* ── Badge 3D sur socle ── */
+.socle-badge-3d {
+  position: absolute;
+  top: .3rem;
+  right: .3rem;
+  font-size: .58rem;
+  font-family: 'Lato', sans-serif;
+  letter-spacing: .1em;
+  color: var(--accent, #c8a050);
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(200,160,80,.3);
+  border-radius: 2px;
+  padding: 1px 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Hover socle cliquable ── */
+.socle[tabindex="0"]:hover { filter: brightness(1.12); }
+.socle[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--accent, #c8a050);
+  outline-offset: 4px;
+}
