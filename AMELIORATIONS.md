@@ -108,7 +108,20 @@
 
 ## 7 · Idées futures
 
-- [ ] 💡 **Galerie sculpture** — nouveau layout (vues multiples, matériaux, dimensions 3D). Prérequis : head propagation ✅ · refacto core/renderer ✅
+- [x] 💡 **Galerie sculpture** — Phase 1 (fondations) + Phase 2 (renderer) ✅ · Phase 3 (admin) à faire
+  - `galerie-sculpture.js` + `galerie-sculpture.css` · socles sur parquet · model-viewer auto-rotate
+  - Gabarit auto depuis `dimensions.hauteur` (≤25→S, ≤50→M, ≤100→L, >100→SOL)
+  - Dimensions viewer proportionnelles (px/cm) · profondeur par scale
+  - Grille de repérage SVG perspective (A→J × 1→5) · bouton ⊞ toggle
+  - ⚠️ **Scale réel à remettre** quand GLBs photogrammétriques disponibles :
+    ```js
+    viewer.addEventListener('load', () => {
+      const dims = viewer.getDimensions();
+      const f = targetHm / dims.y;
+      if (f > 0.01 && f < 100) viewer.setAttribute('scale', f+' '+f+' '+f);
+    });
+    ```
+    Nécessite GLBs à l'échelle réelle (1 unité = 1 mètre). Chercher sur Sketchfab : filtre `photogrammetry`.
 - [ ] 💡 **PWA / Service Worker** — galerie installable sur mobile, consultable offline en vernissage.
 - [ ] 💡 **raw.githubusercontent.com + `cache:'reload'`** — plus rapide que API pour lireRaw, tout en évitant le cache CDN.
 - [ ] 💡 **Palette de couleurs par artiste invité**
