@@ -227,7 +227,7 @@ function marquerSalleEnAttente(id) {
     sallesEnAttente.forEach((ts, sid) => {
       if (now - ts >= 65000) sallesEnAttente.delete(sid);
     });
-    afficherPlan();
+    if (typeof afficherPlan === 'function') afficherPlan();
     if (sallesEnAttente.size === 0) {
       clearInterval(timerAttenteChipInterval);
       timerAttenteChipInterval = null;
@@ -495,7 +495,7 @@ async function chargerTout() {
       toiles: s.toiles || [],
       positions: s.positions || []
     }));
-    afficherPlan();
+    if (typeof afficherPlan === 'function') afficherPlan();
     if (salles.length > 0) selectSalle(salles[0].id);
     syncBadge('ok');
 
@@ -651,7 +651,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   btnDel.disabled = true;
   try {
     await sauvegarder(`[admin] Suppression salle`);
-    afficherPlan();
+    if (typeof afficherPlan === 'function') afficherPlan();
     if (salles.length) selectSalle(salles[0].id);
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
@@ -744,7 +744,7 @@ $('btn-rename').addEventListener('click', async () => {
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
   btnRn.disabled = true;
-  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); afficherPlan(); }
+  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); if (typeof afficherPlan === 'function') afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
   finally { btnRn.disabled = false; }
 });
