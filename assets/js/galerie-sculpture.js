@@ -46,7 +46,7 @@ let _obsRAF    = null;
 let _obsTheta  = 0;
 let _obsPaused = false;
 const OBS_SPEED  = 0.3;          /* °/frame — vitesse orbite caméra */
-const OBS_BG_W   = 220;          /* px — période d'un pilastre */
+const OBS_BG_W   = 1080;         /* px — un tour complet */
 const OBS_SCALE  = OBS_BG_W / 90; /* 4 pilastres par révolution (360°/4 = 90°) */
 
 function ouvrirSalleObservation(piece) {
