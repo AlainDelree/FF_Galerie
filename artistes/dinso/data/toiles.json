@@ -60,18 +60,17 @@
     },
     {
       "id": 3,
-      "titre": "Pirate",
+      "titre": "Piranha",
       "photo": "https://picsum.photos/seed/sculpt03/400/300",
-      "glb": "artistes/dinso/assets/models/captain_clark_backrooms.glb",
+      "glb": "artistes/dinso/assets/models/piranha.glb",
       "date": "2024",
       "materiaux": [
-        "Métal",
-        "Bois"
+        "Taxidermie"
       ],
       "description": "",
       "dimensions": {
-        "largeur": 40,
-        "hauteur": 80,
+        "largeur": 55,
+        "hauteur": 35,
         "profondeur": 20
       },
       "disponibilite": "disponible",
