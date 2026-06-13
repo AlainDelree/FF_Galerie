@@ -176,7 +176,7 @@ function ouvrirSalleObservation(piece) {
   /* Murs : RAF autonome — indépendant de model-viewer */
   let wallPos = 0;
   (function wallFrame() {
-    wallPos = (wallPos + 1.5) % OBS_BG_W;
+    wallPos = (wallPos - 1.5 + OBS_BG_W) % OBS_BG_W;
     murs.style.backgroundPositionX = wallPos + 'px';
     _obsRAF = requestAnimationFrame(wallFrame);
   })();
