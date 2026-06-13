@@ -100,14 +100,27 @@ function ouvrirSalleObservation(piece) {
   viewer.className = 'obs-viewer';
 
   /* Pas de scale dans la salle d'observation — model-viewer cadre au mieux */
-  viewer.addEventListener('load', () => {});
 
-  /* Murs synchronisés sur la position réelle de la caméra */
+  /* RAF polling : plus fiable que camera-change pour synchroniser les murs */
+  viewer.addEventListener('load', () => {
+    _obsRAF = null;
+    (function frame() {
+      try {
+        const orbit    = viewer.getCameraOrbit();
+        const thetaDeg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+        const bgX      = ((thetaDeg * OBS_SCALE * 3) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
+        murs.style.backgroundPositionX = bgX + 'px';
+      } catch (e) {}
+      _obsRAF = requestAnimationFrame(frame);
+    })();
+  });
+
+  /* Murs synchronisés sur la position réelle de la caméra (fallback event) */
   viewer.addEventListener('camera-change', () => {
     try {
-      const orbit   = viewer.getCameraOrbit();
+      const orbit    = viewer.getCameraOrbit();
       const thetaDeg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
-      const bgX      = ((thetaDeg * OBS_SCALE) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
+      const bgX      = ((thetaDeg * OBS_SCALE * 3) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
       murs.style.backgroundPositionX = bgX + 'px';
     } catch (e) {}
   });
