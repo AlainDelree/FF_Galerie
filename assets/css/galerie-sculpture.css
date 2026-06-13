@@ -294,6 +294,23 @@
   background-position-x: 0px; /* mis à jour par le RAF */
 }
 
+/* Lignes horizontales bleues (test de mouvement) */
+.obs-murs-mobiles::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      transparent 30%,
+      rgba(0,100,255,.85) 30%, rgba(0,100,255,.85) calc(30% + 5px),
+      transparent calc(30% + 5px),
+      transparent 65%,
+      rgba(0,100,255,.85) 65%, rgba(0,100,255,.85) calc(65% + 5px),
+      transparent calc(65% + 5px)
+    );
+}
+
 /* ── Contenu central ── */
 .obs-contenu {
   position: relative;
