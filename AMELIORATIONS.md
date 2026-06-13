@@ -15,6 +15,7 @@
 - [ ] 🟢 ⭐ **Tester envoi d'emails** depuis le GSM de Fred et de Daw
 - [x] 🟢 ⭐ **Vérifier HTTPS enforce** ✅
 - [ ] 🟢 ⭐⭐ **Révoquer token classic Fred** — à faire quand Alain est avec elle
+- [ ] 🟢 ⭐ **Lien guide photogrammétrie dans admin** — onglet Artistes Invités, visible si `type === "sculpture"`. PDF dans `docs/guide-photo-3D-sculpture.pdf`. URL : `https://raw.githubusercontent.com/AlainDelree/FF_Galerie/main/docs/guide-photo-3D-sculpture.pdf`
 
 ---
 
