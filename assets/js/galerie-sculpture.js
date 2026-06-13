@@ -213,8 +213,8 @@ function creerSocle(piece, gabarit, pos) {
     const viewer = document.createElement('model-viewer');
     viewer.setAttribute('src',              glbSrc);
     viewer.setAttribute('alt',              piece.titre || '');
-    viewer.setAttribute('auto-rotate',      '');
     viewer.setAttribute('camera-controls',  '');
+    viewer.setAttribute('interaction-prompt', 'none');
     viewer.setAttribute('shadow-intensity', '0.8');
     viewer.className    = 'socle-viewer-inline';
     viewer.style.height = viewerH + 'px';

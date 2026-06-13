@@ -177,7 +177,7 @@
 @media (max-width: 600px) {
   .salle-sculpture .plancher-sol {
     min-height: 200px !important;
-    max-height: none !important;
+    max-height: 420px !important;
   }
   .socle--s   { width:  70px; }
   .socle--m   { width:  95px; }
