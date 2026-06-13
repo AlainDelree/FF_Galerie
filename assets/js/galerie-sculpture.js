@@ -195,60 +195,59 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('auto-rotate-speed', '20deg/s');
   viewer.className = 'obs-viewer';
 
-  /* Murs + sol : RAF autonome calibré — même vitesse */
+  /* ── Piquets & corde elliptique autour du modèle ── */
+  const piquetsWrap = document.createElement('div');
+  piquetsWrap.className = 'obs-piquets-wrap';
+  contenu.appendChild(piquetsWrap);
+
+  const piquets = Array.from({ length: 4 }, () => {
+    const el = document.createElement('div');
+    el.className = 'obs-piquet';
+    piquetsWrap.appendChild(el);
+    return el;
+  });
+
+  const cordeEl = document.createElement('div');
+  cordeEl.className = 'obs-corde-ellipse';
+  contenu.appendChild(cordeEl);
+
+  /* Murs + piquets : RAF autonome calibré sur auto-rotate-speed=20°/s
+     20°/s → 18s/tour → 1080px/18s @ 60fps = 1px/frame */
   let wallPos = 0;
+  let RX = 200, RY = 55; /* rayons orbite — mis à jour après layout */
+
+  requestAnimationFrame(() => {
+    const vw = viewer.offsetWidth  || 400;
+    const vh = viewer.offsetHeight || 280;
+    RX = Math.round(vw  * 0.62);
+    RY = Math.round(vh  * 0.14);
+    cordeEl.style.width  = (RX * 2) + 'px';
+    cordeEl.style.height = (RY * 2) + 'px';
+    /* Positionner la corde verticalement sur le bas du viewer */
+    cordeEl.style.top  = '50%';
+    cordeEl.style.marginTop = Math.round(vh * 0.38) + 'px';
+  });
+
   (function wallFrame() {
-    wallPos = (wallPos - 2 + OBS_BG_W) % OBS_BG_W;
+    wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
     murs.style.backgroundPositionX = wallPos + 'px';
-    sol.style.backgroundPositionX  = wallPos + 'px';
+
+    /* Orbite des piquets en ellipse perspective */
+    const theta = (wallPos / OBS_BG_W) * Math.PI * 2;
+    piquets.forEach((el, i) => {
+      const a   = theta + i * (Math.PI / 2);
+      const x   = Math.cos(a) * RX;
+      const y   = Math.sin(a) * RY;
+      const z   = (Math.sin(a) + 1) / 2;           /* 0=arrière 1=avant */
+      const sc  = (0.65 + 0.35 * z).toFixed(3);
+      const op  = (0.35 + 0.65 * z).toFixed(2);
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${sc})`;
+      el.style.opacity   = op;
+      el.style.zIndex    = Math.round(z * 10);
+    });
+
     _obsRAF = requestAnimationFrame(wallFrame);
   })();
-
-  contenu.appendChild(viewer);
-
-  /* ── Piédestal sous la sculpture ── */
-  const piedestal = document.createElement('div');
-  piedestal.className = 'obs-piedestal';
-  contenu.appendChild(piedestal);
-
-  /* ── Cordage musée avec piquets dorés ── */
-  const barriere = document.createElement('div');
-  barriere.className = 'obs-barriere';
-  barriere.innerHTML = `<svg viewBox="0 0 600 75" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="gp" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stop-color="#6a4010"/>
-        <stop offset="25%"  stop-color="#f0d080"/>
-        <stop offset="50%"  stop-color="#e8c060"/>
-        <stop offset="75%"  stop-color="#f0d080"/>
-        <stop offset="100%" stop-color="#6a4010"/>
-      </linearGradient>
-    </defs>
-    <!-- Piquets arrière (plus petits — perspective) -->
-    <rect x="162" y="16" width="7" height="40" rx="1.5" fill="url(#gp)"/>
-    <ellipse cx="165.5" cy="13" rx="7" ry="7" fill="#f0d080"/><circle cx="165.5" cy="13" r="4" fill="#c8a050"/>
-    <rect x="431" y="16" width="7" height="40" rx="1.5" fill="url(#gp)"/>
-    <ellipse cx="434.5" cy="13" rx="7" ry="7" fill="#f0d080"/><circle cx="434.5" cy="13" r="4" fill="#c8a050"/>
-    <!-- Corde arrière -->
-    <path d="M165,20 Q300,28 435,20" fill="none" stroke="#8b6010" stroke-width="3.5"/>
-    <path d="M165,20 Q300,28 435,20" fill="none" stroke="#c8a050" stroke-width="2" opacity=".8"/>
-    <!-- Cordes latérales -->
-    <path d="M56,35 Q110,26 165,22" fill="none" stroke="#8b6010" stroke-width="3"/>
-    <path d="M56,35 Q110,26 165,22" fill="none" stroke="#c8a050" stroke-width="1.8" opacity=".8"/>
-    <path d="M544,35 Q490,26 435,22" fill="none" stroke="#8b6010" stroke-width="3"/>
-    <path d="M544,35 Q490,26 435,22" fill="none" stroke="#c8a050" stroke-width="1.8" opacity=".8"/>
-    <!-- Piquets avant (plus grands) -->
-    <rect x="49"  y="24" width="9" height="51" rx="2" fill="url(#gp)"/>
-    <ellipse cx="53.5" cy="20" rx="9.5" ry="9.5" fill="#f0d080"/><circle cx="53.5" cy="20" r="5.5" fill="#e8c060"/><circle cx="53.5" cy="20" r="2.5" fill="#c8a050"/>
-    <rect x="542" y="24" width="9" height="51" rx="2" fill="url(#gp)"/>
-    <ellipse cx="546.5" cy="20" rx="9.5" ry="9.5" fill="#f0d080"/><circle cx="546.5" cy="20" r="5.5" fill="#e8c060"/><circle cx="546.5" cy="20" r="2.5" fill="#c8a050"/>
-    <!-- Corde avant double brin avec sac naturel -->
-    <path d="M53,32 Q300,52 547,32" fill="none" stroke="#6a4008" stroke-width="5"/>
-    <path d="M53,32 Q300,52 547,32" fill="none" stroke="#c8a050" stroke-width="3.5" stroke-linecap="round"/>
-    <path d="M53,27 Q300,45 547,27" fill="none" stroke="#6a4008" stroke-width="4"/>
-    <path d="M53,27 Q300,45 547,27" fill="none" stroke="#d4a840" stroke-width="2.5" stroke-linecap="round"/>
-  </svg>`;
-  contenu.appendChild(barriere);
 
   /* Métadonnées */
   const meta = document.createElement('div');
