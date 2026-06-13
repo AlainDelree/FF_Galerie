@@ -182,12 +182,12 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('auto-rotate-speed', '20deg/s');
   viewer.className = 'obs-viewer';
 
-  /* Murs : RAF autonome calibré sur auto-rotate-speed=20°/s
-     20°/s → 18s/tour → 1080px/18s → 1px/frame @60fps */
+  /* Murs + sol : RAF autonome calibré — même vitesse */
   let wallPos = 0;
   (function wallFrame() {
     wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
     murs.style.backgroundPositionX = wallPos + 'px';
+    sol.style.backgroundPositionX  = wallPos + 'px';
     _obsRAF = requestAnimationFrame(wallFrame);
   })();
 
