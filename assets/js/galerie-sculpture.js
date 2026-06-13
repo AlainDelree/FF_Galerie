@@ -90,15 +90,16 @@ function ouvrirSalleObservation(piece) {
     ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
 
   const viewer = document.createElement('model-viewer');
-  viewer.setAttribute('src',              glbSrc);
-  viewer.setAttribute('alt',              piece.titre || '');
-  viewer.setAttribute('camera-controls',  '');
+  viewer.setAttribute('src',                glbSrc);
+  viewer.setAttribute('alt',                piece.titre || '');
+  viewer.setAttribute('auto-rotate',        '');
+  viewer.setAttribute('auto-rotate-delay',  '0');
+  viewer.setAttribute('camera-controls',    '');
   viewer.setAttribute('interaction-prompt', 'none');
-  viewer.setAttribute('shadow-intensity', '1');
-  viewer.setAttribute('camera-orbit',     '0deg 75deg auto');
+  viewer.setAttribute('shadow-intensity',   '1');
   viewer.className = 'obs-viewer';
 
-  /* Scale réel + démarrage orbite + murs au chargement */
+  /* Scale réel au chargement */
   const targetHm = ((piece.dimensions && piece.dimensions.hauteur) || 50) / 100;
   viewer.addEventListener('load', () => {
     const dims = viewer.getDimensions();
@@ -109,29 +110,17 @@ function ouvrirSalleObservation(piece) {
         viewer.setAttribute('scale', fs + ' ' + fs + ' ' + fs);
       }
     }
-    _obsTheta = 0; _obsPaused = false;
-    (function frame() {
-      if (!_obsPaused) {
-        _obsTheta = (_obsTheta + OBS_SPEED) % 360;
-        viewer.setAttribute('camera-orbit', _obsTheta + 'deg 75deg auto');
-        /* Murs défilent en sens inverse → illusion de marche */
-        const bgX = (((-_obsTheta * OBS_SCALE) % OBS_BG_W) + OBS_BG_W) % OBS_BG_W;
-        murs.style.backgroundPositionX = bgX + 'px';
-      }
-      _obsRAF = requestAnimationFrame(frame);
-    })();
   });
 
-  /* Pause sur interaction manuelle, resync à la reprise */
-  viewer.addEventListener('pointerdown', () => { _obsPaused = true; });
-  viewer.addEventListener('pointerup', () => {
+  /* Murs synchronisés sur la position réelle de la caméra */
+  viewer.addEventListener('camera-change', () => {
     try {
-      const orbit = viewer.getCameraOrbit();
-      if (orbit) _obsTheta = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+      const orbit   = viewer.getCameraOrbit();
+      const thetaDeg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
+      const bgX      = ((thetaDeg * OBS_SCALE) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
+      murs.style.backgroundPositionX = bgX + 'px';
     } catch (e) {}
-    _obsPaused = false;
   });
-  viewer.addEventListener('pointerleave', () => { _obsPaused = false; });
 
   contenu.appendChild(viewer);
 
