@@ -131,7 +131,7 @@ let _obsRAF    = null;
 let _obsTheta  = 0;
 let _obsPaused = false;
 const OBS_SPEED  = 0.3;          /* °/frame — vitesse orbite caméra */
-const OBS_BG_W   = 1080;         /* px — un tour complet */
+const OBS_BG_W   = 2160;         /* px — un tour complet (assez large pour 1 seule porte visible) */
 const OBS_SCALE  = OBS_BG_W / 90; /* 4 pilastres par révolution (360°/4 = 90°) */
 
 function ouvrirSalleObservation(piece) {
@@ -198,13 +198,18 @@ function ouvrirSalleObservation(piece) {
   /* Murs + sol : RAF autonome calibré — même vitesse */
   let wallPos = 0;
   (function wallFrame() {
-    wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
+    wallPos = (wallPos - 2 + OBS_BG_W) % OBS_BG_W;
     murs.style.backgroundPositionX = wallPos + 'px';
     sol.style.backgroundPositionX  = wallPos + 'px';
     _obsRAF = requestAnimationFrame(wallFrame);
   })();
 
   contenu.appendChild(viewer);
+
+  /* ── Piédestal sous la sculpture ── */
+  const piedestal = document.createElement('div');
+  piedestal.className = 'obs-piedestal';
+  contenu.appendChild(piedestal);
 
   /* ── Cordage musée avec piquets dorés ── */
   const barriere = document.createElement('div');

@@ -270,7 +270,7 @@
   bottom: 20%;
   left: 0; right: 0;
   pointer-events: none;
-  background-size: 1080px 100%;
+  background-size: 2160px 100%;
   background-repeat: repeat-x;
   background-position-x: 0px;
 }
@@ -315,9 +315,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   width: 100%;
-  padding: 9% 1.5rem 20%; /* 9% plafond, 20% sol — centre sur le mur */
-  gap: .6rem;
+  padding: 2% 1.5rem 18%; /* positionne le tout pour que le cordage touche le sol */
+  gap: .3rem;
 }
 
 .obs-titre {
@@ -393,11 +394,28 @@
   outline-offset: 4px;
 }
 
+/* ── Piédestal sous la sculpture ── */
+.obs-piedestal {
+  width: min(35vw, 220px);
+  height: 28px;
+  background: linear-gradient(to bottom,
+    #d0c0a0 0%, #b8a888 6%, #a09070 12%,
+    #908060 50%, #806e50 100%);
+  border-radius: 3px 3px 1px 1px;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.15);
+  flex-shrink: 0;
+  margin-top: -4px;
+}
+
 /* ── Cordage musée ── */
 .obs-barriere {
   width: min(88vw, 580px);
   flex-shrink: 0;
   pointer-events: none;
-  margin-top: -.5rem;
+  margin-top: .5rem;
+  position: relative;
+  z-index: 12;
 }
 .obs-barriere svg { display: block; width: 100%; height: auto; overflow: visible; }
