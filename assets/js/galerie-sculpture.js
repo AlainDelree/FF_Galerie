@@ -99,18 +99,8 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('shadow-intensity',   '1');
   viewer.className = 'obs-viewer';
 
-  /* Scale réel au chargement */
-  const targetHm = ((piece.dimensions && piece.dimensions.hauteur) || 50) / 100;
-  viewer.addEventListener('load', () => {
-    const dims = viewer.getDimensions();
-    if (dims && dims.y > 0) {
-      const f = targetHm / dims.y;
-      if (f > 0.05 && f < 50) {
-        const fs = f.toFixed(4);
-        viewer.setAttribute('scale', fs + ' ' + fs + ' ' + fs);
-      }
-    }
-  });
+  /* Pas de scale dans la salle d'observation — model-viewer cadre au mieux */
+  viewer.addEventListener('load', () => {});
 
   /* Murs synchronisés sur la position réelle de la caméra */
   viewer.addEventListener('camera-change', () => {
