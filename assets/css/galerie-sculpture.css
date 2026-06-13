@@ -266,12 +266,44 @@
 /* ── Murs mobiles — fond généré en JS (SVG mosaïque) ── */
 .obs-murs-mobiles {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  bottom: 27%;
+  top: 9%;
+  bottom: 20%;
+  left: 0; right: 0;
   pointer-events: none;
   background-size: 1080px 100%;
   background-repeat: repeat-x;
   background-position-x: 0px;
+}
+
+/* Plafond */
+.obs-plafond {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 9%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #f5f0e8 0%, #e0d8c4 70%, #c8b89a 100%);
+}
+
+/* Sol */
+.obs-sol {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 20%;
+  pointer-events: none;
+  background:
+    /* Lignes de parquet */
+    repeating-linear-gradient(
+      to right,
+      transparent 0px, transparent 58px,
+      rgba(0,0,0,.06) 58px, rgba(0,0,0,.06) 60px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 13px,
+      rgba(0,0,0,.04) 13px, rgba(0,0,0,.04) 14px
+    ),
+    /* Fond parquet chaud */
+    linear-gradient(to bottom, #a07840 0%, #8a6430 60%, #705028 100%);
 }
 
 /* Lignes horizontales bleues (test de mouvement) */

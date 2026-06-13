@@ -148,6 +148,14 @@ function ouvrirSalleObservation(piece) {
   murs.style.backgroundImage = `url('${murUrl}')`;
   chambre.appendChild(murs);
 
+  const plafond = document.createElement('div');
+  plafond.className = 'obs-plafond';
+  chambre.appendChild(plafond);
+
+  const sol = document.createElement('div');
+  sol.className = 'obs-sol';
+  chambre.appendChild(sol);
+
   overlay.appendChild(chambre);
 
   /* ── Contenu central ── */
