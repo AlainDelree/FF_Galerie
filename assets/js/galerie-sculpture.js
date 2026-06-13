@@ -171,20 +171,17 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('camera-controls',    '');
   viewer.setAttribute('interaction-prompt', 'none');
   viewer.setAttribute('shadow-intensity',   '1');
+  viewer.setAttribute('auto-rotate-speed', '20deg/s');
   viewer.className = 'obs-viewer';
 
-  /* Murs : synchronisés sur la rotation réelle de la caméra */
-  viewer.addEventListener('load', () => {
-    (function wallFrame() {
-      try {
-        const orbit    = viewer.getCameraOrbit();
-        const thetaDeg = ((orbit.theta * 180 / Math.PI) % 360 + 360) % 360;
-        const bgX      = ((- thetaDeg / 360 * OBS_BG_W) % OBS_BG_W + OBS_BG_W) % OBS_BG_W;
-        murs.style.backgroundPositionX = bgX + 'px';
-      } catch (e) {}
-      _obsRAF = requestAnimationFrame(wallFrame);
-    })();
-  });
+  /* Murs : RAF autonome calibré sur auto-rotate-speed=20°/s
+     20°/s → 18s/tour → 1080px/18s → 1px/frame @60fps */
+  let wallPos = 0;
+  (function wallFrame() {
+    wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
+    murs.style.backgroundPositionX = wallPos + 'px';
+    _obsRAF = requestAnimationFrame(wallFrame);
+  })();
 
   contenu.appendChild(viewer);
 
