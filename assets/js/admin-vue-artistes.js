@@ -305,7 +305,7 @@ async function creerArtiste() {
     var banner = document.createElement("div");
     banner.textContent = "✓ Espace créé ! Les pages seront accessibles dans 1-2 minutes (déploiement GitHub en cours).";
     banner.style.cssText = "padding:.6rem 1rem;background:rgba(200,160,80,.15);color:var(--gold);border-radius:4px;font-size:.8rem;margin-bottom:.6rem;";
-    var liste = document.getElementById("artistes-liste");
+    var liste = document.getElementById("liste-artistes");
     liste.insertBefore(banner, liste.firstChild);
     setTimeout(function(){ banner.remove(); }, 10000);
   } catch (e) {
