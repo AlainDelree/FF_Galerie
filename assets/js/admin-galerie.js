@@ -454,6 +454,58 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
 
+/* DRAG-DROP GLOBAL — une seule paire de listeners */
+let _dragStarted = false;
+let _draggingPieceEl = null;
+let _draggingPiece = null;
+let _dragStartPos = { x: 0, y: 0 };
+let _dragContainer = null;
+
+function _startDragPiece(el, piecePos, mouseDownEvent, container) {
+  _dragStarted = false; /* Reset flag pour click */
+  _draggingPieceEl = el;
+  _draggingPiece = piecePos;
+  _dragStartPos = { x: mouseDownEvent.clientX, y: mouseDownEvent.clientY };
+  _dragContainer = container;
+  el.style.transition = 'none';
+  el.style.zIndex = '10';
+  document.addEventListener('mousemove', _onGlobalDragMove);
+  document.addEventListener('mouseup', _onGlobalDragEnd);
+}
+
+function _onGlobalDragMove(e) {
+  if (!_draggingPieceEl || !_draggingPiece) return;
+  _dragStarted = true; /* Marquer qu'il y a eu du mouvement */
+  const rect = _dragContainer.getBoundingClientRect();
+  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
+  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
+  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
+  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+  _draggingPieceEl.style.left = newX + '%';
+  _draggingPieceEl.style.bottom = newY + '%';
+}
+
+function _onGlobalDragEnd(e) {
+  if (!_draggingPieceEl || !_draggingPiece) return;
+  /* Appliquer les changements */
+  const rect = _dragContainer.getBoundingClientRect();
+  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
+  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
+  _draggingPiece.x = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
+  _draggingPiece.y = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+  _draggingPieceEl.style.transition = '';
+  _draggingPieceEl.style.zIndex = '2';
+  document.removeEventListener('mousemove', _onGlobalDragMove);
+  document.removeEventListener('mouseup', _onGlobalDragEnd);
+  if (_dragStarted) {
+    marquerChangement();
+    toast('✓ Pièce déplacée');
+  }
+  _draggingPieceEl = null;
+  _draggingPiece = null;
+}
+
+
 function entrerModePlacement() {
   if (!salleActive) return;
   // Vérifier si des toiles sélectionnées viennent d'une autre salle
@@ -1281,52 +1333,25 @@ function afficherSolPlacement() {
     lbl.textContent = t.titre || '—';
     el.appendChild(lbl);
 
-    /* Drag-drop pour déplacer la pièce */
-    let _dragging = false;
-    let _dragStart = { x: 0, y: 0 };
-    let _posStart = { x: p.x, y: p.y };
-
+    /* Drag-drop : mousedown pour démarrer, pas de listeners multiples */
     el.addEventListener('mousedown', e => {
       e.stopPropagation();
-      _dragging = true;
-      _dragStart = { x: e.clientX, y: e.clientY };
-      _posStart = { x: p.x, y: p.y };
-      el.style.transition = 'none';
-      el.style.zIndex = '10';
-      peintureSurMurSel = p.id; /* Sélectionner la pièce */
+      peintureSurMurSel = p.id;
+      _startDragPiece(el, p, e, bg);
       afficherStripPlacement();
-    });
-
-    document.addEventListener('mousemove', e => {
-      if (!_dragging || peintureSurMurSel !== p.id) return;
-      const rect = bg.getBoundingClientRect();
-      const dx = ((e.clientX - _dragStart.x) / rect.width) * 100;
-      const dy = -((e.clientY - _dragStart.y) / rect.height) * 100; /* Y inversé */
-      const newX = Math.max(5, Math.min(95, _posStart.x + dx));
-      const newY = Math.max(5, Math.min(95, _posStart.y + dy));
-      p.x = newX;
-      p.y = newY;
-      el.style.left = p.x + '%';
-      el.style.bottom = p.y + '%';
-    });
-
-    document.addEventListener('mouseup', e => {
-      if (!_dragging || peintureSurMurSel !== p.id) return;
-      _dragging = false;
-      el.style.transition = '';
-      el.style.zIndex = '2';
-      marquerChangement();
-      toast('✓ Pièce déplacée');
     });
 
     el.addEventListener('click', e => {
       e.stopPropagation();
-      peintureSurMurSel = peintureSurMurSel === p.id ? null : p.id;
-      afficherSolPlacement(); afficherStripPlacement();
-      $('pl-aide').textContent = peintureSurMurSel
-        ? '"' + (t.titre||'—') + '" → flèches pour déplacer ou ✕ retirer'
-        : 'Clique une pièce du bas pour la placer';
-      majCtrlPanel();
+      /* Click sans drag = toggle sélection */
+      if (!_dragStarted) {
+        peintureSurMurSel = peintureSurMurSel === p.id ? null : p.id;
+        afficherSolPlacement(); afficherStripPlacement();
+        $('pl-aide').textContent = peintureSurMurSel
+          ? '"' + (t.titre||'—') + '" → flèches pour déplacer ou ✕ retirer'
+          : 'Clique une pièce du bas pour la placer';
+        majCtrlPanel();
+      }
     });
     bg.appendChild(el);
   });
