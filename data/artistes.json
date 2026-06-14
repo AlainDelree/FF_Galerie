@@ -32,12 +32,12 @@
     "type": "sculpture"
   },
   {
-    "id": "josepf",
-    "nom": "Josepf",
-    "logo": "J",
-    "lien": "artistes/josepf/",
-    "repoPath": "artistes/josepf/data/",
-    "prefix": "josepf",
+    "id": "bernard",
+    "nom": "Bernard",
+    "logo": "B",
+    "lien": "artistes/bernard/",
+    "repoPath": "artistes/bernard/data/",
+    "prefix": "bernard",
     "draft": true,
     "genre": "f",
     "type": "peinture"
