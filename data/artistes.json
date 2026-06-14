@@ -21,17 +21,6 @@
     "type": "peinture"
   },
   {
-    "id": "raoul",
-    "nom": "Joseph",
-    "logo": "J",
-    "lien": "artistes/raoul/",
-    "repoPath": "artistes/raoul/data/",
-    "prefix": "raoul",
-    "draft": true,
-    "genre": "m",
-    "type": "peinture"
-  },
-  {
     "id": "dinso",
     "nom": "Dinso",
     "logo": "DS",
