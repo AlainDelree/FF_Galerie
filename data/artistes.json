@@ -30,16 +30,5 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
-  },
-  {
-    "id": "oktr",
-    "nom": "oktr",
-    "logo": "O",
-    "lien": "artistes/oktr/",
-    "repoPath": "artistes/oktr/data/",
-    "prefix": "oktr",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
   }
 ]
