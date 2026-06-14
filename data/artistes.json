@@ -30,16 +30,5 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
-  },
-  {
-    "id": "bernard",
-    "nom": "Bernard",
-    "logo": "B",
-    "lien": "artistes/bernard/",
-    "repoPath": "artistes/bernard/data/",
-    "prefix": "bernard",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
   }
 ]
