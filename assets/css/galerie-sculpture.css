@@ -76,29 +76,49 @@
   border-radius: 2px 2px 0 0;
 }
 
-/* ── Piédestal ── */
+/* ── Piédestal cylindrique marbre blanc ── */
 .socle-piedestal {
   position: relative;
   width: 100%;
-  border-radius: 1px;
-  background: linear-gradient(to bottom, #d0c7b5, #9a8f7e);
+  border-radius: 8px;
+  /* Cylindre : bords sombres, centre clair */
+  background:
+    /* Veines marbre */
+    linear-gradient(155deg, transparent 20%, rgba(140,150,160,.18) 21%, rgba(140,150,160,.12) 22%, transparent 23%),
+    linear-gradient(168deg, transparent 48%, rgba(120,130,140,.15) 49%, rgba(120,130,140,.10) 50%, transparent 51%),
+    linear-gradient(140deg, transparent 70%, rgba(150,155,165,.12) 71%, rgba(150,155,165,.08) 72%, transparent 73%),
+    /* Ombrage cylindrique */
+    linear-gradient(to right,
+      rgba(0,0,0,.20) 0%,
+      rgba(0,0,0,.05) 15%,
+      rgba(255,255,255,.08) 45%,
+      rgba(255,255,255,.12) 55%,
+      rgba(0,0,0,.04) 80%,
+      rgba(0,0,0,.18) 100%);
+  background-color: #eae6de;
+  box-shadow: 2px 3px 8px rgba(0,0,0,.18);
 }
 
-.socle-piedestal::after {
-  content: '';
-  position: absolute;
-  right: -4px; top: 3px;
-  width: 4px; height: 100%;
-  background: linear-gradient(to bottom, #8a7f6e, #5a5040);
-}
-
+/* Ellipse du dessus (plateau) */
 .socle-piedestal::before {
   content: '';
   position: absolute;
-  top: -4px; right: -4px; left: 0; height: 4px;
-  background: linear-gradient(to right, #c8bfae, #a89880);
-  transform: skewX(-45deg);
-  transform-origin: right top;
+  top: -6px; left: -8%; width: 116%; height: 12px;
+  background: radial-gradient(ellipse at 42% 40%, #f8f6f2 0%, #ece8e0 55%, #d8d2c8 100%);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  z-index: 2;
+}
+
+/* Demi-ellipse du bas (base au sol) */
+.socle-piedestal::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: -6%; width: 112%; height: 8px;
+  background: radial-gradient(ellipse at 42% 30%, #ddd8d0 0%, #c8c2b8 100%);
+  border-radius: 50%;
+  clip-path: polygon(0% 40%, 100% 40%, 100% 100%, 0% 100%);
+  z-index: 2;
 }
 
 .socle-piedestal--s   { height:  65px; }
