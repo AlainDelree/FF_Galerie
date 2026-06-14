@@ -191,106 +191,6 @@ function ouvrirSalleObservation(piece) {
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
 }
 
-/* ══════════════════════════════════════════════════════════════
-   GRILLE DE REPÉRAGE SVG PERSPECTIVE
-   ══════════════════════════════════════════════════════════════ */
-function ajouterGrilleDevParquet(sol) {
-  const COLS = 'ABCDEFGHIJ'.split('');
-  const NC = COLS.length, NR = 10;
-
-  const overlay = document.createElement('div');
-  overlay.className = 'grille-dev';
-
-  const btn = document.createElement('button');
-  btn.className = 'grille-toggle'; btn.title = 'Afficher / masquer la grille';
-  btn.textContent = '\u229e';
-  btn.addEventListener('click', () => overlay.classList.toggle('grille-masquee'));
-
-  sol.appendChild(overlay);
-  sol.appendChild(btn);
-
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const W = sol.clientWidth || 1000, H = sol.clientHeight || 300;
-    const scaleAt = t => 1 - t * 0.42;
-    const rowScales = Array.from({ length: NR }, (_, r) => scaleAt((r + 0.5) / NR));
-    const totalS    = rowScales.reduce((a, b) => a + b, 0);
-    const rowBounds = [0];
-    rowScales.forEach(s => rowBounds.push(rowBounds.at(-1) + s / totalS));
-
-    const sY = t  => H * (1 - t);
-    const sX = (xN, t) => W * (0.5 + (xN - 0.5) * scaleAt(t));
-
-    const SVG = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(SVG, 'svg');
-    svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%');
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.setAttribute('preserveAspectRatio', 'none');
-    svg.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:visible;';
-    const mk = tag => document.createElementNS(SVG, tag);
-
-    for (let r = 0; r < NR; r++) {
-      for (let c = 0; c < NC; c++) {
-        if ((r + c) % 2 === 0) continue;
-        const t0 = rowBounds[r], t1 = rowBounds[r + 1];
-        const x0 = c / NC, x1 = (c + 1) / NC;
-        const poly = mk('polygon');
-        poly.setAttribute('points', [sX(x0,t0),sY(t0),sX(x1,t0),sY(t0),sX(x1,t1),sY(t1),sX(x0,t1),sY(t1)].join(','));
-        poly.setAttribute('fill', 'rgba(0,0,0,.06)');
-        svg.appendChild(poly);
-      }
-    }
-    rowBounds.forEach(t => {
-      const ln = mk('line');
-      ln.setAttribute('x1', sX(0,t)); ln.setAttribute('y1', sY(t));
-      ln.setAttribute('x2', sX(1,t)); ln.setAttribute('y2', sY(t));
-      ln.setAttribute('stroke', 'rgba(0,0,0,.50)'); ln.setAttribute('stroke-width', '1.8');
-      svg.appendChild(ln);
-    });
-    for (let c = 0; c <= NC; c++) {
-      const xN = c / NC;
-      const ln = mk('line');
-      ln.setAttribute('x1', sX(xN,0)); ln.setAttribute('y1', sY(0));
-      ln.setAttribute('x2', sX(xN,1)); ln.setAttribute('y2', sY(1));
-      ln.setAttribute('stroke', 'rgba(0,0,0,.35)'); ln.setAttribute('stroke-width', '1.0');
-      svg.appendChild(ln);
-    }
-    for (let r = 0; r < NR; r++) {
-      for (let c = 0; c < NC; c++) {
-        /* Labels intérieurs allégés : 1 sur 4 (pair×pair) */
-        if (r % 2 !== 0 || c % 2 !== 0) continue;
-        const tC  = (rowBounds[r] + rowBounds[r+1]) / 2;
-        const xNC = (c + 0.5) / NC;
-        const rowH = (rowBounds[r+1] - rowBounds[r]) * H;
-        const fs = Math.max(6, Math.min(9, Math.round(rowH * 0.35)));
-        const txt = mk('text');
-        txt.setAttribute('x', sX(xNC, tC)); txt.setAttribute('y', sY(tC));
-        txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('dominant-baseline', 'middle');
-        txt.setAttribute('font-size', fs); txt.setAttribute('font-family', 'monospace');
-        txt.setAttribute('font-weight', 'bold'); txt.setAttribute('fill', 'rgba(0,0,0,.20)');
-        txt.textContent = COLS[c] + (r + 1);
-        svg.appendChild(txt);
-      }
-    }
-    COLS.forEach((col, c) => {
-      const txt = mk('text');
-      txt.setAttribute('x', sX((c+0.5)/NC, 0.01)); txt.setAttribute('y', sY(0.01) - 5);
-      txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('font-size', '12');
-      txt.setAttribute('font-family', 'monospace'); txt.setAttribute('font-weight', 'bold');
-      txt.setAttribute('fill', 'rgba(0,0,0,.55)'); txt.textContent = col;
-      svg.appendChild(txt);
-    });
-    for (let r = 0; r < NR; r++) {
-      const tC = (rowBounds[r] + rowBounds[r+1]) / 2;
-      const txt = mk('text');
-      txt.setAttribute('x', sX(0.015,tC) + 5); txt.setAttribute('y', sY(tC));
-      txt.setAttribute('dominant-baseline', 'middle'); txt.setAttribute('font-size', '9');
-      txt.setAttribute('font-family', 'monospace'); txt.setAttribute('font-weight', 'bold');
-      txt.setAttribute('fill', 'rgba(0,0,0,.45)'); txt.textContent = r + 1;
-      svg.appendChild(txt);
-    }
-    overlay.appendChild(svg);
-  }));
-}
 
 /* ══════════════════════════════════════════════════════════════
    SOCLE — photo statique + clic → salle d'observation
@@ -440,7 +340,6 @@ Promise.all([
         if (!piece) return;
         plancherSol.appendChild(creerSocle(piece, gabarit, pos));
       });
-      ajouterGrilleDevParquet(plancherSol);
     }
 
     salleDiv.appendChild(plancher);
