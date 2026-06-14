@@ -1187,7 +1187,7 @@ function afficherSolPlacement() {
 function placerPieceSol(x, y) {
   if (!selectedToilePl || !salleActive) return;
   const piece = selectedToilePl;
-  const gab = gabaritDepuisHauteur(piece.dimensions?.hauteur);
+  const gab = _gabaritSculpt(piece.dimensions?.hauteur);
 
   /* Retirer de toutes les salles */
   salles.forEach(s => {
@@ -1210,7 +1210,16 @@ function deplacerPieceSol(dx, dy) {
   const pos = (salleActive.positions || []).find(p => p.id === peintureSurMurSel);
   if (!pos) return;
   pos.x = Math.max(5, Math.min(95, (pos.x || 50) + dx));
-  pos.y = Math.max(5, Math.min(95, (pos.y || 50) + dy));
+  pos.y = Math.max(5, Math.min(95, (pos.y || 50) - dy)); /* -dy : Up=+y, Down=-y */
   afficherSolPlacement();
   marquerChangement();
+}
+
+/* Gabarit auto depuis hauteur (dupliqué de galerie-sculpture.js) */
+function _gabaritSculpt(h) {
+  if (!h)      return 'M';
+  if (h <= 25) return 'S';
+  if (h <= 50) return 'M';
+  if (h <= 100) return 'L';
+  return 'SOL';
 }
