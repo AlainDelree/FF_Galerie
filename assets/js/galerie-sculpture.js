@@ -122,23 +122,6 @@ function ouvrirSalleObservation(piece) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
-  /* ── Bouton mode immersif (Three.js) ── */
-  if (piece.glb && typeof ouvrirSalleImmersive === 'function') {
-    const btnImm = document.createElement('button');
-    btnImm.style.cssText =
-      'position:absolute;bottom:4.5rem;left:50%;transform:translateX(-50%);z-index:20;' +
-      'padding:10px 24px;border-radius:6px;border:2px solid rgba(200,160,80,.6);' +
-      'background:rgba(20,16,10,.75);color:rgba(240,208,128,.95);' +
-      'font-family:Cinzel,serif;font-size:.85rem;letter-spacing:.15em;cursor:pointer;' +
-      'backdrop-filter:blur(4px);';
-    btnImm.textContent = 'SALLE IMMERSIVE';
-    btnImm.addEventListener('click', () => {
-      fermer();
-      setTimeout(() => ouvrirSalleImmersive(piece), 400);
-    });
-    overlay.appendChild(btnImm);
-  }
-
   function fermer() {
     overlay.style.opacity = '0';
     setTimeout(() => {
@@ -336,7 +319,10 @@ function creerSocle(piece, gabarit, pos) {
 
   /* Clic → salle d'observation */
   if (hasGlb) {
-    const ouvrir = () => ouvrirSalleObservation(piece);
+    const ouvrir = () => {
+      if (typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(piece);
+      else ouvrirSalleObservation(piece);
+    };
     socle.addEventListener('click', ouvrir);
     socle.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); }
