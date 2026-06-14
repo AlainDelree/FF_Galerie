@@ -3,6 +3,7 @@
     {
       "id": 1,
       "nom": "Salle I",
+      "type": "sculpture",
       "theme": "",
       "couleur_mur": "#1e3a2a",
       "couleur_cadres": "#5c3d2e",
@@ -33,8 +34,7 @@
           "y": 23,
           "gabarit": "L"
         }
-      ],
-      "type": "sculpture"
+      ]
     }
   ]
 }
