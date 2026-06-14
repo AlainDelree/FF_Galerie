@@ -290,6 +290,7 @@ async function creerArtiste() {
     repoPath: "artistes/" + id + "/data/",
     prefix: id, draft };
 
+  _tplCache = null; /* forcer rechargement templates frais */
   try {
     const fichiers = await genererFichiers(artiste);
     /* Inclure artistes.json dans le même commit — évite le conflit "not a fast forward" */
@@ -322,7 +323,7 @@ async function chargerTemplates() {
   if (_tplCache) return _tplCache;
   const noms = ['index', 'galerie', 'infos', 'contact', 'admin'];
   const resultats = await Promise.all(
-    noms.map(n => fetch('templates/artiste-' + n + '.html?v=1').then(r => {
+    noms.map(n => fetch('templates/artiste-' + n + '.html?v=' + Date.now()).then(r => {
       if (!r.ok) throw new Error('Template introuvable : artiste-' + n + '.html');
       return r.text();
     }))
