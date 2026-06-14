@@ -124,7 +124,8 @@ function afficherMur() {
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
       'display:block;width:100%;border-radius:6px;' +
-    'aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';';
+    'aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';' +
+    'max-height:calc(100dvh - 300px);';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
@@ -1211,7 +1212,8 @@ function afficherSolPlacement() {
     : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
   bg.style.cssText = bgStyle +
     'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;border-radius:6px;' +
-    'aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';';
+    'aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';' +
+    'max-height:calc(100dvh - 200px);';
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
