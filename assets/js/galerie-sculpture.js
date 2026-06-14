@@ -318,8 +318,23 @@ function creerSocle(piece, gabarit, pos) {
   socle.style.width = socleW + 'px';
   if (hasGlb) { socle.tabIndex = 0; socle.style.cursor = 'pointer'; }
 
-  /* Photo statique */
-  if (piece.photo) {
+  /* Aperçu visuel sur le socle */
+  if (hasGlb) {
+    /* Mini model-viewer — rendu 3D statique du GLB */
+    chargerModelViewer();
+    const mv = document.createElement('model-viewer');
+    const mvSrc = /^https?:\/\//.test(piece.glb) ? piece.glb : GALERIE_CFG.assetsBase + piece.glb;
+    mv.setAttribute('src', mvSrc);
+    mv.setAttribute('alt', piece.titre || '');
+    mv.setAttribute('interaction-prompt', 'none');
+    mv.setAttribute('camera-orbit', '25deg 70deg auto');
+    mv.setAttribute('field-of-view', '36deg');
+    mv.setAttribute('shadow-intensity', '0.6');
+    mv.style.cssText =
+      'width:100%;height:' + photoH + 'px;pointer-events:none;' +
+      '--poster-color:transparent;background:transparent;';
+    socle.appendChild(mv);
+  } else if (piece.photo) {
     const img = document.createElement('img');
     img.className = 'socle-photo';
     img.alt = piece.titre || ''; img.loading = 'lazy'; img.decoding = 'async';
