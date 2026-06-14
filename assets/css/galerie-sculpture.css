@@ -242,39 +242,50 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* Spotlight central depuis le haut */
+  /* Panneaux colorés type salle immersive */
   background:
-    radial-gradient(ellipse 80% 60% at 50% -5%,
-      rgba(255,210,120,.08) 0%, transparent 70%),
-    radial-gradient(ellipse 100% 25% at 50% 100%,
-      rgba(160,120,60,.08) 0%, transparent 60%);
+    /* Spotlight central */
+    radial-gradient(ellipse 60% 50% at 50% 30%,
+      rgba(255,210,120,.06) 0%, transparent 70%),
+    /* Panneaux muraux verticaux */
+    linear-gradient(to right,
+      #4a2060 0%, #4a2060 8%,
+      #e8e0cc 8%, #e8e0cc 8.4%,
+      #7a2525 8.4%, #7a2525 17%,
+      #e8e0cc 17%, #e8e0cc 17.4%,
+      #1a3055 17.4%, #1a3055 25%,
+      #e8e0cc 25%, #e8e0cc 25.4%,
+      #2a5035 25.4%, #2a5035 33%,
+      #e8e0cc 33%, #e8e0cc 33.4%,
+      #a04820 33.4%, #a04820 42%,
+      #e8e0cc 42%, #e8e0cc 42.4%,
+      #1a4555 42.4%, #1a4555 50%,
+      #e8e0cc 50%, #e8e0cc 50.4%,
+      #805020 50.4%, #805020 58%,
+      #e8e0cc 58%, #e8e0cc 58.4%,
+      #2a1a55 58.4%, #2a1a55 67%,
+      #e8e0cc 67%, #e8e0cc 67.4%,
+      #405010 67.4%, #405010 75%,
+      #e8e0cc 75%, #e8e0cc 75.4%,
+      #5c2040 75.4%, #5c2040 83%,
+      #e8e0cc 83%, #e8e0cc 83.4%,
+      #1a3055 83.4%, #1a3055 92%,
+      #e8e0cc 92%, #e8e0cc 92.4%,
+      #7a2525 92.4%, #7a2525 100%
+    );
 }
 
-/* Pilastres verticaux + plinthe + sol */
+/* Plinthe + sol subtil */
 .obs-chambre::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    /* Pilastre gauche */
-    linear-gradient(to right,
-      transparent 16%,
-      rgba(255,255,255,.03) 16.5%, rgba(255,255,255,.05) 17%, rgba(255,255,255,.03) 17.5%,
-      transparent 18%),
-    /* Pilastre droit */
-    linear-gradient(to right,
-      transparent 82%,
-      rgba(255,255,255,.03) 82.5%, rgba(255,255,255,.05) 83%, rgba(255,255,255,.03) 83.5%,
-      transparent 84%),
-    /* Plinthe */
-    linear-gradient(to bottom,
-      transparent 71%,
-      rgba(255,255,255,.03) 71.5%, rgba(255,255,255,.03) 72%,
-      transparent 72.5%),
-    /* Sol */
+    /* Sol parquet en bas */
     linear-gradient(to bottom,
       transparent 73%,
-      rgba(130,90,40,.22) 73%);
+      rgba(130,90,40,.25) 73%);
+  pointer-events: none;
 }
 
 /* Corniche plafond */
