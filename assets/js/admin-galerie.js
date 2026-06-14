@@ -79,6 +79,7 @@ function selectSalle(id) {
   afficherMur();
   afficherStock();
   selectedToile = null;
+  selectedToilePl = null;
 }
 
 // ═══════════════════════════════════════════════
@@ -632,8 +633,12 @@ function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
 
-  // UNION : toiles placées sur le mur + toiles sélectionnées depuis le stock
-  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees])];
+  // UNION : pièces placées + pièce sélectionnée pour placement
+  // Pour sculpture: utiliser selectedToilePl au lieu de toilesSelectionnees
+  const selectionneesIds = _isSculpt
+    ? (selectedToilePl ? [selectedToilePl.id] : [])
+    : [...toilesSelectionnees];
+  const tousIds = [...new Set([...poseeIds, ...selectionneesIds])];
 
   if (tousIds.length === 0) {
     strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
@@ -1275,6 +1280,44 @@ function afficherSolPlacement() {
     lbl.style.cssText = 'font-size:8px;color:#fff;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;';
     lbl.textContent = t.titre || '—';
     el.appendChild(lbl);
+
+    /* Drag-drop pour déplacer la pièce */
+    let _dragging = false;
+    let _dragStart = { x: 0, y: 0 };
+    let _posStart = { x: p.x, y: p.y };
+
+    el.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      _dragging = true;
+      _dragStart = { x: e.clientX, y: e.clientY };
+      _posStart = { x: p.x, y: p.y };
+      el.style.transition = 'none';
+      el.style.zIndex = '10';
+      peintureSurMurSel = p.id; /* Sélectionner la pièce */
+      afficherStripPlacement();
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!_dragging || peintureSurMurSel !== p.id) return;
+      const rect = bg.getBoundingClientRect();
+      const dx = ((e.clientX - _dragStart.x) / rect.width) * 100;
+      const dy = -((e.clientY - _dragStart.y) / rect.height) * 100; /* Y inversé */
+      const newX = Math.max(5, Math.min(95, _posStart.x + dx));
+      const newY = Math.max(5, Math.min(95, _posStart.y + dy));
+      p.x = newX;
+      p.y = newY;
+      el.style.left = p.x + '%';
+      el.style.bottom = p.y + '%';
+    });
+
+    document.addEventListener('mouseup', e => {
+      if (!_dragging || peintureSurMurSel !== p.id) return;
+      _dragging = false;
+      el.style.transition = '';
+      el.style.zIndex = '2';
+      marquerChangement();
+      toast('✓ Pièce déplacée');
+    });
 
     el.addEventListener('click', e => {
       e.stopPropagation();
