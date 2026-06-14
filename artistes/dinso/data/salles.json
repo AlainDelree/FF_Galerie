@@ -4,14 +4,15 @@
       "id": 1,
       "nom": "Salle I",
       "theme": "",
-      "couleur_mur": "#2a2520",
-      "couleur_cadres": "#3a3a3a",
+      "couleur_mur": "#1e3a2a",
+      "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "none",
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
       "toiles": [
         3,
-        4
+        4,
+        1
       ],
       "positions": [
         {
@@ -25,9 +26,14 @@
           "x": 21,
           "y": 69,
           "gabarit": "SOL"
+        },
+        {
+          "id": 1,
+          "x": 14,
+          "y": 23,
+          "gabarit": "L"
         }
-      ],
-      "type": "sculpture"
+      ]
     }
   ]
 }
