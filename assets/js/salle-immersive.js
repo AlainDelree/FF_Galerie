@@ -54,15 +54,19 @@ async function ouvrirSalleImmersive(piece) {
   /* ── UI overlay ── */
   const titre = document.createElement('div');
   titre.style.cssText =
-    'position:absolute;top:16px;left:0;width:100%;text-align:center;z-index:10;' +
-    'font-family:Cinzel,serif;font-size:1rem;letter-spacing:.2em;color:rgba(240,208,128,.85);';
+    'position:absolute;top:0;left:0;width:100%;text-align:center;z-index:10;' +
+    'padding:14px 0 18px;' +
+    'font-family:Cinzel,serif;font-size:1rem;letter-spacing:.2em;color:rgba(240,208,128,.9);' +
+    'background:linear-gradient(to bottom,rgba(0,0,0,.6),rgba(0,0,0,.25),transparent);';
   titre.textContent = piece.titre || '';
   overlay.appendChild(titre);
 
   const meta = document.createElement('div');
   meta.style.cssText =
-    'position:absolute;bottom:16px;left:0;width:100%;text-align:center;z-index:10;' +
-    'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.38);';
+    'position:absolute;bottom:0;left:0;width:100%;text-align:center;z-index:10;' +
+    'padding:18px 0 14px;' +
+    'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.5);' +
+    'background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.25),transparent);';
   const dim = piece.dimensions || {};
   const parts = [];
   if (piece.materiaux && piece.materiaux.length) parts.push(piece.materiaux.join(', '));
@@ -94,7 +98,7 @@ async function ouvrirSalleImmersive(piece) {
     '<span class="porte-nav__label">D\u00e9tail</span>';
   porteD.addEventListener('click', () => {
     const ecran = document.createElement('div');
-    ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+    ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
     document.body.appendChild(ecran);
     fermer();
     setTimeout(() => {
@@ -116,7 +120,7 @@ async function ouvrirSalleImmersive(piece) {
   plaqueD2.innerHTML = '<span class="plaque-nav__label">D\u00e9tail \u2192</span>';
   plaqueD2.addEventListener('click', () => {
     const ecran = document.createElement('div');
-    ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+    ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
     document.body.appendChild(ecran);
     fermer();
     setTimeout(() => {

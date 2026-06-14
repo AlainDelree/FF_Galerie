@@ -85,22 +85,25 @@ function ouvrirSalleObservation(piece) {
   titreEl.className = 'obs-titre';
   titreEl.textContent = piece.titre || '';
   titreEl.style.cssText =
-    'position:absolute;top:1rem;left:0;width:100%;text-align:center;z-index:20;margin:0;';
+    'position:absolute;top:1rem;left:0;width:100%;text-align:center;z-index:20;margin:0;' +
+    'padding:8px 0;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,.25),transparent);';
   overlay.appendChild(titreEl);
 
   /* Hint rotation — en bas centre */
   const hint = document.createElement('div');
   hint.style.cssText =
-    'position:absolute;bottom:6.5rem;left:0;width:100%;text-align:center;z-index:20;' +
-    'font-family:Lato,sans-serif;font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.06em;';
+    'position:absolute;bottom:8rem;left:0;width:100%;text-align:center;z-index:20;' +
+    'font-family:Lato,sans-serif;font-size:.6rem;color:rgba(255,255,255,.25);letter-spacing:.06em;';
   hint.textContent = 'Glissez pour tourner la sculpture';
   overlay.appendChild(hint);
 
-  /* Meta superposé en bas */
+  /* Meta superposé en bas avec backdrop */
   const meta = document.createElement('div');
   meta.style.cssText =
-    'position:absolute;bottom:4.5rem;left:0;width:100%;text-align:center;z-index:20;' +
-    'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.38);';
+    'position:absolute;bottom:0;left:0;width:100%;text-align:center;z-index:20;' +
+    'padding:24px 0 4.5rem;' +
+    'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.5);' +
+    'background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.2),transparent);';
   const dim   = piece.dimensions || {};
   const mParts = [];
   if (piece.materiaux && piece.materiaux.length) mParts.push(piece.materiaux.join(', '));
@@ -125,7 +128,7 @@ function ouvrirSalleObservation(piece) {
       '<span class="porte-nav__label">Salle</span>';
     porteG.addEventListener('click', () => {
       const ecran = document.createElement('div');
-      ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+      ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
       document.body.appendChild(ecran);
       fermer();
       setTimeout(() => {
@@ -152,7 +155,7 @@ function ouvrirSalleObservation(piece) {
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
     plaqueG.addEventListener('click', () => {
       const ecran = document.createElement('div');
-      ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+      ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
       document.body.appendChild(ecran);
       fermer();
       setTimeout(() => { ouvrirSalleImmersive(piece); setTimeout(() => ecran.remove(), 150); }, 350);
