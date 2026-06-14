@@ -30,16 +30,5 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
-  },
-  {
-    "id": "sdf",
-    "nom": "sdf",
-    "logo": "S",
-    "lien": "artistes/sdf/",
-    "repoPath": "artistes/sdf/data/",
-    "prefix": "sdf",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
   }
 ]
