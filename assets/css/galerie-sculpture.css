@@ -414,9 +414,42 @@
 }
 
 @media (max-width: 600px) {
-  .porte-nav { width: 48px; height: 68px; bottom: 6px; }
-  .porte-nav__label { font-size: .4rem; }
-  .porte-nav__fleche { font-size: .85rem; }
-  .porte-nav--gauche { left: 6px; }
-  .porte-nav--droite { right: 6px; }
+  .porte-nav { display: none; }
+}
+
+/* ══════════════════════════════════════
+   PANCARTES MUSÉE — mobile navigation
+   ══════════════════════════════════════ */
+.plaque-nav {
+  display: none;
+  position: absolute;
+  top: 12px;
+  z-index: 30;
+  padding: 6px 14px;
+  cursor: pointer;
+  /* Style pancarte laiton */
+  background: linear-gradient(to bottom, #2a2418, #1a1610);
+  border: 1.5px solid rgba(200,160,80,.5);
+  border-radius: 3px;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  transition: background .2s;
+}
+.plaque-nav:active { background: #3a3020; }
+
+.plaque-nav--gauche { left: 10px; }
+.plaque-nav--droite { right: 10px; }
+
+.plaque-nav__label {
+  font-family: 'Cinzel', serif;
+  font-size: .55rem;
+  letter-spacing: .12em;
+  color: rgba(220,185,110,.85);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .plaque-nav { display: flex; align-items: center; gap: 6px; }
 }

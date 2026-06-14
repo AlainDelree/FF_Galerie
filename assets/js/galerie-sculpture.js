@@ -145,6 +145,27 @@ function ouvrirSalleObservation(piece) {
   porteD.addEventListener('click', fermer);
   overlay.appendChild(porteD);
 
+  /* ── Pancartes mobiles ── */
+  if (typeof ouvrirSalleImmersive === 'function') {
+    const plaqueG = document.createElement('div');
+    plaqueG.className = 'plaque-nav plaque-nav--gauche';
+    plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
+    plaqueG.addEventListener('click', () => {
+      const ecran = document.createElement('div');
+      ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+      document.body.appendChild(ecran);
+      fermer();
+      setTimeout(() => { ouvrirSalleImmersive(piece); setTimeout(() => ecran.remove(), 150); }, 350);
+    });
+    overlay.appendChild(plaqueG);
+  }
+
+  const plaqueD = document.createElement('div');
+  plaqueD.className = 'plaque-nav plaque-nav--droite';
+  plaqueD.innerHTML = '<span class="plaque-nav__label">Galerie \u2192</span>';
+  plaqueD.addEventListener('click', fermer);
+  overlay.appendChild(plaqueD);
+
   function fermer() {
     overlay.style.opacity = '0';
     setTimeout(() => {
