@@ -300,7 +300,8 @@ async function creerArtiste() {
     prog.textContent = "Création sur GitHub (" + fichiers.length + " fichiers)…";
     await commitMulti(fichiers, "Nouvel artiste invité : " + nom);
     artistesData = nouveauxArtistes;
-    prog.textContent = "✓ Espace créé !";
+    prog.textContent = "✓ Espace créé ! Les pages seront accessibles dans 1-2 minutes (déploiement en cours).";
+    setTimeout(function(){ prog.style.display = "none"; }, 8000);
     document.getElementById("form-artiste-wrap").style.display = "none";
     afficherArtistes();
   } catch (e) {
