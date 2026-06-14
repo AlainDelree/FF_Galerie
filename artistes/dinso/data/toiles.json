@@ -25,7 +25,7 @@
     {
       "id": 1,
       "titre": "Statue jardin",
-      "photo": "https://picsum.photos/seed/sculpt01/300/400",
+      "photo": "",
       "glb": "artistes/dinso/assets/models/photogrammetrie_statue_jardin.glb",
       "date": "2025",
       "materiaux": [
@@ -43,7 +43,7 @@
     {
       "id": 2,
       "titre": "Rose séchée",
-      "photo": "https://picsum.photos/seed/sculpt02/250/350",
+      "photo": "",
       "glb": "artistes/dinso/assets/models/dried_yellow_rose.glb",
       "date": "2025",
       "materiaux": [
@@ -61,7 +61,7 @@
     {
       "id": 3,
       "titre": "Piranha",
-      "photo": "https://picsum.photos/seed/sculpt03/400/300",
+      "photo": "",
       "glb": "artistes/dinso/assets/models/piranha.glb",
       "date": "2024",
       "materiaux": [
@@ -79,7 +79,7 @@
     {
       "id": 4,
       "titre": "Tiki",
-      "photo": "https://picsum.photos/seed/sculpt04/300/380",
+      "photo": "",
       "glb": "artistes/dinso/assets/models/tiki.glb",
       "date": "2024",
       "materiaux": [

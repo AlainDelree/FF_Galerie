@@ -95,6 +95,44 @@ function afficherMur() {
   const bg = $('mur-bg');
   bg.innerHTML = '';
   if (!salleActive) return;
+
+  /* ── SCULPTURE : aperçu parquet ── */
+  if (_isSculpt) {
+    bg.className = 'placement-mur-bg';
+    bg.style.cssText =
+      'background:#8a6228;position:relative;overflow:hidden;display:block;width:100%;height:100%;' +
+      'background-image:' +
+      'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
+      'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
+
+    (salleActive.positions || []).forEach(p => {
+      const t = toiles.find(x => x.id === p.id); if (!t) return;
+      const el = document.createElement('div');
+      el.style.cssText =
+        'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
+        'transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:2;';
+
+      if (t.photo || t._preview) {
+        const img = document.createElement('img');
+        img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
+        img.style.cssText = 'width:50px;height:50px;object-fit:contain;border-radius:4px;';
+        el.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.style.cssText = 'width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:4px;';
+        el.appendChild(ph);
+      }
+
+      const lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:9px;color:#fff;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);';
+      lbl.textContent = t.titre || '—';
+      el.appendChild(lbl);
+      bg.appendChild(el);
+    });
+    return;
+  }
+
+  /* ── PEINTURE : grille mur ── */
   bg.classList.toggle('grille-on', grilleVisible);
 
   // Toiles posées
@@ -1174,8 +1212,20 @@ function afficherSolPlacement() {
 
   majCtrlPanel();
 
-  /* Clic sur le sol → placer */
+  /* Clic/touch sur le sol → placer */
+  let _solTouched = false;
+  bg.addEventListener('touchend', function(e) {
+    if (!selectedToilePl || e.target !== bg) return;
+    e.preventDefault();
+    _solTouched = true;
+    const touch = e.changedTouches[0];
+    const rect = bg.getBoundingClientRect();
+    const x = Math.round((touch.clientX - rect.left) / rect.width * 100);
+    const y = Math.round((1 - (touch.clientY - rect.top) / rect.height) * 100);
+    placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
+  });
   bg.addEventListener('click', function(e) {
+    if (_solTouched) { _solTouched = false; return; }
     if (!selectedToilePl) return;
     const rect = bg.getBoundingClientRect();
     const x = Math.round((e.clientX - rect.left) / rect.width * 100);
