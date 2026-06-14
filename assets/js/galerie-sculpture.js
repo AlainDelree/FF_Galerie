@@ -126,7 +126,7 @@ function ouvrirSalleObservation(piece) {
   if (piece.glb && typeof ouvrirSalleImmersive === 'function') {
     const btnImm = document.createElement('button');
     btnImm.style.cssText =
-      'position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);z-index:20;' +
+      'position:absolute;bottom:4.5rem;left:50%;transform:translateX(-50%);z-index:20;' +
       'padding:10px 24px;border-radius:6px;border:2px solid rgba(200,160,80,.6);' +
       'background:rgba(20,16,10,.75);color:rgba(240,208,128,.95);' +
       'font-family:Cinzel,serif;font-size:.85rem;letter-spacing:.15em;cursor:pointer;' +
