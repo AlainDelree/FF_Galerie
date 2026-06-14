@@ -97,7 +97,7 @@ async function supprimerArtiste(idx) {
       base + "infos.html", base + "contact.html", base + "admin.html",
       base + "data/toiles.json", base + "data/salles.json",
       base + "data/infos.json", base + "data/contact.json"
-    ].map(path => ({ path, sha: null })); /* sha:null sans mode/type = suppression propre */
+    ].map(path => ({ path, mode: "100644", type: "blob", sha: null })); /* mode+type requis meme pour suppression */
 
     /* Commit unique : suppression fichiers + MAJ artistes.json */
     const ref        = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
