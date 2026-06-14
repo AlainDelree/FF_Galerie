@@ -30,5 +30,16 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
+  },
+  {
+    "id": "dodo",
+    "nom": "dodo",
+    "logo": "D",
+    "lien": "artistes/dodo/",
+    "repoPath": "artistes/dodo/data/",
+    "prefix": "dodo",
+    "draft": true,
+    "genre": "f",
+    "type": "peinture"
   }
 ]
