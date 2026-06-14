@@ -121,10 +121,10 @@
   z-index: 2;
 }
 
-.socle-piedestal--s   { height:  65px; }
-.socle-piedestal--m   { height:  90px; }
-.socle-piedestal--l   { height: 125px; }
-.socle-piedestal--sol { height:  20px; }
+.socle-piedestal--s   { height:  98px; }
+.socle-piedestal--m   { height: 135px; }
+.socle-piedestal--l   { height: 188px; }
+.socle-piedestal--sol { height:  30px; }
 
 .socle--s   { width:  90px; }
 .socle--m   { width: 125px; }
@@ -205,8 +205,8 @@
   .socle--m   { width:  95px; }
   .socle--l   { width: 130px; }
   .socle--sol { width: 160px; }
-  .socle-piedestal--m { height: 84px; }
-  .socle-piedestal--l { height: 115px; }
+  .socle-piedestal--m { height: 126px; }
+  .socle-piedestal--l { height: 173px; }
 }
 }
 
