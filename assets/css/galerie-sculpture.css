@@ -13,8 +13,8 @@
 
 /* ── Grand parquet — priorité sur les overrides desktop de galerie.css ── */
 .salle-sculpture .plancher-sol {
-  min-height: 375px !important;
-  max-height: 500px !important;
+  min-height: 50vh !important;
+  max-height: none !important;
   position: relative;
 }
 
