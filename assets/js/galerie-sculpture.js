@@ -215,7 +215,7 @@ function ouvrirSalleObservation(piece) {
   murs.className = 'obs-murs-mobiles';
   const murUrl = creerMurSVG();
   murs.style.backgroundImage = `url('${murUrl}')`;
-  murs.style.bottom = FLOOR_H + 'px';
+  murs.style.cssText += 'top:0;bottom:' + FLOOR_H + 'px;';
   chambre.appendChild(murs);
   overlay.appendChild(chambre);
 
@@ -223,7 +223,7 @@ function ouvrirSalleObservation(piece) {
   const parquetWrap = document.createElement('div');
   parquetWrap.style.cssText =
     `position:absolute;left:0;top:${FLOOR_Y}px;width:100%;height:${FLOOR_H + 20}px;overflow:hidden;`;
-  const PQ = Math.max(VW, FLOOR_H) * 1.5;
+  const PQ = Math.round(Math.sqrt(VW * VW + VH * VH) * 1.2);
   const parquetEl = document.createElement('div');
   parquetEl.style.cssText =
     `position:absolute;left:${-PQ}px;top:${-PQ / 3}px;` +
@@ -370,7 +370,8 @@ function ouvrirSalleObservation(piece) {
       const bFromBottom = VH - p.y;
       piquets[i].style.cssText =
         `position:absolute;bottom:${bFromBottom}px;left:${(p.x - 6).toFixed(1)}px;` +
-        `transform:scale(${sc});transform-origin:bottom center;` +
+        `width:${Math.round(10 * (0.6 + 0.4 * p.zn))}px;height:${h_px}px;` +
+        `transform-origin:bottom center;` +
         `opacity:${op};z-index:${p.sinA > 0 ? 28 : 8};`;
     });
 
@@ -379,8 +380,10 @@ function ouvrirSalleObservation(piece) {
     for (let i = 0; i < 4; i++) {
       const p1   = pts[i];
       const p2   = pts[(i + 1) % 4];
-      const rh1  = PIQ_H * 0.60 * (0.65 + 0.35 * p1.zn);
-      const rh2  = PIQ_H * 0.60 * (0.65 + 0.35 * p2.zn);
+      const h1  = Math.round(PIQ_H * (0.65 + 0.35 * p1.zn));
+      const h2  = Math.round(PIQ_H * (0.65 + 0.35 * p2.zn));
+      const rh1  = h1 * 0.65;
+      const rh2  = h2 * 0.65;
       let x1 = p1.x, y1 = p1.y - rh1;
       let x2 = p2.x, y2 = p2.y - rh2;
 
