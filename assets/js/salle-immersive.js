@@ -115,8 +115,9 @@ async function ouvrirSalleImmersive(piece) {
   renderer.setSize(VW, VH);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.4;
+  renderer.toneMappingExposure = 1.8;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x12100c);
@@ -266,17 +267,17 @@ async function ouvrirSalleImmersive(piece) {
   const loadWrap = document.createElement('div');
   loadWrap.style.cssText =
     'position:absolute;bottom:50%;left:50%;transform:translate(-50%,50%);z-index:25;' +
-    'display:flex;flex-direction:column;align-items:center;gap:8px;';
+    'display:flex;flex-direction:column;align-items:center;gap:10px;';
   const loadText = document.createElement('div');
   loadText.style.cssText =
-    'font-family:Lato,sans-serif;font-size:.7rem;color:rgba(200,160,80,.6);letter-spacing:.1em;';
+    'font-family:Cinzel,serif;font-size:1rem;color:rgba(240,208,128,.9);letter-spacing:.15em;';
   loadText.textContent = 'Chargement\u2026';
   const loadBar = document.createElement('div');
   loadBar.style.cssText =
-    'width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;';
+    'width:180px;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;';
   const loadFill = document.createElement('div');
   loadFill.style.cssText =
-    'width:0%;height:100%;background:rgba(200,160,80,.7);border-radius:2px;transition:width .15s;';
+    'width:0%;height:100%;background:rgba(240,208,128,.85);border-radius:3px;transition:width .15s;';
   loadBar.appendChild(loadFill);
   loadWrap.appendChild(loadText);
   loadWrap.appendChild(loadBar);
@@ -298,7 +299,19 @@ async function ouvrirSalleImmersive(piece) {
       model.position.x = -center.x;
       model.position.z = -center.z;
       model.position.y = 1.1 - box2.min.y;
-      model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+      model.traverse(c => {
+        if (c.isMesh) {
+          c.castShadow = true;
+          c.receiveShadow = true;
+          /* Booster la luminosité des modèles photogrammétriques */
+          if (c.material) {
+            c.material.metalness = Math.min(c.material.metalness, 0.15);
+            c.material.roughness = Math.max(c.material.roughness, 0.6);
+            c.material.envMapIntensity = 2.0;
+            c.material.needsUpdate = true;
+          }
+        }
+      });
       scene.add(model);
     },
     (progress) => {
