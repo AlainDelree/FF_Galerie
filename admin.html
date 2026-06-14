@@ -622,10 +622,11 @@
         <div class="grp-row" id="dims-lh">
           <div class="grp"><label class="lbl">Largeur cm</label><input class="champ" type="number" id="inp-larg" min="1" max="500" placeholder="ex: 80"></div>
           <div class="grp"><label class="lbl">Hauteur cm</label><input class="champ" type="number" id="inp-haut" min="1" max="500" placeholder="ex: 60"></div>
+          <div class="grp sculpture-only" style="display:none;"><label class="lbl">Profondeur cm</label><input class="champ" type="number" id="inp-prof" min="1" max="500" placeholder="ex: 30"></div>
         </div>
         <!-- Formats châssis français (replié par défaut) -->
-        <button type="button" id="btn-toggle-chassis" class="chassis-toggle">▸ Formats châssis français</button>
-        <div id="dims-chassis" style="display:none;margin-top:.3rem;">
+        <button type="button" id="btn-toggle-chassis" class="chassis-toggle peinture-only">▸ Formats châssis français</button>
+        <div id="dims-chassis" class="peinture-only" style="display:none;margin-top:.3rem;">
           <select class="champ" id="sel-format">
             <option value="">Choisir…</option>
             <option value="35x27">F5 — 35×27 cm</option>
@@ -643,7 +644,7 @@
         </div>
       </div>
 
-      <div class="grp">
+      <div class="grp peinture-only">
         <label class="lbl" style="display:flex;align-items:center;justify-content:space-between;">
           Code taille
           <button id="btn-guide-tailles" title="Guide des tailles" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;">?</button>
@@ -663,7 +664,7 @@
           </div>
         </div>
       </div>
-      <div class="grp" id="new-taille-wrap" style="display:none;">
+      <div class="grp peinture-only" id="new-taille-wrap" style="display:none;">
         <label class="lbl">Nouveau code (ex: XS, M, XL…)</label>
         <div style="display:flex;gap:.5rem;">
           <input class="champ" type="text" id="inp-new-taille-code" placeholder="Code" style="width:80px;">
@@ -671,9 +672,13 @@
           <button type="button" id="btn-confirm-taille" style="padding:.7rem .9rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;cursor:pointer;font-weight:600;">✓</button>
         </div>
       </div>
-      <div class="grp">
+      <div class="grp peinture-only">
         <label class="lbl" for="inp-style">Style pictural</label>
         <input class="champ" type="text" id="inp-style" placeholder="Abstrait, figuratif…">
+      </div>
+      <div class="grp sculpture-only" style="display:none;">
+        <label class="lbl" for="inp-glb">Fichier 3D (.glb)</label>
+        <input class="champ" type="text" id="inp-glb" placeholder="artistes/dinso/assets/models/nom.glb" readonly style="opacity:.7;">
       </div>
       <div class="grp">
         <label class="lbl" for="inp-mat">Matériaux</label>
@@ -1025,6 +1030,19 @@
       if (typeof chargerTout === 'function' && typeof K !== 'undefined' && sessionStorage.getItem(K.auth) === '1') {
         chargerTout();
         if (typeof initTexturesUI === 'function') initTexturesUI();
+      }
+
+      /* Afficher/masquer les champs selon le type d'artiste */
+      const isSculpt = (window.ADMIN_TYPE || 'peinture') === 'sculpture';
+      document.querySelectorAll('.peinture-only').forEach(el => {
+        el.style.display = isSculpt ? 'none' : '';
+      });
+      document.querySelectorAll('.sculpture-only').forEach(el => {
+        el.style.display = isSculpt ? '' : 'none';
+      });
+      if (isSculpt) {
+        const mt = document.getElementById('modal-toile-tit');
+        if (mt && mt.textContent === 'Nouvelle toile') mt.textContent = 'Nouvelle pièce';
       } else if (typeof chargerTexturesGitHub === 'function') {
         chargerTexturesGitHub(); // non connecté : charge quand même les textures partagées
       }

@@ -712,7 +712,7 @@ function ouvrirFormulaireEdition(id) {
   const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
-  $('modal-toile-tit').textContent = 'Modifier la toile';
+  $('modal-toile-tit').textContent = ADMIN_CFG.type === 'sculpture' ? 'Modifier la pièce' : 'Modifier la toile';
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
@@ -759,7 +759,9 @@ function ouvrirFiche(id) {
   const lignes = [];
   if (t.dimensions) {
     const d = t.dimensions;
-    const label = d.type === 'ronde' ? `Ronde ⌀${d.largeur} cm` : `${d.largeur} × ${d.hauteur} cm`;
+    const label = d.type === 'ronde' ? `Ronde ⌀${d.largeur} cm`
+      : d.profondeur ? `${d.largeur} × ${d.hauteur} × ${d.profondeur} cm`
+      : `${d.largeur} × ${d.hauteur} cm`;
     lignes.push(['Dimensions', label]);
   }
   if (t.taille) {
@@ -791,6 +793,8 @@ function fermerFiche() {
 
 function viderFormToile() {
   ['inp-titre','inp-date','inp-style','inp-mat','inp-prix','inp-desc'].forEach(id => $(id).value = '');
+  if ($('inp-prof')) $('inp-prof').value = '';
+  if ($('inp-glb')) $('inp-glb').value = '';
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
   $('sel-format').value = '';
@@ -826,6 +830,7 @@ function remplirFormToile(t) {
     synchroChips(0, 0);
   } else if (d && d.largeur && d.hauteur) {
     $('inp-larg').value = d.largeur; $('inp-haut').value = d.hauteur;
+    if (d.profondeur && $('inp-prof')) $('inp-prof').value = d.profondeur;
     synchroChips(d.largeur, d.hauteur);
   } else {
     $('inp-larg').value = ''; $('inp-haut').value = '';
@@ -855,6 +860,9 @@ function remplirFormToile(t) {
     }
   }
   salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
+  /* Champs sculpture */
+  if ($('inp-glb')) $('inp-glb').value = t.glb || '';
+  if ($('inp-prof') && t.dimensions?.profondeur) $('inp-prof').value = t.dimensions.profondeur;
   document.querySelectorAll('.salle-pill').forEach(p => {
     p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
   });
@@ -866,9 +874,13 @@ function lireFormToile() {
     dim = { type: 'ronde', largeur: 50, hauteur: 50 };
   } else {
     const l = parseInt($('inp-larg').value), h = parseInt($('inp-haut').value);
-    if (l && h) dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
+    const p = $('inp-prof') ? parseInt($('inp-prof').value) : NaN;
+    if (l && h) {
+      dim = { type: l === h ? 'carre' : l > h ? 'paysage' : 'portrait', largeur: l, hauteur: h };
+      if (p) dim.profondeur = p;
+    }
   }
-  return {
+  const result = {
     titre: $('inp-titre').value.trim(),
     date: $('inp-date').value.trim(),
     style: $('inp-style').value.trim(),
@@ -879,6 +891,8 @@ function lireFormToile() {
     taille: $('sel-taille').value || undefined,
     visible: $('inp-visible').checked
   };
+  if ($('inp-glb') && $('inp-glb').value) result.glb = $('inp-glb').value;
+  return result;
 }
 
 async function sauverToile() {
