@@ -32,17 +32,6 @@
     "type": "sculpture"
   },
   {
-    "id": "sader",
-    "nom": "sader",
-    "logo": "S",
-    "lien": "artistes/sader/",
-    "repoPath": "artistes/sader/data/",
-    "prefix": "sader",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
-  },
-  {
     "id": "arez",
     "nom": "arez",
     "logo": "A",
