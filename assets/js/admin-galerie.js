@@ -1102,12 +1102,13 @@ async function creerSalle() {
 function afficherSolPlacement() {
   const bg = $('mur-placement');
   bg.innerHTML = '';
-  bg.style.cssText =
-    'background:#8a6228;position:relative;overflow:hidden;cursor:crosshair;' +
-    'background-image:' +
-    'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
-    'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);' +
-    'display:block;width:100%;height:100%;';
+  const bgStyle = grilleVisiblePl
+    ? 'background:#8a6228;'
+    : 'background:#8a6228;background-image:' +
+      'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
+      'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
+  bg.style.cssText = bgStyle +
+    'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;height:100%;';
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
