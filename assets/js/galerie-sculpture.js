@@ -180,17 +180,17 @@ function ouvrirSalleObservation(piece) {
   const VIEW_W  = Math.min(Math.round(VW * 0.88), 580);
   const VIEW_H  = Math.min(Math.round(VH * 0.44), 360);
   const SOC_W   = Math.round(VIEW_W * 0.44);
-  const SOC_H   = MOB ? 78 : 110;
   const SOC_R   = SOC_W / 2;
   const SOC_CIRC = Math.round(Math.PI * 2 * SOC_R);
 
   const TITLE_H  = 44;
   const META_H   = 32;
   const FLOOR_H  = Math.round(VH * 0.22);
-  const TOP_Y    = Math.max(8, Math.round((VH - FLOOR_H - TITLE_H - VIEW_H - SOC_H - META_H) / 2));
-  const VIEW_TOP = TOP_Y + TITLE_H;
+  const FLOOR_Y  = VH - FLOOR_H;
+  const VIEW_TOP = TITLE_H + 8;
   const SOC_TOP  = VIEW_TOP + VIEW_H;
-  const FLOOR_Y  = SOC_TOP + SOC_H;
+  const SOC_H    = Math.max(60, FLOOR_Y - SOC_TOP); /* remplit jusqu'au sol */
+  const TOP_Y    = 8;
 
   const ORB_CX   = VW2;
   const ORB_CY   = FLOOR_Y;
@@ -334,17 +334,22 @@ function ouvrirSalleObservation(piece) {
 
   /* ── RAF : tout synchronisé ─────────────────────── */
   let wallPos = 0;
+  let lastT = performance.now();
+  const PX_PER_MS = OBS_BG_W / 18000; /* 1080px / 18s = 60px/s */
   const SOCLE_HALF = SOC_W / 2 + 6;
 
   (function obsFrame() {
-    wallPos = (wallPos - 1 + OBS_BG_W) % OBS_BG_W;
+    const now = performance.now();
+    const dt  = now - lastT;
+    lastT     = now;
+    wallPos   = (wallPos - dt * PX_PER_MS + OBS_BG_W) % OBS_BG_W;
 
     /* Mur */
     murs.style.backgroundPositionX = wallPos + 'px';
 
     /* Socle texture (rotation de la texture = cylindre qui tourne) */
     socleBody.style.backgroundPositionX =
-      ((wallPos / OBS_BG_W) * SOC_CIRC % SOC_CIRC) + 'px';
+      ((-wallPos / OBS_BG_W) * SOC_CIRC % SOC_CIRC + SOC_CIRC) % SOC_CIRC + 'px';
 
     /* Parquet (tourne autour de la base du socle) */
     parquetEl.style.transform =
