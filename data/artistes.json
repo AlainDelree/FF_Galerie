@@ -30,27 +30,5 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
-  },
-  {
-    "id": "arez",
-    "nom": "arez",
-    "logo": "A",
-    "lien": "artistes/arez/",
-    "repoPath": "artistes/arez/data/",
-    "prefix": "arez",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
-  },
-  {
-    "id": "dddd",
-    "nom": "dddd",
-    "logo": "D",
-    "lien": "artistes/dddd/",
-    "repoPath": "artistes/dddd/data/",
-    "prefix": "dddd",
-    "draft": true,
-    "genre": "f",
-    "type": "peinture"
   }
 ]
