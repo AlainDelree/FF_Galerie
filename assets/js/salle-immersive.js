@@ -77,22 +77,28 @@ async function ouvrirSalleImmersive(piece) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
-  /* ── Bouton DÉTAIL → salle d'observation (model-viewer gros plan) ── */
-  const btnDetail = document.createElement('button');
-  btnDetail.style.cssText =
-    'position:absolute;bottom:3.5rem;left:50%;transform:translateX(-50%);z-index:10;' +
-    'padding:10px 24px;border-radius:6px;border:2px solid rgba(200,160,80,.6);' +
-    'background:rgba(20,16,10,.75);color:rgba(240,208,128,.95);' +
-    'font-family:Cinzel,serif;font-size:.85rem;letter-spacing:.15em;cursor:pointer;' +
-    'backdrop-filter:blur(4px);';
-  btnDetail.textContent = 'D\u00c9TAIL';
-  btnDetail.addEventListener('click', () => {
+  /* ── Porte gauche → retour galerie ── */
+  const porteG = document.createElement('div');
+  porteG.className = 'porte-nav porte-nav--gauche';
+  porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
+    '<span class="porte-nav__fleche">\u2190</span>' +
+    '<span class="porte-nav__label">Galerie</span>';
+  porteG.addEventListener('click', fermer);
+  overlay.appendChild(porteG);
+
+  /* ── Porte droite → salle d'observation (détail) ── */
+  const porteD = document.createElement('div');
+  porteD.className = 'porte-nav porte-nav--droite';
+  porteD.innerHTML = '<div class="porte-nav__arche"></div>' +
+    '<span class="porte-nav__fleche">\u2192</span>' +
+    '<span class="porte-nav__label">D\u00e9tail</span>';
+  porteD.addEventListener('click', () => {
     fermer();
     setTimeout(() => {
       if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece);
     }, 400);
   });
-  overlay.appendChild(btnDetail);
+  overlay.appendChild(porteD);
 
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';

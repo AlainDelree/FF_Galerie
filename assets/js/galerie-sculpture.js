@@ -122,6 +122,29 @@ function ouvrirSalleObservation(piece) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
+  /* ── Porte gauche → retour salle immersive ── */
+  if (typeof ouvrirSalleImmersive === 'function') {
+    const porteG = document.createElement('div');
+    porteG.className = 'porte-nav porte-nav--gauche';
+    porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
+      '<span class="porte-nav__fleche">\u2190</span>' +
+      '<span class="porte-nav__label">Salle</span>';
+    porteG.addEventListener('click', () => {
+      fermer();
+      setTimeout(() => ouvrirSalleImmersive(piece), 400);
+    });
+    overlay.appendChild(porteG);
+  }
+
+  /* ── Porte droite → retour galerie ── */
+  const porteD = document.createElement('div');
+  porteD.className = 'porte-nav porte-nav--droite';
+  porteD.innerHTML = '<div class="porte-nav__arche"></div>' +
+    '<span class="porte-nav__fleche">\u2192</span>' +
+    '<span class="porte-nav__label">Galerie</span>';
+  porteD.addEventListener('click', fermer);
+  overlay.appendChild(porteD);
+
   function fermer() {
     overlay.style.opacity = '0';
     setTimeout(() => {
