@@ -38,7 +38,7 @@ function afficherArtistes() {
     const btnPublier = a.draft
       ? "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Publier</button>"
       : "<button class=\"event-btn\" onclick=\"toggleDraftArtiste(" + i + ")\">Masquer</button>";
-    const base = location.href.replace(/admin\.html.*$/, "");
+    const base = location.origin + "/";
     const urlSite  = base + "artistes/" + a.id + "/";
     const urlAdmin = base + "admin.html?artiste=" + a.id;
     const btnCopier = function(url, id) {
