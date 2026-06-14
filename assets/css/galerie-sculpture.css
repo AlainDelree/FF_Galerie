@@ -353,8 +353,8 @@
 .porte-nav {
   position: absolute;
   bottom: 0;
-  width: 70px;
-  height: 110px;
+  width: 64px;
+  height: 90px;
   cursor: pointer;
   z-index: 30;
   display: flex;
@@ -414,6 +414,9 @@
 }
 
 @media (max-width: 600px) {
-  .porte-nav { width: 56px; height: 90px; }
-  .porte-nav__label { font-size: .45rem; }
+  .porte-nav { width: 48px; height: 68px; bottom: 6px; }
+  .porte-nav__label { font-size: .4rem; }
+  .porte-nav__fleche { font-size: .85rem; }
+  .porte-nav--gauche { left: 6px; }
+  .porte-nav--droite { right: 6px; }
 }

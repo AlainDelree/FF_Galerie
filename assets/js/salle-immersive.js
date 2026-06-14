@@ -116,34 +116,42 @@ async function ouvrirSalleImmersive(piece) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.9;
+  renderer.toneMappingExposure = 1.4;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0806);
-  scene.fog = new THREE.Fog(0x0a0806, 8, 18);
+  scene.background = new THREE.Color(0x12100c);
+  scene.fog = new THREE.Fog(0x12100c, 10, 22);
 
   const camera = new THREE.PerspectiveCamera(50, VW / VH, 0.1, 50);
   camera.position.set(0, 2.2, 5);
   camera.lookAt(0, 1, 0);
 
-  /* ── Éclairage ── */
-  const ambient = new THREE.AmbientLight(0xfff0d8, 0.3);
+  /* ── Éclairage — galerie bien éclairée ── */
+  const ambient = new THREE.AmbientLight(0xfff8f0, 0.7);
   scene.add(ambient);
 
-  const spot = new THREE.SpotLight(0xfff0d0, 1.2, 12, Math.PI / 6, 0.6);
+  const spot = new THREE.SpotLight(0xfff0d0, 1.8, 14, Math.PI / 5, 0.5);
   spot.position.set(0, 6, 0);
-  spot.target.position.set(0, 0, 0);
+  spot.target.position.set(0, 1.1, 0);
   spot.castShadow = true;
   scene.add(spot);
   scene.add(spot.target);
 
-  const fill1 = new THREE.PointLight(0xc8a050, 0.4, 10);
+  const fill1 = new THREE.PointLight(0xfff0d0, 0.6, 12);
   fill1.position.set(-3, 3, 2);
   scene.add(fill1);
 
-  const fill2 = new THREE.PointLight(0x5080c0, 0.2, 10);
-  fill2.position.set(3, 2, -2);
+  const fill2 = new THREE.PointLight(0xe0e8ff, 0.4, 12);
+  fill2.position.set(3, 2.5, -2);
   scene.add(fill2);
+
+  const fill3 = new THREE.PointLight(0xfff0d0, 0.3, 10);
+  fill3.position.set(0, 3, -4);
+  scene.add(fill3);
+
+  /* Environment pour matériaux PBR des GLB */
+  const hemiLight = new THREE.HemisphereLight(0xfff8f0, 0x8a6228, 0.5);
+  scene.add(hemiLight);
 
   /* ── SOL — parquet ── */
   const floorGeo = new THREE.PlaneGeometry(14, 14);
@@ -254,18 +262,37 @@ async function ouvrirSalleImmersive(piece) {
   const glbSrc = /^https?:\/\//.test(piece.glb)
     ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
 
+  /* ── Barre de chargement ── */
+  const loadWrap = document.createElement('div');
+  loadWrap.style.cssText =
+    'position:absolute;bottom:50%;left:50%;transform:translate(-50%,50%);z-index:25;' +
+    'display:flex;flex-direction:column;align-items:center;gap:8px;';
+  const loadText = document.createElement('div');
+  loadText.style.cssText =
+    'font-family:Lato,sans-serif;font-size:.7rem;color:rgba(200,160,80,.6);letter-spacing:.1em;';
+  loadText.textContent = 'Chargement\u2026';
+  const loadBar = document.createElement('div');
+  loadBar.style.cssText =
+    'width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;';
+  const loadFill = document.createElement('div');
+  loadFill.style.cssText =
+    'width:0%;height:100%;background:rgba(200,160,80,.7);border-radius:2px;transition:width .15s;';
+  loadBar.appendChild(loadFill);
+  loadWrap.appendChild(loadText);
+  loadWrap.appendChild(loadBar);
+  overlay.appendChild(loadWrap);
+
   if (typeof THREE.GLTFLoader !== 'undefined') {
     const loader = new THREE.GLTFLoader();
     loader.load(glbSrc, (gltf) => {
+      loadWrap.remove();
       const model = gltf.scene;
-      /* Centrer et ajuster la taille */
       const box  = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const maxD = Math.max(size.x, size.y, size.z);
-      const targetH = 0.8; /* hauteur cible en unités scène */
+      const targetH = 0.8;
       const s = targetH / maxD;
       model.scale.setScalar(s);
-      /* Centrer horizontalement, poser le bas sur le piédestal (y=1.1) */
       const box2 = new THREE.Box3().setFromObject(model);
       const center = box2.getCenter(new THREE.Vector3());
       model.position.x = -center.x;
@@ -273,7 +300,15 @@ async function ouvrirSalleImmersive(piece) {
       model.position.y = 1.1 - box2.min.y;
       model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
       scene.add(model);
-    });
+    },
+    (progress) => {
+      if (progress.total > 0) {
+        const pct = Math.round(progress.loaded / progress.total * 100);
+        loadFill.style.width = pct + '%';
+        loadText.textContent = pct + '%';
+      }
+    },
+    () => { loadText.textContent = 'Erreur de chargement'; });
   } else {
     /* Placeholder si GLTFLoader absent */
     const phGeo = new THREE.BoxGeometry(0.5, 0.4, 0.3);
