@@ -99,8 +99,9 @@ function afficherMur() {
   /* ── SCULPTURE : aperçu parquet avec socles en perspective ── */
   if (_isSculpt) {
     bg.className = '';
+    const coulParquet = couleurMurActuel || '#8a6228';
     bg.style.cssText =
-      'background:#8a6228;position:relative;overflow:visible;' +
+      'background:' + coulParquet + ';position:relative;overflow:visible;' +
       'display:block;width:100%;max-width:500px;aspect-ratio:4/3;border-radius:6px;' +
       'background-image:' +
       'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
@@ -1184,9 +1185,10 @@ function afficherSolPlacement() {
   const bg = $('mur-placement');
   bg.innerHTML = '';
   bg.className = ''; /* Supprimer la classe placement-mur-bg (CSS grid peinture) */
+  const coulParquet = couleurMurActuel || '#8a6228';
   const bgStyle = grilleVisiblePl
-    ? 'background:#8a6228;'
-    : 'background:#8a6228;background-image:' +
+    ? 'background:' + coulParquet + ';'
+    : 'background:' + coulParquet + ';background-image:' +
       'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
       'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
   bg.style.cssText = bgStyle +
