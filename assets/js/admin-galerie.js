@@ -123,9 +123,14 @@ function afficherMur() {
     const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      window.innerWidth <= 600
-    ? 'display:block;width:100%;border-radius:6px;aspect-ratio:3/4;max-height:50vh;'
-    : 'display:block;border-radius:6px;margin:0 auto;height:42vh;width:auto;aspect-ratio:5/3;max-width:100%;';
+      (function() {
+      var isMob = window.innerWidth <= 600;
+      var overhead = isMob ? 250 : 220;
+      var r = (window.innerWidth / Math.max(300, window.innerHeight - overhead)).toFixed(3);
+      return isMob
+        ? 'display:block;width:100%;border-radius:6px;aspect-ratio:' + r + ';max-height:55vh;'
+        : 'display:block;border-radius:6px;margin:0 auto;height:42vh;width:auto;aspect-ratio:' + r + ';max-width:100%;';
+    })();
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
@@ -1211,9 +1216,14 @@ function afficherSolPlacement() {
     ? 'background:' + coulParquet + ';'
     : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
   bg.style.cssText = bgStyle +
-    window.innerWidth <= 600
-    ? 'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;border-radius:6px;aspect-ratio:3/4;max-height:60vh;'
-    : 'position:relative;overflow:hidden;cursor:crosshair;display:block;border-radius:6px;margin:0 auto;height:50vh;width:auto;aspect-ratio:5/3;max-width:100%;';
+    (function() {
+      var isMob = window.innerWidth <= 600;
+      var overhead = isMob ? 180 : 160;
+      var r = (window.innerWidth / Math.max(300, window.innerHeight - overhead)).toFixed(3);
+      return isMob
+        ? 'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;border-radius:6px;aspect-ratio:' + r + ';max-height:65vh;'
+        : 'position:relative;overflow:hidden;cursor:crosshair;display:block;border-radius:6px;margin:0 auto;height:50vh;width:auto;aspect-ratio:' + r + ';max-width:100%;';
+    })();
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
