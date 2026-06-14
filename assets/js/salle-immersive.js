@@ -265,11 +265,12 @@ async function ouvrirSalleImmersive(piece) {
       const targetH = 0.8; /* hauteur cible en unités scène */
       const s = targetH / maxD;
       model.scale.setScalar(s);
-      /* Recentrer */
+      /* Centrer horizontalement, poser le bas sur le piédestal (y=1.1) */
       const box2 = new THREE.Box3().setFromObject(model);
       const center = box2.getCenter(new THREE.Vector3());
-      model.position.sub(center);
-      model.position.y = 1.1 + (box2.getSize(new THREE.Vector3()).y) / 2;
+      model.position.x = -center.x;
+      model.position.z = -center.z;
+      model.position.y = 1.1 - box2.min.y;
       model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
       scene.add(model);
     });

@@ -65,16 +65,7 @@ function ouvrirSalleObservation(piece) {
   chambre.className = 'obs-chambre';
   overlay.appendChild(chambre);
 
-  /* ── Contenu central ── */
-  const contenu = document.createElement('div');
-  contenu.className = 'obs-contenu';
-
-  const titreEl = document.createElement('h2');
-  titreEl.className   = 'obs-titre';
-  titreEl.textContent = piece.titre || '';
-  contenu.appendChild(titreEl);
-
-  /* ── model-viewer grand ── */
+  /* ── Contenu — viewer plein écran, titre/meta superposés ── */
   const glbSrc = /^https?:\/\//.test(piece.glb)
     ? piece.glb : (GALERIE_CFG.assetsBase || '') + piece.glb;
 
@@ -84,44 +75,39 @@ function ouvrirSalleObservation(piece) {
   viewer.setAttribute('camera-controls',  '');
   viewer.setAttribute('interaction-prompt', 'none');
   viewer.setAttribute('shadow-intensity', '1');
-  viewer.setAttribute('camera-orbit',     '0deg 75deg auto');
-  viewer.className = 'obs-viewer';
+  viewer.style.cssText =
+    'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;' +
+    '--poster-color:transparent;background:transparent;';
+  overlay.appendChild(viewer);
 
-  /* Scale réel au chargement */
-  const targetHm = ((piece.dimensions && piece.dimensions.hauteur) || 50) / 100;
-  viewer.addEventListener('load', () => {
-    const dims = viewer.getDimensions();
-    if (dims && dims.y > 0) {
-      const f = targetHm / dims.y;
-      if (f > 0.05 && f < 50) {
-        const fs = f.toFixed(4);
-        viewer.setAttribute('scale', fs + ' ' + fs + ' ' + fs);
-      }
-    }
-  });
+  /* Titre superposé en haut */
+  const titreEl = document.createElement('h2');
+  titreEl.className = 'obs-titre';
+  titreEl.textContent = piece.titre || '';
+  titreEl.style.cssText =
+    'position:absolute;top:1rem;left:0;width:100%;text-align:center;z-index:20;margin:0;';
+  overlay.appendChild(titreEl);
 
-  contenu.appendChild(viewer);
-
-  /* Hint rotation */
+  /* Hint rotation — en bas centre */
   const hint = document.createElement('div');
   hint.style.cssText =
-    'font-family:Lato,sans-serif;font-size:.65rem;color:rgba(255,255,255,.25);' +
-    'letter-spacing:.06em;text-align:center;margin-top:4px;';
-  hint.textContent = 'Maintenez le clic pour tourner la sculpture';
-  contenu.appendChild(hint);
+    'position:absolute;bottom:6.5rem;left:0;width:100%;text-align:center;z-index:20;' +
+    'font-family:Lato,sans-serif;font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.06em;';
+  hint.textContent = 'Glissez pour tourner la sculpture';
+  overlay.appendChild(hint);
 
-  /* Métadonnées */
+  /* Meta superposé en bas */
   const meta = document.createElement('div');
-  meta.className = 'obs-meta';
+  meta.style.cssText =
+    'position:absolute;bottom:4.5rem;left:0;width:100%;text-align:center;z-index:20;' +
+    'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.38);';
   const dim   = piece.dimensions || {};
-  const parts = [];
-  if (piece.materiaux && piece.materiaux.length) parts.push(piece.materiaux.join(', '));
+  const mParts = [];
+  if (piece.materiaux && piece.materiaux.length) mParts.push(piece.materiaux.join(', '));
   const dimParts = [dim.largeur, dim.profondeur, dim.hauteur].filter(Boolean);
-  if (dimParts.length) parts.push(dimParts.join(' \u00d7 ') + '\u202fcm');
-  meta.textContent = parts.join('\u2002\u00b7\u2002');
-  contenu.appendChild(meta);
-
-  overlay.appendChild(contenu);
+  if (dimParts.length) mParts.push(dimParts.join(' \u00d7 ') + '\u202fcm');
+  meta.textContent = mParts.join('\u2002\u00b7\u2002');
+  overlay.appendChild(meta);
 
   /* ── Bouton fermer ── */
   const btnFermer = document.createElement('button');
