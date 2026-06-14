@@ -30,5 +30,16 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
+  },
+  {
+    "id": "josepg",
+    "nom": "Josepg",
+    "logo": "J",
+    "lien": "artistes/josepg/",
+    "repoPath": "artistes/josepg/data/",
+    "prefix": "josepg",
+    "draft": true,
+    "genre": "f",
+    "type": "peinture"
   }
 ]
