@@ -126,14 +126,15 @@ function ouvrirSalleObservation(piece) {
   if (piece.glb && typeof ouvrirSalleImmersive === 'function') {
     const btnImm = document.createElement('button');
     btnImm.style.cssText =
-      'position:absolute;bottom:1rem;right:1rem;z-index:20;' +
-      'padding:6px 14px;border-radius:4px;border:1px solid rgba(200,160,80,.4);' +
-      'background:rgba(0,0,0,.5);color:rgba(240,208,128,.85);' +
-      'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.1em;cursor:pointer;';
-    btnImm.textContent = 'IMMERSIF';
+      'position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);z-index:20;' +
+      'padding:10px 24px;border-radius:6px;border:2px solid rgba(200,160,80,.6);' +
+      'background:rgba(20,16,10,.75);color:rgba(240,208,128,.95);' +
+      'font-family:Cinzel,serif;font-size:.85rem;letter-spacing:.15em;cursor:pointer;' +
+      'backdrop-filter:blur(4px);';
+    btnImm.textContent = 'SALLE IMMERSIVE';
     btnImm.addEventListener('click', () => {
       fermer();
-      setTimeout(() => ouvrirSalleImmersive(piece), 350);
+      setTimeout(() => ouvrirSalleImmersive(piece), 400);
     });
     overlay.appendChild(btnImm);
   }
