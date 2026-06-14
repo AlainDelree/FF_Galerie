@@ -517,7 +517,6 @@
 .salle-sculpture {
   display: flex !important;
   flex-direction: column !important;
-  min-height: 0 !important;
 }
 .salle-sculpture .zone-basse {
   flex: 1 !important;
@@ -526,4 +525,16 @@
 }
 .salle-sculpture .plancher-sol {
   flex: 1 !important;
+}
+
+@media (max-width: 600px) {
+  .salle-sculpture {
+    min-height: 100svh !important;
+    height: auto !important;
+  }
+  .salle-sculpture .zone-basse {
+    margin-left: -.5rem;
+    margin-right: -.5rem;
+    width: calc(100% + 1rem);
+  }
 }
