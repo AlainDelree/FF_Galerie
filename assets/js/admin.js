@@ -487,6 +487,7 @@ async function chargerTout() {
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
+      type: s.type || undefined,
       theme: s.theme || '',
       couleur_mur: s.couleur_mur || '#2e2e2e',
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
