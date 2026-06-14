@@ -128,7 +128,7 @@
         </div>
         <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .3rem;flex-shrink:0;"></div>
         <div class="coul-row">
-          <span class="coul-lbl">Mur</span>
+          <span class="coul-lbl" id="lbl-couleur-surface">Mur</span>
           <div class="swatches" id="sw-mur">
             <div class="sw sel" style="background:#2e2e2e" data-val="#2e2e2e"></div>
             <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
@@ -138,10 +138,11 @@
             <div class="sw" style="background:#3a2a1e" data-val="#3a2a1e"></div>
             <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc"></div>
             <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5"></div>
+            <div class="sw" style="background:#8a6228" data-val="#8a6228"></div>
             <div class="sw-plus"><input type="color" id="mur-custom"><span style="pointer-events:none;">+</span></div>
           </div>
         </div>
-        <div class="coul-row">
+        <div class="coul-row peinture-only">
           <span class="coul-lbl">Cadres</span>
           <div class="swatches" id="sw-cadres">
             <div class="sw sel" style="background:#3a3a3a" data-val="#3a3a3a"></div>
@@ -152,14 +153,14 @@
             <div class="sw-plus"><input type="color" id="cadres-custom" value="#3a3a3a"><span style="pointer-events:none;">+</span></div>
           </div>
         </div>
-        <div class="coul-row">
+        <div class="coul-row peinture-only">
           <span class="coul-lbl">Épaisseur</span>
           <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
             <input type="range" id="ep-cadres" min="2" max="20" step="2" value="2" style="flex:1;accent-color:var(--gold);">
             <span id="ep-cadres-val" style="font-size:.75rem;color:var(--muted);min-width:2.2rem;text-align:right;">2px</span>
           </div>
         </div>
-        <div class="coul-row">
+        <div class="coul-row peinture-only">
           <span class="coul-lbl">Texture</span>
           <div class="swatches" id="sw-texture">
             <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
@@ -181,6 +182,16 @@
           <div id="tex-gh-partage-wrap" style="display:none;margin-top:4px;">
             <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;letter-spacing:.08em;">PARTAGÉES</div>
             <div id="textures-gh-partage" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+        <!-- Revêtement sol (sculpture uniquement) -->
+        <div class="coul-row sculpture-only" style="display:none;">
+          <span class="coul-lbl">Revêtement</span>
+          <div class="swatches" id="sw-revetement">
+            <div class="sw sel" style="background:repeating-linear-gradient(#8a6228 0,#8a6228 8px,#7a5520 8px,#7a5520 9px);" data-val="parquet" title="Parquet"></div>
+            <div class="sw" style="background:repeating-conic-gradient(#8a8a8a 0% 25%,#9a9a9a 0% 50%) 0 0/12px 12px;" data-val="carrelage" title="Carrelage"></div>
+            <div class="sw" style="background:radial-gradient(circle,rgba(255,255,255,.08) 1px,#707060 1px) 0 0/5px 5px;" data-val="moquette" title="Moquette"></div>
+            <div class="sw" style="background:#8a6228;" data-val="none" title="Uni"></div>
           </div>
         </div>
         <div class="coul-actions">
@@ -1043,6 +1054,20 @@
       if (isSculpt) {
         const mt = document.getElementById('modal-toile-tit');
         if (mt && mt.textContent === 'Nouvelle toile') mt.textContent = 'Nouvelle pièce';
+        const lbl = document.getElementById('lbl-couleur-surface');
+        if (lbl) lbl.textContent = 'Sol';
+
+        /* Handler revêtement sol */
+        document.querySelectorAll('#sw-revetement .sw').forEach(sw => {
+          sw.addEventListener('click', function() {
+            document.querySelectorAll('#sw-revetement .sw').forEach(s => s.classList.remove('sel'));
+            this.classList.add('sel');
+            if (typeof textureActuelle !== 'undefined') {
+              textureActuelle = this.dataset.val;
+            }
+            if (typeof afficherMur === 'function') afficherMur();
+          });
+        });
       } else if (typeof chargerTexturesGitHub === 'function') {
         chargerTexturesGitHub(); // non connecté : charge quand même les textures partagées
       }

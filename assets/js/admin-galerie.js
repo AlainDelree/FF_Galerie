@@ -120,7 +120,7 @@ function afficherMur() {
   if (_isSculpt) {
     bg.className = '';
     const coulParquet = couleurMurActuel || '#8a6228';
-    const texSol = (salleActive && salleActive.texture) || 'parquet';
+    const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
       'display:block;width:100%;max-width:500px;aspect-ratio:4/3;border-radius:6px;';
@@ -1204,7 +1204,7 @@ function afficherSolPlacement() {
   bg.innerHTML = '';
   bg.className = ''; /* Supprimer la classe placement-mur-bg (CSS grid peinture) */
   const coulParquet = couleurMurActuel || '#8a6228';
-  const texSol = (salleActive && salleActive.texture) || 'parquet';
+  const texSol = textureActuelle || 'parquet';
   const bgStyle = grilleVisiblePl
     ? 'background:' + coulParquet + ';'
     : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
