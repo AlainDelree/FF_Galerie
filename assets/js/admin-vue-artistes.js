@@ -305,13 +305,17 @@ async function creerArtiste() {
     artistesData = nouveauxArtistes;
     document.getElementById("form-artiste-wrap").style.display = "none";
     afficherArtistes();
-    /* Message délai déploiement — affiché dans la liste, hors du form */
-    var banner = document.createElement("div");
-    banner.textContent = "✓ Espace créé ! Les pages seront accessibles dans 1-2 minutes (déploiement GitHub en cours).";
-    banner.style.cssText = "padding:.6rem 1rem;background:rgba(200,160,80,.15);color:var(--gold);border-radius:4px;font-size:.8rem;margin-bottom:.6rem;";
-    var liste = document.getElementById("liste-artistes");
-    liste.insertBefore(banner, liste.firstChild);
-    setTimeout(function(){ banner.remove(); }, 10000);
+    /* Modal confirmation déploiement */
+    var overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;";
+    overlay.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:1.6rem 2rem;max-width:380px;width:90%;text-align:center;">' +
+      '<div style="font-size:1.5rem;margin-bottom:.8rem;">✅</div>' +
+      '<div style="font-weight:600;margin-bottom:.6rem;color:var(--gold);">Espace créé avec succès !</div>' +
+      '<div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">Les pages de l\'artiste seront accessibles dans <strong>1 à 2 minutes</strong>, le temps que GitHub déploie les fichiers.</div>' +
+      '<button id="btn-ok-deploy" class="btn btn-or" style="width:100%;">OK</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById("btn-ok-deploy").onclick = function(){ overlay.remove(); };
   } catch (e) {
     err.textContent = "Erreur : " + e.message;
     prog.style.display = "none";
