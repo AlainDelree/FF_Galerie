@@ -2,6 +2,12 @@
 // ADMIN-GALERIE.JS — Plan · Grille 12×8 · Stock · Placement · Fiche toile · Modal salle
 // Dépend de : apiGH, commitMulti, lireRaw, toast, $, ADMIN_CFG, REPO, BRANCH (admin.js)
 //             salles, toiles, salleActive, token, chargerTout (admin.js globals)
+
+/* Labels adaptatifs peinture/sculpture */
+const _isSculpt = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+const LBL = _isSculpt
+  ? { item:'pièce', items:'pièces', Item:'Pièce', Items:'Pièces', placee:'placée', retiree:'retirée' }
+  : { item:'toile', items:'toiles', Item:'Toile', Items:'Toiles', placee:'placée', retiree:'retirée du mur' };
 //             appliquerApparence (admin-textures.js — guard typeof requis)
 // ═══════════════════════════════════════════════
 
@@ -14,7 +20,7 @@ function afficherPlan() {
     const chip = document.createElement('div');
     chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
-    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} toile${s.toiles.length > 1 ? 's' : ''}</div>`;
+    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} ${s.toiles.length > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
       const restant = Math.max(0, 60 - elapsed);
@@ -172,7 +178,7 @@ function placerToile(col, row) {
   afficherMur(); afficherStock();
   selectedToile = null;
   marquerChangement();
-  toast('✓ Toile placée');
+  toast('✓ ' + LBL.Item + ' ' + LBL.placee);
 }
 
 function retirerToile(toileId) {
@@ -180,7 +186,7 @@ function retirerToile(toileId) {
   salleActive.positions = (salleActive.positions || []).filter(p => p.id !== toileId);
   peintureSurMurSel = null;
   buildOccupancy(); afficherMur(); afficherStock(); marquerChangement();
-  toast('Toile retirée du mur');
+  toast(LBL.Item + ' ' + LBL.retiree);
 }
 
 function selectionnerPeintureMur(toileId) {
@@ -216,7 +222,7 @@ function afficherStock() {
   list.innerHTML = '';
   // Met à jour le compteur
   const hdr = $('stock-hdr');
-  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ')';
+  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
   if (!salleActive) return;
 
   const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
@@ -402,8 +408,8 @@ function ouvrirArrangerApresConfirm() {
   afficherMurPlacement();
   afficherStripPlacement();
   $('pl-aide').textContent = nbPlacees > 0
-    ? 'Clique une toile du bas pour la placer ou la déplacer'
-    : 'Sélectionne une toile en bas, puis clique sur le mur';
+    ? 'Clique un' + (_isSculpt ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
+    : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' en bas';
 }
 
 
@@ -527,7 +533,7 @@ function afficherStripPlacement() {
   const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees])];
 
   if (tousIds.length === 0) {
-    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucune toile</div>';
+    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
     return;
   }
 
@@ -593,7 +599,7 @@ function afficherStripPlacement() {
         selectedToilePl = null; selectedToile = null;
         $('pl-aide').textContent = peintureSurMurSel
           ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
-          : 'Clique une toile pour la déplacer ou en placer une nouvelle';
+          : 'Clique un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
       } else {
         // Sélection pour placer
         selectedToilePl = selectedToilePl?.id===id ? null : t;
@@ -601,7 +607,7 @@ function afficherStripPlacement() {
         peintureSurMurSel = null;
         $('pl-aide').textContent = selectedToilePl
           ? `"${t.titre||'—'}" → clique sur le mur pour placer`
-          : 'Sélectionne une toile à placer';
+          : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
       }
       afficherMurPlacement(); afficherStripPlacement();
     });
@@ -624,7 +630,7 @@ function placerToilePl(col, row) {
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
   marquerChangement(); toast('✓ Placée');
-  $('pl-aide').textContent = 'Toile placée — continue ou clique ← Retour';
+  $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique ← Retour';
 }
 
 function survolCellule(col, row, bgId) {
@@ -684,7 +690,7 @@ function initTailleForm() {
 
 function ouvrirFormulaireNouvel() {
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
-  $('modal-toile-tit').textContent = 'Nouvelle toile';
+  $('modal-toile-tit').textContent = _isSculpt ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
@@ -959,7 +965,7 @@ async function supprimerToile() {
   const idCible = toileEnEdition || selectedToile?.id;
   if (!idCible) return;
   const t = toiles.find(x => x.id === idCible);
-  if (!confirm(`Supprimer "${t?.titre || 'cette toile'}" ? Réversible via le backup.`)) return;
+  if (!confirm(`Supprimer "${t?.titre || ('cette ' + LBL.item)}" ? Réversible via le backup.`)) return;
   toiles = toiles.filter(x => x.id !== idCible);
   salles.forEach(s => {
     s.toiles = s.toiles.filter(id => id !== idCible);
