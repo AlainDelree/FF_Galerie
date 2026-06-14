@@ -12,7 +12,8 @@
 }
 
 /* ── Grand parquet — priorité sur les overrides desktop de galerie.css ── */
-.salle-sculpture { --mur: #7a7a7a; }
+.salle-sculpture { --mur: #7a7a7a; background-color: #7a7a7a; }
+.salle-sculpture .mur-inferieur { background: #7a7a7a !important; }
 .salle-sculpture .plancher-sol {
   min-height: 50vh !important;
   max-height: none !important;
