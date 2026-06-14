@@ -75,45 +75,28 @@
 }
 
 /* ── Piédestal ── */
-/* ── Socle cylindrique blanc marbre ── */
 .socle-piedestal {
   position: relative;
   width: 100%;
-  /* Marbre blanc, nervures brun pâle / beige */
-  background-color: #f4f0ea;
-  background-image:
-    linear-gradient(112deg, transparent 38%, rgba(180,145,95,.18) 38.6%, rgba(180,145,95,.14) 39.2%, transparent 40%),
-    linear-gradient(-18deg,
-      transparent 22%, rgba(160,125,80,.14) 22.6%, rgba(160,125,80,.10) 23.2%, transparent 24%,
-      transparent 55%, rgba(140,110,70,.12) 55.5%, rgba(140,110,70,.10) 56%, transparent 56.8%),
-    linear-gradient(75deg, transparent 10%, rgba(200,165,110,.09) 10.6%, rgba(200,165,110,.07) 11.2%, transparent 12%);
-  /* Côtés légèrement arrondis pour effet cylindre */
-  border-radius: 6px;
-  border-left:  1px solid rgba(210,195,170,.6);
-  border-right: 1px solid rgba(150,130,100,.4);
-  box-shadow: inset -4px 0 8px rgba(0,0,0,.08), 2px 2px 6px rgba(0,0,0,.12);
+  border-radius: 1px;
+  background: linear-gradient(to bottom, #d0c7b5, #9a8f7e);
 }
 
-/* Plateau supérieur elliptique (dessus du cylindre) */
-.socle-piedestal::before {
-  content: '';
-  position: absolute;
-  top: -7px; left: -10%; width: 120%; height: 14px;
-  background: radial-gradient(ellipse at 40% 40%, #fffdf8 0%, #f0ebe0 60%, #ddd5c0 100%);
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,.10);
-  z-index: 2;
-}
-
-/* Base elliptique (bas du cylindre) */
 .socle-piedestal::after {
   content: '';
   position: absolute;
-  bottom: -5px; left: -10%; width: 120%; height: 10px;
-  background: radial-gradient(ellipse at 40% 40%, #f0ebe0 0%, #d8d0bc 70%, #c0b8a0 100%);
-  border-radius: 50%;
-  box-shadow: 0 3px 8px rgba(0,0,0,.18);
-  z-index: 2;
+  right: -4px; top: 3px;
+  width: 4px; height: 100%;
+  background: linear-gradient(to bottom, #8a7f6e, #5a5040);
+}
+
+.socle-piedestal::before {
+  content: '';
+  position: absolute;
+  top: -4px; right: -4px; left: 0; height: 4px;
+  background: linear-gradient(to right, #c8bfae, #a89880);
+  transform: skewX(-45deg);
+  transform-origin: right top;
 }
 
 .socle-piedestal--s   { height:  65px; }
@@ -271,71 +254,24 @@
       rgba(130,90,40,.22) 73%);
 }
 
-/* Pilastres + panneaux (animés par JS) */
-.obs-chambre::before {
+/* Corniche plafond */
+.obs-chambre::after {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 5px;
+  top: 0; left: 0; right: 0; height: 5px;
   background: linear-gradient(to bottom, rgba(255,200,100,.12), transparent);
 }
 
-/* ── Murs mobiles — fond généré en JS (SVG mosaïque) ── */
-.obs-murs-mobiles {
-  position: absolute;
-  top: 9%;
-  bottom: 20%;
-  left: 0; right: 0;
-  pointer-events: none;
-  background-size: 2160px 100%;
-  background-repeat: repeat-x;
-  background-position-x: 0px;
-}
-
-/* Plafond */
-.obs-plafond {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 9%;
-  pointer-events: none;
-  background: linear-gradient(to bottom, #f5f0e8 0%, #e0d8c4 70%, #c8b89a 100%);
-}
-
-/* Sol */
-.obs-sol {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 20%;
-  pointer-events: none;
-  background:
-    /* Lignes de parquet */
-    repeating-linear-gradient(
-      to right,
-      transparent 0px, transparent 58px,
-      rgba(0,0,0,.06) 58px, rgba(0,0,0,.06) 60px
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px, transparent 13px,
-      rgba(0,0,0,.04) 13px, rgba(0,0,0,.04) 14px
-    ),
-    /* Fond parquet chaud */
-    linear-gradient(to bottom, #a07840 0%, #8a6430 60%, #705028 100%);
-}
-
-/* Lignes horizontales bleues supprimées */
-
-/* ── Contenu centré sur la zone mur (pas la hauteur totale) ── */
+/* ── Contenu central ── */
 .obs-contenu {
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   width: 100%;
-  padding: 2% 1.5rem 18%; /* positionne le tout pour que le cordage touche le sol */
-  gap: .3rem;
+  padding: .75rem 1.5rem 1.25rem;
+  gap: .6rem;
 }
 
 .obs-titre {
@@ -409,91 +345,4 @@
 .socle[tabindex="0"]:focus-visible {
   outline: 2px solid var(--accent, #c8a050);
   outline-offset: 4px;
-}
-
-/* ── Piédestal sous la sculpture ── */
-.obs-piedestal {
-  width: min(35vw, 220px);
-  height: 28px;
-  background: linear-gradient(to bottom,
-    #d0c0a0 0%, #b8a888 6%, #a09070 12%,
-    #908060 50%, #806e50 100%);
-  border-radius: 3px 3px 1px 1px;
-  box-shadow:
-    0 2px 8px rgba(0,0,0,.4),
-    inset 0 1px 0 rgba(255,255,255,.15);
-  flex-shrink: 0;
-  margin-top: -4px;
-}
-
-/* ── Cordage musée ── */
-.obs-barriere {
-  width: min(88vw, 580px);
-  flex-shrink: 0;
-  pointer-events: none;
-  margin-top: .5rem;
-  position: relative;
-  z-index: 12;
-}
-.obs-barriere svg { display: block; width: 100%; height: auto; overflow: visible; }
-
-/* ══════════════════════════════════════
-   PIQUETS & CORDES — salle d'observation
-   ══════════════════════════════════════ */
-.obs-piquets-wrap {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 0; height: 0;
-  pointer-events: none;
-  z-index: 12;
-}
-
-.obs-piquet {
-  position: absolute;
-  width: 10px;
-  height: 48px;
-  transform-origin: bottom center;
-  /* Colonne en laiton doré */
-  background: linear-gradient(to right,
-    #7a5800 0%, #c8a050 25%, #f0d080 50%, #c8a050 75%, #7a5800 100%);
-  border-radius: 2px;
-  box-shadow: 1px 1px 4px rgba(0,0,0,.5);
-  /* Centrage par rapport au point d'ancrage bas */
-  margin-left: -5px;
-  margin-top: -48px;
-}
-
-/* Chapeau du piquet */
-.obs-piquet::before {
-  content: '';
-  position: absolute;
-  top: -8px; left: -5px; width: 20px; height: 10px;
-  background: linear-gradient(to bottom, #f0d080, #c8a050, #8a6800);
-  border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
-  box-shadow: 0 2px 4px rgba(0,0,0,.4);
-}
-
-/* Base / pied du piquet */
-.obs-piquet::after {
-  content: '';
-  position: absolute;
-  bottom: -5px; left: -7px; width: 24px; height: 8px;
-  background: linear-gradient(to bottom, #c8a050, #7a5800);
-  border-radius: 3px;
-  box-shadow: 0 3px 6px rgba(0,0,0,.5);
-}
-
-/* Corde velours (élément frère du wrap) */
-.obs-corde-ellipse {
-  position: absolute;
-  top: 50%; left: 50%;
-  border: 3px solid #6b0020;
-  border-radius: 50%;
-  transform-origin: center;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 11;
-  box-shadow:
-    0 0 6px rgba(107,0,32,.4),
-    inset 0 0 4px rgba(107,0,32,.2);
 }
