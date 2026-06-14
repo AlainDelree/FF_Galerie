@@ -104,12 +104,17 @@ async function supprimerArtiste(idx) {
     const commitSha  = ref.object.sha;
     const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
 
+    /* Filtrer : ne supprimer que les fichiers qui existent vraiment dans le repo */
+    const treeData     = await apiGH(`/repos/${REPO}/git/trees/${baseCommit.tree.sha}?recursive=1`);
+    const existingPaths = new Set(treeData.tree.map(e => e.path));
+    const fichiersSupFiltres = fichiersSup.filter(e => existingPaths.has(e.path));
+
     /* Ajouter artistes.json mis à jour au même tree */
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(artistesData, null, 2))));
     const blob = await apiGH(`/repos/${REPO}/git/blobs`, "POST", { content: b64, encoding: "base64" });
     const tree = await apiGH(`/repos/${REPO}/git/trees`, "POST", {
       base_tree: baseCommit.tree.sha,
-      tree: [...fichiersSup, { path: "data/artistes.json", mode: "100644", type: "blob", sha: blob.sha }]
+      tree: [...fichiersSupFiltres, { path: "data/artistes.json", mode: "100644", type: "blob", sha: blob.sha }]
     });
     const commit = await apiGH(`/repos/${REPO}/git/commits`, "POST", {
       message: "Suppression artiste : " + a.nom,
