@@ -30,5 +30,27 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
+  },
+  {
+    "id": "okay",
+    "nom": "okay",
+    "logo": "O",
+    "lien": "artistes/okay/",
+    "repoPath": "artistes/okay/data/",
+    "prefix": "okay",
+    "draft": true,
+    "genre": "f",
+    "type": "peinture"
+  },
+  {
+    "id": "frrr",
+    "nom": "frrr",
+    "logo": "F",
+    "lien": "artistes/frrr/",
+    "repoPath": "artistes/frrr/data/",
+    "prefix": "frrr",
+    "draft": true,
+    "genre": "f",
+    "type": "peinture"
   }
 ]
