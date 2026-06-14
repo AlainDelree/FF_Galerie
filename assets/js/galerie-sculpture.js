@@ -299,67 +299,31 @@ function creerSocle(piece, gabarit, pos) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   INIT PRINCIPALE
+   RENDERER SCULPTURE — enregistré dans GALERIE_RENDERERS
    ══════════════════════════════════════════════════════════════ */
-Promise.all([
-  fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-  fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-])
-.then(([tData, sData]) => {
+GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   const gabarits = {};
   const pieces   = {};
   (tData.gabarits || []).forEach(g => { gabarits[g.code] = g; });
   (tData.pieces   || []).forEach(p => { pieces[p.id]     = p; });
 
-  const salles = sData.salles || [];
-  TOTAL_SALLES = salles.length;
-  const _hm = window.location.hash.match(/^#salle-(\d+)$/);
-  conteneur.style.width = (TOTAL_SALLES * 100) + '%';
+  salleDiv.classList.add('salle-sculpture');
 
-  salles.forEach((salle, si) => {
-    const salleDiv = document.createElement('div');
-    salleDiv.className   = 'salle salle-sculpture';
-    salleDiv.id          = 'salle' + salle.id;
-    salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
-    salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
+  const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
+  const sils = plancher.querySelector('.silhouettes-sol');
+  if (sils) sils.remove();
 
-    const nomEl = document.createElement('p');
-    nomEl.className = 'nom-salle'; nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
-    salleDiv.appendChild(nomEl);
-
-    const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
-    const sils = plancher.querySelector('.silhouettes-sol');
-    if (sils) sils.remove();
-
-    const plancherSol = plancher.querySelector('.plancher-sol');
-    if (plancherSol) {
-      (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
-        const piece   = pieces[pos.id];
-        const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
-        const gabarit = gabarits[gCode] || gabarits['M'];
-        if (!piece) return;
-        plancherSol.appendChild(creerSocle(piece, gabarit, pos));
-      });
-    }
-
-    salleDiv.appendChild(plancher);
-    conteneur.appendChild(salleDiv);
-  });
-
-  mettreAJourNav();
-
-  const hashId = parseInt((_hm || [])[1]);
-  if (hashId) {
-    const hashIdx = salles.findIndex(s => s.id === hashId) + 1;
-    const cible   = hashIdx > 0 ? hashIdx : 1;
-    conteneur.style.transition = 'none';
-    allerSalle(cible);
-    conteneur.getBoundingClientRect();
-    requestAnimationFrame(() => requestAnimationFrame(() => { conteneur.style.transition = ''; }));
+  const plancherSol = plancher.querySelector('.plancher-sol');
+  if (plancherSol) {
+    (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
+      const piece   = pieces[pos.id];
+      const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
+      const gabarit = gabarits[gCode] || gabarits['M'];
+      if (!piece) return;
+      plancherSol.appendChild(creerSocle(piece, gabarit, pos));
+    });
   }
-})
-.catch(() => {
-  document.querySelectorAll('.salle-sculpture').forEach(s => {
-    s.innerHTML = '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
-  });
-});
+
+  salleDiv.appendChild(plancher);
+};
+

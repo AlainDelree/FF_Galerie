@@ -506,3 +506,62 @@ const GALERIE_CFG = {
       return el;
     }
 
+
+/* ══════════════════════════════════════════════════════════════
+   INIT GALERIE MULTI-TYPE
+   Chaque renderer s'enregistre via GALERIE_RENDERERS[type]
+   ══════════════════════════════════════════════════════════════ */
+const GALERIE_RENDERERS = {};
+
+function initGalerie() {
+  Promise.all([
+    fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+    fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  ])
+  .then(([tData, sData]) => {
+    const salles = sData.salles || [];
+    TOTAL_SALLES = salles.length;
+    const _hm = window.location.hash.match(/^#salle-(\d+)$/);
+    conteneur.style.width = (TOTAL_SALLES * 100) + '%';
+
+    salles.forEach((salle, si) => {
+      const type = salle.type || 'peinture';
+      const renderer = GALERIE_RENDERERS[type];
+      if (!renderer) {
+        console.warn('Pas de renderer pour le type:', type);
+        return;
+      }
+
+      const salleDiv = document.createElement('div');
+      salleDiv.className = 'salle';
+      salleDiv.id        = 'salle' + salle.id;
+      salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
+      salleDiv.setAttribute('aria-label', salle.nom || ('Salle ' + salle.id));
+
+      const nomEl = document.createElement('p');
+      nomEl.className   = 'nom-salle';
+      nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
+      salleDiv.appendChild(nomEl);
+
+      renderer(salleDiv, salle, si, salles, tData);
+
+      conteneur.appendChild(salleDiv);
+    });
+
+    mettreAJourNav();
+
+    const hashId = parseInt((_hm || [])[1]);
+    if (hashId) {
+      const hashIdx = salles.findIndex(s => s.id === hashId) + 1;
+      const cible   = hashIdx > 0 ? hashIdx : 1;
+      conteneur.style.transition = 'none';
+      allerSalle(cible);
+      conteneur.getBoundingClientRect();
+      requestAnimationFrame(() => requestAnimationFrame(() => { conteneur.style.transition = ''; }));
+    }
+  })
+  .catch(err => {
+    console.error('Galerie init:', err);
+    conteneur.innerHTML = '<p style="color:var(--text-doux);font-style:italic;padding:2rem;">Données non disponibles.</p>';
+  });
+}
