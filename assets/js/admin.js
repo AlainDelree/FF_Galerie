@@ -39,7 +39,8 @@ const ADMIN_CFG = {
   repoPath: window.ADMIN_REPO_PATH || 'data/',
   prefix:   window.ADMIN_PREFIX    || 'ff',
   nom:      window.ADMIN_NOM       || 'Frédérique Ferette',
-  logo:     window.ADMIN_LOGO      || 'FF'
+  logo:     window.ADMIN_LOGO      || 'FF',
+  type:     window.ADMIN_TYPE      || 'peinture'
 };
 
 /* Appliquer le nom/logo dès le chargement */
@@ -481,8 +482,8 @@ async function chargerTout() {
       lireRaw(ADMIN_CFG.repoPath + 'toiles.json'),
       lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
-    toiles = tData.toiles || [];
-    tailles = tData.tailles || [];
+    toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
+    tailles = ADMIN_CFG.type === 'sculpture' ? (tData.gabarits  || []) : (tData.tailles || []);
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -537,7 +538,11 @@ async function sauvegarder(message) {
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   try {
     await commitMulti([
-      { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify({ tailles, toiles }, null, 2) },
+      { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
+        ADMIN_CFG.type === 'sculpture'
+          ? { gabarits: tailles, pieces: toiles }
+          : { tailles, toiles }
+      , null, 2) },
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, null, 2) }
     ], 'Admin : ' + message);
     syncBadge('ok');
