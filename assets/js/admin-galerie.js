@@ -96,38 +96,71 @@ function afficherMur() {
   bg.innerHTML = '';
   if (!salleActive) return;
 
-  /* ── SCULPTURE : aperçu parquet ── */
+  /* ── SCULPTURE : aperçu parquet avec socles en perspective ── */
   if (_isSculpt) {
     bg.className = 'placement-mur-bg';
     bg.style.cssText =
-      'background:#8a6228;position:relative;overflow:hidden;display:block;width:100%;height:100%;' +
+      'background:#8a6228;position:relative;overflow:visible;display:block;width:100%;height:100%;' +
       'background-image:' +
       'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
       'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
 
-    (salleActive.positions || []).forEach(p => {
+    /* Pièces avec socles perspective */
+    (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
       const t = toiles.find(x => x.id === p.id); if (!t) return;
-      const el = document.createElement('div');
-      el.style.cssText =
-        'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-        'transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:2;';
+      const scale = (1 - (p.y / 100) * 0.42).toFixed(3);
+      const zIdx  = Math.round((100 - p.y) * 10);
 
+      const wrap = document.createElement('div');
+      wrap.style.cssText =
+        'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
+        'transform:translateX(-50%) scale(' + scale + ');transform-origin:bottom center;' +
+        'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;';
+
+      /* Image ou placeholder */
+      const imgWrap = document.createElement('div');
+      imgWrap.style.cssText = 'width:50px;height:50px;display:flex;align-items:flex-end;justify-content:center;';
       if (t.photo || t._preview) {
         const img = document.createElement('img');
         img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-        img.style.cssText = 'width:50px;height:50px;object-fit:contain;border-radius:4px;';
-        el.appendChild(img);
+        img.style.cssText = 'max-width:50px;max-height:50px;object-fit:contain;';
+        imgWrap.appendChild(img);
       } else {
         const ph = document.createElement('div');
-        ph.style.cssText = 'width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:4px;';
-        el.appendChild(ph);
+        ph.style.cssText = 'width:30px;height:40px;background:rgba(255,255,255,.12);border-radius:3px;';
+        imgWrap.appendChild(ph);
       }
+      wrap.appendChild(imgWrap);
 
+      /* Piédestal marbre */
+      const ped = document.createElement('div');
+      ped.style.cssText =
+        'width:40px;height:28px;border-radius:5px;' +
+        'background:linear-gradient(to right,rgba(0,0,0,.15),rgba(255,255,255,.08) 45%,rgba(255,255,255,.12) 55%,rgba(0,0,0,.12));' +
+        'background-color:#eae6de;position:relative;';
+      /* Ellipse dessus */
+      const top = document.createElement('div');
+      top.style.cssText =
+        'position:absolute;top:-4px;left:-15%;width:130%;height:8px;' +
+        'background:radial-gradient(ellipse at 42% 40%,#f8f6f2,#d8d2c8);border-radius:50%;';
+      ped.appendChild(top);
+      wrap.appendChild(ped);
+
+      /* Ombre */
+      const ombre = document.createElement('div');
+      ombre.style.cssText =
+        'width:55px;height:6px;background:rgba(0,0,0,.25);border-radius:50%;filter:blur(3px);margin-top:1px;';
+      wrap.appendChild(ombre);
+
+      /* Titre */
       const lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:9px;color:#fff;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);';
+      lbl.style.cssText =
+        'font-size:8px;color:#fff;white-space:nowrap;max-width:70px;overflow:hidden;' +
+        'text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);margin-top:2px;';
       lbl.textContent = t.titre || '—';
-      el.appendChild(lbl);
-      bg.appendChild(el);
+      wrap.appendChild(lbl);
+
+      bg.appendChild(wrap);
     });
     return;
   }
