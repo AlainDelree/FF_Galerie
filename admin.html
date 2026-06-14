@@ -1073,6 +1073,18 @@
         const murBg = document.getElementById('mur-bg');
         if (murBg) murBg.style.maxWidth = 'none';
 
+        /* CSS override pour le parquet sculpture */
+        const styleOverride = document.createElement('style');
+        styleOverride.textContent = `
+          .mur-bg {
+            display: block !important;
+            grid-template-columns: none !important;
+            grid-template-rows: none !important;
+            aspect-ratio: auto !important;
+          }
+        `;
+        document.head.appendChild(styleOverride);
+
         /* Handler revêtement sol */
         document.querySelectorAll('#sw-revetement .sw').forEach(sw => {
           sw.addEventListener('click', function() {
