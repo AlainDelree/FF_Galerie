@@ -1057,6 +1057,22 @@
         const lbl = document.getElementById('lbl-couleur-surface');
         if (lbl) lbl.textContent = 'Sol';
 
+        /* Renommer les boutons */
+        const btnArr = document.getElementById('btn-arranger-mur');
+        if (btnArr) btnArr.textContent = '🔧 Arranger le sol';
+        const btnAjt = document.getElementById('btn-ajouter-toile');
+        if (btnAjt) btnAjt.textContent = '＋ Ajout pièce';
+        const btnMod = document.getElementById('btn-modifier-toile');
+        if (btnMod) btnMod.textContent = '✏️ Modifier pièce';
+        const btnSup = document.getElementById('btn-supprimer-toile');
+        if (btnSup) btnSup.textContent = '🗑 Supprimer';
+        const murAide = document.getElementById('mur-aide');
+        if (murAide) murAide.textContent = 'Utilise "🔧 Arranger le sol" pour placer les pièces';
+
+        /* Aperçu plus grand */
+        const murBg = document.getElementById('mur-bg');
+        if (murBg) murBg.style.maxWidth = 'none';
+
         /* Handler revêtement sol */
         document.querySelectorAll('#sw-revetement .sw').forEach(sw => {
           sw.addEventListener('click', function() {

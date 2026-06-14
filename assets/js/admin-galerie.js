@@ -123,7 +123,7 @@ function afficherMur() {
     const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      'display:block;width:100%;max-width:500px;aspect-ratio:4/3;border-radius:6px;';
+      'display:block;width:100%;aspect-ratio:4/3;border-radius:6px;';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
