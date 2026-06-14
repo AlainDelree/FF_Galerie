@@ -123,10 +123,9 @@ function afficherMur() {
     const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      'display:block;border-radius:6px;margin:0 auto;' +
-    'height:' + (window.innerWidth <= 600 ? '50vh' : '42vh') + ';' +
-    'width:auto;aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';' +
-    'max-width:100%;';
+      window.innerWidth <= 600
+    ? 'display:block;width:100%;border-radius:6px;aspect-ratio:3/4;max-height:50vh;'
+    : 'display:block;border-radius:6px;margin:0 auto;height:42vh;width:auto;aspect-ratio:5/3;max-width:100%;';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
@@ -1212,10 +1211,9 @@ function afficherSolPlacement() {
     ? 'background:' + coulParquet + ';'
     : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
   bg.style.cssText = bgStyle +
-    'position:relative;overflow:hidden;cursor:crosshair;display:block;border-radius:6px;margin:0 auto;' +
-    'height:' + (window.innerWidth <= 600 ? '60vh' : '50vh') + ';' +
-    'width:auto;aspect-ratio:' + (window.innerWidth <= 600 ? '9/14' : '5/3') + ';' +
-    'max-width:100%;';
+    window.innerWidth <= 600
+    ? 'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;border-radius:6px;aspect-ratio:3/4;max-height:60vh;'
+    : 'position:relative;overflow:hidden;cursor:crosshair;display:block;border-radius:6px;margin:0 auto;height:50vh;width:auto;aspect-ratio:5/3;max-width:100%;';
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
