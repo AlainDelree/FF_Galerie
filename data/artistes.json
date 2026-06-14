@@ -41,5 +41,16 @@
     "draft": true,
     "genre": "f",
     "type": "peinture"
+  },
+  {
+    "id": "dddd",
+    "nom": "dddd",
+    "logo": "D",
+    "lien": "artistes/dddd/",
+    "repoPath": "artistes/dddd/data/",
+    "prefix": "dddd",
+    "draft": true,
+    "genre": "f",
+    "type": "peinture"
   }
 ]
