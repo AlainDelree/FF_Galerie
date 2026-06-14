@@ -168,8 +168,8 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .salle-sculpture .plancher-sol {
-    min-height: 240px !important;
-    max-height: 320px !important;
+    min-height: 45vh !important;
+    max-height: none !important;
   }
   .salle-sculpture .mur-inferieur { height: 70px !important; }
   .salle-sculpture .porte-mur     { width: 48px !important; height: 66px !important; }
@@ -178,8 +178,8 @@
 
 @media (max-width: 600px) {
   .salle-sculpture .plancher-sol {
-    min-height: 250px !important;
-    max-height: 420px !important;
+    min-height: 40vh !important;
+    max-height: none !important;
   }
   .socle--s   { width:  70px; }
   .socle--m   { width:  95px; }

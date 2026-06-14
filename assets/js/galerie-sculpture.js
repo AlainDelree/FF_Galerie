@@ -16,9 +16,9 @@
 })();
 
 /* ── Facteur d'échelle px/cm ── */
-const ECHELLE      = window.innerWidth <= 600 ? 2.8 : 4.0;
-const ECHELLE_MIN  = window.innerWidth <= 600 ? 55  : 75;
-const ECHELLE_MAXH = window.innerWidth <= 600 ? 200 : 300;
+const ECHELLE      = window.innerWidth <= 600 ? 2.8 : 5.5;
+const ECHELLE_MIN  = window.innerWidth <= 600 ? 55  : 90;
+const ECHELLE_MAXH = window.innerWidth <= 600 ? 200 : 380;
 
 /* ── Chargement model-viewer (une seule fois, à la demande) ── */
 function chargerModelViewer() {
