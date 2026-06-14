@@ -93,10 +93,14 @@ async function ouvrirSalleImmersive(piece) {
     '<span class="porte-nav__fleche">\u2192</span>' +
     '<span class="porte-nav__label">D\u00e9tail</span>';
   porteD.addEventListener('click', () => {
+    const ecran = document.createElement('div');
+    ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+    document.body.appendChild(ecran);
     fermer();
     setTimeout(() => {
       if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece);
-    }, 400);
+      setTimeout(() => ecran.remove(), 150);
+    }, 350);
   });
   overlay.appendChild(porteD);
 

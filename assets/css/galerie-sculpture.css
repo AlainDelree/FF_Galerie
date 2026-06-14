@@ -285,8 +285,8 @@
 }
 
 .obs-viewer {
-  width: min(88vw, 580px);
-  height: min(58vh, 480px);
+  width: min(92vw, 640px);
+  height: min(68vh, 560px);
   background: transparent;
   --poster-color: transparent;
   border-radius: 2px;

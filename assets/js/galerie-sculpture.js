@@ -102,6 +102,14 @@ function ouvrirSalleObservation(piece) {
 
   contenu.appendChild(viewer);
 
+  /* Hint rotation */
+  const hint = document.createElement('div');
+  hint.style.cssText =
+    'font-family:Lato,sans-serif;font-size:.65rem;color:rgba(255,255,255,.25);' +
+    'letter-spacing:.06em;text-align:center;margin-top:4px;';
+  hint.textContent = 'Maintenez le clic pour tourner la sculpture';
+  contenu.appendChild(hint);
+
   /* Métadonnées */
   const meta = document.createElement('div');
   meta.className = 'obs-meta';
@@ -130,8 +138,14 @@ function ouvrirSalleObservation(piece) {
       '<span class="porte-nav__fleche">\u2190</span>' +
       '<span class="porte-nav__label">Salle</span>';
     porteG.addEventListener('click', () => {
+      const ecran = document.createElement('div');
+      ecran.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#000;';
+      document.body.appendChild(ecran);
       fermer();
-      setTimeout(() => ouvrirSalleImmersive(piece), 400);
+      setTimeout(() => {
+        ouvrirSalleImmersive(piece);
+        setTimeout(() => ecran.remove(), 150);
+      }, 350);
     });
     overlay.appendChild(porteG);
   }
