@@ -128,7 +128,8 @@ function afficherMur() {
         imgWrap.appendChild(img);
       } else {
         const ph = document.createElement('div');
-        ph.style.cssText = 'width:30px;height:40px;background:rgba(255,255,255,.12);border-radius:3px;';
+        ph.style.cssText = 'width:36px;height:44px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
+        ph.textContent = t.glb ? '3D' : '?';
         imgWrap.appendChild(ph);
       }
       wrap.appendChild(imgWrap);
@@ -338,7 +339,9 @@ function afficherStock() {
       simgDiv.appendChild(img);
     } else {
       const ph = document.createElement('div'); ph.className = 'sph';
-      ph.textContent = '?'; simgDiv.appendChild(ph);
+      ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);font-size:11px;color:var(--muted);';
+      ph.textContent = t.glb ? '3D' : '?';
+      simgDiv.appendChild(ph);
     }
     item.appendChild(simgDiv);
 
@@ -633,6 +636,11 @@ function afficherStripPlacement() {
         img.src = t.photo;
       }
       si.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.5);border-radius:3px;';
+      ph.textContent = t.glb ? '3D' : '?';
+      si.appendChild(ph);
     }
 
     // Grille W×H sur la miniature quand mode grille actif
@@ -1225,7 +1233,8 @@ function afficherSolPlacement() {
       el.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.style.cssText = 'width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:4px;';
+      ph.style.cssText = 'width:40px;height:40px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.6);';
+      ph.textContent = t.glb ? '3D' : '?';
       el.appendChild(ph);
     }
 
