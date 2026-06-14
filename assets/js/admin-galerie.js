@@ -476,6 +476,7 @@ function majCtrlPanel() {
 }
 
 function afficherMurPlacement() {
+  if (_isSculpt) return afficherSolPlacement();
   const bg = $('mur-placement');
   bg.innerHTML = '';
   bg.style.background = couleurMurActuel;
@@ -606,7 +607,7 @@ function afficherStripPlacement() {
         selectedToile = selectedToilePl;
         peintureSurMurSel = null;
         $('pl-aide').textContent = selectedToilePl
-          ? `"${t.titre||'—'}" → clique sur le mur pour placer`
+          ? `"${t.titre||'—'}" → clique sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
           : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
       }
       afficherMurPlacement(); afficherStripPlacement();
@@ -1093,3 +1094,122 @@ async function creerSalle() {
 }
 // APPARENCE (couleurs + textures)
 // ═══════════════════════════════════════════════
+
+/* ══════════════════════════════════════════════════════════════
+   PLACEMENT SCULPTURE — parquet x,y au lieu de grille 12×8
+   ══════════════════════════════════════════════════════════════ */
+
+function afficherSolPlacement() {
+  const bg = $('mur-placement');
+  bg.innerHTML = '';
+  bg.style.cssText =
+    'background:#8a6228;position:relative;overflow:hidden;cursor:crosshair;' +
+    'background-image:' +
+    'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
+    'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);' +
+    'display:block;width:100%;height:100%;';
+
+  /* Grille 10×10 optionnelle */
+  if (grilleVisiblePl) {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+      'background-image:' +
+      'repeating-linear-gradient(to right,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%),' +
+      'repeating-linear-gradient(to bottom,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%);';
+    bg.appendChild(ov);
+
+    /* Labels des cases */
+    const COLS = 'ABCDEFGHIJ';
+    for (let c = 0; c < 10; c++) {
+      for (let r = 0; r < 10; r++) {
+        const lbl = document.createElement('div');
+        lbl.style.cssText =
+          'position:absolute;font-size:8px;font-family:monospace;color:rgba(0,0,0,.3);pointer-events:none;' +
+          'left:' + (c * 10 + 5) + '%;bottom:' + (r * 10 + 5) + '%;transform:translate(-50%,50%);';
+        lbl.textContent = COLS[c] + (r + 1);
+        bg.appendChild(lbl);
+      }
+    }
+  }
+
+  /* Pièces déjà placées */
+  (salleActive.positions || []).forEach(p => {
+    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const estSel = peintureSurMurSel === p.id;
+    const el = document.createElement('div');
+    el.style.cssText =
+      'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
+      'transform:translateX(-50%);z-index:2;cursor:pointer;' +
+      'display:flex;flex-direction:column;align-items:center;';
+    if (estSel) el.style.outline = '2px solid var(--gold)';
+
+    if (t.photo || t._preview) {
+      const img = document.createElement('img');
+      img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
+      img.style.cssText = 'width:40px;height:40px;object-fit:contain;border-radius:4px;';
+      el.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.style.cssText = 'width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:4px;';
+      el.appendChild(ph);
+    }
+
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:8px;color:#fff;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;';
+    lbl.textContent = t.titre || '—';
+    el.appendChild(lbl);
+
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      peintureSurMurSel = peintureSurMurSel === p.id ? null : p.id;
+      afficherSolPlacement(); afficherStripPlacement();
+      $('pl-aide').textContent = peintureSurMurSel
+        ? '"' + (t.titre||'—') + '" → flèches pour déplacer ou ✕ retirer'
+        : 'Clique une pièce du bas pour la placer';
+      majCtrlPanel();
+    });
+    bg.appendChild(el);
+  });
+
+  majCtrlPanel();
+
+  /* Clic sur le sol → placer */
+  bg.addEventListener('click', function(e) {
+    if (!selectedToilePl) return;
+    const rect = bg.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / rect.width * 100);
+    const y = Math.round((1 - (e.clientY - rect.top) / rect.height) * 100);
+    placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
+  });
+}
+
+function placerPieceSol(x, y) {
+  if (!selectedToilePl || !salleActive) return;
+  const piece = selectedToilePl;
+  const gab = gabaritDepuisHauteur(piece.dimensions?.hauteur);
+
+  /* Retirer de toutes les salles */
+  salles.forEach(s => {
+    s.toiles = s.toiles.filter(id => id !== piece.id);
+    s.positions = (s.positions || []).filter(p => p.id !== piece.id);
+  });
+
+  salleActive.positions.push({ id: piece.id, x, y, gabarit: gab });
+  salleActive.toiles.push(piece.id);
+
+  selectedToilePl = null; selectedToile = null;
+  afficherSolPlacement(); afficherStripPlacement();
+  marquerChangement();
+  toast('✓ Pièce placée en ' + x + ',' + y);
+  $('pl-aide').textContent = 'Pièce placée — continue ou clique ← Retour';
+}
+
+function deplacerPieceSol(dx, dy) {
+  if (peintureSurMurSel === null) return;
+  const pos = (salleActive.positions || []).find(p => p.id === peintureSurMurSel);
+  if (!pos) return;
+  pos.x = Math.max(5, Math.min(95, (pos.x || 50) + dx));
+  pos.y = Math.max(5, Math.min(95, (pos.y || 50) + dy));
+  afficherSolPlacement();
+  marquerChangement();
+}

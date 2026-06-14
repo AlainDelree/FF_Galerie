@@ -775,7 +775,11 @@ $('btn-grille-pl').addEventListener('click', function() {
 (function() {
   function mvSel(dc, dr) {
     if (peintureSurMurSel === null) return;
-    deplacerPeinture(peintureSurMurSel, dc, dr);
+    if (ADMIN_CFG.type === 'sculpture') {
+      deplacerPieceSol(dc * 2, dr * 2);
+    } else {
+      deplacerPeinture(peintureSurMurSel, dc, dr);
+    }
     afficherMurPlacement();
   }
   $("pl-btn-up")   ?.addEventListener("click", function(){ mvSel( 0,-1); });
