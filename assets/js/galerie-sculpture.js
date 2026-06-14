@@ -196,7 +196,7 @@ function ouvrirSalleObservation(piece) {
    ══════════════════════════════════════════════════════════════ */
 function ajouterGrilleDevParquet(sol) {
   const COLS = 'ABCDEFGHIJ'.split('');
-  const NC = COLS.length, NR = 5;
+  const NC = COLS.length, NR = 10;
 
   const overlay = document.createElement('div');
   overlay.className = 'grille-dev';
@@ -251,20 +251,22 @@ function ajouterGrilleDevParquet(sol) {
       const ln = mk('line');
       ln.setAttribute('x1', sX(xN,0)); ln.setAttribute('y1', sY(0));
       ln.setAttribute('x2', sX(xN,1)); ln.setAttribute('y2', sY(1));
-      ln.setAttribute('stroke', 'rgba(0,0,0,.50)'); ln.setAttribute('stroke-width', '1.8');
+      ln.setAttribute('stroke', 'rgba(0,0,0,.35)'); ln.setAttribute('stroke-width', '1.0');
       svg.appendChild(ln);
     }
     for (let r = 0; r < NR; r++) {
       for (let c = 0; c < NC; c++) {
+        /* Labels intérieurs allégés : 1 sur 4 (pair×pair) */
+        if (r % 2 !== 0 || c % 2 !== 0) continue;
         const tC  = (rowBounds[r] + rowBounds[r+1]) / 2;
         const xNC = (c + 0.5) / NC;
         const rowH = (rowBounds[r+1] - rowBounds[r]) * H;
-        const fs = Math.max(7, Math.min(11, Math.round(rowH * 0.28)));
+        const fs = Math.max(6, Math.min(9, Math.round(rowH * 0.35)));
         const txt = mk('text');
         txt.setAttribute('x', sX(xNC, tC)); txt.setAttribute('y', sY(tC));
         txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('dominant-baseline', 'middle');
         txt.setAttribute('font-size', fs); txt.setAttribute('font-family', 'monospace');
-        txt.setAttribute('font-weight', 'bold'); txt.setAttribute('fill', 'rgba(0,0,0,.30)');
+        txt.setAttribute('font-weight', 'bold'); txt.setAttribute('fill', 'rgba(0,0,0,.20)');
         txt.textContent = COLS[c] + (r + 1);
         svg.appendChild(txt);
       }
@@ -281,9 +283,9 @@ function ajouterGrilleDevParquet(sol) {
       const tC = (rowBounds[r] + rowBounds[r+1]) / 2;
       const txt = mk('text');
       txt.setAttribute('x', sX(0.015,tC) + 5); txt.setAttribute('y', sY(tC));
-      txt.setAttribute('dominant-baseline', 'middle'); txt.setAttribute('font-size', '12');
+      txt.setAttribute('dominant-baseline', 'middle'); txt.setAttribute('font-size', '9');
       txt.setAttribute('font-family', 'monospace'); txt.setAttribute('font-weight', 'bold');
-      txt.setAttribute('fill', 'rgba(0,0,0,.55)'); txt.textContent = r + 1;
+      txt.setAttribute('fill', 'rgba(0,0,0,.45)'); txt.textContent = r + 1;
       svg.appendChild(txt);
     }
     overlay.appendChild(svg);
