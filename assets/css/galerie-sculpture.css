@@ -121,9 +121,9 @@
   z-index: 2;
 }
 
-.socle-piedestal--s   { height:  98px; }
-.socle-piedestal--m   { height: 135px; }
-.socle-piedestal--l   { height: 188px; }
+.socle-piedestal--s   { height: 200px; }
+.socle-piedestal--m   { height: 200px; }
+.socle-piedestal--l   { height: 200px; }
 .socle-piedestal--sol { height:  30px; }
 
 .socle--s   { width:  90px; }
@@ -205,6 +205,7 @@
   .socle--m   { width:  95px; }
   .socle--l   { width: 130px; }
   .socle--sol { width: 160px; }
+  .socle-piedestal--s { height: 135px; }
   .socle-piedestal--m { height: 126px; }
   .socle-piedestal--l { height: 173px; }
 }
