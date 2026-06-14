@@ -96,6 +96,7 @@ button{cursor:pointer;}
 .vue{display:none;flex-direction:column;flex:1;min-height:0;}
 .vue.active{display:flex;overflow:hidden;}
 #vue-pages.active{flex-direction:column;}
+#vue-backup.active{flex-direction:column;}
 
 /* ══ PLAN DES SALLES ══ */
 .plan-section{display:flex;gap:.75rem;padding:.65rem .9rem;
