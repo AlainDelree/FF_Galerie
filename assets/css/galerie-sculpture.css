@@ -512,3 +512,18 @@
     padding-bottom: 35px !important;
   }
 }
+
+/* ── Salle sculpture remplit l'espace disponible ── */
+.salle-sculpture {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+.salle-sculpture .zone-basse {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.salle-sculpture .plancher-sol {
+  flex: 1 !important;
+}
