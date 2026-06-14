@@ -8,12 +8,37 @@
       "couleur_sol": "#b8a890",
       "texture": "none",
       "visible": true,
-      "pieces": [1, 2, 3, 4],
+      "pieces": [
+        1,
+        2,
+        3,
+        4
+      ],
       "positions": [
-        { "id": 4, "x": 22, "y": 8  },
-        { "id": 3, "x": 68, "y": 35 },
-        { "id": 1, "x": 40, "y": 58 },
-        { "id": 2, "x": 78, "y": 80 }
+        {
+          "id": 4,
+          "x": 50,
+          "y": 82,
+          "gabarit": "SOL"
+        },
+        {
+          "id": 1,
+          "x": 30,
+          "y": 62,
+          "gabarit": "L"
+        },
+        {
+          "id": 3,
+          "x": 68,
+          "y": 38,
+          "gabarit": "M"
+        },
+        {
+          "id": 2,
+          "x": 45,
+          "y": 18,
+          "gabarit": "S"
+        }
       ]
     }
   ]
