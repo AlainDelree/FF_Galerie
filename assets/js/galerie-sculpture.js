@@ -122,6 +122,22 @@ function ouvrirSalleObservation(piece) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
+  /* ── Bouton mode immersif (Three.js) ── */
+  if (piece.glb && typeof ouvrirSalleImmersive === 'function') {
+    const btnImm = document.createElement('button');
+    btnImm.style.cssText =
+      'position:absolute;bottom:1rem;right:1rem;z-index:20;' +
+      'padding:6px 14px;border-radius:4px;border:1px solid rgba(200,160,80,.4);' +
+      'background:rgba(0,0,0,.5);color:rgba(240,208,128,.85);' +
+      'font-family:Lato,sans-serif;font-size:.75rem;letter-spacing:.1em;cursor:pointer;';
+    btnImm.textContent = 'IMMERSIF';
+    btnImm.addEventListener('click', () => {
+      fermer();
+      setTimeout(() => ouvrirSalleImmersive(piece), 350);
+    });
+    overlay.appendChild(btnImm);
+  }
+
   function fermer() {
     overlay.style.opacity = '0';
     setTimeout(() => {
