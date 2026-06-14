@@ -32,12 +32,12 @@
     "type": "sculpture"
   },
   {
-    "id": "josepg",
-    "nom": "Josepg",
+    "id": "josepf",
+    "nom": "Josepf",
     "logo": "J",
-    "lien": "artistes/josepg/",
-    "repoPath": "artistes/josepg/data/",
-    "prefix": "josepg",
+    "lien": "artistes/josepf/",
+    "repoPath": "artistes/josepf/data/",
+    "prefix": "josepf",
     "draft": true,
     "genre": "f",
     "type": "peinture"
