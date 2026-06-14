@@ -5,42 +5,42 @@
       "nom": "Salle I",
       "theme": "",
       "couleur_mur": "#2a2520",
-      "couleur_sol": "#b8a890",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "pieces": [
-        1,
+      "toiles": [
         2,
         3,
+        1,
         4
       ],
       "positions": [
         {
           "id": 2,
-          "x": 25,
-          "y": 35,
+          "x": 33,
+          "y": 23,
           "gabarit": "S"
         },
         {
           "id": 3,
           "x": 75,
-          "y": 45,
+          "y": 23,
           "gabarit": "M"
         },
         {
           "id": 1,
-          "x": 25,
-          "y": 65,
+          "x": 79,
+          "y": 69,
           "gabarit": "L"
         },
         {
           "id": 4,
-          "x": 85,
-          "y": 75,
+          "x": 21,
+          "y": 69,
           "gabarit": "SOL"
         }
-      ],
-      "type": "sculpture"
+      ]
     }
   ]
 }
