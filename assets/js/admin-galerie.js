@@ -8,6 +8,26 @@ const _isSculpt = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpt
 const LBL = _isSculpt
   ? { item:'pièce', items:'pièces', Item:'Pièce', Items:'Pièces', placee:'placée', retiree:'retirée' }
   : { item:'toile', items:'toiles', Item:'Toile', Items:'Toiles', placee:'placée', retiree:'retirée du mur' };
+
+/* Revêtements de sol pour sculpture */
+const SOL_PATTERNS = {
+  parquet: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
+           'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px)',
+  carrelage: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px),' +
+             'repeating-linear-gradient(to right,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px)',
+  moquette: 'radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/5px 5px,' +
+            'radial-gradient(circle,rgba(0,0,0,.03) 1px,transparent 1px) 2.5px 2.5px/5px 5px',
+  none: ''
+};
+
+function solPatternCSS(texture, couleur) {
+  const c = couleur || '#8a6228';
+  if (/\.(jpg|jpeg|png|webp)$/i.test(texture)) {
+    return 'url("' + texture + '") center/cover,' + c;
+  }
+  const pat = SOL_PATTERNS[texture] || SOL_PATTERNS.parquet;
+  return pat ? (pat + ',' + c) : c;
+}
 //             appliquerApparence (admin-textures.js — guard typeof requis)
 // ═══════════════════════════════════════════════
 
@@ -100,12 +120,10 @@ function afficherMur() {
   if (_isSculpt) {
     bg.className = '';
     const coulParquet = couleurMurActuel || '#8a6228';
+    const texSol = (salleActive && salleActive.texture) || 'parquet';
     bg.style.cssText =
-      'background:' + coulParquet + ';position:relative;overflow:visible;' +
-      'display:block;width:100%;max-width:500px;aspect-ratio:4/3;border-radius:6px;' +
-      'background-image:' +
-      'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
-      'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
+      'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
+      'display:block;width:100%;max-width:500px;aspect-ratio:4/3;border-radius:6px;';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
@@ -1186,11 +1204,10 @@ function afficherSolPlacement() {
   bg.innerHTML = '';
   bg.className = ''; /* Supprimer la classe placement-mur-bg (CSS grid peinture) */
   const coulParquet = couleurMurActuel || '#8a6228';
+  const texSol = (salleActive && salleActive.texture) || 'parquet';
   const bgStyle = grilleVisiblePl
     ? 'background:' + coulParquet + ';'
-    : 'background:' + coulParquet + ';background-image:' +
-      'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
-      'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px);';
+    : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
   bg.style.cssText = bgStyle +
     'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;aspect-ratio:4/3;border-radius:6px;';
 
