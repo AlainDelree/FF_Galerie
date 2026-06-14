@@ -123,7 +123,7 @@ function afficherMur() {
     const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      'display:block;width:100%;aspect-ratio:4/3;border-radius:6px;';
+      'display:block;width:100%;flex:1;min-height:200px;border-radius:6px;';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
@@ -1209,7 +1209,7 @@ function afficherSolPlacement() {
     ? 'background:' + coulParquet + ';'
     : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
   bg.style.cssText = bgStyle +
-    'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;aspect-ratio:4/3;border-radius:6px;';
+    'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;flex:1;min-height:200px;border-radius:6px;';
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
