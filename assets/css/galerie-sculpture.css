@@ -453,3 +453,60 @@
 @media (max-width: 600px) {
   .plaque-nav { display: flex; align-items: center; gap: 6px; }
 }
+
+/* ══════════════════════════════════════
+   OVERRIDES GALERIE SCULPTURE — portes, mur, parquet
+   ══════════════════════════════════════ */
+
+/* Desktop : mur-inférieur ×2, portes ×2 */
+.salle-sculpture .mur-inferieur {
+  height: 130px !important;
+}
+.salle-sculpture .porte-mur {
+  width: 80px !important;
+  height: 120px !important;
+}
+.salle-sculpture .pm-ouverture {
+  width: 60px !important;
+  height: 88px !important;
+  border-radius: 30px 30px 0 0 !important;
+}
+.salle-sculpture .pm-ouverture::after {
+  border-radius: 28px 28px 0 0 !important;
+}
+.salle-sculpture .pm-nom {
+  font-size: .65rem !important;
+}
+.salle-sculpture .pm-fleche {
+  font-size: 1.1rem !important;
+}
+
+/* Parquet : +2 lignes en bas */
+.salle-sculpture .plancher-sol {
+  padding-bottom: 60px !important;
+}
+
+/* Mobile : portes ×1.5, parquet +1 ligne */
+@media (max-width: 600px) {
+  .salle-sculpture .mur-inferieur {
+    height: 95px !important;
+  }
+  .salle-sculpture .porte-mur {
+    width: 60px !important;
+    height: 90px !important;
+  }
+  .salle-sculpture .pm-ouverture {
+    width: 45px !important;
+    height: 66px !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+  .salle-sculpture .pm-ouverture::after {
+    border-radius: 20px 20px 0 0 !important;
+  }
+  .salle-sculpture .pm-nom {
+    font-size: .55rem !important;
+  }
+  .salle-sculpture .plancher-sol {
+    padding-bottom: 35px !important;
+  }
+}
