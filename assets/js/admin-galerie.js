@@ -1532,7 +1532,7 @@ function afficherSolPlacement() {
     const socleDiam = t.socle || pCm;
     const photoH = Math.min(_EMAXH, Math.max(_EMIN, Math.round(hCm * _ECH * (ratio < 1 ? ratio : 1))));
     const effScale = photoH / hCm;
-    const socleW = Math.max(_EMIN, Math.round(socleDiam * effScale));
+    const socleW = Math.max(_EMIN, Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
     const pedH = Math.max(20, Math.round(socleW * 0.5));
     return { pos: p, t, socleW, photoH, pedH };
   }).filter(Boolean);
@@ -1573,7 +1573,7 @@ function afficherSolPlacement() {
       imgWrap.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.style.cssText = 'width:' + Math.round(socleW * 0.7) + 'px;height:' + Math.round(photoH * 0.8) + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
+      ph.style.cssText = 'width:' + Math.round(socleW * 0.7) + 'px;height:' + Math.round(photoH * 0.6) + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
       ph.textContent = '?';
       imgWrap.appendChild(ph);
     }

@@ -233,7 +233,7 @@ function creerSocle(piece, gabarit, pos) {
     Math.max(ECHELLE_MIN, Math.round(hCm * ECHELLE * (ratio < 1 ? ratio : 1))));
   /* Échelle effective = même rapport que la pièce (plafonnée) */
   const effScale = photoH / hCm;
-  const socleW = Math.max(ECHELLE_MIN, Math.round(socleDiam * effScale));
+  const socleW = Math.max(ECHELLE_MIN, Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
 
   const hasGlb = !!piece.glb;
 
