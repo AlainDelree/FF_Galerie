@@ -1439,24 +1439,31 @@ function afficherSolPlacement() {
     }
   }
 
-  /* ── Socles avec perspective (rendu galerie) ── */
+  /* ── Socles — même calcul que galerie-sculpture.js ── */
+  const _ECH = window.innerWidth <= 600 ? 2.8 : 5.5;
+  const _EMIN = window.innerWidth <= 600 ? 55 : 90;
+  const _EMAXH = window.innerWidth <= 600 ? 200 : 380;
+
   const allPieces = (salleActive.positions || []).map(p => {
     const t = toiles.find(x => x.id === p.id);
-    return { pos: p, t, socle: t ? (t.socle || t.dimensions?.largeur || 30) : 30,
-             haut: t?.dimensions?.hauteur || 50 };
-  }).filter(x => x.t);
-  const maxSocle = Math.max(...allPieces.map(x => x.socle), 30);
-  const refScale = 80 / maxSocle;
+    if (!t) return null;
+    const dim = t.dimensions || {};
+    const hCm = dim.hauteur || 50;
+    const lCm = dim.largeur || 30;
+    const ratio = hCm / lCm;
+    const pCm = dim.profondeur || Math.round(lCm * 0.5);
+    const socleDiam = t.socle || pCm;
+    const photoH = Math.min(_EMAXH, Math.max(_EMIN, Math.round(hCm * _ECH * (ratio < 1 ? ratio : 1))));
+    const effScale = photoH / hCm;
+    const socleW = Math.max(_EMIN, Math.round(socleDiam * effScale));
+    const pedH = Math.max(20, Math.round(socleW * 0.5));
+    return { pos: p, t, socleW, photoH, pedH };
+  }).filter(Boolean);
 
-  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socle, haut }) => {
+  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socleW, photoH, pedH }) => {
     const estSel = peintureSurMurSel === p.id;
     const perspFactor = 1 - (p.y / 100) * 0.42;
     const zIdx = Math.round((100 - p.y) * 10) + 5;
-
-    const socleW = Math.max(25, Math.round(socle * refScale));
-    const ratio = haut / Math.max(socle, 1);
-    const photoH = Math.max(25, Math.round(socleW * ratio * 0.7));
-    const pedH = Math.max(12, Math.round(socleW * 0.5));
 
     const wrap = document.createElement('div');
     wrap.dataset.pieceId = p.id;
