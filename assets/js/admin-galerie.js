@@ -977,6 +977,8 @@ function viderFormToile() {
   if ($('glb-thumb-status')) { $('glb-thumb-status').style.display = 'none'; $('glb-thumb-status').textContent = ''; }
   var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
   if (btnChgPhoto) btnChgPhoto.style.display = 'none';
+  var btnRegen = document.getElementById('btn-regen-thumb');
+  if (btnRegen) btnRegen.style.display = 'none';
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
   if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = '';
@@ -1039,6 +1041,8 @@ function remplirFormToile(t) {
     /* Bouton "Changer la photo…" en mode sculpture */
     var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
     if (btnChgPhoto) btnChgPhoto.style.display = '';
+    var btnRegen = document.getElementById('btn-regen-thumb');
+    if (btnRegen) btnRegen.style.display = '';
     // Si déjà en cache
     if (prevImg.complete && prevImg.naturalWidth) {
       afficherQualitePhoto(Math.max(prevImg.naturalWidth, prevImg.naturalHeight), false);
@@ -1063,6 +1067,9 @@ function remplirFormToile(t) {
     $('glb-info').style.display = '';
     $('glb-ph').style.display = 'none';
     if ($('inp-glb-file')) $('inp-glb-file').style.display = 'none';
+    /* Toujours proposer Recréer si GLB existe */
+    var btnRegenEdit = document.getElementById('btn-regen-thumb');
+    if (btnRegenEdit) btnRegenEdit.style.display = '';
   } else if ($('glb-info')) {
     $('glb-info').style.display = 'none';
     $('glb-ph').style.display = '';

@@ -325,6 +325,8 @@ function genererThumbnailGLB(blobUrl) {
       /* Afficher bouton "Changer la photo…" en mode sculpture */
       var btnChg = document.getElementById('btn-change-photo-sculpt');
       if (btnChg) btnChg.style.display = '';
+      var btnRegen = document.getElementById('btn-regen-thumb');
+      if (btnRegen) btnRegen.style.display = '';
       /* Auto-fill dimensions pièce + diamètre socle depuis GLB */
       if (result.dims) {
         var xCm = Math.round(result.dims.x * 100);

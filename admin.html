@@ -1123,6 +1123,36 @@
           btnChg.style.cssText = 'display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:.75rem;margin-top:.3rem;padding:0;text-decoration:underline;';
           btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
           photoGrp.insertBefore(btnChg, zonePhoto);
+
+          /* Bouton "Recréer depuis le 3D" */
+          var btnRegen = document.createElement('button');
+          btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
+          btnRegen.textContent = '🔄 Recréer depuis le 3D';
+          btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
+          btnRegen.addEventListener('click', async function() {
+            var glbPath = document.getElementById('inp-glb').value;
+            if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
+            btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
+            try {
+              /* Charger le GLB depuis le serveur */
+              var base = (window.GALERIE_ASSETS_BASE || window.ADMIN_CFG?.repoPath?.replace(/data\/?$/, '') || '');
+              var url = base ? '../../' + glbPath : glbPath;
+              var resp = await fetch(url + '?v=' + Date.now());
+              if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
+              var blob = await resp.blob();
+              var blobUrl = URL.createObjectURL(blob);
+              var result = await genererThumbnailGLB(blobUrl);
+              URL.revokeObjectURL(blobUrl);
+              photoB64 = result.b64;
+              document.getElementById('photo-prev').src = 'data:image/jpeg;base64,' + result.b64;
+              document.getElementById('photo-prev').style.display = 'block';
+              toast('✓ Photo recréée depuis le 3D');
+            } catch (e) {
+              toast('Erreur : ' + e.message, 'err');
+            }
+            btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
+          });
+          photoGrp.insertBefore(btnRegen, zonePhoto);
           zonePhoto.style.display = 'none';
           document.getElementById('btn-recadrer-photo').style.display = 'none';
           document.getElementById('photo-qualite').style.display = 'none';
