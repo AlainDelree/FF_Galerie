@@ -1083,6 +1083,14 @@
         if (btnCoul) btnCoul.textContent = '🎨 Couleurs/Revêtement';
         const btnGrille = document.getElementById('btn-grille-pl');
         if (btnGrille) btnGrille.style.display = 'none';
+        /* Charger le CSS socles galerie pour l'arrangement */
+        if (!document.getElementById('css-galerie-sculpture')) {
+          var link = document.createElement('link');
+          link.id = 'css-galerie-sculpture';
+          link.rel = 'stylesheet';
+          link.href = 'assets/css/galerie-sculpture.css';
+          document.head.appendChild(link);
+        }
         const btnSwitch = document.getElementById('btn-switch-vue');
         if (btnSwitch) btnSwitch.style.display = '';
         /* Masquer les flèches du D-pad, garder ✕ et nom */

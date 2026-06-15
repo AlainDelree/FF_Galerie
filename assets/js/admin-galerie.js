@@ -1535,77 +1535,80 @@ function afficherSolPlacement() {
     const effScale = photoH / hCm;
     const socleW = Math.max(_EMIN, Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
     const pedH = Math.max(20, Math.round(socleW * 0.5));
-    return { pos: p, t, socleW, photoH, pedH };
+    return { pos: p, t, socleW, photoH, pedH, dim };
   }).filter(Boolean);
 
-  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socleW, photoH, pedH }) => {
+  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socleW, photoH, pedH, dim }) => {
     const estSel = peintureSurMurSel === p.id;
     const perspFactor = 1 - (p.y / 100) * 0.42;
     const zIdx = Math.round((100 - p.y) * 10) + 5;
 
+    const gCode = _gabaritSculpt(dim.hauteur).toLowerCase();
+
+    /* Wrapper — même structure que creerSocle() dans galerie-sculpture.js */
     const wrap = document.createElement('div');
+    wrap.className = 'socle-wrapper';
     wrap.dataset.pieceId = p.id;
-    wrap.style.cssText =
-      'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-      'transform:translateX(-50%) scale(' + perspFactor.toFixed(3) + ');transform-origin:bottom center;' +
-      'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
-    if (estSel) {
-      wrap.style.outline = '2px solid var(--gold)';
-    }
+    wrap.style.left = p.x + '%';
+    wrap.style.bottom = p.y + '%';
+    wrap.style.transformOrigin = 'bottom center';
+    wrap.style.transform = 'translateX(-50%) scale(' + perspFactor.toFixed(3) + ')';
+    wrap.style.zIndex = String(zIdx);
+    wrap.style.cursor = 'pointer';
+    if (estSel) wrap.style.outline = '2px solid var(--gold)';
 
-    /* Image ou model-viewer 3D */
-    const imgWrap = document.createElement('div');
-    imgWrap.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;display:flex;align-items:flex-end;justify-content:center;';
+    /* Socle container */
+    const socle = document.createElement('div');
+    socle.className = 'socle socle--' + gCode;
+    socle.style.width = socleW + 'px';
 
+    /* Visuel : model-viewer 3D ou photo */
     if (t.glb) {
-      /* Model-viewer 3D statique (pas de rotation/zoom utilisateur) */
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', (ADMIN_CFG.repoPath ? '../../' : '') + t.glb + '?v=' + Date.now());
       mv.setAttribute('interaction-prompt', 'none');
-      mv.setAttribute('disable-zoom', '');
-      mv.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;pointer-events:none;--poster-color:transparent;';
-      imgWrap.appendChild(mv);
-      /* Charger model-viewer si pas déjà fait */
+      mv.setAttribute('camera-orbit', '25deg 70deg auto');
+      mv.setAttribute('field-of-view', '36deg');
+      mv.setAttribute('shadow-intensity', '0.6');
+      mv.style.cssText = 'width:100%;height:' + photoH + 'px;pointer-events:none;--poster-color:transparent;background:transparent;';
+      socle.appendChild(mv);
       if (typeof loadModelViewerAdmin === 'function') loadModelViewerAdmin();
     } else if (t.photo || t._preview) {
       const img = document.createElement('img');
+      img.className = 'socle-photo';
       img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-      img.style.cssText = 'max-width:' + socleW + 'px;max-height:' + photoH + 'px;object-fit:contain;';
-      imgWrap.appendChild(img);
+      img.style.cssText = 'height:' + photoH + 'px;object-fit:contain;';
+      socle.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.style.cssText = 'width:' + Math.round(socleW * 0.7) + 'px;height:' + Math.round(photoH * 0.6) + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
-      ph.textContent = '?';
-      imgWrap.appendChild(ph);
+      ph.className = 'socle-placeholder';
+      ph.style.height = photoH + 'px';
+      socle.appendChild(ph);
     }
-    wrap.appendChild(imgWrap);
 
-    /* Piédestal */
+    /* Badge 3D */
+    if (t.glb) {
+      const badge = document.createElement('span');
+      badge.className = 'socle-badge-3d'; badge.textContent = '3D';
+      socle.appendChild(badge);
+    }
+
+    /* Piédestal + ombre — classes CSS galerie */
     const ped = document.createElement('div');
-    ped.style.cssText =
-      'width:' + socleW + 'px;height:' + pedH + 'px;border-radius:5px;' +
-      'background:linear-gradient(to right,rgba(0,0,0,.15),rgba(255,255,255,.08) 45%,rgba(255,255,255,.12) 55%,rgba(0,0,0,.12));' +
-      'background-color:#eae6de;position:relative;';
-    const topEl = document.createElement('div');
-    topEl.style.cssText =
-      'position:absolute;top:-' + Math.max(3, Math.round(pedH * 0.14)) + 'px;left:-15%;width:130%;height:' + Math.max(5, Math.round(pedH * 0.25)) + 'px;' +
-      'background:radial-gradient(ellipse at 42% 40%,#f8f6f2,#d8d2c8);border-radius:50%;';
-    ped.appendChild(topEl);
-    wrap.appendChild(ped);
-
-    /* Ombre */
+    ped.className = 'socle-piedestal socle-piedestal--' + gCode;
     const ombre = document.createElement('div');
-    ombre.style.cssText =
-      'width:' + Math.round(socleW * 1.3) + 'px;height:' + Math.max(4, Math.round(socleW * 0.1)) + 'px;background:rgba(0,0,0,.25);border-radius:50%;filter:blur(3px);margin-top:1px;';
-    wrap.appendChild(ombre);
+    ombre.className = 'socle-ombre';
+    ped.appendChild(ombre);
+    socle.appendChild(ped);
 
     /* Titre */
-    const lbl = document.createElement('div');
-    lbl.style.cssText =
-      'font-size:' + Math.max(7, Math.round(socleW * 0.16)) + 'px;color:#fff;white-space:nowrap;max-width:' + Math.round(socleW * 1.5) + 'px;overflow:hidden;' +
-      'text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);margin-top:2px;';
-    lbl.textContent = t.titre || '—';
-    wrap.appendChild(lbl);
+    if (t.titre) {
+      const titre = document.createElement('div');
+      titre.className = 'socle-titre'; titre.textContent = t.titre;
+      socle.appendChild(titre);
+    }
+
+    wrap.appendChild(socle);
 
     /* Drag-drop */
     let _prevSel = null;
