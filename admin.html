@@ -1158,18 +1158,20 @@
           var inpDiam = document.createElement('input');
           inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
           inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
-          inpDiam.min = '5'; inpDiam.max = '200'; inpDiam.placeholder = '—';
+          inpDiam.min = '1'; inpDiam.max = '200'; inpDiam.placeholder = 'défaut';
           var btnPlus = document.createElement('button');
           btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
           var unite = document.createElement('span');
           unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
 
           btnMoins.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value) || 20;
-            inpDiam.value = Math.max(5, v - 5);
+            var v = parseInt(inpDiam.value);
+            if (isNaN(v) || v <= 5) { inpDiam.value = ''; return; }
+            inpDiam.value = v - 5;
           });
           btnPlus.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value) || 0;
+            var v = parseInt(inpDiam.value);
+            if (isNaN(v)) { inpDiam.value = 5; return; }
             inpDiam.value = Math.min(200, v + 5);
           });
 
