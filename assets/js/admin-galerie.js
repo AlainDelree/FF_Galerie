@@ -199,7 +199,9 @@ function afficherMur() {
       oldRow.remove();
     }
 
-    var mobilePos = salleActive.positions_mobile || [];
+    var mobilePos = (salleActive.positions_mobile && salleActive.positions_mobile.length)
+      ? salleActive.positions_mobile : (salleActive.positions || []);
+    var hasCustomMobile = !!(salleActive.positions_mobile && salleActive.positions_mobile.length);
     if (mobilePos.length) {
       /* Wrapper row pour côte à côte */
       var rowWrap = document.createElement('div');
@@ -215,7 +217,7 @@ function afficherMur() {
 
       var gsmLbl = document.createElement('div');
       gsmLbl.style.cssText = 'text-align:center;font-size:7px;color:#fff;padding:3px 0;background:#7a7a7a;font-weight:700;letter-spacing:.1em;';
-      gsmLbl.textContent = '📱 GSM';
+      gsmLbl.textContent = hasCustomMobile ? '📱 GSM' : '📱 GSM (=PC)';
       miniGsm.appendChild(gsmLbl);
 
       var gsmMur = document.createElement('div');
@@ -1546,23 +1548,6 @@ function afficherSolPlacement() {
       'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
     if (estSel) {
       wrap.style.outline = '2px solid var(--gold)';
-      wrap.style.overflow = 'visible';
-      /* Bouton ✕ sur la pièce sélectionnée */
-      const rmBtn = document.createElement('button');
-      rmBtn.textContent = '✕ Retirer';
-      rmBtn.style.cssText = 'position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);';
-      rmBtn.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        var pos = _getPositions();
-        var idx = pos.findIndex(function(x){ return x.id === p.id; });
-        if (idx >= 0) pos.splice(idx, 1);
-        peintureSurMurSel = null;
-        afficherSolPlacement(); afficherStripPlacement();
-        marquerChangement();
-        toast('"' + (t.titre||'—') + '" retirée de cette vue');
-      });
-      wrap.appendChild(rmBtn);
     }
 
     /* Image ou model-viewer 3D */
@@ -1629,12 +1614,43 @@ function afficherSolPlacement() {
     wrap.addEventListener('click', e => {
       e.stopPropagation();
       if (!_dragStarted) {
-        peintureSurMurSel = peintureSurMurSel === p.id ? null : p.id;
-        afficherSolPlacement(); afficherStripPlacement();
+        /* Toggle sélection SANS re-render complet */
+        const wasSelected = peintureSurMurSel === p.id;
+        /* Désélectionner l'ancien */
+        sol.querySelectorAll('[data-piece-id]').forEach(w => {
+          w.style.outline = '';
+          w.style.overflow = '';
+          var oldRm = w.querySelector('.btn-retirer-piece');
+          if (oldRm) oldRm.remove();
+        });
+        if (wasSelected) {
+          peintureSurMurSel = null;
+        } else {
+          peintureSurMurSel = p.id;
+          wrap.style.outline = '2px solid var(--gold)';
+          wrap.style.overflow = 'visible';
+          /* Ajouter bouton ✕ Retirer */
+          var rmBtn = document.createElement('button');
+          rmBtn.className = 'btn-retirer-piece';
+          rmBtn.textContent = '✕ Retirer';
+          rmBtn.style.cssText = 'position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);';
+          rmBtn.addEventListener('click', function(ev) {
+            ev.stopPropagation(); ev.preventDefault();
+            var pos = _getPositions();
+            var idx = pos.findIndex(function(x){ return x.id === p.id; });
+            if (idx >= 0) pos.splice(idx, 1);
+            peintureSurMurSel = null;
+            wrap.remove();
+            afficherStripPlacement();
+            marquerChangement();
+            toast('"' + (t.titre||'—') + '" retirée de cette vue');
+          });
+          wrap.appendChild(rmBtn);
+        }
+        afficherStripPlacement();
         $('pl-aide').textContent = peintureSurMurSel
-          ? '"' + (t.titre||'—') + '" → glisser pour déplacer ou ✕ retirer'
+          ? '"' + (t.titre||'—') + '" → glisser pour déplacer'
           : 'Clique une pièce du bas pour la placer';
-        majCtrlPanel();
       }
     });
     sol.appendChild(wrap);
@@ -1663,8 +1679,8 @@ function afficherSolPlacement() {
     placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
   });
 
-  /* ── Mini aperçu de l'autre mode (non-interactif) ── */
-  _renderMiniPreview(bg);
+  /* ── Mini aperçu de l'autre mode (non-interactif, seulement en mode PC) ── */
+  if (_placementVue === 'pc') _renderMiniPreview(bg);
 }
 
 function _renderMiniPreview(mainBg) {
