@@ -341,16 +341,16 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
     /* Masquer les pseudo-éléments CSS (lattes hardcodées) */
     plancherSol.classList.add('sol-custom');
 
-    /* Perspective carrelage : grille 3D sous les socles */
-    if (solTexture === 'carrelage') {
+    /* Perspective sol : grille 3D sous les socles (parquet et carrelage) */
+    if (solTexture === 'carrelage' || solTexture === 'parquet') {
       plancherSol.style.background = solCouleur; /* Couleur unie de base */
+      var pat = SOL_PATTERNS_PUB[solTexture] || '';
       var perspDiv = document.createElement('div');
-      perspDiv.className = 'sol-persp-carrelage';
+      perspDiv.className = 'sol-persp';
       perspDiv.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;';
       var grid = document.createElement('div');
       grid.style.cssText = 'position:absolute;left:-20%;right:-20%;bottom:0;height:200%;' +
-        'background:repeating-linear-gradient(to bottom,transparent 0px,transparent 48px,rgba(0,0,0,.18) 48px,rgba(0,0,0,.18) 50px),' +
-        'repeating-linear-gradient(to right,transparent 0px,transparent 48px,rgba(0,0,0,.18) 48px,rgba(0,0,0,.18) 50px),' + solCouleur + ';' +
+        'background:' + (pat ? pat + ',' : '') + solCouleur + ';' +
         'transform-origin:bottom center;transform:perspective(400px) rotateX(35deg);';
       perspDiv.appendChild(grid);
       plancherSol.insertBefore(perspDiv, plancherSol.firstChild);
