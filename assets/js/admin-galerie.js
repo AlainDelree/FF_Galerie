@@ -1439,16 +1439,16 @@ function afficherSolPlacement() {
 
   const isGsm = _placementVue === 'gsm';
 
-  /* Conteneur avec ratio selon le mode */
-  container.style.cssText = isGsm
-    ? 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;'
-    : 'width:100%;height:100%;';
+  /* Remplir tout l'espace disponible */
+  container.style.cssText = 'flex:1;min-height:0;display:flex;' + (isGsm
+    ? 'align-items:center;justify-content:center;'
+    : '');
 
-  /* Wrapper iframe (portrait pour GSM, plein pour PC) */
+  /* Wrapper iframe */
   const iframeWrap = document.createElement('div');
   iframeWrap.style.cssText = isGsm
     ? 'height:100%;aspect-ratio:9/19;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
-    : 'width:100%;height:100%;border-radius:6px;overflow:hidden;position:relative;';
+    : 'flex:1;min-height:0;border-radius:6px;overflow:hidden;position:relative;';
 
   /* Label mode */
   if (isGsm) {
@@ -1463,7 +1463,7 @@ function afficherSolPlacement() {
   const iframe = document.createElement('iframe');
   iframe.id = 'edit-galerie-iframe';
   iframe.src = galeriePath + '?edit=1&v=' + Date.now();
-  iframe.style.cssText = 'width:100%;height:100%;border:none;';
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
   iframeWrap.appendChild(iframe);
   container.appendChild(iframeWrap);
 
