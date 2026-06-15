@@ -1044,6 +1044,13 @@ function remplirFormToile(t) {
       afficherQualitePhoto(Math.max(prevImg.naturalWidth, prevImg.naturalHeight), false);
       prevImg.onload = null;
     }
+  } else {
+    $('photo-prev').src = ''; $('photo-prev').style.display = 'none';
+    $('photo-ph').style.display = '';
+    $('btn-recadrer-photo').classList.remove('visible');
+    var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
+    if (btnChgPhoto) btnChgPhoto.style.display = 'none';
+    var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   }
   salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
   /* Champs sculpture */
