@@ -87,12 +87,15 @@
       ],
       "description": "",
       "dimensions": {
+        "type": "portrait",
         "largeur": 50,
         "hauteur": 120,
         "profondeur": 44
       },
       "disponibilite": "disponible",
-      "prix": ""
+      "style": "",
+      "visible": true,
+      "socle": 268
     },
     {
       "id": 5,
