@@ -20,6 +20,24 @@ const ECHELLE      = window.innerWidth <= 600 ? 2.8 : 5.5;
 const ECHELLE_MIN  = window.innerWidth <= 600 ? 55  : 90;
 const ECHELLE_MAXH = window.innerWidth <= 600 ? 200 : 380;
 
+/* ── Patterns sol (miroir de admin-galerie.js) ── */
+const SOL_PATTERNS_PUB = {
+  parquet: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
+           'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px)',
+  carrelage: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px),' +
+             'repeating-linear-gradient(to right,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px)',
+  moquette: 'radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/5px 5px,' +
+            'radial-gradient(circle,rgba(0,0,0,.03) 1px,transparent 1px) 2.5px 2.5px/5px 5px',
+  none: ''
+};
+
+function solBgCSS(texture, couleur) {
+  var c = couleur || '#8a6228';
+  if (/\.(jpg|jpeg|png|webp)$/i.test(texture)) return 'url("' + texture + '") center/cover,' + c;
+  var pat = SOL_PATTERNS_PUB[texture] || SOL_PATTERNS_PUB.parquet;
+  return pat ? (pat + ',' + c) : c;
+}
+
 /* ── Chargement model-viewer (une seule fois, à la demande) ── */
 function chargerModelViewer() {
   const id = 'script-model-viewer';
@@ -318,6 +336,12 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
 
   const plancherSol = plancher.querySelector('.plancher-sol');
   if (plancherSol) {
+    /* Appliquer le revêtement sol défini dans l'admin */
+    var solTexture = salle.texture || 'parquet';
+    var solCouleur = salle.couleur_mur || '#8a6228';
+    plancherSol.style.background = solBgCSS(solTexture, solCouleur);
+    /* Masquer les pseudo-éléments CSS (lattes hardcodées) */
+    plancherSol.classList.add('sol-custom');
     (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);

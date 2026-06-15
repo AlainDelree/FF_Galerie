@@ -19,6 +19,10 @@
   max-height: none !important;
   position: relative;
 }
+.salle-sculpture .plancher-sol.sol-custom::before,
+.salle-sculpture .plancher-sol.sol-custom::after {
+  display: none !important;
+}
 
 /* ── Panneaux nav cachés en sculpture (position problématique) ── */
 .salle-sculpture .panneau-nav {

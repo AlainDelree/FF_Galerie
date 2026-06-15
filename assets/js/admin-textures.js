@@ -58,6 +58,7 @@ function appliquerApparence() {
   renderColorSwatches('mur');
   renderColorSwatches('cadres');
   document.querySelectorAll('#sw-texture .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
+  document.querySelectorAll('#sw-revetement .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
   // Met à jour les cadres affichés
   document.querySelectorAll('.toile-posee').forEach(el => {
     if (!el.classList.contains('reserve-posee')) {
@@ -319,6 +320,15 @@ function initSwatches() {
 
   document.querySelectorAll('#sw-texture .sw').forEach(function(sw) {
     sw.addEventListener('click', function() { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
+  });
+
+  /* Revêtement sol (sculpture) — même logique que texture mur */
+  document.querySelectorAll('#sw-revetement .sw').forEach(function(sw) {
+    sw.addEventListener('click', function() {
+      document.querySelectorAll('#sw-revetement .sw').forEach(function(s) { s.classList.remove('sel'); });
+      sw.classList.add('sel');
+      setTexture(sw.dataset.val);
+    });
   });
 
   // Picker mur : initialisé à la couleur courante
