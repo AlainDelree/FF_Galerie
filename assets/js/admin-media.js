@@ -243,6 +243,7 @@ function genererThumbnailGLB(blobUrl) {
 
       mv.addEventListener('load', () => {
         if (statusEl) statusEl.textContent = '⏳ Génération du thumbnail…';
+        var mvDims = mv.getDimensions();
         /* Petit délai pour laisser le rendu se stabiliser */
         setTimeout(async () => {
           try {
@@ -254,7 +255,7 @@ function genererThumbnailGLB(blobUrl) {
             reader.onload = () => {
               const b64 = reader.result.split(',')[1];
               if (statusEl) { statusEl.textContent = '✓ Thumbnail généré'; statusEl.style.color = 'var(--success)'; }
-              ok(b64);
+              ok({ b64, dims: { x: mvDims.x, y: mvDims.y, z: mvDims.z } });
             };
             reader.onerror = ko;
             reader.readAsDataURL(blob);
@@ -313,15 +314,28 @@ function genererThumbnailGLB(blobUrl) {
     /* Générer thumbnail */
     var blobUrl = URL.createObjectURL(f);
     try {
-      var thumbB64 = await genererThumbnailGLB(blobUrl);
-      photoB64 = thumbB64;
-      $('photo-prev').src = 'data:image/jpeg;base64,' + thumbB64;
+      var result = await genererThumbnailGLB(blobUrl);
+      photoB64 = result.b64;
+      $('photo-prev').src = 'data:image/jpeg;base64,' + result.b64;
       $('photo-prev').style.display = 'block';
       $('photo-ph').style.display = 'none';
       $('btn-recadrer-photo').classList.add('visible');
       /* Afficher bouton "Changer la photo…" en mode sculpture */
       var btnChg = document.getElementById('btn-change-photo-sculpt');
       if (btnChg) btnChg.style.display = '';
+      /* Auto-fill diamètre du socle depuis dimensions GLB */
+      if (result.dims) {
+        var footprint = Math.max(result.dims.x, result.dims.z);
+        var diam = Math.ceil(footprint * 100 * 1.3); /* empreinte + 30% marge */
+        if (diam < 5) diam = 15; /* minimum 15 cm */
+        var hauteurCm = Math.round(result.dims.y * 100);
+        var inpDiam = document.getElementById('inp-larg');
+        if (inpDiam && !inpDiam.value) inpDiam.value = diam;
+        var inpDiamStepper = document.getElementById('inp-diam-sculpt');
+        if (inpDiamStepper) inpDiamStepper.value = diam;
+        var inpHaut = document.getElementById('inp-haut');
+        if (inpHaut && !inpHaut.value) inpHaut.value = hauteurCm;
+      }
     } catch (e) {
       console.warn('Thumbnail GLB échoué:', e);
       toast('Thumbnail auto échoué — vous pouvez ajouter une photo manuellement', 'err', 4000);

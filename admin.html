@@ -1080,10 +1080,77 @@
         if (murAide) murAide.textContent = 'Utilise "🔧 Arranger le sol" pour placer les pièces';
 
         /* Labels adaptés sculpture */
-        var dimsLbl = document.querySelector('#dims-lh').closest('.grp').querySelector('.lbl');
-        if (dimsLbl) dimsLbl.textContent = 'Diamètre du socle (cm)';
         var matInput = document.getElementById('inp-mat');
         if (matInput) matInput.placeholder = 'Métal, bois, pierre…';
+
+        /* ── Stepper diamètre du socle ── */
+        (function() {
+          var dimsGrp = document.querySelector('#dims-lh').closest('.grp');
+          var dimsLbl = dimsGrp.querySelector('.lbl');
+          if (dimsLbl) dimsLbl.textContent = 'Diamètre du socle (cm)';
+
+          /* Cacher la row L×H×P et les favoris */
+          document.getElementById('dims-lh').style.display = 'none';
+          var favEl = document.getElementById('dims-favoris');
+          if (favEl) favEl.style.display = 'none';
+
+          /* Créer stepper */
+          var stepper = document.createElement('div');
+          stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
+
+          var btnMoins = document.createElement('button');
+          btnMoins.type = 'button';
+          btnMoins.textContent = '−';
+          btnMoins.style.cssText = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+
+          var inpDiam = document.createElement('input');
+          inpDiam.type = 'number';
+          inpDiam.className = 'champ';
+          inpDiam.id = 'inp-diam-sculpt';
+          inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
+          inpDiam.min = '5'; inpDiam.max = '200';
+          inpDiam.placeholder = '—';
+
+          var btnPlus = document.createElement('button');
+          btnPlus.type = 'button';
+          btnPlus.textContent = '+';
+          btnPlus.style.cssText = btnMoins.style.cssText;
+
+          var unite = document.createElement('span');
+          unite.style.cssText = 'color:var(--muted);font-size:.82rem;';
+          unite.textContent = 'cm';
+
+          /* Sync stepper ↔ inp-larg (source de vérité) */
+          var inpLarg = document.getElementById('inp-larg');
+          function sync() { inpLarg.value = inpDiam.value; }
+          inpDiam.addEventListener('input', sync);
+
+          btnMoins.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value) || 20;
+            inpDiam.value = Math.max(5, v - 5);
+            sync();
+          });
+          btnPlus.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value) || 0;
+            inpDiam.value = Math.min(200, v + 5);
+            sync();
+          });
+
+          /* Observer inp-larg pour remplissage auto depuis GLB */
+          new MutationObserver(function() {
+            if (inpLarg.value && !inpDiam.value) { inpDiam.value = inpLarg.value; }
+          }).observe(inpLarg, { attributes: true, attributeFilter: ['value'] });
+          /* Aussi via polling léger (value changed programmatically) */
+          setInterval(function() {
+            if (inpLarg.value && inpDiam.value !== inpLarg.value) inpDiam.value = inpLarg.value;
+          }, 500);
+
+          stepper.appendChild(btnMoins);
+          stepper.appendChild(inpDiam);
+          stepper.appendChild(btnPlus);
+          stepper.appendChild(unite);
+          dimsGrp.appendChild(stepper);
+        })();
 
         /* ── Restructurer modal : GLB en premier, photo générée en dessous ── */
         (function() {

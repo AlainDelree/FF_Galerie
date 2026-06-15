@@ -975,6 +975,7 @@ function viderFormToile() {
   if (btnChgPhoto) btnChgPhoto.style.display = 'none';
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
+  if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = '';
   $('sel-format').value = '';
   document.querySelectorAll('#dims-favoris .dim-chip').forEach(c => c.classList.remove('sel'));
   remplirSelectTaille();
@@ -1008,6 +1009,7 @@ function remplirFormToile(t) {
     synchroChips(0, 0);
   } else if (d && d.largeur && d.hauteur) {
     $('inp-larg').value = d.largeur; $('inp-haut').value = d.hauteur;
+    if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = d.largeur;
     if (d.profondeur && $('inp-prof')) $('inp-prof').value = d.profondeur;
     synchroChips(d.largeur, d.hauteur);
   } else {
