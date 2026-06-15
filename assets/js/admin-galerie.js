@@ -685,12 +685,12 @@ function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
 
-  // UNION : pièces placées + pièce sélectionnée pour placement
-  // Pour sculpture: utiliser selectedToilePl au lieu de toilesSelectionnees
-  const selectionneesIds = _isSculpt
-    ? (selectedToilePl ? [selectedToilePl.id] : [])
-    : [...toilesSelectionnees];
-  const tousIds = [...new Set([...poseeIds, ...selectionneesIds])];
+  // UNION : pièces placées + sélectionnées depuis le stock + sélectionnée pour placement
+  const tousIds = [...new Set([
+    ...poseeIds,
+    ...toilesSelectionnees,
+    ...(selectedToilePl ? [selectedToilePl.id] : [])
+  ])];
 
   if (tousIds.length === 0) {
     strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
@@ -859,6 +859,8 @@ function ouvrirFormulaireNouvel() {
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
+  var mb = $('overlay-toile').querySelector('.modal-body');
+  if (mb) mb.scrollTop = 0;
 }
 
 function construirePillsSalle(salleSelId) {
@@ -887,6 +889,8 @@ function ouvrirFormulaireEdition(id) {
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
+  var mb = $('overlay-toile').querySelector('.modal-body');
+  if (mb) mb.scrollTop = 0;
 }
 
 function fermerModalToile() { $('overlay-toile').classList.remove('ouvert'); }
