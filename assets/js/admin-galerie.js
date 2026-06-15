@@ -15,8 +15,6 @@ const SOL_PATTERNS = {
            'repeating-linear-gradient(to right,transparent 0px,transparent 58px,rgba(0,0,0,.06) 58px,rgba(0,0,0,.06) 60px)',
   carrelage: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px),' +
              'repeating-linear-gradient(to right,transparent 0px,transparent 48px,rgba(0,0,0,.22) 48px,rgba(0,0,0,.22) 50px)',
-  moquette: 'radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/5px 5px,' +
-            'radial-gradient(circle,rgba(0,0,0,.03) 1px,transparent 1px) 2.5px 2.5px/5px 5px',
   none: ''
 };
 
