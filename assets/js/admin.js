@@ -779,7 +779,21 @@ $('btn-arranger-mur').addEventListener('click', () => entrerModePlacement());
 $('btn-modifier-toile').addEventListener('click', () => {
   if (selectedToile) ouvrirFormulaireEdition(selectedToile.id);
 });
-$('btn-fin-placement').addEventListener('click', () => quitterModePlacement());
+$('btn-apercu-placement').addEventListener('click', () => quitterModePlacement());
+$('btn-sauver-placement').addEventListener('click', async () => {
+  const btn = $('btn-sauver-placement');
+  btn.disabled = true; btn.textContent = 'En cours…';
+  try {
+    const lbl = _isSculpt ? 'pièces' : 'toiles';
+    salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+    await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'));
+    toast('✓ Placement enregistré');
+    quitterModePlacement();
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'err');
+  }
+  btn.disabled = false; btn.textContent = '💾 Enregistrer';
+});
 $('btn-tout-mettre').addEventListener('click', () => autoPlacerTout());
 $('btn-grille-pl').addEventListener('click', function() {
   grilleVisiblePl = !grilleVisiblePl;

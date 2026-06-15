@@ -795,7 +795,7 @@ function placerToilePl(col, row) {
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
   marquerChangement(); toast('✓ Placée');
-  $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique ← Retour';
+  $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique 💾 Enregistrer';
 }
 
 function survolCellule(col, row, bgId) {
@@ -1445,7 +1445,7 @@ function placerPieceSol(x, y) {
   afficherSolPlacement(); afficherStripPlacement();
   marquerChangement();
   toast('✓ Pièce placée en ' + x + ',' + y);
-  $('pl-aide').textContent = 'Pièce placée — continue ou clique ← Retour';
+  $('pl-aide').textContent = 'Pièce placée — continue ou clique 💾 Enregistrer';
 }
 
 function deplacerPieceSol(dx, dy) {
