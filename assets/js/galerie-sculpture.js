@@ -349,9 +349,9 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       perspDiv.className = 'sol-persp';
       perspDiv.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;';
       var grid = document.createElement('div');
-      grid.style.cssText = 'position:absolute;left:-20%;right:-20%;bottom:0;height:200%;' +
+      grid.style.cssText = 'position:absolute;left:-50%;right:-50%;bottom:0;height:500%;' +
         'background:' + (pat ? pat + ',' : '') + solCouleur + ';' +
-        'transform-origin:bottom center;transform:perspective(400px) rotateX(35deg);';
+        'transform-origin:bottom center;transform:perspective(600px) rotateX(45deg);';
       perspDiv.appendChild(grid);
       plancherSol.insertBefore(perspDiv, plancherSol.firstChild);
     }
