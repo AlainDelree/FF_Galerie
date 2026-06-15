@@ -25,38 +25,44 @@
     {
       "id": 1,
       "titre": "Statue jardin",
-      "photo": "",
-      "glb": "artistes/dinso/assets/models/photogrammetrie_statue_jardin.glb",
+      "photo": "artistes/dinso/assets/images/toiles/piece-001.jpg",
+      "glb": "artistes/dinso/assets/models/piece-001.glb",
       "date": "2025",
       "materiaux": [
         "Métal"
       ],
       "description": "",
       "dimensions": {
+        "type": "portrait",
         "largeur": 42,
         "hauteur": 60,
         "profondeur": 38
       },
       "disponibilite": "disponible",
-      "prix": ""
+      "style": "",
+      "visible": true,
+      "socle": 55
     },
     {
       "id": 2,
       "titre": "Rose séchée",
-      "photo": "",
-      "glb": "artistes/dinso/assets/models/dried_yellow_rose.glb",
+      "photo": "artistes/dinso/assets/images/toiles/piece-002.jpg",
+      "glb": "artistes/dinso/assets/models/piece-002.glb",
       "date": "2025",
       "materiaux": [
         "Végétal séché"
       ],
       "description": "",
       "dimensions": {
+        "type": "portrait",
         "largeur": 11,
         "hauteur": 15,
         "profondeur": 8
       },
       "disponibilite": "disponible",
-      "prix": ""
+      "style": "",
+      "visible": true,
+      "socle": 15
     },
     {
       "id": 3,
