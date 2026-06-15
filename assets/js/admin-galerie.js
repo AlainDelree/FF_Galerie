@@ -189,6 +189,31 @@ function afficherMur() {
 
       bg.appendChild(wrap);
     });
+
+    /* ── Mini aperçu GSM à côté du PC ── */
+    var mobilePos = salleActive.positions_mobile || [];
+    if (mobilePos.length) {
+      var miniGsm = document.createElement('div');
+      miniGsm.style.cssText = 'position:absolute;right:6px;top:6px;width:60px;height:110px;border-radius:8px;overflow:hidden;border:1.5px solid var(--gold);background:#7a7a7a;z-index:20;opacity:.85;';
+      /* Label */
+      var gsmLbl = document.createElement('div');
+      gsmLbl.style.cssText = 'text-align:center;font-size:6px;color:var(--gold);padding:2px 0;letter-spacing:.1em;font-weight:700;';
+      gsmLbl.textContent = '📱 GSM';
+      miniGsm.appendChild(gsmLbl);
+      /* Sol mini */
+      var gsmSol = document.createElement('div');
+      gsmSol.style.cssText = 'height:70%;position:relative;background:' + solPatternCSS(texSol, coulParquet) + ';';
+      mobilePos.forEach(function(p) {
+        var t2 = toiles.find(function(x){ return x.id === p.id; }); if (!t2) return;
+        var sc = 1 - (p.y / 100) * 0.42;
+        var dot = document.createElement('div');
+        dot.style.cssText = 'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;transform:translateX(-50%) scale(' + (sc * 0.8).toFixed(2) + ');transform-origin:bottom center;width:6px;height:6px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.25);';
+        gsmSol.appendChild(dot);
+      });
+      miniGsm.appendChild(gsmSol);
+      bg.appendChild(miniGsm);
+    }
+
     return;
   }
 
@@ -1603,6 +1628,10 @@ function afficherSolPlacement() {
 }
 
 function _renderMiniPreview(mainBg) {
+  /* Nettoyer l'ancien */
+  var old = document.getElementById('mini-preview-autre');
+  if (old) old.remove();
+
   if (!_isSculpt || !salleActive) return;
   const isGsm = _placementVue === 'gsm';
   const otherPos = isGsm ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
@@ -1613,6 +1642,7 @@ function _renderMiniPreview(mainBg) {
 
   /* Conteneur mini */
   const mini = document.createElement('div');
+  mini.id = 'mini-preview-autre';
   mini.style.cssText = isGsm
     ? 'position:absolute;right:8px;top:8px;width:180px;height:100px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;'
     : 'position:absolute;right:8px;top:8px;width:60px;height:120px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;';
