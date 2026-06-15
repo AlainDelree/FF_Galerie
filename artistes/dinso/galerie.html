@@ -14,6 +14,20 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon-invite.svg">
 </head>
 <body class="theme-sombre" data-page="galerie" style="background-color:#111111;">
+  <script>
+    /* Mode édition (iframe admin) — cacher tout sauf la salle */
+    if (new URLSearchParams(location.search).has('edit')) {
+      document.write('<style>' +
+        '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav{display:none!important;}' +
+        'body{margin:0!important;padding:0!important;overflow:hidden!important;}' +
+        '.galerie-principale{padding:0!important;margin:0!important;}' +
+        '.conteneur-salles{width:100%!important;transform:none!important;transition:none!important;}' +
+        '.salle{width:100%!important;height:100vh!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}' +
+        '.salle-sculpture .mur-inferieur{flex:0 0 auto!important;}' +
+        '.salle-sculpture .plancher-sol{flex:1!important;min-height:0!important;max-height:none!important;}' +
+      '</style>');
+    }
+  </script>
   <div class="bandeau-invite">
     Invité de <a href="../../index.html">Frédérique Ferette</a>
   </div>
