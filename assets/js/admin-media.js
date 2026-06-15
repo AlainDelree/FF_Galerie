@@ -201,3 +201,141 @@ $('btn-musique-changer')?.addEventListener('click', () => {
     });
   }
 })();
+
+// ═══════════════════════════════════════════════
+// GLB — Upload + Thumbnail auto via model-viewer
+// ═══════════════════════════════════════════════
+
+/* Charge model-viewer une seule fois */
+let _mvLoaded = false;
+function loadModelViewerAdmin() {
+  return new Promise((ok) => {
+    if (_mvLoaded || customElements.get('model-viewer')) { _mvLoaded = true; ok(); return; }
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+    s.onload = () => { _mvLoaded = true; ok(); };
+    document.head.appendChild(s);
+  });
+}
+
+/* Génère un thumbnail PNG depuis un blob URL de GLB */
+function genererThumbnailGLB(blobUrl) {
+  return new Promise((ok, ko) => {
+    const statusEl = $('glb-thumb-status');
+    if (statusEl) { statusEl.style.display = ''; statusEl.textContent = 'Chargement du modèle 3D…'; }
+
+    loadModelViewerAdmin().then(() => {
+      const mv = document.createElement('model-viewer');
+      mv.setAttribute('src', blobUrl);
+      mv.setAttribute('auto-rotate', '');
+      mv.setAttribute('camera-controls', '');
+      mv.setAttribute('interaction-prompt', 'none');
+      mv.style.cssText = 'width:512px;height:512px;position:fixed;left:-9999px;top:-9999px;';
+      document.body.appendChild(mv);
+
+      const timeout = setTimeout(() => {
+        document.body.removeChild(mv);
+        if (statusEl) { statusEl.textContent = 'Timeout — pas de thumbnail'; statusEl.style.color = 'var(--danger)'; }
+        ko(new Error('model-viewer timeout'));
+      }, 30000);
+
+      mv.addEventListener('load', () => {
+        if (statusEl) statusEl.textContent = 'Génération du thumbnail…';
+        /* Petit délai pour laisser le rendu se stabiliser */
+        setTimeout(async () => {
+          try {
+            const blob = await mv.toBlob({ mimeType: 'image/jpeg', qualityArgument: 0.85 });
+            clearTimeout(timeout);
+            document.body.removeChild(mv);
+            /* Convertir en base64 */
+            const reader = new FileReader();
+            reader.onload = () => {
+              const b64 = reader.result.split(',')[1];
+              if (statusEl) { statusEl.textContent = '✓ Thumbnail généré'; statusEl.style.color = 'var(--success)'; }
+              ok(b64);
+            };
+            reader.onerror = ko;
+            reader.readAsDataURL(blob);
+          } catch (e) {
+            clearTimeout(timeout);
+            document.body.removeChild(mv);
+            ko(e);
+          }
+        }, 1500);
+      });
+
+      mv.addEventListener('error', () => {
+        clearTimeout(timeout);
+        document.body.removeChild(mv);
+        if (statusEl) { statusEl.textContent = 'Erreur chargement 3D'; statusEl.style.color = 'var(--danger)'; }
+        ko(new Error('model-viewer error'));
+      });
+    });
+  });
+}
+
+/* ── GLB file input handler ── */
+(function() {
+  var inpGlb = document.getElementById('inp-glb-file');
+  if (!inpGlb) return;
+
+  inpGlb.addEventListener('change', async function() {
+    var f = this.files[0]; if (!f) return;
+    if (!f.name.toLowerCase().endsWith('.glb')) {
+      toast('Seuls les fichiers .glb sont acceptés', 'err');
+      this.value = '';
+      return;
+    }
+    if (f.size > 50 * 1024 * 1024) {
+      toast('Fichier trop lourd (max 50 MB)', 'err');
+      this.value = '';
+      return;
+    }
+
+    /* Afficher les infos du fichier */
+    var nomEl = $('glb-nom'), tailleEl = $('glb-taille'), infoEl = $('glb-info'), phEl = $('glb-ph');
+    if (nomEl) nomEl.textContent = f.name;
+    if (tailleEl) tailleEl.textContent = '(' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+    if (infoEl) infoEl.style.display = '';
+    if (phEl) phEl.style.display = 'none';
+
+    /* Lire le fichier en base64 pour upload GitHub */
+    glbNom = f.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      glbB64 = e.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(f);
+
+    /* Générer thumbnail */
+    var blobUrl = URL.createObjectURL(f);
+    try {
+      var thumbB64 = await genererThumbnailGLB(blobUrl);
+      photoB64 = thumbB64;
+      $('photo-prev').src = 'data:image/jpeg;base64,' + thumbB64;
+      $('photo-prev').style.display = 'block';
+      $('photo-ph').style.display = 'none';
+      $('btn-recadrer-photo').classList.add('visible');
+    } catch (e) {
+      console.warn('Thumbnail GLB échoué:', e);
+      toast('Thumbnail auto échoué — vous pouvez ajouter une photo manuellement', 'err', 4000);
+    }
+    URL.revokeObjectURL(blobUrl);
+    this.value = '';
+  });
+
+  /* Bouton supprimer GLB */
+  var btnSuppr = document.getElementById('btn-glb-suppr');
+  if (btnSuppr) {
+    btnSuppr.addEventListener('click', function(e) {
+      e.stopPropagation();
+      glbB64 = null; glbNom = null;
+      $('inp-glb').value = '';
+      $('glb-info').style.display = 'none';
+      $('glb-ph').style.display = '';
+      var statusEl = $('glb-thumb-status');
+      if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+    });
+  }
+})();

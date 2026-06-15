@@ -854,7 +854,7 @@ function initTailleForm() {
 }
 
 function ouvrirFormulaireNouvel() {
-  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null;
+  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null;
   $('modal-toile-tit').textContent = _isSculpt ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
@@ -879,7 +879,7 @@ function construirePillsSalle(salleSelId) {
 function ouvrirFormulaireEdition(id) {
   const t = toiles.find(x => x.id === id);
   if (!t) return;
-  toileEnEdition = id; photoB64 = null;
+  toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null;
   const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
@@ -966,6 +966,10 @@ function viderFormToile() {
   ['inp-titre','inp-date','inp-style','inp-mat','inp-prix','inp-desc'].forEach(id => $(id).value = '');
   if ($('inp-prof')) $('inp-prof').value = '';
   if ($('inp-glb')) $('inp-glb').value = '';
+  glbB64 = null; glbNom = null;
+  if ($('glb-info')) $('glb-info').style.display = 'none';
+  if ($('glb-ph')) $('glb-ph').style.display = '';
+  if ($('glb-thumb-status')) { $('glb-thumb-status').style.display = 'none'; $('glb-thumb-status').textContent = ''; }
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
   $('sel-format').value = '';
@@ -1034,6 +1038,17 @@ function remplirFormToile(t) {
   /* Champs sculpture */
   if ($('inp-glb')) $('inp-glb').value = t.glb || '';
   if ($('inp-prof') && t.dimensions?.profondeur) $('inp-prof').value = t.dimensions.profondeur;
+  /* Afficher info GLB existant */
+  if (t.glb && $('glb-info')) {
+    $('glb-nom').textContent = t.glb.split('/').pop();
+    $('glb-taille').textContent = '';
+    $('glb-info').style.display = '';
+    $('glb-ph').style.display = 'none';
+  } else if ($('glb-info')) {
+    $('glb-info').style.display = 'none';
+    $('glb-ph').style.display = '';
+  }
+  glbB64 = null; glbNom = null;
   document.querySelectorAll('.salle-pill').forEach(p => {
     p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
   });
@@ -1075,7 +1090,9 @@ async function sauverToile() {
       const id = prochainId();
       let photo = '';
       if (photoB64) photo = await uploaderPhoto(id, photoB64);
-      const t = { id, photo, source_photo: 'admin', ...donnees };
+      let glb = donnees.glb || '';
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
+      const t = { id, photo, source_photo: 'admin', ...donnees, glb };
       if (photoB64) t._preview = 'data:image/jpeg;base64,' + photoB64; // aperçu immédiat avant propagation CDN
       toiles.push(t);
       if (salleCibleToile) {
@@ -1087,6 +1104,8 @@ async function sauverToile() {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
       let photo = toiles[idx].photo;
       if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64);
+      let glb = donnees.glb || toiles[idx].glb || '';
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64); }
       // Protection dimensions : si les cases changent, retirer du mur
       const ancienDim = toiles[idx].dimensions;
       const nouvelDim = donnees.dimensions;
@@ -1110,7 +1129,7 @@ async function sauverToile() {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s) s.toiles.push(toileEnEdition);
       }
-      toiles[idx] = { ...toiles[idx], photo, ...donnees };
+      toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
       await sauvegarder(`[admin] Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     }
     const idSauve = toileEnEdition === null

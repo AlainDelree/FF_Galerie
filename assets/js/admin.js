@@ -213,6 +213,8 @@ let pendingChanges = false;
 let toileEnEdition = null;
 let salleCibleToile = null;
 let photoB64 = null;
+let glbB64 = null;   // base64 du fichier GLB en attente d'upload
+let glbNom = null;   // nom original du fichier GLB
 let _origPhotoMaxDim = 0; // dimensions originales avant crop, pour qualité photo
 let toilesEnAttente = new Map(); // id → timestamp de sauvegarde
 let timerAttenteInterval = null;
@@ -469,6 +471,19 @@ async function uploaderPhoto(id, b64) {
   if (sha) corps.sha = sha;
   await apiGH(`/repos/${REPO}/contents/${chemin}`, 'PUT', corps);
   return stored; /* chemin relatif stocké dans toiles.json */
+}
+
+async function uploaderGLB(id, b64) {
+  /* Upload le fichier GLB dans le dossier models de l'artiste.
+     Chemin GitHub = chemin stocké dans toiles.json (relatif au repo) */
+  const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/models/';
+  const chemin = base + 'toile-' + String(id).padStart(3, '0') + '.glb';
+  let sha = null;
+  try { const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH); sha = r.sha; } catch (_) {}
+  const corps = { message: 'Admin : GLB piece #' + id, content: b64, branch: BRANCH };
+  if (sha) corps.sha = sha;
+  await apiGH('/repos/' + REPO + '/contents/' + chemin, 'PUT', corps);
+  return chemin; /* chemin relatif stocké dans toiles.json */
 }
 
 // ═══════════════════════════════════════════════
