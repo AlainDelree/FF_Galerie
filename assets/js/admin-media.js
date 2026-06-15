@@ -223,7 +223,7 @@ function loadModelViewerAdmin() {
 function genererThumbnailGLB(blobUrl) {
   return new Promise((ok, ko) => {
     const statusEl = $('glb-thumb-status');
-    if (statusEl) { statusEl.style.display = ''; statusEl.textContent = 'Chargement du modèle 3D…'; }
+    if (statusEl) { statusEl.style.display = ''; statusEl.style.color = 'var(--muted)'; statusEl.textContent = '⏳ Chargement du modèle 3D…'; }
 
     loadModelViewerAdmin().then(() => {
       const mv = document.createElement('model-viewer');
@@ -231,17 +231,18 @@ function genererThumbnailGLB(blobUrl) {
       mv.setAttribute('auto-rotate', '');
       mv.setAttribute('camera-controls', '');
       mv.setAttribute('interaction-prompt', 'none');
-      mv.style.cssText = 'width:512px;height:512px;position:fixed;left:-9999px;top:-9999px;';
+      /* Visible mais transparent — le navigateur skip le WebGL off-screen */
+      mv.style.cssText = 'width:512px;height:512px;position:fixed;left:0;top:0;opacity:0.01;pointer-events:none;z-index:-1;';
       document.body.appendChild(mv);
 
       const timeout = setTimeout(() => {
         document.body.removeChild(mv);
-        if (statusEl) { statusEl.textContent = 'Timeout — pas de thumbnail'; statusEl.style.color = 'var(--danger)'; }
+        if (statusEl) { statusEl.textContent = '⚠ Timeout — ajoutez une photo manuellement'; statusEl.style.color = 'var(--danger)'; }
         ko(new Error('model-viewer timeout'));
-      }, 30000);
+      }, 15000);
 
       mv.addEventListener('load', () => {
-        if (statusEl) statusEl.textContent = 'Génération du thumbnail…';
+        if (statusEl) statusEl.textContent = '⏳ Génération du thumbnail…';
         /* Petit délai pour laisser le rendu se stabiliser */
         setTimeout(async () => {
           try {
@@ -268,7 +269,7 @@ function genererThumbnailGLB(blobUrl) {
       mv.addEventListener('error', () => {
         clearTimeout(timeout);
         document.body.removeChild(mv);
-        if (statusEl) { statusEl.textContent = 'Erreur chargement 3D'; statusEl.style.color = 'var(--danger)'; }
+        if (statusEl) { statusEl.textContent = '⚠ Erreur chargement 3D'; statusEl.style.color = 'var(--danger)'; }
         ko(new Error('model-viewer error'));
       });
     });
