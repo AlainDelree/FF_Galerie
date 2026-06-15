@@ -1396,55 +1396,87 @@ function afficherSolPlacement() {
     }
   }
 
-  /* Calculer l'échelle relative : la plus grosse pièce = ~100px */
+  /* Calculer l'échelle : la plus grosse pièce aura un socle de ~80px */
   const allPieces = (salleActive.positions || []).map(p => {
     const t = toiles.find(x => x.id === p.id);
-    return { pos: p, t, socle: t ? (t.socle || t.dimensions?.largeur || 30) : 30 };
+    return { pos: p, t, socle: t ? (t.socle || t.dimensions?.largeur || 30) : 30,
+             haut: t?.dimensions?.hauteur || 50 };
   }).filter(x => x.t);
   const maxSocle = Math.max(...allPieces.map(x => x.socle), 30);
-  const baseScale = 100 / maxSocle;
+  const refScale = 80 / maxSocle; /* plus gros socle = 80px */
 
-  /* Pièces déjà placées */
-  allPieces.forEach(({ pos: p, t, socle }) => {
+  /* Pièces avec socles en perspective (identique galerie) */
+  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socle, haut }) => {
     const estSel = peintureSurMurSel === p.id;
-    const perspFactor = 1 - (p.y / 100) * 0.4; /* 1.0 devant, 0.6 au fond */
-    const sizePx = Math.max(25, Math.round(socle * baseScale * perspFactor));
-    const zIdx = Math.round((100 - p.y) * 10); /* devant = z-index élevé */
+    const perspFactor = 1 - (p.y / 100) * 0.42;
+    const zIdx = Math.round((100 - p.y) * 10);
 
-    const el = document.createElement('div');
-    el.dataset.pieceId = p.id;
-    el.style.cssText =
+    /* Tailles proportionnelles */
+    const socleW = Math.max(25, Math.round(socle * refScale));
+    const ratio = haut / Math.max(socle, 1);
+    const photoH = Math.max(25, Math.round(socleW * ratio * 0.7));
+    const pedH = Math.max(12, Math.round(socleW * 0.5));
+
+    const wrap = document.createElement('div');
+    wrap.dataset.pieceId = p.id;
+    wrap.style.cssText =
       'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-      'transform:translateX(-50%);z-index:' + zIdx + ';cursor:pointer;' +
-      'display:flex;flex-direction:column;align-items:center;';
-    if (estSel) el.style.outline = '2px solid var(--gold)';
+      'transform:translateX(-50%) scale(' + perspFactor.toFixed(3) + ');transform-origin:bottom center;' +
+      'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
+    if (estSel) wrap.style.outline = '2px solid var(--gold)';
 
+    /* Image / photo / placeholder */
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;display:flex;align-items:flex-end;justify-content:center;';
     if (t.photo || t._preview) {
       const img = document.createElement('img');
       img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-      img.style.cssText = 'width:' + sizePx + 'px;height:' + sizePx + 'px;object-fit:contain;border-radius:4px;';
-      el.appendChild(img);
+      img.style.cssText = 'max-width:' + socleW + 'px;max-height:' + photoH + 'px;object-fit:contain;';
+      imgWrap.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.style.cssText = 'width:' + sizePx + 'px;height:' + sizePx + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.6);';
+      ph.style.cssText = 'width:' + Math.round(socleW * 0.7) + 'px;height:' + Math.round(photoH * 0.8) + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
       ph.textContent = t.glb ? '3D' : '?';
-      el.appendChild(ph);
+      imgWrap.appendChild(ph);
     }
+    wrap.appendChild(imgWrap);
 
+    /* Piédestal marbre */
+    const ped = document.createElement('div');
+    ped.style.cssText =
+      'width:' + socleW + 'px;height:' + pedH + 'px;border-radius:5px;' +
+      'background:linear-gradient(to right,rgba(0,0,0,.15),rgba(255,255,255,.08) 45%,rgba(255,255,255,.12) 55%,rgba(0,0,0,.12));' +
+      'background-color:#eae6de;position:relative;';
+    const topEl = document.createElement('div');
+    topEl.style.cssText =
+      'position:absolute;top:-' + Math.max(3, Math.round(pedH * 0.14)) + 'px;left:-15%;width:130%;height:' + Math.max(5, Math.round(pedH * 0.25)) + 'px;' +
+      'background:radial-gradient(ellipse at 42% 40%,#f8f6f2,#d8d2c8);border-radius:50%;';
+    ped.appendChild(topEl);
+    wrap.appendChild(ped);
+
+    /* Ombre */
+    const ombre = document.createElement('div');
+    ombre.style.cssText =
+      'width:' + Math.round(socleW * 1.3) + 'px;height:' + Math.max(4, Math.round(socleW * 0.1)) + 'px;background:rgba(0,0,0,.25);border-radius:50%;filter:blur(3px);margin-top:1px;';
+    wrap.appendChild(ombre);
+
+    /* Titre */
     const lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:' + Math.max(7, Math.round(sizePx * 0.18)) + 'px;color:#fff;white-space:nowrap;max-width:' + (sizePx + 30) + 'px;overflow:hidden;text-overflow:ellipsis;';
+    lbl.style.cssText =
+      'font-size:' + Math.max(7, Math.round(socleW * 0.16)) + 'px;color:#fff;white-space:nowrap;max-width:' + Math.round(socleW * 1.5) + 'px;overflow:hidden;' +
+      'text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);margin-top:2px;';
     lbl.textContent = t.titre || '—';
-    el.appendChild(lbl);
+    wrap.appendChild(lbl);
 
     /* Drag-drop : mousedown pour démarrer, pas de listeners multiples */
-    el.addEventListener('mousedown', e => {
+    wrap.addEventListener('mousedown', e => {
       e.stopPropagation();
       peintureSurMurSel = p.id;
-      _startDragPiece(el, p, e, bg);
+      _startDragPiece(wrap, p, e, bg);
       afficherStripPlacement();
     });
 
-    el.addEventListener('click', e => {
+    wrap.addEventListener('click', e => {
       e.stopPropagation();
       /* Click sans drag = toggle sélection */
       if (!_dragStarted) {
@@ -1456,7 +1488,7 @@ function afficherSolPlacement() {
         majCtrlPanel();
       }
     });
-    bg.appendChild(el);
+    bg.appendChild(wrap);
   });
 
   majCtrlPanel();
