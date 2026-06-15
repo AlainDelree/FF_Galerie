@@ -1517,7 +1517,7 @@ function afficherSolPlacement() {
   }
 
   /* ── Socles — même calcul que galerie-sculpture.js ── */
-  const _ECH = window.innerWidth <= 600 ? 2.8 : 5.5;
+  const _ECH = window.innerWidth <= 600 ? 1.5 : 2.5;
   const _EMIN = window.innerWidth <= 600 ? 55 : 90;
   const _EMAXH = window.innerWidth <= 600 ? 200 : 380;
 
