@@ -28,8 +28,12 @@
   </style>
 </head>
 <body data-page="galerie">
-  <!-- Éléments attendus par galerie-core.js -->
-  <nav class="barre-navigation" style="display:none;"></nav>
+  <!-- Éléments attendus par galerie-core.js (cachés) -->
+  <nav class="barre-navigation" style="display:none;">
+    <button id="btnPrecedent"></button>
+    <span id="numSalle"></span>
+    <button id="btnSuivant"></button>
+  </nav>
   <div class="conteneur-salles" id="conteneurSalles"></div>
 
   <script>
