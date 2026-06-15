@@ -1424,6 +1424,8 @@ async function creerSalle() {
 function afficherSolPlacement() {
   /* Masquer l'aperçu normal pour éviter les doublons */
   $('mur-bg').innerHTML = '';
+  var oldMini = document.getElementById('mini-preview-autre');
+  if (oldMini) oldMini.remove();
   const bg = $('mur-placement');
   bg.innerHTML = '';
   bg.className = '';
@@ -1605,17 +1607,18 @@ function afficherSolPlacement() {
     wrap.appendChild(lbl);
 
     /* Drag-drop */
+    let _prevSel = null;
     wrap.addEventListener('mousedown', e => {
       e.stopPropagation();
+      _prevSel = peintureSurMurSel; /* Sauver AVANT de changer */
       peintureSurMurSel = p.id;
       _startDragPiece(wrap, p, e, sol);
-      afficherStripPlacement();
     });
     wrap.addEventListener('click', e => {
       e.stopPropagation();
       if (!_dragStarted) {
-        /* Toggle sélection SANS re-render complet */
-        const wasSelected = peintureSurMurSel === p.id;
+        /* Toggle basé sur l'état AVANT le mousedown */
+        const wasSelected = _prevSel === p.id;
         /* Désélectionner l'ancien */
         sol.querySelectorAll('[data-piece-id]').forEach(w => {
           w.style.outline = '';
