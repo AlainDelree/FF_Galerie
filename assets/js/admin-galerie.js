@@ -1517,9 +1517,10 @@ function afficherSolPlacement() {
   }
 
   /* ── Socles — même calcul que galerie-sculpture.js ── */
-  const _ECH = window.innerWidth <= 600 ? 1.5 : 2.5;
-  const _EMIN = window.innerWidth <= 600 ? 55 : 90;
-  const _EMAXH = window.innerWidth <= 600 ? 200 : 380;
+  const _isGsmVue = _placementVue === 'gsm';
+  const _ECH = _isGsmVue ? 1.5 : (window.innerWidth <= 600 ? 1.5 : 2.5);
+  const _EMIN = _isGsmVue ? 55 : (window.innerWidth <= 600 ? 55 : 90);
+  const _EMAXH = _isGsmVue ? 200 : (window.innerWidth <= 600 ? 200 : 380);
 
   const allPieces = _getPositions().map(p => {
     const t = toiles.find(x => x.id === p.id);
