@@ -389,7 +389,10 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
         }
       });
     }
-    (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
+    var isMobile = window.innerWidth <= 600;
+    var positions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
+      ? salle.positions_mobile : (salle.positions || []);
+    positions.slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
       const gabarit = gabarits[gCode] || gabarits['M'];

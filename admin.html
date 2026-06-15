@@ -890,6 +890,7 @@
   <div class="placement-hdr">
     <button class="btn btn-outline btn-sm" id="btn-apercu-placement" title="Retour sans sauvegarder">← Retour</button>
     <button class="btn btn-sm" id="btn-sauver-placement" style="background:var(--gold);color:#fff;border:none;" title="Enregistrer sur le site">💾 Enregistrer</button>
+    <button class="btn btn-outline btn-sm sculpture-only" id="btn-switch-vue" style="display:none;margin-left:auto;font-size:11px;" title="Basculer entre vue PC et GSM">🖥 PC</button>
     <button id="btn-grille-pl" title="Afficher/cacher la grille" style="font-size:11px;padding:.28rem .6rem;border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;">⊞ Grille</button>
     <button id="btn-tout-mettre" style="font-size:11px;padding:.28rem .6rem;border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;" title="Place automatiquement toutes les toiles sélectionnées">↳ Tout mettre</button>
     </div>
@@ -1082,6 +1083,8 @@
         if (btnCoul) btnCoul.textContent = '🎨 Couleurs/Revêtement';
         const btnGrille = document.getElementById('btn-grille-pl');
         if (btnGrille) btnGrille.style.display = 'none';
+        const btnSwitch = document.getElementById('btn-switch-vue');
+        if (btnSwitch) btnSwitch.style.display = '';
 
         /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
         (function() {

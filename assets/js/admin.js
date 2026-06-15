@@ -780,6 +780,18 @@ $('btn-modifier-toile').addEventListener('click', () => {
   if (selectedToile) ouvrirFormulaireEdition(selectedToile.id);
 });
 $('btn-apercu-placement').addEventListener('click', () => quitterModePlacement());
+
+/* Switch vue PC / GSM pour sculpture */
+$('btn-switch-vue')?.addEventListener('click', function() {
+  _placementVue = _placementVue === 'pc' ? 'gsm' : 'pc';
+  this.textContent = _placementVue === 'pc' ? '🖥 PC' : '📱 GSM';
+  this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
+  this.style.color = _placementVue === 'gsm' ? '#fff' : '';
+  peintureSurMurSel = null;
+  afficherSolPlacement();
+  afficherStripPlacement();
+  toast(_placementVue === 'pc' ? 'Vue PC' : 'Vue GSM — ratio portrait', 'ok', 2000);
+});
 $('btn-sauver-placement').addEventListener('click', async () => {
   const btn = $('btn-sauver-placement');
   btn.disabled = true; btn.textContent = 'En cours…';

@@ -451,6 +451,24 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
 // ═══════════════════════════════════════════════
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
+let _placementVue = 'pc'; // 'pc' ou 'gsm'
+
+/* Retourne les positions actives selon le mode vue */
+function _getPositions() {
+  if (!salleActive) return [];
+  if (_placementVue === 'gsm') {
+    if (!salleActive.positions_mobile) salleActive.positions_mobile = [];
+    return salleActive.positions_mobile;
+  }
+  return salleActive.positions || [];
+}
+
+/* Définit les positions actives selon le mode vue */
+function _setPositions(pos) {
+  if (!salleActive) return;
+  if (_placementVue === 'gsm') salleActive.positions_mobile = pos;
+  else salleActive.positions = pos;
+}
 
 /* DRAG-DROP GLOBAL — une seule paire de listeners */
 let _dragStarted = false;
@@ -519,10 +537,11 @@ function _onGlobalDragEnd(e) {
 
 /* Vérifie si une pièce à (x,y) chevauche une autre pièce */
 function _checkOverlap(pieceId, x, y) {
-  if (!salleActive || !salleActive.positions) return false;
+  if (!salleActive) return false;
+  var _pos = _getPositions();
   const t1 = toiles.find(t => t.id === pieceId);
   const r1 = _pieceRadius(t1);
-  for (const p of salleActive.positions) {
+  for (const p of _pos) {
     if (p.id === pieceId) continue;
     const t2 = toiles.find(t => t.id === p.id);
     const r2 = _pieceRadius(t2);
@@ -588,6 +607,9 @@ function entrerModePlacement() {
 function ouvrirArrangerApresConfirm() {
   if (!salleActive) return;
   const nbPlacees = (salleActive.positions||[]).length;
+  _placementVue = 'pc'; /* Toujours démarrer en mode PC */
+  var btnSw = document.getElementById('btn-switch-vue');
+  if (btnSw) { btnSw.textContent = '🖥 PC'; btnSw.style.background = ''; btnSw.style.color = ''; }
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
   history.pushState({ ff: 'arrangement' }, '');
@@ -720,7 +742,7 @@ function afficherMurPlacement() {
 
 function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
-  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
+  const poseeIds = new Set((_isSculpt ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
   // UNION : pièces placées + sélectionnées depuis le stock + sélectionnée pour placement
   const tousIds = [...new Set([
@@ -1364,7 +1386,10 @@ function afficherSolPlacement() {
   const texSol = textureActuelle || 'parquet';
 
   /* ── Structure galerie : mur + mur-inférieur + sol ── */
-  bg.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;border-radius:6px;overflow:hidden;';
+  const isGsm = _placementVue === 'gsm';
+  bg.style.cssText = isGsm
+    ? 'display:flex;flex-direction:column;height:100%;aspect-ratio:9/16;max-width:45%;margin:0 auto;border-radius:6px;overflow:hidden;border:2px solid var(--gold);'
+    : 'display:flex;flex-direction:column;width:100%;height:100%;border-radius:6px;overflow:hidden;';
 
   /* MUR (fond gris de la galerie) */
   const murZone = document.createElement('div');
@@ -1447,7 +1472,7 @@ function afficherSolPlacement() {
   const _EMIN = window.innerWidth <= 600 ? 55 : 90;
   const _EMAXH = window.innerWidth <= 600 ? 200 : 380;
 
-  const allPieces = (salleActive.positions || []).map(p => {
+  const allPieces = _getPositions().map(p => {
     const t = toiles.find(x => x.id === p.id);
     if (!t) return null;
     const dim = t.dimensions || {};
@@ -1587,14 +1612,15 @@ function placerPieceSol(x, y) {
 
   const gab = _gabaritSculpt(piece.dimensions?.hauteur);
 
-  /* Retirer de toutes les salles */
+  /* Retirer de toutes les salles (mode courant) */
   salles.forEach(s => {
     s.toiles = s.toiles.filter(id => id !== piece.id);
     s.positions = (s.positions || []).filter(p => p.id !== piece.id);
+    if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(p => p.id !== piece.id);
   });
 
-  salleActive.positions.push({ id: piece.id, x, y, gabarit: gab });
-  salleActive.toiles.push(piece.id);
+  _getPositions().push({ id: piece.id, x, y, gabarit: gab });
+  if (!salleActive.toiles.includes(piece.id)) salleActive.toiles.push(piece.id);
 
   selectedToilePl = null; selectedToile = null;
   afficherSolPlacement(); afficherStripPlacement();
@@ -1605,7 +1631,7 @@ function placerPieceSol(x, y) {
 
 function deplacerPieceSol(dx, dy) {
   if (peintureSurMurSel === null) return;
-  const pos = (salleActive.positions || []).find(p => p.id === peintureSurMurSel);
+  const pos = _getPositions().find(p => p.id === peintureSurMurSel);
   if (!pos) return;
   pos.x = Math.max(5, Math.min(95, (pos.x || 50) + dx));
   pos.y = Math.max(5, Math.min(95, (pos.y || 50) - dy)); /* -dy : Up=+y, Down=-y */
