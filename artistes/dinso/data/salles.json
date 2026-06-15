@@ -10,38 +10,9 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        3,
-        2,
-        1,
-        4
-      ],
-      "positions": [
-        {
-          "id": 3,
-          "x": 9,
-          "y": 29,
-          "gabarit": "M"
-        },
-        {
-          "id": 2,
-          "x": 74.11932418162618,
-          "y": 20.476964769647697,
-          "gabarit": "S"
-        },
-        {
-          "id": 1,
-          "x": 57.70496441405316,
-          "y": 69.55384645578324,
-          "gabarit": "L"
-        },
-        {
-          "id": 4,
-          "x": 39.37053888598425,
-          "y": 8.702169235723643,
-          "gabarit": "SOL"
-        }
-      ]
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": []
     }
   ]
 }
