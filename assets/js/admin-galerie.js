@@ -473,6 +473,7 @@ function _startDragPiece(el, piecePos, mouseDownEvent, container) {
 
 function _onGlobalDragMove(e) {
   if (!_draggingPieceEl || !_draggingPiece) return;
+  e.preventDefault(); /* Empêcher la sélection de texte/grille */
   _dragStarted = true; /* Marquer qu'il y a eu du mouvement */
   const rect = _dragContainer.getBoundingClientRect();
   const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
