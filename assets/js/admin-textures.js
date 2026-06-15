@@ -42,6 +42,16 @@ const TEXTURES = {
 
 function appliquerApparence() {
   const bg = $('mur-bg');
+
+  /* Sculpture : le sol utilise SOL_PATTERNS (admin-galerie.js) */
+  if (window.ADMIN_TYPE === 'sculpture' && typeof solPatternCSS === 'function') {
+    bg.style.backgroundBlendMode = '';
+    bg.style.background = solPatternCSS(textureActuelle, couleurMurActuel);
+    renderColorSwatches('mur');
+    document.querySelectorAll('#sw-revetement .sw').forEach(s => s.classList.toggle('sel', s.dataset.val === textureActuelle));
+    return;
+  }
+
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
     /* Texture image : multiply blend pour laisser voir la couleur */
