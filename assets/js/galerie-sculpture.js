@@ -447,6 +447,21 @@ if (window._GALERIE_EDIT) {
     var plancher = document.querySelector('.plancher-sol');
     if (!plancher) return;
 
+    /* Forcer les dimensions — écrase les !important de galerie.css */
+    plancher.style.setProperty('max-height', 'none', 'important');
+    plancher.style.setProperty('min-height', '0', 'important');
+    plancher.style.setProperty('flex', '1', 'important');
+    var salleEl = document.querySelector('.salle');
+    if (salleEl) {
+      salleEl.style.setProperty('height', '100vh', 'important');
+      salleEl.style.setProperty('display', 'flex', 'important');
+      salleEl.style.setProperty('flex-direction', 'column', 'important');
+    }
+    var murInf = document.querySelector('.mur-inferieur');
+    if (murInf) murInf.style.setProperty('height', '40px', 'important');
+    var silh = document.querySelector('.silhouettes-sol');
+    if (silh) silh.style.display = 'none';
+
     /* Désactiver les clics immersifs */
     document.querySelectorAll('.socle-wrapper').forEach(function(wrap) {
       wrap.style.cursor = 'grab';
