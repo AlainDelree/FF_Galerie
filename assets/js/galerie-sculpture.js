@@ -359,7 +359,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
         var lineColor = 'rgba(0,0,0,' + (isParquet ? '0.10' : '0.16') + ')';
         var vLineColor = 'rgba(0,0,0,' + (isParquet ? '0.05' : '0.16') + ')';
         var nbH = isParquet ? 30 : 16; /* lignes horizontales */
-        var nbV = isParquet ? 20 : 16; /* lignes verticales */
+        var nbV = isParquet ? 10 : 16; /* lignes verticales (parquet: lattes 2x plus longues) */
 
         /* Point de fuite au centre en haut */
         var vx = W / 2;
