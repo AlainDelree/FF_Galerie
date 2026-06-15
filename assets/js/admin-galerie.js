@@ -1264,6 +1264,8 @@ async function creerSalle() {
    ══════════════════════════════════════════════════════════════ */
 
 function afficherSolPlacement() {
+  /* Masquer l'aperçu normal pour éviter les doublons */
+  $('mur-bg').innerHTML = '';
   const bg = $('mur-placement');
   bg.innerHTML = '';
   bg.className = ''; /* Supprimer la classe placement-mur-bg (CSS grid peinture) */
