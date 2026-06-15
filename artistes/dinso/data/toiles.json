@@ -88,8 +88,8 @@
     {
       "id": 4,
       "titre": "Tiki",
-      "photo": "",
-      "glb": "artistes/dinso/assets/models/tiki.glb",
+      "photo": "artistes/dinso/assets/images/toiles/piece-004.jpg",
+      "glb": "artistes/dinso/assets/models/piece-004.glb",
       "date": "2024",
       "materiaux": [
         "Bois sculpté"
