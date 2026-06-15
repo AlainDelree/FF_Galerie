@@ -1357,32 +1357,75 @@ function afficherSolPlacement() {
   $('mur-bg').innerHTML = '';
   const bg = $('mur-placement');
   bg.innerHTML = '';
-  bg.className = ''; /* Supprimer la classe placement-mur-bg (CSS grid peinture) */
-  const coulParquet = couleurMurActuel || '#8a6228';
+  bg.className = '';
+
+  const coulSol = couleurMurActuel || '#8a6228';
+  const coulMur = '#7a7a7a'; /* Mur galerie sculpture */
   const texSol = textureActuelle || 'parquet';
-  const bgStyle = grilleVisiblePl
-    ? 'background:' + coulParquet + ';'
-    : 'background:' + solPatternCSS(texSol, coulParquet) + ';';
-  bg.style.cssText = bgStyle +
-    (function() {
-      var isMob = window.innerWidth <= 600;
-      var overhead = isMob ? 180 : 160;
-      var r = (window.innerWidth / Math.max(300, window.innerHeight - overhead)).toFixed(3);
-      return isMob
-        ? 'position:relative;overflow:hidden;cursor:crosshair;display:block;width:100%;border-radius:6px;aspect-ratio:' + r + ';max-height:65vh;'
-        : 'position:relative;overflow:hidden;cursor:crosshair;display:block;border-radius:6px;margin:0 auto;height:50vh;width:auto;aspect-ratio:' + r + ';max-width:100%;';
-    })();
+
+  /* ── Structure galerie : mur + mur-inférieur + sol ── */
+  bg.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;border-radius:6px;overflow:hidden;';
+
+  /* MUR (fond gris de la galerie) */
+  const murZone = document.createElement('div');
+  murZone.style.cssText = 'flex:0 0 22%;background:' + coulMur + ';position:relative;';
+  bg.appendChild(murZone);
+
+  /* MUR INFÉRIEUR (bande sombre avec portes) */
+  const murBas = document.createElement('div');
+  murBas.style.cssText = 'flex:0 0 40px;background:#222;display:flex;align-items:center;justify-content:center;';
+  const porteG = document.createElement('div');
+  porteG.style.cssText = 'width:35px;height:28px;border-radius:35px 35px 0 0;background:#111;border:1px solid #333;border-bottom:none;';
+  const porteD = porteG.cloneNode(true);
+  const spacer = document.createElement('div');
+  spacer.style.cssText = 'flex:1;';
+  murBas.appendChild(porteG);
+  murBas.appendChild(spacer);
+  murBas.appendChild(porteD);
+  bg.appendChild(murBas);
+
+  /* SOL (plancher avec perspective) */
+  const sol = document.createElement('div');
+  sol.id = 'sol-placement';
+  sol.style.cssText = 'flex:1;position:relative;overflow:hidden;cursor:crosshair;' +
+    'background:' + (grilleVisiblePl ? coulSol : solPatternCSS(texSol, coulSol)) + ';';
+  bg.appendChild(sol);
+
+  /* Canvas perspective sur le sol */
+  if (texSol === 'carrelage' || texSol === 'parquet') {
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+    sol.appendChild(canvas);
+    requestAnimationFrame(function() {
+      const W = sol.clientWidth || 800, H = sol.clientHeight || 400;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const isPar = texSol === 'parquet';
+      const lineC = 'rgba(0,0,0,' + (isPar ? '0.10' : '0.16') + ')';
+      const vLineC = 'rgba(0,0,0,' + (isPar ? '0.05' : '0.16') + ')';
+      const nbH = isPar ? 30 : 16, nbV = isPar ? 10 : 16;
+      const vx = W / 2, vy = -H * 0.15;
+      for (let i = 0; i <= nbH; i++) {
+        const t = i / nbH, y = H * Math.pow(t, 2.2);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y);
+        ctx.strokeStyle = lineC; ctx.lineWidth = 0.3 + t * 1.5; ctx.stroke();
+      }
+      for (let i = -nbV; i <= nbV; i++) {
+        const bx = vx + i * (W / (nbV * 0.8));
+        ctx.beginPath(); ctx.moveTo(vx + i * (W * 0.02), 0); ctx.lineTo(bx, H);
+        ctx.strokeStyle = vLineC; ctx.lineWidth = 0.5; ctx.stroke();
+      }
+    });
+  }
 
   /* Grille 10×10 optionnelle */
   if (grilleVisiblePl) {
     const ov = document.createElement('div');
-    ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+    ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;' +
       'background-image:' +
       'repeating-linear-gradient(to right,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%),' +
       'repeating-linear-gradient(to bottom,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%);';
-    bg.appendChild(ov);
-
-    /* Labels des cases */
+    sol.appendChild(ov);
     const COLS = 'ABCDEFGHIJ';
     for (let c = 0; c < 10; c++) {
       for (let r = 0; r < 10; r++) {
@@ -1391,27 +1434,25 @@ function afficherSolPlacement() {
           'position:absolute;font-size:8px;font-family:monospace;color:rgba(0,0,0,.3);pointer-events:none;' +
           'left:' + (c * 10 + 5) + '%;bottom:' + (r * 10 + 5) + '%;transform:translate(-50%,50%);';
         lbl.textContent = COLS[c] + (r + 1);
-        bg.appendChild(lbl);
+        sol.appendChild(lbl);
       }
     }
   }
 
-  /* Calculer l'échelle : la plus grosse pièce aura un socle de ~80px */
+  /* ── Socles avec perspective (rendu galerie) ── */
   const allPieces = (salleActive.positions || []).map(p => {
     const t = toiles.find(x => x.id === p.id);
     return { pos: p, t, socle: t ? (t.socle || t.dimensions?.largeur || 30) : 30,
              haut: t?.dimensions?.hauteur || 50 };
   }).filter(x => x.t);
   const maxSocle = Math.max(...allPieces.map(x => x.socle), 30);
-  const refScale = 80 / maxSocle; /* plus gros socle = 80px */
+  const refScale = 80 / maxSocle;
 
-  /* Pièces avec socles en perspective (identique galerie) */
   allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socle, haut }) => {
     const estSel = peintureSurMurSel === p.id;
     const perspFactor = 1 - (p.y / 100) * 0.42;
-    const zIdx = Math.round((100 - p.y) * 10);
+    const zIdx = Math.round((100 - p.y) * 10) + 5;
 
-    /* Tailles proportionnelles */
     const socleW = Math.max(25, Math.round(socle * refScale));
     const ratio = haut / Math.max(socle, 1);
     const photoH = Math.max(25, Math.round(socleW * ratio * 0.7));
@@ -1425,7 +1466,7 @@ function afficherSolPlacement() {
       'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
     if (estSel) wrap.style.outline = '2px solid var(--gold)';
 
-    /* Image / photo / placeholder */
+    /* Image */
     const imgWrap = document.createElement('div');
     imgWrap.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;display:flex;align-items:flex-end;justify-content:center;';
     if (t.photo || t._preview) {
@@ -1441,7 +1482,7 @@ function afficherSolPlacement() {
     }
     wrap.appendChild(imgWrap);
 
-    /* Piédestal marbre */
+    /* Piédestal */
     const ped = document.createElement('div');
     ped.style.cssText =
       'width:' + socleW + 'px;height:' + pedH + 'px;border-radius:5px;' +
@@ -1468,47 +1509,45 @@ function afficherSolPlacement() {
     lbl.textContent = t.titre || '—';
     wrap.appendChild(lbl);
 
-    /* Drag-drop : mousedown pour démarrer, pas de listeners multiples */
+    /* Drag-drop */
     wrap.addEventListener('mousedown', e => {
       e.stopPropagation();
       peintureSurMurSel = p.id;
-      _startDragPiece(wrap, p, e, bg);
+      _startDragPiece(wrap, p, e, sol);
       afficherStripPlacement();
     });
-
     wrap.addEventListener('click', e => {
       e.stopPropagation();
-      /* Click sans drag = toggle sélection */
       if (!_dragStarted) {
         peintureSurMurSel = peintureSurMurSel === p.id ? null : p.id;
         afficherSolPlacement(); afficherStripPlacement();
         $('pl-aide').textContent = peintureSurMurSel
-          ? '"' + (t.titre||'—') + '" → flèches pour déplacer ou ✕ retirer'
+          ? '"' + (t.titre||'—') + '" → glisser pour déplacer ou ✕ retirer'
           : 'Clique une pièce du bas pour la placer';
         majCtrlPanel();
       }
     });
-    bg.appendChild(wrap);
+    sol.appendChild(wrap);
   });
 
   majCtrlPanel();
 
   /* Clic/touch sur le sol → placer */
   let _solTouched = false;
-  bg.addEventListener('touchend', function(e) {
-    if (!selectedToilePl || e.target !== bg) return;
+  sol.addEventListener('touchend', function(e) {
+    if (!selectedToilePl || e.target !== sol) return;
     e.preventDefault();
     _solTouched = true;
     const touch = e.changedTouches[0];
-    const rect = bg.getBoundingClientRect();
+    const rect = sol.getBoundingClientRect();
     const x = Math.round((touch.clientX - rect.left) / rect.width * 100);
     const y = Math.round((1 - (touch.clientY - rect.top) / rect.height) * 100);
     placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
   });
-  bg.addEventListener('click', function(e) {
+  sol.addEventListener('click', function(e) {
     if (_solTouched) { _solTouched = false; return; }
     if (!selectedToilePl) return;
-    const rect = bg.getBoundingClientRect();
+    const rect = sol.getBoundingClientRect();
     const x = Math.round((e.clientX - rect.left) / rect.width * 100);
     const y = Math.round((1 - (e.clientY - rect.top) / rect.height) * 100);
     placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
