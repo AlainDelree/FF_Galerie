@@ -490,18 +490,56 @@ function _onGlobalDragEnd(e) {
   const rect = _dragContainer.getBoundingClientRect();
   const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
   const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
-  _draggingPiece.x = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
-  _draggingPiece.y = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
+  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+
+  /* Anti-chevauchement : vérifier si la nouvelle position chevauche une autre pièce */
+  const overlap = _isSculpt ? _checkOverlap(_draggingPiece.id, newX, newY) : false;
+
   _draggingPieceEl.style.transition = '';
-  _draggingPieceEl.style.zIndex = '2';
+  _draggingPieceEl.style.zIndex = '';
   document.removeEventListener('mousemove', _onGlobalDragMove);
   document.removeEventListener('mouseup', _onGlobalDragEnd);
   if (_dragStarted) {
-    marquerChangement();
-    toast('✓ Pièce déplacée');
+    if (overlap) {
+      /* Remettre à la position d'origine */
+      _draggingPieceEl.style.left = _draggingPiece.x + '%';
+      _draggingPieceEl.style.bottom = _draggingPiece.y + '%';
+      toast('⚠ Chevauchement — position annulée', 'err');
+    } else {
+      _draggingPiece.x = newX;
+      _draggingPiece.y = newY;
+      marquerChangement();
+      toast('✓ Pièce déplacée');
+    }
   }
   _draggingPieceEl = null;
   _draggingPiece = null;
+}
+
+/* Vérifie si une pièce à (x,y) chevauche une autre pièce */
+function _checkOverlap(pieceId, x, y) {
+  if (!salleActive || !salleActive.positions) return false;
+  const t1 = toiles.find(t => t.id === pieceId);
+  const r1 = _pieceRadius(t1);
+  for (const p of salleActive.positions) {
+    if (p.id === pieceId) continue;
+    const t2 = toiles.find(t => t.id === p.id);
+    const r2 = _pieceRadius(t2);
+    const dx = Math.abs(x - p.x);
+    const dy = Math.abs(y - p.y);
+    const minDist = r1 + r2;
+    if (dx < minDist && dy < minDist * 0.7) return true;
+  }
+  return false;
+}
+
+/* Rayon d'une pièce en % du sol (basé sur le socle) */
+function _pieceRadius(t) {
+  if (!t) return 3;
+  const socle = t.socle || t.dimensions?.largeur || 30;
+  /* Approximation : 30cm socle ≈ 5% du sol */
+  return Math.max(2, socle * 0.15);
 }
 
 
@@ -1358,31 +1396,43 @@ function afficherSolPlacement() {
     }
   }
 
+  /* Calculer l'échelle relative : la plus grosse pièce = ~100px */
+  const allPieces = (salleActive.positions || []).map(p => {
+    const t = toiles.find(x => x.id === p.id);
+    return { pos: p, t, socle: t ? (t.socle || t.dimensions?.largeur || 30) : 30 };
+  }).filter(x => x.t);
+  const maxSocle = Math.max(...allPieces.map(x => x.socle), 30);
+  const baseScale = 100 / maxSocle;
+
   /* Pièces déjà placées */
-  (salleActive.positions || []).forEach(p => {
-    const t = toiles.find(x => x.id === p.id); if (!t) return;
+  allPieces.forEach(({ pos: p, t, socle }) => {
     const estSel = peintureSurMurSel === p.id;
+    const perspFactor = 1 - (p.y / 100) * 0.4; /* 1.0 devant, 0.6 au fond */
+    const sizePx = Math.max(25, Math.round(socle * baseScale * perspFactor));
+    const zIdx = Math.round((100 - p.y) * 10); /* devant = z-index élevé */
+
     const el = document.createElement('div');
+    el.dataset.pieceId = p.id;
     el.style.cssText =
       'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-      'transform:translateX(-50%);z-index:2;cursor:pointer;' +
+      'transform:translateX(-50%);z-index:' + zIdx + ';cursor:pointer;' +
       'display:flex;flex-direction:column;align-items:center;';
     if (estSel) el.style.outline = '2px solid var(--gold)';
 
     if (t.photo || t._preview) {
       const img = document.createElement('img');
       img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-      img.style.cssText = 'width:40px;height:40px;object-fit:contain;border-radius:4px;';
+      img.style.cssText = 'width:' + sizePx + 'px;height:' + sizePx + 'px;object-fit:contain;border-radius:4px;';
       el.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.style.cssText = 'width:40px;height:40px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.6);';
+      ph.style.cssText = 'width:' + sizePx + 'px;height:' + sizePx + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.6);';
       ph.textContent = t.glb ? '3D' : '?';
       el.appendChild(ph);
     }
 
     const lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:8px;color:#fff;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;';
+    lbl.style.cssText = 'font-size:' + Math.max(7, Math.round(sizePx * 0.18)) + 'px;color:#fff;white-space:nowrap;max-width:' + (sizePx + 30) + 'px;overflow:hidden;text-overflow:ellipsis;';
     lbl.textContent = t.titre || '—';
     el.appendChild(lbl);
 
@@ -1436,6 +1486,13 @@ function afficherSolPlacement() {
 function placerPieceSol(x, y) {
   if (!selectedToilePl || !salleActive) return;
   const piece = selectedToilePl;
+
+  /* Anti-chevauchement */
+  if (_checkOverlap(piece.id, x, y)) {
+    toast('⚠ Chevauchement — choisis un autre endroit', 'err');
+    return;
+  }
+
   const gab = _gabaritSculpt(piece.dimensions?.hauteur);
 
   /* Retirer de toutes les salles */
