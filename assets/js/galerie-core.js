@@ -411,8 +411,8 @@ const GALERIE_CFG = {
     /* Swipe bas pour fermer le modal (mobile) */
     let swipeStartY = null;
     const modalContenu = document.querySelector('.modal-contenu');
-    modalContenu.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive:true });
-    modalContenu.addEventListener('touchend', e => {
+    if (modalContenu) modalContenu.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive:true });
+    if (modalContenu) modalContenu.addEventListener('touchend', e => {
       if (swipeStartY === null) return;
       const dy = e.changedTouches[0].clientY - swipeStartY;
       if (dy > 80) fermerModal();
