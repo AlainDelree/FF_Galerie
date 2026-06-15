@@ -193,13 +193,20 @@ function afficherMur() {
     /* ── Aperçu GSM à côté ── */
     var oldGsmPrev = document.getElementById('gsm-preview-aside');
     if (oldGsmPrev) oldGsmPrev.remove();
+    var oldRow = document.getElementById('mur-row-wrap');
+    if (oldRow) { /* Dé-wrapper si déjà wrappé */
+      oldRow.parentNode.insertBefore(bg, oldRow);
+      oldRow.remove();
+    }
 
     var mobilePos = salleActive.positions_mobile || [];
     if (mobilePos.length) {
-      var murZone = bg.parentNode;
-      murZone.style.display = 'flex';
-      murZone.style.gap = '10px';
-      murZone.style.alignItems = 'flex-start';
+      /* Wrapper row pour côte à côte */
+      var rowWrap = document.createElement('div');
+      rowWrap.id = 'mur-row-wrap';
+      rowWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start;';
+      bg.parentNode.insertBefore(rowWrap, bg);
+      rowWrap.appendChild(bg);
       bg.style.flex = '1';
 
       var miniGsm = document.createElement('div');
@@ -225,8 +232,7 @@ function afficherMur() {
         gsmSol.appendChild(dot);
       });
       miniGsm.appendChild(gsmSol);
-
-      murZone.appendChild(miniGsm);
+      rowWrap.appendChild(miniGsm);
     }
 
     return;
