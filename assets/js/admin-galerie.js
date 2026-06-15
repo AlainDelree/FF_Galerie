@@ -1544,7 +1544,24 @@ function afficherSolPlacement() {
       'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
       'transform:translateX(-50%) scale(' + perspFactor.toFixed(3) + ');transform-origin:bottom center;' +
       'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
-    if (estSel) wrap.style.outline = '2px solid var(--gold)';
+    if (estSel) {
+      wrap.style.outline = '2px solid var(--gold)';
+      /* Bouton ✕ sur la pièce sélectionnée */
+      const rmBtn = document.createElement('button');
+      rmBtn.textContent = '✕';
+      rmBtn.style.cssText = 'position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;border:none;background:var(--danger,#c0392b);color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:999;line-height:1;padding:0;';
+      rmBtn.addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        var pos = _getPositions();
+        var idx = pos.findIndex(function(x){ return x.id === p.id; });
+        if (idx >= 0) pos.splice(idx, 1);
+        peintureSurMurSel = null;
+        afficherSolPlacement(); afficherStripPlacement();
+        marquerChangement();
+        toast('"' + (t.titre||'—') + '" retirée de cette vue');
+      });
+      wrap.appendChild(rmBtn);
+    }
 
     /* Image ou model-viewer 3D */
     const imgWrap = document.createElement('div');
