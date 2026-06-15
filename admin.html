@@ -1079,98 +1079,41 @@
         const murAide = document.getElementById('mur-aide');
         if (murAide) murAide.textContent = 'Utilise "🔧 Arranger le sol" pour placer les pièces';
 
-        /* Labels adaptés sculpture */
-        var matInput = document.getElementById('inp-mat');
-        if (matInput) matInput.placeholder = 'Métal, bois, pierre…';
-
-        /* ── Stepper diamètre du socle ── */
+        /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
         (function() {
-          var dimsGrp = document.querySelector('#dims-lh').closest('.grp');
-          var dimsLbl = dimsGrp.querySelector('.lbl');
-          if (dimsLbl) dimsLbl.textContent = 'Diamètre du socle (cm)';
-
-          /* Cacher la row L×H×P et les favoris */
-          document.getElementById('dims-lh').style.display = 'none';
-          var favEl = document.getElementById('dims-favoris');
-          if (favEl) favEl.style.display = 'none';
-
-          /* Créer stepper */
-          var stepper = document.createElement('div');
-          stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
-
-          var btnMoins = document.createElement('button');
-          btnMoins.type = 'button';
-          btnMoins.textContent = '−';
-          btnMoins.style.cssText = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
-
-          var inpDiam = document.createElement('input');
-          inpDiam.type = 'number';
-          inpDiam.className = 'champ';
-          inpDiam.id = 'inp-diam-sculpt';
-          inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
-          inpDiam.min = '5'; inpDiam.max = '200';
-          inpDiam.placeholder = '—';
-
-          var btnPlus = document.createElement('button');
-          btnPlus.type = 'button';
-          btnPlus.textContent = '+';
-          btnPlus.style.cssText = btnMoins.style.cssText;
-
-          var unite = document.createElement('span');
-          unite.style.cssText = 'color:var(--muted);font-size:.82rem;';
-          unite.textContent = 'cm';
-
-          /* Sync stepper ↔ inp-larg (source de vérité) */
-          var inpLarg = document.getElementById('inp-larg');
-          function sync() { inpLarg.value = inpDiam.value; }
-          inpDiam.addEventListener('input', sync);
-
-          btnMoins.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value) || 20;
-            inpDiam.value = Math.max(5, v - 5);
-            sync();
-          });
-          btnPlus.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value) || 0;
-            inpDiam.value = Math.min(200, v + 5);
-            sync();
-          });
-
-          /* Observer inp-larg pour remplissage auto depuis GLB */
-          new MutationObserver(function() {
-            if (inpLarg.value && !inpDiam.value) { inpDiam.value = inpLarg.value; }
-          }).observe(inpLarg, { attributes: true, attributeFilter: ['value'] });
-          /* Aussi via polling léger (value changed programmatically) */
-          setInterval(function() {
-            if (inpLarg.value && inpDiam.value !== inpLarg.value) inpDiam.value = inpLarg.value;
-          }, 500);
-
-          stepper.appendChild(btnMoins);
-          stepper.appendChild(inpDiam);
-          stepper.appendChild(btnPlus);
-          stepper.appendChild(unite);
-          dimsGrp.appendChild(stepper);
-        })();
-
-        /* ── Restructurer modal : GLB en premier, photo générée en dessous ── */
-        (function() {
+          var body = document.querySelector('#overlay-toile .modal-body');
           var photoGrp = document.getElementById('zone-photo').closest('.grp');
           var glbGrp   = document.getElementById('zone-glb').closest('.grp');
+          var dimsGrp  = document.querySelector('#dims-lh').closest('.grp');
+          var titreGrp = document.getElementById('inp-titre').closest('.grp');
+          var dateGrp  = document.getElementById('inp-date').closest('.grp');
+          var matGrp   = document.getElementById('inp-mat').closest('.grp');
+          var prixGrp  = document.getElementById('inp-prix').closest('.grp');
+          var descGrp  = document.getElementById('inp-desc').closest('.grp');
+          var visGrp   = document.getElementById('inp-visible').closest('.grp');
+          var pillsGrp = document.getElementById('salle-pills')?.closest('.grp');
           var zonePhoto = document.getElementById('zone-photo');
           var prevImg   = document.getElementById('photo-prev');
 
-          /* Label → "Modèle 3D" */
-          photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb)';
+          /* ── Helper : créer un en-tête de section ── */
+          function sectionHeader(text) {
+            var h = document.createElement('div');
+            h.style.cssText = 'font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid rgba(200,160,80,.2);';
+            h.textContent = text;
+            return h;
+          }
 
-          /* Déplacer zone GLB + status + hidden input dans le groupe photo */
+          /* ── 1. OBJET ── */
+          var hdrObjet = sectionHeader('Objet');
+          body.prepend(hdrObjet);
+
+          /* GLB zone dans le grp photo */
+          photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb)';
           photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
           photoGrp.insertBefore(document.getElementById('inp-glb'), zonePhoto);
           photoGrp.insertBefore(document.getElementById('glb-thumb-status'), zonePhoto);
-
-          /* Sortir photo-prev de zone-photo → visible même quand zone-photo est cachée */
           photoGrp.insertBefore(prevImg, zonePhoto);
-          prevImg.style.maxWidth = '200px';
-          prevImg.style.marginTop = '.5rem';
+          prevImg.style.maxWidth = '200px'; prevImg.style.marginTop = '.5rem';
 
           /* Bouton "Changer la photo…" */
           var btnChg = document.createElement('button');
@@ -1179,14 +1122,73 @@
           btnChg.style.cssText = 'display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:.75rem;margin-top:.3rem;padding:0;text-decoration:underline;';
           btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
           photoGrp.insertBefore(btnChg, zonePhoto);
-
-          /* Masquer zone photo d'origine + recadrer + qualité */
           zonePhoto.style.display = 'none';
           document.getElementById('btn-recadrer-photo').style.display = 'none';
           document.getElementById('photo-qualite').style.display = 'none';
-
-          /* Ancien grp GLB (maintenant vide) */
           glbGrp.style.display = 'none';
+
+          /* Placer photo grp juste après header OBJET */
+          hdrObjet.after(photoGrp);
+
+          /* Dimensions L×H×P visibles */
+          dimsGrp.querySelector('.lbl').textContent = 'Dimensions de la pièce';
+          document.getElementById('dims-lh').style.display = '';
+          var favEl = document.getElementById('dims-favoris');
+          if (favEl) favEl.style.display = 'none';
+          photoGrp.after(dimsGrp);
+
+          /* ── 2. SOCLE ── */
+          var hdrSocle = sectionHeader('Socle');
+          dimsGrp.after(hdrSocle);
+
+          /* Stepper diamètre */
+          var socleGrp = document.createElement('div');
+          socleGrp.className = 'grp';
+          var socleLbl = document.createElement('label');
+          socleLbl.className = 'lbl'; socleLbl.textContent = 'Diamètre (cm)';
+          socleGrp.appendChild(socleLbl);
+
+          var stepper = document.createElement('div');
+          stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
+          var btnStyle = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+
+          var btnMoins = document.createElement('button');
+          btnMoins.type = 'button'; btnMoins.textContent = '−'; btnMoins.style.cssText = btnStyle;
+          var inpDiam = document.createElement('input');
+          inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
+          inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
+          inpDiam.min = '5'; inpDiam.max = '200'; inpDiam.placeholder = '—';
+          var btnPlus = document.createElement('button');
+          btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
+          var unite = document.createElement('span');
+          unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
+
+          btnMoins.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value) || 20;
+            inpDiam.value = Math.max(5, v - 5);
+          });
+          btnPlus.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value) || 0;
+            inpDiam.value = Math.min(200, v + 5);
+          });
+
+          stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
+          stepper.appendChild(btnPlus); stepper.appendChild(unite);
+          socleGrp.appendChild(stepper);
+          hdrSocle.after(socleGrp);
+
+          /* ── 3. DÉTAILS ── */
+          var hdrDetails = sectionHeader('Détails');
+          socleGrp.after(hdrDetails);
+
+          /* Placeholder matériaux */
+          document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
+
+          /* Réordonner : Titre, Date, Matériaux, Prix, Description, Visible, Salle */
+          var detailsOrder = [titreGrp, dateGrp, matGrp, prixGrp, descGrp, visGrp];
+          if (pillsGrp) detailsOrder.push(pillsGrp);
+          var prev = hdrDetails;
+          detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
         })();
 
         /* Aperçu plus grand */

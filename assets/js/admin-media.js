@@ -323,18 +323,24 @@ function genererThumbnailGLB(blobUrl) {
       /* Afficher bouton "Changer la photo…" en mode sculpture */
       var btnChg = document.getElementById('btn-change-photo-sculpt');
       if (btnChg) btnChg.style.display = '';
-      /* Auto-fill diamètre du socle depuis dimensions GLB */
+      /* Auto-fill dimensions pièce + diamètre socle depuis GLB */
       if (result.dims) {
-        var footprint = Math.max(result.dims.x, result.dims.z);
-        var diam = Math.ceil(footprint * 100 * 1.3); /* empreinte + 30% marge */
-        if (diam < 5) diam = 15; /* minimum 15 cm */
-        var hauteurCm = Math.round(result.dims.y * 100);
-        var inpDiam = document.getElementById('inp-larg');
-        if (inpDiam && !inpDiam.value) inpDiam.value = diam;
+        var xCm = Math.round(result.dims.x * 100);
+        var yCm = Math.round(result.dims.y * 100);
+        var zCm = Math.round(result.dims.z * 100);
+        var footprint = Math.max(xCm, zCm);
+        var diam = Math.ceil(footprint * 1.3); /* empreinte + 30% marge */
+        if (diam < 15) diam = 15;
+        /* Dimensions de la pièce */
+        var inpL = document.getElementById('inp-larg');
+        if (inpL && !inpL.value) inpL.value = Math.max(xCm, zCm);
+        var inpH = document.getElementById('inp-haut');
+        if (inpH && !inpH.value) inpH.value = yCm;
+        var inpP = document.getElementById('inp-prof');
+        if (inpP && !inpP.value) inpP.value = Math.min(xCm, zCm);
+        /* Diamètre du socle */
         var inpDiamStepper = document.getElementById('inp-diam-sculpt');
-        if (inpDiamStepper) inpDiamStepper.value = diam;
-        var inpHaut = document.getElementById('inp-haut');
-        if (inpHaut && !inpHaut.value) inpHaut.value = hauteurCm;
+        if (inpDiamStepper && !inpDiamStepper.value) inpDiamStepper.value = diam;
       }
     } catch (e) {
       console.warn('Thumbnail GLB échoué:', e);

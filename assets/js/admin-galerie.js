@@ -1009,7 +1009,6 @@ function remplirFormToile(t) {
     synchroChips(0, 0);
   } else if (d && d.largeur && d.hauteur) {
     $('inp-larg').value = d.largeur; $('inp-haut').value = d.hauteur;
-    if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = d.largeur;
     if (d.profondeur && $('inp-prof')) $('inp-prof').value = d.profondeur;
     synchroChips(d.largeur, d.hauteur);
   } else {
@@ -1058,6 +1057,9 @@ function remplirFormToile(t) {
     $('glb-ph').style.display = '';
   }
   glbB64 = null; glbNom = null;
+  /* Remplir stepper socle */
+  var inpDiamS = document.getElementById('inp-diam-sculpt');
+  if (inpDiamS) inpDiamS.value = t.socle || '';
   document.querySelectorAll('.salle-pill').forEach(p => {
     p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
   });
@@ -1087,6 +1089,8 @@ function lireFormToile() {
     visible: $('inp-visible').checked
   };
   if ($('inp-glb') && $('inp-glb').value) result.glb = $('inp-glb').value;
+  var inpDiamS = document.getElementById('inp-diam-sculpt');
+  if (inpDiamS && inpDiamS.value) result.socle = parseInt(inpDiamS.value);
   return result;
 }
 
