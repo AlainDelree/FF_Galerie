@@ -67,20 +67,23 @@
     {
       "id": 3,
       "titre": "Piranha",
-      "photo": "",
-      "glb": "artistes/dinso/assets/models/piranha.glb",
+      "photo": "artistes/dinso/assets/images/toiles/piece-003.jpg",
+      "glb": "artistes/dinso/assets/models/piece-003.glb",
       "date": "2024",
       "materiaux": [
         "Taxidermie"
       ],
       "description": "",
       "dimensions": {
+        "type": "paysage",
         "largeur": 55,
         "hauteur": 35,
         "profondeur": 20
       },
       "disponibilite": "disponible",
-      "prix": ""
+      "style": "",
+      "visible": true,
+      "socle": 192
     },
     {
       "id": 4,
