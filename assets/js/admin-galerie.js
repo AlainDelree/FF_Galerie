@@ -190,28 +190,43 @@ function afficherMur() {
       bg.appendChild(wrap);
     });
 
-    /* ── Mini aperçu GSM à côté du PC ── */
+    /* ── Aperçu GSM à côté ── */
+    var oldGsmPrev = document.getElementById('gsm-preview-aside');
+    if (oldGsmPrev) oldGsmPrev.remove();
+
     var mobilePos = salleActive.positions_mobile || [];
     if (mobilePos.length) {
+      var murZone = bg.parentNode;
+      murZone.style.display = 'flex';
+      murZone.style.gap = '10px';
+      murZone.style.alignItems = 'flex-start';
+      bg.style.flex = '1';
+
       var miniGsm = document.createElement('div');
-      miniGsm.style.cssText = 'position:absolute;right:6px;top:6px;width:60px;height:110px;border-radius:8px;overflow:hidden;border:1.5px solid var(--gold);background:#7a7a7a;z-index:20;opacity:.85;';
-      /* Label */
+      miniGsm.id = 'gsm-preview-aside';
+      miniGsm.style.cssText = 'flex:0 0 80px;height:160px;border-radius:10px;overflow:hidden;border:1.5px solid var(--gold);display:flex;flex-direction:column;';
+
       var gsmLbl = document.createElement('div');
-      gsmLbl.style.cssText = 'text-align:center;font-size:6px;color:var(--gold);padding:2px 0;letter-spacing:.1em;font-weight:700;';
+      gsmLbl.style.cssText = 'text-align:center;font-size:7px;color:#fff;padding:3px 0;background:#7a7a7a;font-weight:700;letter-spacing:.1em;';
       gsmLbl.textContent = '📱 GSM';
       miniGsm.appendChild(gsmLbl);
-      /* Sol mini */
+
+      var gsmMur = document.createElement('div');
+      gsmMur.style.cssText = 'flex:0 0 20%;background:#7a7a7a;';
+      miniGsm.appendChild(gsmMur);
+
       var gsmSol = document.createElement('div');
-      gsmSol.style.cssText = 'height:70%;position:relative;background:' + solPatternCSS(texSol, coulParquet) + ';';
+      gsmSol.style.cssText = 'flex:1;position:relative;background:' + solPatternCSS(texSol, coulParquet) + ';';
       mobilePos.forEach(function(p) {
         var t2 = toiles.find(function(x){ return x.id === p.id; }); if (!t2) return;
         var sc = 1 - (p.y / 100) * 0.42;
         var dot = document.createElement('div');
-        dot.style.cssText = 'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;transform:translateX(-50%) scale(' + (sc * 0.8).toFixed(2) + ');transform-origin:bottom center;width:6px;height:6px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.25);';
+        dot.style.cssText = 'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;transform:translateX(-50%) scale(' + (sc * 0.7).toFixed(2) + ');transform-origin:bottom center;width:8px;height:10px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.25);';
         gsmSol.appendChild(dot);
       });
       miniGsm.appendChild(gsmSol);
-      bg.appendChild(miniGsm);
+
+      murZone.appendChild(miniGsm);
     }
 
     return;
