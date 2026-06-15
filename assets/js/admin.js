@@ -463,11 +463,12 @@ async function uploaderPhoto(id, b64) {
      Fred  : assets/images/toiles/toile-NNN.jpg
      Alain : artistes/alaindelree/assets/images/toiles/toile-NNN.jpg */
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
-  const chemin = base + `toile-${String(id).padStart(3, '0')}.jpg`;
+  const prefix = (ADMIN_CFG.type === 'sculpture') ? 'piece' : 'toile';
+  const chemin = base + `${prefix}-${String(id).padStart(3, '0')}.jpg`;
   const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
   try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}?ref=${BRANCH}`); sha = r.sha; } catch (_) {}
-  const corps = { message: `Admin : Photo toile #${id}`, content: b64, branch: BRANCH };
+  const corps = { message: `Admin : Photo ${prefix} #${id}`, content: b64, branch: BRANCH };
   if (sha) corps.sha = sha;
   await apiGH(`/repos/${REPO}/contents/${chemin}`, 'PUT', corps);
   return stored; /* chemin relatif stocké dans toiles.json */
@@ -477,10 +478,11 @@ async function uploaderGLB(id, b64) {
   /* Upload le fichier GLB dans le dossier models de l'artiste.
      Chemin GitHub = chemin stocké dans toiles.json (relatif au repo) */
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/models/';
-  const chemin = base + 'toile-' + String(id).padStart(3, '0') + '.glb';
+  const prefix = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'piece-' : 'toile-';
+  const chemin = base + prefix + String(id).padStart(3, '0') + '.glb';
   let sha = null;
   try { const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH); sha = r.sha; } catch (_) {}
-  const corps = { message: 'Admin : GLB piece #' + id, content: b64, branch: BRANCH };
+  const corps = { message: 'Admin : GLB ' + prefix.replace('-','') + ' #' + id, content: b64, branch: BRANCH };
   if (sha) corps.sha = sha;
   await apiGH('/repos/' + REPO + '/contents/' + chemin, 'PUT', corps);
   return chemin; /* chemin relatif stocké dans toiles.json */

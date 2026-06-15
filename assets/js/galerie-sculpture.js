@@ -212,7 +212,8 @@ function creerSocle(piece, gabarit, pos) {
   const lCm    = dim.largeur || 30;
   const ratio  = hCm / lCm;
   const pCm    = dim.profondeur || Math.round(lCm * 0.5);
-  const socleW = Math.max(ECHELLE_MIN, Math.round(pCm * ECHELLE));
+  const socleDiam = piece.socle || pCm;
+  const socleW = Math.max(ECHELLE_MIN, Math.round(socleDiam * ECHELLE));
   const photoH = Math.min(ECHELLE_MAXH,
     Math.max(ECHELLE_MIN, Math.round(hCm * ECHELLE * (ratio < 1 ? ratio : 1))));
 

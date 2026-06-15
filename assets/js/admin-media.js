@@ -27,6 +27,8 @@ function traiterPhoto(fichier) {
 function afficherQualitePhoto(maxDim, isOriginal) {
   const el = $('photo-qualite');
   if (!el || !maxDim) return;
+  /* Sculpture : la photo est un thumbnail du GLB, pas d'alerte qualité */
+  if (window.ADMIN_TYPE === 'sculpture') { el.style.display = 'none'; return; }
   let niveau, icone, color;
   if (isOriginal) {
     // Seuils sur dimensions originales (avant compression)

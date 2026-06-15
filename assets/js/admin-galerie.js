@@ -1116,7 +1116,8 @@ async function sauverToile() {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      await sauvegarder(`[admin] Ajout toile #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     } else {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
       let photo = toiles[idx].photo;
@@ -1147,7 +1148,8 @@ async function sauverToile() {
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
-      await sauvegarder(`[admin] Modification toile #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
     }
     const idSauve = toileEnEdition === null
       ? toiles[toiles.length - 1].id
