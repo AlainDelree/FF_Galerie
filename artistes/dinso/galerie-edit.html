@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Édition galerie</title>
+  <link rel="stylesheet" href="../../assets/css/galerie-sculpture.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #7a7a7a; user-select: none; -webkit-user-select: none; }
+    .conteneur-salles { width: 100% !important; transform: none !important; }
+    .salle {
+      width: 100% !important; height: 100vh !important;
+      display: flex !important; flex-direction: column !important;
+    }
+    .salle-sculpture { background-color: #7a7a7a; }
+    .mur-inferieur {
+      flex: 0 0 35px !important; height: 35px !important;
+      background: #222 !important; display: flex; align-items: center; justify-content: center;
+    }
+    .plancher-sol {
+      flex: 1 !important; min-height: 0 !important; max-height: none !important;
+      position: relative !important;
+    }
+    .silhouettes-sol { display: none !important; }
+    .socle-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; }
+    .socle { display: flex; flex-direction: column; align-items: center; position: relative; }
+  </style>
+</head>
+<body data-page="galerie">
+  <!-- Éléments attendus par galerie-core.js -->
+  <nav class="barre-navigation" style="display:none;"></nav>
+  <div class="conteneur-salles" id="conteneurSalles"></div>
+
+  <script>
+    window.GALERIE_TOILES_PATH = "data/toiles.json";
+    window.GALERIE_SALLES_PATH = "data/salles.json";
+    window.GALERIE_ASSETS_BASE = "../../";
+    window._GALERIE_EDIT = true;
+  </script>
+  <script src="../../assets/js/galerie-core.js?v=20260615c"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260615c"></script>
+  <script>initGalerie();</script>
+</body>
+</html>

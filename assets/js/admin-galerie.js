@@ -1461,10 +1461,10 @@ function afficherSolPlacement() {
   }
 
   /* Iframe charge la vraie galerie en mode édition */
-  const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie.html';
+  const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-edit.html';
   const iframe = document.createElement('iframe');
   iframe.id = 'edit-galerie-iframe';
-  iframe.src = galeriePath + '?edit=1&v=' + Date.now();
+  iframe.src = galeriePath + '?v=' + Date.now();
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
   iframeWrap.appendChild(iframe);
   container.appendChild(iframeWrap);
