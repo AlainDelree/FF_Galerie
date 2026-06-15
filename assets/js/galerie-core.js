@@ -514,12 +514,17 @@ const GALERIE_CFG = {
 const GALERIE_RENDERERS = {};
 
 function initGalerie() {
-  /* Mode édition — cacher la navigation et le header */
+  /* Mode édition — cacher tout sauf la salle, plein écran */
   if (window._GALERIE_EDIT) {
-    document.querySelectorAll('.barre-navigation, .galerie-header, .galerie-footer, #btnPrecedent, #btnSuivant, .nav-retour').forEach(function(el) {
-      el.style.display = 'none';
-    });
-    document.body.style.margin = '0'; document.body.style.padding = '0';
+    var editStyle = document.createElement('style');
+    editStyle.textContent =
+      '.galerie-header,.galerie-footer,.barre-navigation,.nav-retour,#btnPrecedent,#btnSuivant,#numSalle,.bandeau-artiste,.musique-flottant,.retour-plan,.nav-salles-haut,' +
+      '.panneau-nav,.plaque-nav{display:none!important;}' +
+      'body{margin:0;padding:0;overflow:hidden;}' +
+      '.conteneur-salles{width:100%!important;transform:none!important;transition:none!important;}' +
+      '.salle{width:100%!important;height:100vh!important;min-height:100vh!important;}' +
+      '.salle-sculpture .plancher-sol{min-height:70vh!important;}';
+    document.head.appendChild(editStyle);
   }
 
   Promise.all([
