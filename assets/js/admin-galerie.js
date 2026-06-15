@@ -1108,7 +1108,7 @@ function lireFormToile() {
   };
   if ($('inp-glb') && $('inp-glb').value) result.glb = $('inp-glb').value;
   var inpDiamS = document.getElementById('inp-diam-sculpt');
-  if (inpDiamS && inpDiamS.value) result.socle = parseInt(inpDiamS.value);
+  if (inpDiamS) result.socle = inpDiamS.value ? parseInt(inpDiamS.value) : undefined;
   return result;
 }
 
