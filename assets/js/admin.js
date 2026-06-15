@@ -787,6 +787,11 @@ $('btn-switch-vue')?.addEventListener('click', function() {
   this.textContent = _placementVue === 'pc' ? '🖥 PC' : '📱 GSM';
   this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
   this.style.color = _placementVue === 'gsm' ? '#fff' : '';
+  /* Auto-initialiser GSM depuis PC si vide */
+  if (_placementVue === 'gsm' && salleActive && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
+    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+    toast('Positions PC copiées comme base GSM', 'ok', 2500);
+  }
   peintureSurMurSel = null;
   afficherSolPlacement();
   afficherStripPlacement();

@@ -1598,6 +1598,52 @@ function afficherSolPlacement() {
     const y = Math.round((1 - (e.clientY - rect.top) / rect.height) * 100);
     placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
   });
+
+  /* ── Mini aperçu de l'autre mode (non-interactif) ── */
+  _renderMiniPreview(bg);
+}
+
+function _renderMiniPreview(mainBg) {
+  if (!_isSculpt || !salleActive) return;
+  const isGsm = _placementVue === 'gsm';
+  const otherPos = isGsm ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
+  if (!otherPos.length) return;
+
+  const coulSol = couleurMurActuel || '#8a6228';
+  const texSol = textureActuelle || 'parquet';
+
+  /* Conteneur mini */
+  const mini = document.createElement('div');
+  mini.style.cssText = isGsm
+    ? 'position:absolute;right:8px;top:8px;width:180px;height:100px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;'
+    : 'position:absolute;right:8px;top:8px;width:60px;height:120px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;';
+
+  /* Label */
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'position:absolute;top:2px;left:0;right:0;text-align:center;font-size:7px;color:#fff;z-index:2;text-shadow:0 1px 2px #000;letter-spacing:.08em;';
+  lbl.textContent = isGsm ? '🖥 PC' : '📱 GSM';
+  mini.appendChild(lbl);
+
+  /* Mur + sol */
+  mini.innerHTML += '<div style="height:22%;background:#7a7a7a;"></div><div style="height:5%;background:#222;"></div>';
+  const solMini = document.createElement('div');
+  solMini.style.cssText = 'height:73%;position:relative;background:' + solPatternCSS(texSol, coulSol) + ';';
+  mini.appendChild(solMini);
+
+  /* Pièces en miniature */
+  otherPos.forEach(p => {
+    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const scale = 1 - (p.y / 100) * 0.42;
+    const dot = document.createElement('div');
+    dot.style.cssText =
+      'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
+      'transform:translateX(-50%) scale(' + (scale * 0.8).toFixed(2) + ');transform-origin:bottom center;' +
+      'width:8px;height:8px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.2);';
+    solMini.appendChild(dot);
+  });
+
+  mainBg.parentNode.style.position = 'relative';
+  mainBg.parentNode.appendChild(mini);
 }
 
 function placerPieceSol(x, y) {
