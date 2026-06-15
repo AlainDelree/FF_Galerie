@@ -970,6 +970,8 @@ function viderFormToile() {
   if ($('glb-info')) $('glb-info').style.display = 'none';
   if ($('glb-ph')) $('glb-ph').style.display = '';
   if ($('glb-thumb-status')) { $('glb-thumb-status').style.display = 'none'; $('glb-thumb-status').textContent = ''; }
+  var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
+  if (btnChgPhoto) btnChgPhoto.style.display = 'none';
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
   $('sel-format').value = '';
@@ -1028,6 +1030,9 @@ function remplirFormToile(t) {
     prevImg.src = t.photo; prevImg.style.display = 'block';
     $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
+    /* Bouton "Changer la photo…" en mode sculpture */
+    var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
+    if (btnChgPhoto) btnChgPhoto.style.display = '';
     // Si déjà en cache
     if (prevImg.complete && prevImg.naturalWidth) {
       afficherQualitePhoto(Math.max(prevImg.naturalWidth, prevImg.naturalHeight), false);

@@ -317,6 +317,9 @@ function genererThumbnailGLB(blobUrl) {
       $('photo-prev').style.display = 'block';
       $('photo-ph').style.display = 'none';
       $('btn-recadrer-photo').classList.add('visible');
+      /* Afficher bouton "Changer la photo…" en mode sculpture */
+      var btnChg = document.getElementById('btn-change-photo-sculpt');
+      if (btnChg) btnChg.style.display = '';
     } catch (e) {
       console.warn('Thumbnail GLB échoué:', e);
       toast('Thumbnail auto échoué — vous pouvez ajouter une photo manuellement', 'err', 4000);
