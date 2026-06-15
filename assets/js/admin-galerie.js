@@ -1368,12 +1368,12 @@ function afficherSolPlacement() {
 
   /* MUR (fond gris de la galerie) */
   const murZone = document.createElement('div');
-  murZone.style.cssText = 'flex:0 0 22%;background:' + coulMur + ';position:relative;';
+  murZone.style.cssText = 'flex:0 0 22%;background:' + coulMur + ';position:relative;z-index:1;';
   bg.appendChild(murZone);
 
   /* MUR INFÉRIEUR (bande sombre avec portes) */
   const murBas = document.createElement('div');
-  murBas.style.cssText = 'flex:0 0 40px;background:#222;display:flex;align-items:center;justify-content:center;';
+  murBas.style.cssText = 'flex:0 0 40px;background:#222;display:flex;align-items:center;justify-content:center;z-index:1;';
   const porteG = document.createElement('div');
   porteG.style.cssText = 'width:35px;height:28px;border-radius:35px 35px 0 0;background:#111;border:1px solid #333;border-bottom:none;';
   const porteD = porteG.cloneNode(true);
@@ -1387,15 +1387,18 @@ function afficherSolPlacement() {
   /* SOL (plancher avec perspective) */
   const sol = document.createElement('div');
   sol.id = 'sol-placement';
-  sol.style.cssText = 'flex:1;position:relative;overflow:hidden;cursor:crosshair;' +
+  sol.style.cssText = 'flex:1;position:relative;overflow:visible;cursor:crosshair;z-index:2;' +
     'background:' + (grilleVisiblePl ? coulSol : solPatternCSS(texSol, coulSol)) + ';';
   bg.appendChild(sol);
 
-  /* Canvas perspective sur le sol */
+  /* Canvas perspective — dans un wrapper clipé */
   if (texSol === 'carrelage' || texSol === 'parquet') {
+    const canvasWrap = document.createElement('div');
+    canvasWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;';
     const canvas = document.createElement('canvas');
-    canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
-    sol.appendChild(canvas);
+    canvas.style.cssText = 'width:100%;height:100%;';
+    canvasWrap.appendChild(canvas);
+    sol.appendChild(canvasWrap);
     requestAnimationFrame(function() {
       const W = sol.clientWidth || 800, H = sol.clientHeight || 400;
       canvas.width = W; canvas.height = H;
@@ -1473,10 +1476,22 @@ function afficherSolPlacement() {
       'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
     if (estSel) wrap.style.outline = '2px solid var(--gold)';
 
-    /* Image */
+    /* Image ou model-viewer 3D */
     const imgWrap = document.createElement('div');
     imgWrap.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;display:flex;align-items:flex-end;justify-content:center;';
-    if (t.photo || t._preview) {
+
+    if (t.glb) {
+      /* Model-viewer 3D statique (pas de rotation/zoom utilisateur) */
+      const mv = document.createElement('model-viewer');
+      mv.setAttribute('src', (ADMIN_CFG.repoPath ? '../../' : '') + t.glb + '?v=' + Date.now());
+      mv.setAttribute('auto-rotate', '');
+      mv.setAttribute('interaction-prompt', 'none');
+      mv.setAttribute('disable-zoom', '');
+      mv.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;pointer-events:none;--poster-color:transparent;';
+      imgWrap.appendChild(mv);
+      /* Charger model-viewer si pas déjà fait */
+      if (typeof loadModelViewerAdmin === 'function') loadModelViewerAdmin();
+    } else if (t.photo || t._preview) {
       const img = document.createElement('img');
       img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
       img.style.cssText = 'max-width:' + socleW + 'px;max-height:' + photoH + 'px;object-fit:contain;';
@@ -1484,7 +1499,7 @@ function afficherSolPlacement() {
     } else {
       const ph = document.createElement('div');
       ph.style.cssText = 'width:' + Math.round(socleW * 0.7) + 'px;height:' + Math.round(photoH * 0.8) + 'px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
-      ph.textContent = t.glb ? '3D' : '?';
+      ph.textContent = '?';
       imgWrap.appendChild(ph);
     }
     wrap.appendChild(imgWrap);
