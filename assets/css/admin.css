@@ -326,7 +326,7 @@ button{cursor:pointer;}
   color:var(--success);background:rgba(39,174,96,.12);padding:.15rem .5rem;border-radius:20px;}
 
 /* ══ MODALS ══ */
-.overlay{display:none;position:fixed;inset:0;z-index:200;
+.overlay{display:none;position:fixed;inset:0;z-index:1100;
   background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;}
 .overlay.ouvert{display:flex;}
 .modal{background:var(--bg2);border-radius:16px 16px 0 0;
