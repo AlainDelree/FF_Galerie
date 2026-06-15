@@ -341,19 +341,53 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
     /* Masquer les pseudo-éléments CSS (lattes hardcodées) */
     plancherSol.classList.add('sol-custom');
 
-    /* Perspective sol : grille 3D sous les socles (parquet et carrelage) */
+    /* Perspective sol : canvas avec grille en vraie perspective */
     if (solTexture === 'carrelage' || solTexture === 'parquet') {
-      plancherSol.style.background = solCouleur; /* Couleur unie de base */
-      var pat = SOL_PATTERNS_PUB[solTexture] || '';
-      var perspDiv = document.createElement('div');
-      perspDiv.className = 'sol-persp';
-      perspDiv.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;';
-      var grid = document.createElement('div');
-      grid.style.cssText = 'position:absolute;left:-50%;right:-50%;bottom:0;height:500%;' +
-        'background:' + (pat ? pat + ',' : '') + solCouleur + ';' +
-        'transform-origin:bottom center;transform:perspective(600px) rotateX(45deg);';
-      perspDiv.appendChild(grid);
-      plancherSol.insertBefore(perspDiv, plancherSol.firstChild);
+      plancherSol.style.background = solCouleur;
+      var canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+      plancherSol.insertBefore(canvas, plancherSol.firstChild);
+
+      /* Dessiner après layout pour avoir les bonnes dimensions */
+      requestAnimationFrame(function() {
+        var W = plancherSol.clientWidth || 1200;
+        var H = plancherSol.clientHeight || 400;
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+
+        var isParquet = solTexture === 'parquet';
+        var lineColor = 'rgba(0,0,0,' + (isParquet ? '0.10' : '0.16') + ')';
+        var vLineColor = 'rgba(0,0,0,' + (isParquet ? '0.05' : '0.16') + ')';
+        var nbH = isParquet ? 30 : 16; /* lignes horizontales */
+        var nbV = isParquet ? 20 : 16; /* lignes verticales */
+
+        /* Point de fuite au centre en haut */
+        var vx = W / 2;
+        var vy = -H * 0.15;
+
+        /* Lignes horizontales — espacement exponentiel (perspective) */
+        for (var i = 0; i <= nbH; i++) {
+          var t = i / nbH;
+          var y = H * (1 - Math.pow(1 - t, 2.2));
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.strokeStyle = lineColor;
+          ctx.lineWidth = 0.5 + t * 1.2;
+          ctx.stroke();
+        }
+
+        /* Lignes verticales — convergent vers le point de fuite */
+        for (var i = -nbV; i <= nbV; i++) {
+          var bx = vx + i * (W / (nbV * 0.8));
+          ctx.beginPath();
+          ctx.moveTo(vx + i * (W * 0.02), 0);
+          ctx.lineTo(bx, H);
+          ctx.strokeStyle = vLineColor;
+          ctx.lineWidth = 0.5 + (Math.abs(i) < nbV * 0.5 ? 0.3 : 0.5);
+          ctx.stroke();
+        }
+      });
     }
     (salle.positions || []).slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
