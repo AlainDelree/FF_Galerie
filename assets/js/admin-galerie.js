@@ -1107,8 +1107,8 @@ function lireFormToile() {
 
 async function sauverToile() {
   const donnees = lireFormToile();
-  const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile');
-  btn.disabled = true; lbl.textContent = 'En cours…';
+  const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile'), btnAnn = $('btn-annuler-toile');
+  btn.disabled = true; btnAnn.disabled = true; lbl.textContent = 'En cours…';
   try {
     if (toileEnEdition === null) {
       const id = prochainId();
@@ -1168,7 +1168,7 @@ async function sauverToile() {
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
     toast("✓ Enregistré — site mis à jour dans ~1 min", "ok", 5000);
   } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); }
-  finally { btn.disabled = false; lbl.textContent = 'Enregistrer'; }
+  finally { btn.disabled = false; btnAnn.disabled = false; lbl.textContent = 'Enregistrer'; }
 }
 
 async function supprimerToile() {
