@@ -52,15 +52,9 @@
       "positions_mobile": [
         {
           "id": 3,
-          "x": 20,
-          "y": 60,
+          "x": 41,
+          "y": 35,
           "gabarit": "M"
-        },
-        {
-          "id": 2,
-          "x": 62,
-          "y": 19,
-          "gabarit": "S"
         }
       ]
     }
