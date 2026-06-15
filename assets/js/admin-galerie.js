@@ -1440,15 +1440,17 @@ function afficherSolPlacement() {
   const isGsm = _placementVue === 'gsm';
 
   /* Remplir tout l'espace disponible */
-  container.style.cssText = 'flex:1;min-height:0;display:flex;' + (isGsm
-    ? 'align-items:center;justify-content:center;'
-    : '');
+  var zoneRect = container.parentElement.getBoundingClientRect();
+  var availH = zoneRect.height - 30; /* marge pour pl-aide */
+  container.style.cssText = isGsm
+    ? 'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;'
+    : 'height:' + availH + 'px;';
 
   /* Wrapper iframe */
   const iframeWrap = document.createElement('div');
   iframeWrap.style.cssText = isGsm
     ? 'height:100%;aspect-ratio:9/19;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
-    : 'flex:1;min-height:0;border-radius:6px;overflow:hidden;position:relative;';
+    : 'width:100%;height:100%;border-radius:6px;overflow:hidden;position:relative;';
 
   /* Label mode */
   if (isGsm) {
