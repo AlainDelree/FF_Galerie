@@ -514,6 +514,14 @@ const GALERIE_CFG = {
 const GALERIE_RENDERERS = {};
 
 function initGalerie() {
+  /* Mode édition — cacher la navigation et le header */
+  if (window._GALERIE_EDIT) {
+    document.querySelectorAll('.barre-navigation, .galerie-header, .galerie-footer, #btnPrecedent, #btnSuivant, .nav-retour').forEach(function(el) {
+      el.style.display = 'none';
+    });
+    document.body.style.margin = '0'; document.body.style.padding = '0';
+  }
+
   Promise.all([
     fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
     fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -558,6 +566,10 @@ function initGalerie() {
       allerSalle(cible);
       conteneur.getBoundingClientRect();
       requestAnimationFrame(() => requestAnimationFrame(() => { conteneur.style.transition = ''; }));
+    }
+    /* Mode édition — activer le drag sur les socles */
+    if (window._GALERIE_EDIT && typeof window._initEditDrag === 'function') {
+      requestAnimationFrame(function() { window._initEditDrag(salles); });
     }
   })
   .catch(err => {

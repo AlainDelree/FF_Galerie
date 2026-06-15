@@ -411,7 +411,6 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
     var isMobile = window.innerWidth <= 600;
     if (isMobile !== _wasMobile) {
       _wasMobile = isMobile;
-      /* Re-initialiser la galerie avec les bonnes positions */
       if (typeof initGalerie === 'function') {
         var conteneur = document.getElementById('conteneurSalles');
         if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
@@ -419,4 +418,210 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
     }
   });
 })();
+
+/* ══════════════════════════════════════════════════════════════
+   MODE ÉDITION — ?edit=1 dans l'URL
+   Rend les socles draggables, communique via postMessage
+   ══════════════════════════════════════════════════════════════ */
+window._GALERIE_EDIT = new URLSearchParams(location.search).has('edit');
+
+if (window._GALERIE_EDIT) {
+  /* Désactiver la navigation entre salles et les clics immersifs */
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.style.userSelect = 'none';
+    document.body.style.overflow = 'hidden';
+  });
+
+  /* Stocker les salles/positions pour les envoyer au parent */
+  var _editSalles = null;
+  var _editPositions = null; /* référence directe vers salle.positions ou salle.positions_mobile */
+
+  /* Appelé après initGalerie — rend les socles draggables */
+  window._initEditDrag = function(salles) {
+    _editSalles = salles;
+    var salle = salles[0]; /* une seule salle visible */
+    var isMobile = window.innerWidth <= 600;
+    _editPositions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
+      ? salle.positions_mobile : (salle.positions || []);
+
+    var plancher = document.querySelector('.plancher-sol');
+    if (!plancher) return;
+
+    /* Désactiver les clics immersifs */
+    document.querySelectorAll('.socle-wrapper').forEach(function(wrap) {
+      wrap.style.cursor = 'grab';
+      /* Bloquer les clics vers la salle immersive */
+      wrap.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); }, true);
+    });
+
+    /* Variables drag */
+    var _dragging = null; /* { el, pos, startX, startY } */
+    var _moved = false;
+    var _selected = null; /* élément sélectionné */
+
+    plancher.addEventListener('mousedown', function(e) {
+      var wrap = e.target.closest('.socle-wrapper');
+      if (!wrap) return;
+      e.preventDefault();
+      var pid = _findPieceId(wrap);
+      if (!pid) return;
+      var pos = _editPositions.find(function(p) { return p.id === pid; });
+      if (!pos) return;
+      _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+      _moved = false;
+      wrap.style.cursor = 'grabbing';
+      wrap.style.zIndex = '9999';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!_dragging) return;
+      e.preventDefault();
+      _moved = true;
+      var rect = plancher.getBoundingClientRect();
+      var dx = ((e.clientX - _dragging.startX) / rect.width) * 100;
+      var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
+      var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
+      var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
+      _dragging.el.style.left = newX + '%';
+      _dragging.el.style.bottom = newY + '%';
+    });
+
+    document.addEventListener('mouseup', function(e) {
+      if (!_dragging) return;
+      var wrap = _dragging.el;
+      var pos = _dragging.pos;
+      if (_moved) {
+        var rect = plancher.getBoundingClientRect();
+        var dx = ((e.clientX - _dragging.startX) / rect.width) * 100;
+        var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
+        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
+        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        /* Notifier le parent */
+        _sendPositions();
+      }
+      wrap.style.cursor = 'grab';
+      var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
+      wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
+      wrap.style.transform = 'translateX(-50%) scale(' + scale + ')';
+
+      if (!_moved) {
+        /* Clic sans drag → sélection + ✕ */
+        _toggleSelect(wrap, pos);
+      }
+      _dragging = null;
+    });
+
+    /* Touch support */
+    plancher.addEventListener('touchstart', function(e) {
+      var wrap = e.target.closest('.socle-wrapper');
+      if (!wrap) return;
+      var touch = e.touches[0];
+      var pid = _findPieceId(wrap);
+      var pos = _editPositions.find(function(p) { return p.id === pid; });
+      if (!pos) return;
+      _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y };
+      _moved = false;
+      wrap.style.zIndex = '9999';
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (!_dragging) return;
+      e.preventDefault();
+      _moved = true;
+      var touch = e.touches[0];
+      var rect = plancher.getBoundingClientRect();
+      var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
+      var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
+      _dragging.el.style.left = Math.max(5, Math.min(95, _dragging.origX + dx)) + '%';
+      _dragging.el.style.bottom = Math.max(5, Math.min(95, _dragging.origY + dy)) + '%';
+    }, { passive: false });
+    document.addEventListener('touchend', function(e) {
+      if (!_dragging) return;
+      var wrap = _dragging.el;
+      var pos = _dragging.pos;
+      if (_moved) {
+        var touch = e.changedTouches[0];
+        var rect = plancher.getBoundingClientRect();
+        var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
+        var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
+        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
+        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        _sendPositions();
+      }
+      var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
+      wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
+      wrap.style.transform = 'translateX(-50%) scale(' + scale + ')';
+      if (!_moved) _toggleSelect(wrap, pos);
+      _dragging = null;
+    });
+
+    /* Clic sol → placer une pièce (si parent demande) */
+    plancher.addEventListener('click', function(e) {
+      if (e.target.closest('.socle-wrapper')) return;
+      var rect = plancher.getBoundingClientRect();
+      var x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+      var y = Math.round((1 - (e.clientY - rect.top) / rect.height) * 100);
+      parent.postMessage({ type: 'sol-click', x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) }, '*');
+    });
+
+    /* Recevoir messages du parent */
+    window.addEventListener('message', function(e) {
+      if (!e.data || !e.data.type) return;
+      if (e.data.type === 'refresh') {
+        var conteneur = document.getElementById('conteneurSalles');
+        if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
+      }
+    });
+
+    parent.postMessage({ type: 'edit-ready' }, '*');
+  };
+
+  function _findPieceId(wrap) {
+    /* Trouver l'ID de la pièce depuis sa position dans le DOM */
+    var left = parseFloat(wrap.style.left);
+    var bottom = parseFloat(wrap.style.bottom);
+    for (var i = 0; i < _editPositions.length; i++) {
+      var p = _editPositions[i];
+      if (Math.abs(p.x - left) < 0.5 && Math.abs(p.y - bottom) < 0.5) return p.id;
+    }
+    return null;
+  }
+
+  function _toggleSelect(wrap, pos) {
+    /* Désélectionner l'ancien */
+    var old = document.querySelector('.socle-wrapper.edit-selected');
+    if (old) {
+      old.classList.remove('edit-selected');
+      old.style.outline = '';
+      var oldBtn = old.querySelector('.edit-rm-btn');
+      if (oldBtn) oldBtn.remove();
+    }
+    if (_selected === wrap) { _selected = null; return; }
+    _selected = wrap;
+    wrap.classList.add('edit-selected');
+    wrap.style.outline = '3px solid #c8a050';
+    wrap.style.overflow = 'visible';
+    var btn = document.createElement('button');
+    btn.className = 'edit-rm-btn';
+    btn.textContent = '✕ Retirer';
+    btn.style.cssText = 'position:absolute;top:-16px;left:50%;transform:translateX(-50%);padding:3px 12px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:11px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.5);';
+    btn.addEventListener('click', function(ev) {
+      ev.stopPropagation(); ev.preventDefault();
+      var pid = _findPieceId(wrap);
+      var idx = _editPositions.findIndex(function(p) { return p.id === pid; });
+      if (idx >= 0) _editPositions.splice(idx, 1);
+      wrap.remove();
+      _selected = null;
+      _sendPositions();
+      parent.postMessage({ type: 'piece-removed', id: pid }, '*');
+    });
+    wrap.querySelector('.socle').appendChild(btn);
+  }
+
+  function _sendPositions() {
+    parent.postMessage({
+      type: 'positions-updated',
+      positions: JSON.parse(JSON.stringify(_editPositions))
+    }, '*');
+  }
+}
 

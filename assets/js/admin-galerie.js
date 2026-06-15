@@ -1422,321 +1422,115 @@ async function creerSalle() {
    ══════════════════════════════════════════════════════════════ */
 
 function afficherSolPlacement() {
-  /* Masquer l'aperçu normal pour éviter les doublons */
+  /* Masquer l'aperçu normal */
   $('mur-bg').innerHTML = '';
   var oldMini = document.getElementById('mini-preview-autre');
   if (oldMini) oldMini.remove();
-  const bg = $('mur-placement');
-  bg.innerHTML = '';
-  bg.className = '';
+  var oldRow = document.getElementById('mur-row-wrap');
+  if (oldRow) {
+    var bg = $('mur-bg');
+    oldRow.parentNode.insertBefore(bg, oldRow);
+    oldRow.remove();
+  }
 
-  const coulSol = couleurMurActuel || '#8a6228';
-  const coulMur = '#7a7a7a'; /* Mur galerie sculpture */
-  const texSol = textureActuelle || 'parquet';
+  const container = $('mur-placement');
+  container.innerHTML = '';
+  container.className = '';
 
-  /* ── Structure galerie : mur + mur-inférieur + sol ── */
   const isGsm = _placementVue === 'gsm';
-  bg.style.cssText = isGsm
-    ? 'display:flex;flex-direction:column;height:100%;aspect-ratio:9/19;max-width:35%;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);'
-    : 'display:flex;flex-direction:column;width:100%;height:100%;border-radius:6px;overflow:hidden;';
 
-  /* MUR (fond gris de la galerie) */
-  const murZone = document.createElement('div');
-  murZone.style.cssText = 'flex:0 0 22%;background:' + coulMur + ';position:relative;z-index:1;';
-  bg.appendChild(murZone);
+  /* Conteneur avec ratio selon le mode */
+  container.style.cssText = isGsm
+    ? 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;'
+    : 'width:100%;height:100%;';
 
-  /* MUR INFÉRIEUR (bande sombre avec portes) */
-  const murBas = document.createElement('div');
-  murBas.style.cssText = 'flex:0 0 40px;background:#222;display:flex;align-items:center;justify-content:center;z-index:1;';
-  const porteG = document.createElement('div');
-  porteG.style.cssText = 'width:35px;height:28px;border-radius:35px 35px 0 0;background:#111;border:1px solid #333;border-bottom:none;';
-  const porteD = porteG.cloneNode(true);
-  const spacer = document.createElement('div');
-  spacer.style.cssText = 'flex:1;';
-  murBas.appendChild(porteG);
-  murBas.appendChild(spacer);
-  murBas.appendChild(porteD);
-  bg.appendChild(murBas);
+  /* Wrapper iframe (portrait pour GSM, plein pour PC) */
+  const iframeWrap = document.createElement('div');
+  iframeWrap.style.cssText = isGsm
+    ? 'height:100%;aspect-ratio:9/19;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
+    : 'width:100%;height:100%;border-radius:6px;overflow:hidden;position:relative;';
 
-  /* SOL (plancher avec perspective) */
-  const sol = document.createElement('div');
-  sol.id = 'sol-placement';
-  sol.style.cssText = 'flex:1;position:relative;overflow:visible;cursor:crosshair;z-index:2;' +
-    'background:' + (grilleVisiblePl ? coulSol : solPatternCSS(texSol, coulSol)) + ';';
-  bg.appendChild(sol);
-
-  /* Canvas perspective — dans un wrapper clipé */
-  if (texSol === 'carrelage' || texSol === 'parquet') {
-    const canvasWrap = document.createElement('div');
-    canvasWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;';
-    const canvas = document.createElement('canvas');
-    canvas.style.cssText = 'width:100%;height:100%;';
-    canvasWrap.appendChild(canvas);
-    sol.appendChild(canvasWrap);
-    requestAnimationFrame(function() {
-      const W = sol.clientWidth || 800, H = sol.clientHeight || 400;
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext('2d');
-      const isPar = texSol === 'parquet';
-      const lineC = 'rgba(0,0,0,' + (isPar ? '0.10' : '0.16') + ')';
-      const vLineC = 'rgba(0,0,0,' + (isPar ? '0.05' : '0.16') + ')';
-      const nbH = isPar ? 30 : 16, nbV = isPar ? 10 : 16;
-      const vx = W / 2, vy = -H * 0.15;
-      for (let i = 0; i <= nbH; i++) {
-        const t = i / nbH, y = H * Math.pow(t, 2.2);
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y);
-        ctx.strokeStyle = lineC; ctx.lineWidth = 0.3 + t * 1.5; ctx.stroke();
-      }
-      for (let i = -nbV; i <= nbV; i++) {
-        const bx = vx + i * (W / (nbV * 0.8));
-        ctx.beginPath(); ctx.moveTo(vx + i * (W * 0.02), 0); ctx.lineTo(bx, H);
-        ctx.strokeStyle = vLineC; ctx.lineWidth = 0.5; ctx.stroke();
-      }
-    });
+  /* Label mode */
+  if (isGsm) {
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.1em;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;';
+    lbl.textContent = '📱 Vue GSM';
+    iframeWrap.appendChild(lbl);
   }
 
-  /* Grille 10×10 optionnelle */
-  if (grilleVisiblePl) {
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;' +
-      'background-image:' +
-      'repeating-linear-gradient(to right,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%),' +
-      'repeating-linear-gradient(to bottom,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 1px,transparent 1px,transparent 10%);';
-    sol.appendChild(ov);
-    const COLS = 'ABCDEFGHIJ';
-    for (let c = 0; c < 10; c++) {
-      for (let r = 0; r < 10; r++) {
-        const lbl = document.createElement('div');
-        lbl.style.cssText =
-          'position:absolute;font-size:8px;font-family:monospace;color:rgba(0,0,0,.3);pointer-events:none;' +
-          'left:' + (c * 10 + 5) + '%;bottom:' + (r * 10 + 5) + '%;transform:translate(-50%,50%);';
-        lbl.textContent = COLS[c] + (r + 1);
-        sol.appendChild(lbl);
+  /* Iframe charge la vraie galerie en mode édition */
+  const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie.html';
+  const iframe = document.createElement('iframe');
+  iframe.id = 'edit-galerie-iframe';
+  iframe.src = galeriePath + '?edit=1&v=' + Date.now();
+  iframe.style.cssText = 'width:100%;height:100%;border:none;';
+  iframeWrap.appendChild(iframe);
+  container.appendChild(iframeWrap);
+
+  /* Écouter les messages de l'iframe */
+  function onMessage(e) {
+    if (!e.data || !e.data.type) return;
+
+    if (e.data.type === 'edit-ready') {
+      /* Galerie prête */
+    }
+
+    if (e.data.type === 'positions-updated') {
+      /* Mettre à jour les positions dans les données admin */
+      if (isGsm) {
+        salleActive.positions_mobile = e.data.positions;
+      } else {
+        salleActive.positions = e.data.positions;
+      }
+      marquerChangement();
+    }
+
+    if (e.data.type === 'piece-removed') {
+      afficherStripPlacement();
+      marquerChangement();
+    }
+
+    if (e.data.type === 'sol-click') {
+      /* Placer la pièce sélectionnée dans le strip */
+      if (selectedToilePl) {
+        placerPieceSolViaIframe(e.data.x, e.data.y);
       }
     }
   }
 
-  /* ── Socles — même calcul que galerie-sculpture.js ── */
-  const _isGsmVue = _placementVue === 'gsm';
-  const _ECH = _isGsmVue ? 1.5 : (window.innerWidth <= 600 ? 1.5 : 2.5);
-  const _EMIN = _isGsmVue ? 55 : (window.innerWidth <= 600 ? 55 : 90);
-  const _EMAXH = _isGsmVue ? 200 : (window.innerWidth <= 600 ? 200 : 380);
-
-  const allPieces = _getPositions().map(p => {
-    const t = toiles.find(x => x.id === p.id);
-    if (!t) return null;
-    const dim = t.dimensions || {};
-    const hCm = dim.hauteur || 50;
-    const lCm = dim.largeur || 30;
-    const ratio = hCm / lCm;
-    const pCm = dim.profondeur || Math.round(lCm * 0.5);
-    const socleDiam = t.socle || pCm;
-    const photoH = Math.min(_EMAXH, Math.max(_EMIN, Math.round(hCm * _ECH * (ratio < 1 ? ratio : 1))));
-    const effScale = photoH / hCm;
-    const socleW = Math.max(_EMIN, Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
-    const pedH = Math.max(20, Math.round(socleW * 0.5));
-    return { pos: p, t, socleW, photoH, pedH, dim };
-  }).filter(Boolean);
-
-  allPieces.slice().sort((a, b) => b.pos.y - a.pos.y).forEach(({ pos: p, t, socleW, photoH, pedH, dim }) => {
-    const estSel = peintureSurMurSel === p.id;
-    const perspFactor = 1 - (p.y / 100) * 0.42;
-    const zIdx = Math.round((100 - p.y) * 10) + 5;
-
-    const gCode = _gabaritSculpt(dim.hauteur).toLowerCase();
-
-    /* Wrapper — même structure que creerSocle() dans galerie-sculpture.js */
-    const wrap = document.createElement('div');
-    wrap.className = 'socle-wrapper';
-    wrap.dataset.pieceId = p.id;
-    wrap.style.left = p.x + '%';
-    wrap.style.bottom = p.y + '%';
-    wrap.style.transformOrigin = 'bottom center';
-    wrap.style.transform = 'translateX(-50%) scale(' + perspFactor.toFixed(3) + ')';
-    wrap.style.zIndex = String(zIdx);
-    wrap.style.cursor = 'pointer';
-    if (estSel) wrap.style.outline = '2px solid var(--gold)';
-
-    /* Socle container */
-    const socle = document.createElement('div');
-    socle.className = 'socle socle--' + gCode;
-    socle.style.width = socleW + 'px';
-
-    /* Visuel : model-viewer 3D ou photo */
-    if (t.glb) {
-      const mv = document.createElement('model-viewer');
-      mv.setAttribute('src', (ADMIN_CFG.repoPath ? '../../' : '') + t.glb + '?v=' + Date.now());
-      mv.setAttribute('interaction-prompt', 'none');
-      mv.setAttribute('camera-orbit', '25deg 70deg auto');
-      mv.setAttribute('field-of-view', '36deg');
-      mv.setAttribute('shadow-intensity', '0.6');
-      mv.style.cssText = 'width:100%;height:' + photoH + 'px;pointer-events:none;--poster-color:transparent;background:transparent;';
-      socle.appendChild(mv);
-      if (typeof loadModelViewerAdmin === 'function') loadModelViewerAdmin();
-    } else if (t.photo || t._preview) {
-      const img = document.createElement('img');
-      img.className = 'socle-photo';
-      img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-      img.style.cssText = 'height:' + photoH + 'px;object-fit:contain;';
-      socle.appendChild(img);
-    } else {
-      const ph = document.createElement('div');
-      ph.className = 'socle-placeholder';
-      ph.style.height = photoH + 'px';
-      socle.appendChild(ph);
-    }
-
-    /* Badge 3D */
-    if (t.glb) {
-      const badge = document.createElement('span');
-      badge.className = 'socle-badge-3d'; badge.textContent = '3D';
-      socle.appendChild(badge);
-    }
-
-    /* Piédestal + ombre — classes CSS galerie */
-    const ped = document.createElement('div');
-    ped.className = 'socle-piedestal socle-piedestal--' + gCode;
-    const ombre = document.createElement('div');
-    ombre.className = 'socle-ombre';
-    ped.appendChild(ombre);
-    socle.appendChild(ped);
-
-    /* Titre */
-    if (t.titre) {
-      const titre = document.createElement('div');
-      titre.className = 'socle-titre'; titre.textContent = t.titre;
-      socle.appendChild(titre);
-    }
-
-    wrap.appendChild(socle);
-
-    /* Drag-drop */
-    let _prevSel = null;
-    wrap.addEventListener('mousedown', e => {
-      e.stopPropagation();
-      _prevSel = peintureSurMurSel; /* Sauver AVANT de changer */
-      peintureSurMurSel = p.id;
-      _startDragPiece(wrap, p, e, sol);
-    });
-    wrap.addEventListener('click', e => {
-      e.stopPropagation();
-      if (!_dragStarted) {
-        /* Toggle basé sur l'état AVANT le mousedown */
-        const wasSelected = _prevSel === p.id;
-        /* Désélectionner l'ancien */
-        sol.querySelectorAll('[data-piece-id]').forEach(w => {
-          w.style.outline = '';
-          w.style.overflow = '';
-          var oldRm = w.querySelector('.btn-retirer-piece');
-          if (oldRm) oldRm.remove();
-        });
-        if (wasSelected) {
-          peintureSurMurSel = null;
-        } else {
-          peintureSurMurSel = p.id;
-          wrap.style.outline = '2px solid var(--gold)';
-          wrap.style.overflow = 'visible';
-          /* Ajouter bouton ✕ Retirer */
-          var rmBtn = document.createElement('button');
-          rmBtn.className = 'btn-retirer-piece';
-          rmBtn.textContent = '✕ Retirer';
-          rmBtn.style.cssText = 'position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);';
-          rmBtn.addEventListener('click', function(ev) {
-            ev.stopPropagation(); ev.preventDefault();
-            var pos = _getPositions();
-            var idx = pos.findIndex(function(x){ return x.id === p.id; });
-            if (idx >= 0) pos.splice(idx, 1);
-            peintureSurMurSel = null;
-            wrap.remove();
-            afficherStripPlacement();
-            marquerChangement();
-            toast('"' + (t.titre||'—') + '" retirée de cette vue');
-          });
-          wrap.appendChild(rmBtn);
-        }
-        afficherStripPlacement();
-        $('pl-aide').textContent = peintureSurMurSel
-          ? '"' + (t.titre||'—') + '" → glisser pour déplacer'
-          : 'Clique une pièce du bas pour la placer';
-      }
-    });
-    sol.appendChild(wrap);
-  });
+  /* Nettoyer l'ancien listener si existait */
+  if (window._editMessageHandler) {
+    window.removeEventListener('message', window._editMessageHandler);
+  }
+  window._editMessageHandler = onMessage;
+  window.addEventListener('message', onMessage);
 
   majCtrlPanel();
-
-  /* Clic/touch sur le sol → placer */
-  let _solTouched = false;
-  sol.addEventListener('touchend', function(e) {
-    if (!selectedToilePl || e.target !== sol) return;
-    e.preventDefault();
-    _solTouched = true;
-    const touch = e.changedTouches[0];
-    const rect = sol.getBoundingClientRect();
-    const x = Math.round((touch.clientX - rect.left) / rect.width * 100);
-    const y = Math.round((1 - (touch.clientY - rect.top) / rect.height) * 100);
-    placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
-  });
-  sol.addEventListener('click', function(e) {
-    if (_solTouched) { _solTouched = false; return; }
-    if (!selectedToilePl) return;
-    const rect = sol.getBoundingClientRect();
-    const x = Math.round((e.clientX - rect.left) / rect.width * 100);
-    const y = Math.round((1 - (e.clientY - rect.top) / rect.height) * 100);
-    placerPieceSol(Math.max(5, Math.min(95, x)), Math.max(5, Math.min(95, y)));
-  });
-
-  /* ── Mini aperçu de l'autre mode (non-interactif, seulement en mode PC) ── */
-  if (_placementVue === 'pc') _renderMiniPreview(bg);
 }
 
-function _renderMiniPreview(mainBg) {
-  /* Nettoyer l'ancien */
-  var old = document.getElementById('mini-preview-autre');
-  if (old) old.remove();
+/* Placer une pièce via l'iframe */
+function placerPieceSolViaIframe(x, y) {
+  if (!selectedToilePl || !salleActive) return;
+  var piece = selectedToilePl;
+  var gab = _gabaritSculpt(piece.dimensions?.hauteur);
+  var pos = _getPositions();
 
-  if (!_isSculpt || !salleActive) return;
-  const isGsm = _placementVue === 'gsm';
-  const otherPos = isGsm ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
-  if (!otherPos.length) return;
+  /* Retirer si déjà placée dans ce mode */
+  var idx = pos.findIndex(function(p) { return p.id === piece.id; });
+  if (idx >= 0) pos.splice(idx, 1);
 
-  const coulSol = couleurMurActuel || '#8a6228';
-  const texSol = textureActuelle || 'parquet';
+  pos.push({ id: piece.id, x: x, y: y, gabarit: gab });
+  marquerChangement();
 
-  /* Conteneur mini */
-  const mini = document.createElement('div');
-  mini.id = 'mini-preview-autre';
-  mini.style.cssText = isGsm
-    ? 'position:absolute;right:8px;top:8px;width:180px;height:100px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;'
-    : 'position:absolute;right:8px;top:8px;width:60px;height:120px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.3);opacity:.7;pointer-events:none;z-index:50;';
+  /* Rafraîchir l'iframe pour montrer la nouvelle pièce */
+  var iframe = document.getElementById('edit-galerie-iframe');
+  if (iframe) iframe.contentWindow.postMessage({ type: 'refresh' }, '*');
 
-  /* Label */
-  const lbl = document.createElement('div');
-  lbl.style.cssText = 'position:absolute;top:2px;left:0;right:0;text-align:center;font-size:7px;color:#fff;z-index:2;text-shadow:0 1px 2px #000;letter-spacing:.08em;';
-  lbl.textContent = isGsm ? '🖥 PC' : '📱 GSM';
-  mini.appendChild(lbl);
-
-  /* Mur + sol */
-  mini.innerHTML += '<div style="height:22%;background:#7a7a7a;"></div><div style="height:5%;background:#222;"></div>';
-  const solMini = document.createElement('div');
-  solMini.style.cssText = 'height:73%;position:relative;background:' + solPatternCSS(texSol, coulSol) + ';';
-  mini.appendChild(solMini);
-
-  /* Pièces en miniature */
-  otherPos.forEach(p => {
-    const t = toiles.find(x => x.id === p.id); if (!t) return;
-    const scale = 1 - (p.y / 100) * 0.42;
-    const dot = document.createElement('div');
-    dot.style.cssText =
-      'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-      'transform:translateX(-50%) scale(' + (scale * 0.8).toFixed(2) + ');transform-origin:bottom center;' +
-      'width:8px;height:8px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.2);';
-    solMini.appendChild(dot);
-  });
-
-  mainBg.parentNode.style.position = 'relative';
-  mainBg.parentNode.appendChild(mini);
+  selectedToilePl = null;
+  afficherStripPlacement();
+  toast('"' + (piece.titre || '—') + '" placée');
 }
+
 
 function placerPieceSol(x, y) {
   if (!selectedToilePl || !salleActive) return;
