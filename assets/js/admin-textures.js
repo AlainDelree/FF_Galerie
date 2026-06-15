@@ -609,6 +609,8 @@ $('overlay-guide').addEventListener('click', e => {
 function construireFavoris() {
   var cont = $('dims-favoris');
   if (!cont) return;
+  /* Pas de favoris pour sculpture — chaque pièce a des dimensions uniques */
+  if (window.ADMIN_TYPE === 'sculpture') { cont.style.display = 'none'; return; }
   cont.innerHTML = '';
   var seen = new Set(), favoris = [];
   toiles.forEach(function(t) {
