@@ -14,36 +14,25 @@
       display: flex !important; flex-direction: column !important;
     }
     .salle-sculpture { background-color: #7a7a7a; }
-    .mur-inferieur {
-      flex: 0 0 35px !important; height: 35px !important;
-      background: #222 !important; display: flex; align-items: center; justify-content: center;
-    }
+    .mur-inferieur { flex: 0 0 35px !important; height: 35px !important; background: #222 !important; }
     .plancher-sol {
       flex: 1 !important; min-height: 0 !important; max-height: none !important;
       position: relative !important;
     }
-    .silhouettes-sol { display: none !important; }
-    .socle-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; }
-    .socle { display: flex; flex-direction: column; align-items: center; position: relative; }
+    .silhouettes-sol, .panneau-nav, .plaque-nav { display: none !important; }
+    .socle-wrapper { position: absolute; }
   </style>
 </head>
 <body data-page="galerie">
-  <!-- Éléments attendus par galerie-core.js (cachés) -->
-  <nav class="barre-navigation" style="display:none;">
-    <button id="btnPrecedent"></button>
-    <span id="numSalle"></span>
-    <button id="btnSuivant"></button>
-  </nav>
   <div class="conteneur-salles" id="conteneurSalles"></div>
-
   <script>
     window.GALERIE_TOILES_PATH = "data/toiles.json";
     window.GALERIE_SALLES_PATH = "data/salles.json";
     window.GALERIE_ASSETS_BASE = "../../";
     window._GALERIE_EDIT = true;
   </script>
-  <script src="../../assets/js/galerie-core.js?v=20260615c"></script>
-  <script src="../../assets/js/galerie-sculpture.js?v=20260615c"></script>
+  <script src="../../assets/js/galerie-core.js?v=20260615d"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260615d"></script>
   <script>initGalerie();</script>
 </body>
 </html>

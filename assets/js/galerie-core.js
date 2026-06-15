@@ -77,15 +77,15 @@ const GALERIE_CFG = {
       conteneur.style.transform = salleCourante > 1
         ? 'translateX(-' + ((salleCourante-1)/TOTAL_SALLES*100).toFixed(4) + '%)'
         : '';
-      numSalleEl.textContent = salleCourante;
-      btnPrev.disabled = salleCourante === 1;
-      btnNext.disabled = salleCourante === TOTAL_SALLES;
+      if (numSalleEl) numSalleEl.textContent = salleCourante;
+      if (btnPrev) btnPrev.disabled = salleCourante === 1;
+      if (btnNext) btnNext.disabled = salleCourante === TOTAL_SALLES;
       dotsEl.forEach((d, i) => d.classList.toggle('actif', i + 1 === salleCourante));
       mettreAJourNav();
     }
 
-    btnPrev.addEventListener('click', () => allerSalle(salleCourante - 1));
-    btnNext.addEventListener('click', () => allerSalle(salleCourante + 1));
+    if (btnPrev) btnPrev.addEventListener('click', () => allerSalle(salleCourante - 1));
+    if (btnNext) btnNext.addEventListener('click', () => allerSalle(salleCourante + 1));
 
     /* ── Swipe horizontal pour changer de salle (mobile) ── */
     let swipeGalX = null, swipeGalY = null;
@@ -113,7 +113,7 @@ const GALERIE_CFG = {
     // pour pouvoir mapper l'id JSON → index d'affichage
 
     document.addEventListener('keydown', e => {
-      if (document.getElementById('modalOverlay').classList.contains('visible')) {
+      var _mo = document.getElementById('modalOverlay'); if (_mo && _mo.classList.contains('visible')) {
         if (e.key === 'Escape') fermerModal();
         return;
       }
@@ -396,17 +396,17 @@ const GALERIE_CFG = {
       } else {
         wrap.innerHTML = '<div class="modal-placeholder-grand">' + toile.id + '</div>';
       }
-      modalOverlay.classList.add('visible');
+      if (modalOverlay) modalOverlay.classList.add('visible');
       document.body.style.overflow = 'hidden';
     }
 
     function fermerModal() {
-      modalOverlay.classList.remove('visible');
+      if (modalOverlay) modalOverlay.classList.remove('visible');
       document.body.style.overflow = '';
     }
 
-    document.getElementById('modalFermer').addEventListener('click', fermerModal);
-    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) fermerModal(); });
+    var _mf = document.getElementById('modalFermer'); if (_mf) _mf.addEventListener('click', fermerModal);
+    if (modalOverlay) modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) fermerModal(); });
 
     /* Swipe bas pour fermer le modal (mobile) */
     let swipeStartY = null;
