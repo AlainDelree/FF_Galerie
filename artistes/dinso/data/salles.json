@@ -5,10 +5,10 @@
       "nom": "Salle I",
       "type": "sculpture",
       "theme": "",
-      "couleur_mur": "#865e3c",
+      "couleur_mur": "#99c1f1",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/texture-bleu.jpg",
+      "texture": "moquette",
       "visible": true,
       "toiles": [
         3,
