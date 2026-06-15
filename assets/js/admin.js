@@ -833,8 +833,17 @@ $('btn-grille-pl').addEventListener('click', function() {
   $("pl-btn-rm")   ?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
     var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || "—";
-    salleActive.positions = (salleActive.positions||[]).filter(function(x){ return x.id !== peintureSurMurSel; });
-    salleActive.toiles    = (salleActive.toiles||[]).filter(function(id){ return id !== peintureSurMurSel; });
+    if (ADMIN_CFG.type === 'sculpture') {
+      var pos = _getPositions();
+      var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
+      if (idx >= 0) pos.splice(idx, 1);
+      /* toiles = union PC + GSM */
+      var allIds = new Set([...(salleActive.positions||[]).map(function(p){return p.id;}), ...(salleActive.positions_mobile||[]).map(function(p){return p.id;})]);
+      salleActive.toiles = [...allIds];
+    } else {
+      salleActive.positions = (salleActive.positions||[]).filter(function(x){ return x.id !== peintureSurMurSel; });
+      salleActive.toiles    = (salleActive.toiles||[]).filter(function(id){ return id !== peintureSurMurSel; });
+    }
     toilesSelectionnees.add(peintureSurMurSel);
     peintureSurMurSel = null; selectedToilePl = null;
     buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();

@@ -1388,7 +1388,7 @@ function afficherSolPlacement() {
   /* ── Structure galerie : mur + mur-inférieur + sol ── */
   const isGsm = _placementVue === 'gsm';
   bg.style.cssText = isGsm
-    ? 'display:flex;flex-direction:column;height:100%;aspect-ratio:9/16;max-width:45%;margin:0 auto;border-radius:6px;overflow:hidden;border:2px solid var(--gold);'
+    ? 'display:flex;flex-direction:column;height:100%;aspect-ratio:9/19;max-width:35%;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);'
     : 'display:flex;flex-direction:column;width:100%;height:100%;border-radius:6px;overflow:hidden;';
 
   /* MUR (fond gris de la galerie) */
@@ -1612,15 +1612,23 @@ function placerPieceSol(x, y) {
 
   const gab = _gabaritSculpt(piece.dimensions?.hauteur);
 
-  /* Retirer de toutes les salles (mode courant) */
+  /* Retirer de toutes les salles (mode courant uniquement) */
   salles.forEach(s => {
-    s.toiles = s.toiles.filter(id => id !== piece.id);
-    s.positions = (s.positions || []).filter(p => p.id !== piece.id);
-    if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(p => p.id !== piece.id);
+    if (_placementVue === 'gsm') {
+      if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(p => p.id !== piece.id);
+    } else {
+      s.positions = (s.positions || []).filter(p => p.id !== piece.id);
+    }
+    /* toiles = union des deux jeux de positions */
+    var idsPC = (s.positions || []).map(p => p.id);
+    var idsGSM = (s.positions_mobile || []).map(p => p.id);
+    s.toiles = [...new Set([...idsPC, ...idsGSM])];
   });
 
   _getPositions().push({ id: piece.id, x, y, gabarit: gab });
-  if (!salleActive.toiles.includes(piece.id)) salleActive.toiles.push(piece.id);
+  /* Mettre à jour toiles = union des deux */
+  var allIds = new Set([...(salleActive.positions||[]).map(p=>p.id), ...(salleActive.positions_mobile||[]).map(p=>p.id)]);
+  salleActive.toiles = [...allIds];
 
   selectedToilePl = null; selectedToile = null;
   afficherSolPlacement(); afficherStripPlacement();

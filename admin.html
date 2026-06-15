@@ -1085,6 +1085,10 @@
         if (btnGrille) btnGrille.style.display = 'none';
         const btnSwitch = document.getElementById('btn-switch-vue');
         if (btnSwitch) btnSwitch.style.display = '';
+        /* Masquer les flèches du D-pad (drag-drop suffit) */
+        ['pl-btn-up','pl-btn-down','pl-btn-left','pl-btn-right'].forEach(function(id) {
+          var b = document.getElementById(id); if (b) b.style.display = 'none';
+        });
 
         /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
         (function() {
