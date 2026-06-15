@@ -1207,6 +1207,11 @@
 
           stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
           stepper.appendChild(btnPlus); stepper.appendChild(unite);
+          var btnDefaut = document.createElement('button');
+          btnDefaut.type = 'button'; btnDefaut.textContent = 'Par défaut';
+          btnDefaut.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:.68rem;text-decoration:underline;margin-left:.3rem;padding:0;';
+          btnDefaut.addEventListener('click', function() { inpDiam.value = ''; });
+          stepper.appendChild(btnDefaut);
           socleGrp.appendChild(stepper);
           hdrSocle.after(socleGrp);
 
