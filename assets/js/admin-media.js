@@ -371,4 +371,15 @@ function genererThumbnailGLB(blobUrl) {
       photoB64 = null;
     });
   }
+
+  /* Clic sur glb-info (nom du fichier) → ouvrir le file picker pour remplacer */
+  var glbInfoEl = document.getElementById('glb-info');
+  if (glbInfoEl) {
+    glbInfoEl.style.cursor = 'pointer';
+    glbInfoEl.addEventListener('click', function(e) {
+      if (e.target.id === 'btn-glb-suppr') return; /* Laisser le X faire son travail */
+      inpGlb.style.display = '';
+      inpGlb.click();
+    });
+  }
 })();
