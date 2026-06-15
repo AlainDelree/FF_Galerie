@@ -1546,12 +1546,14 @@ function afficherSolPlacement() {
       'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;cursor:pointer;';
     if (estSel) {
       wrap.style.outline = '2px solid var(--gold)';
+      wrap.style.overflow = 'visible';
       /* Bouton ✕ sur la pièce sélectionnée */
       const rmBtn = document.createElement('button');
-      rmBtn.textContent = '✕';
-      rmBtn.style.cssText = 'position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;border:none;background:var(--danger,#c0392b);color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:999;line-height:1;padding:0;';
+      rmBtn.textContent = '✕ Retirer';
+      rmBtn.style.cssText = 'position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);';
       rmBtn.addEventListener('click', function(ev) {
         ev.stopPropagation();
+        ev.preventDefault();
         var pos = _getPositions();
         var idx = pos.findIndex(function(x){ return x.id === p.id; });
         if (idx >= 0) pos.splice(idx, 1);
