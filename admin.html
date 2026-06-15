@@ -1079,6 +1079,12 @@
         const murAide = document.getElementById('mur-aide');
         if (murAide) murAide.textContent = 'Utilise "🔧 Arranger le sol" pour placer les pièces';
 
+        /* Labels adaptés sculpture */
+        var dimsLbl = document.querySelector('#dims-lh').closest('.grp').querySelector('.lbl');
+        if (dimsLbl) dimsLbl.textContent = 'Diamètre du socle (cm)';
+        var matInput = document.getElementById('inp-mat');
+        if (matInput) matInput.placeholder = 'Métal, bois, pierre…';
+
         /* ── Restructurer modal : GLB en premier, photo générée en dessous ── */
         (function() {
           var photoGrp = document.getElementById('zone-photo').closest('.grp');
