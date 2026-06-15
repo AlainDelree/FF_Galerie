@@ -969,6 +969,7 @@ function viderFormToile() {
   glbB64 = null; glbNom = null;
   if ($('glb-info')) $('glb-info').style.display = 'none';
   if ($('glb-ph')) $('glb-ph').style.display = '';
+  if ($('inp-glb-file')) $('inp-glb-file').style.display = '';
   if ($('glb-thumb-status')) { $('glb-thumb-status').style.display = 'none'; $('glb-thumb-status').textContent = ''; }
   var btnChgPhoto = document.getElementById('btn-change-photo-sculpt');
   if (btnChgPhoto) btnChgPhoto.style.display = 'none';
@@ -1049,6 +1050,7 @@ function remplirFormToile(t) {
     $('glb-taille').textContent = '';
     $('glb-info').style.display = '';
     $('glb-ph').style.display = 'none';
+    if ($('inp-glb-file')) $('inp-glb-file').style.display = 'none';
   } else if ($('glb-info')) {
     $('glb-info').style.display = 'none';
     $('glb-ph').style.display = '';

@@ -299,6 +299,7 @@ function genererThumbnailGLB(blobUrl) {
     if (tailleEl) tailleEl.textContent = '(' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
     if (infoEl) infoEl.style.display = '';
     if (phEl) phEl.style.display = 'none';
+    inpGlb.style.display = 'none'; /* Masquer pour que le bouton ✕ soit cliquable */
 
     /* Lire le fichier en base64 pour upload GitHub */
     glbNom = f.name;
@@ -337,8 +338,14 @@ function genererThumbnailGLB(blobUrl) {
       $('inp-glb').value = '';
       $('glb-info').style.display = 'none';
       $('glb-ph').style.display = '';
+      inpGlb.style.display = ''; /* Réafficher le file input */
       var statusEl = $('glb-thumb-status');
       if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+      /* Masquer photo générée et bouton changer */
+      $('photo-prev').style.display = 'none';
+      var btnChg = document.getElementById('btn-change-photo-sculpt');
+      if (btnChg) btnChg.style.display = 'none';
+      photoB64 = null;
     });
   }
 })();
