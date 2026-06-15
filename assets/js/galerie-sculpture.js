@@ -15,10 +15,10 @@
   }
 })();
 
-/* ── Facteur d'échelle px/cm ── */
-const ECHELLE      = window.innerWidth <= 600 ? 1.5 : 2.5;
-const ECHELLE_MIN  = window.innerWidth <= 600 ? 55  : 90;
-const ECHELLE_MAXH = window.innerWidth <= 600 ? 200 : 380;
+/* ── Facteur d'échelle px/cm (dynamique pour responsive) ── */
+function _getEchelle()  { return window.innerWidth <= 600 ? 1.5 : 2.5; }
+function _getEMin()     { return window.innerWidth <= 600 ? 55  : 90; }
+function _getEMaxH()    { return window.innerWidth <= 600 ? 200 : 380; }
 
 /* ── Patterns sol (miroir de admin-galerie.js) ── */
 const SOL_PATTERNS_PUB = {
@@ -229,11 +229,11 @@ function creerSocle(piece, gabarit, pos) {
   const ratio  = hCm / lCm;
   const pCm    = dim.profondeur || Math.round(lCm * 0.5);
   const socleDiam = piece.socle || pCm;
-  const photoH = Math.min(ECHELLE_MAXH,
-    Math.max(ECHELLE_MIN, Math.round(hCm * ECHELLE * (ratio < 1 ? ratio : 1))));
+  const photoH = Math.min(_getEMaxH(),
+    Math.max(_getEMin(), Math.round(hCm * _getEchelle() * (ratio < 1 ? ratio : 1))));
   /* Échelle effective = même rapport que la pièce (plafonnée) */
   const effScale = photoH / hCm;
-  const socleW = Math.max(ECHELLE_MIN, Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
+  const socleW = Math.max(_getEMin(), Math.min(Math.round(photoH * 0.6), Math.round(socleDiam * effScale)));
 
   const hasGlb = !!piece.glb;
 
@@ -403,4 +403,20 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
 
   salleDiv.appendChild(plancher);
 };
+
+/* ── Re-render quand le viewport croise le seuil 600px (toggle F12 responsive) ── */
+(function() {
+  var _wasMobile = window.innerWidth <= 600;
+  window.addEventListener('resize', function() {
+    var isMobile = window.innerWidth <= 600;
+    if (isMobile !== _wasMobile) {
+      _wasMobile = isMobile;
+      /* Re-initialiser la galerie avec les bonnes positions */
+      if (typeof initGalerie === 'function') {
+        var conteneur = document.getElementById('conteneurSalles');
+        if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
+      }
+    }
+  });
+})();
 
