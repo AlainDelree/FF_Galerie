@@ -365,15 +365,15 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
         var vx = W / 2;
         var vy = -H * 0.15;
 
-        /* Lignes horizontales — espacement exponentiel (perspective) */
+        /* Lignes horizontales — serrées en haut (loin), espacées en bas (près) */
         for (var i = 0; i <= nbH; i++) {
           var t = i / nbH;
-          var y = H * (1 - Math.pow(1 - t, 2.2));
+          var y = H * Math.pow(t, 2.2);
           ctx.beginPath();
           ctx.moveTo(0, y);
           ctx.lineTo(W, y);
           ctx.strokeStyle = lineColor;
-          ctx.lineWidth = 0.5 + t * 1.2;
+          ctx.lineWidth = 0.3 + t * 1.5;
           ctx.stroke();
         }
 
