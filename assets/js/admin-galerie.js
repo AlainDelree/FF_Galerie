@@ -1484,7 +1484,6 @@ function afficherSolPlacement() {
       /* Model-viewer 3D statique (pas de rotation/zoom utilisateur) */
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', (ADMIN_CFG.repoPath ? '../../' : '') + t.glb + '?v=' + Date.now());
-      mv.setAttribute('auto-rotate', '');
       mv.setAttribute('interaction-prompt', 'none');
       mv.setAttribute('disable-zoom', '');
       mv.style.cssText = 'width:' + socleW + 'px;height:' + photoH + 'px;pointer-events:none;--poster-color:transparent;';
