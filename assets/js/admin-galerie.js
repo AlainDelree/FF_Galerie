@@ -744,12 +744,11 @@ function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const poseeIds = new Set((_isSculpt ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
-  // UNION : pièces placées + sélectionnées depuis le stock + sélectionnée pour placement
-  const tousIds = [...new Set([
-    ...poseeIds,
-    ...toilesSelectionnees,
-    ...(selectedToilePl ? [selectedToilePl.id] : [])
-  ])];
+  /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
+     Peinture : placées + sélectionnées + selectedToilePl */
+  const tousIds = _isSculpt
+    ? [...new Set([...(salleActive.toiles || []), ...poseeIds])]
+    : [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
 
   if (tousIds.length === 0) {
     strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
@@ -1658,23 +1657,13 @@ function placerPieceSol(x, y) {
 
   const gab = _gabaritSculpt(piece.dimensions?.hauteur);
 
-  /* Retirer de toutes les salles (mode courant uniquement) */
-  salles.forEach(s => {
-    if (_placementVue === 'gsm') {
-      if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(p => p.id !== piece.id);
-    } else {
-      s.positions = (s.positions || []).filter(p => p.id !== piece.id);
-    }
-    /* toiles = union des deux jeux de positions */
-    var idsPC = (s.positions || []).map(p => p.id);
-    var idsGSM = (s.positions_mobile || []).map(p => p.id);
-    s.toiles = [...new Set([...idsPC, ...idsGSM])];
-  });
+  /* Retirer des positions du mode actif (si déjà placée) */
+  var pos = _getPositions();
+  var idx = pos.findIndex(p => p.id === piece.id);
+  if (idx >= 0) pos.splice(idx, 1);
 
-  _getPositions().push({ id: piece.id, x, y, gabarit: gab });
-  /* Mettre à jour toiles = union des deux */
-  var allIds = new Set([...(salleActive.positions||[]).map(p=>p.id), ...(salleActive.positions_mobile||[]).map(p=>p.id)]);
-  salleActive.toiles = [...allIds];
+  /* Placer dans le mode actif */
+  pos.push({ id: piece.id, x, y, gabarit: gab });
 
   selectedToilePl = null; selectedToile = null;
   afficherSolPlacement(); afficherStripPlacement();

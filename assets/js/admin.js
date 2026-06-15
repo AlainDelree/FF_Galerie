@@ -787,15 +787,9 @@ $('btn-switch-vue')?.addEventListener('click', function() {
   this.textContent = _placementVue === 'pc' ? '🖥 PC' : '📱 GSM';
   this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
   this.style.color = _placementVue === 'gsm' ? '#fff' : '';
-  /* Auto-initialiser GSM depuis PC si vide */
-  if (_placementVue === 'gsm' && salleActive && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
-    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
-    toast('Positions PC copiées comme base GSM', 'ok', 2500);
-  }
   peintureSurMurSel = null;
   afficherSolPlacement();
   afficherStripPlacement();
-  toast(_placementVue === 'pc' ? 'Vue PC' : 'Vue GSM — ratio portrait', 'ok', 2000);
 });
 $('btn-sauver-placement').addEventListener('click', async () => {
   const btn = $('btn-sauver-placement');
@@ -842,9 +836,7 @@ $('btn-grille-pl').addEventListener('click', function() {
       var pos = _getPositions();
       var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
       if (idx >= 0) pos.splice(idx, 1);
-      /* toiles = union PC + GSM */
-      var allIds = new Set([...(salleActive.positions||[]).map(function(p){return p.id;}), ...(salleActive.positions_mobile||[]).map(function(p){return p.id;})]);
-      salleActive.toiles = [...allIds];
+      /* toiles reste inchangé — la pièce est toujours dans la salle */
     } else {
       salleActive.positions = (salleActive.positions||[]).filter(function(x){ return x.id !== peintureSurMurSel; });
       salleActive.toiles    = (salleActive.toiles||[]).filter(function(id){ return id !== peintureSurMurSel; });
