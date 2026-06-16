@@ -37,5 +37,15 @@
     "prefix": "ee",
     "draft": true,
     "genre": "f"
+  },
+  {
+    "id": "alex",
+    "nom": "Alex",
+    "logo": "A",
+    "lien": "artistes/alex/",
+    "repoPath": "artistes/alex/data/",
+    "prefix": "alex",
+    "draft": true,
+    "genre": "f"
   }
 ]
