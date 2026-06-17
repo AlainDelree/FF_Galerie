@@ -29,16 +29,6 @@
     "genre": "m"
   },
   {
-    "id": "ee",
-    "nom": "EE",
-    "logo": "E",
-    "lien": "artistes/ee/",
-    "repoPath": "artistes/ee/data/",
-    "prefix": "ee",
-    "draft": true,
-    "genre": "f"
-  },
-  {
     "id": "alex",
     "nom": "Alex",
     "logo": "A",
