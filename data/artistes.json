@@ -17,15 +17,5 @@
     "prefix": "alaindelree",
     "draft": true,
     "genre": "m"
-  },
-  {
-    "id": "alex",
-    "nom": "Alex",
-    "logo": "A",
-    "lien": "artistes/alex/",
-    "repoPath": "artistes/alex/data/",
-    "prefix": "alex",
-    "draft": true,
-    "genre": "f"
   }
 ]
