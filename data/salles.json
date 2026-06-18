@@ -4,14 +4,14 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#2a2420",
-      "couleur_cadres": "#5c3d2e",
-      "epaisseur_cadres": 20,
-      "texture": "brique",
+      "couleur_mur": "#e5a50a",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 4,
+      "texture": "pierre",
       "visible": false,
       "toiles": [
         16,
-        3
+        34
       ],
       "positions": [
         {
@@ -22,11 +22,11 @@
           "h": 3
         },
         {
-          "id": 3,
-          "col": 7,
-          "row": 2,
-          "w": 4,
-          "h": 5
+          "id": 34,
+          "col": 8,
+          "row": 4,
+          "w": 5,
+          "h": 4
         }
       ]
     },
@@ -40,47 +40,31 @@
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": true,
       "toiles": [
-        12,
-        14,
+        19,
         17,
-        4,
-        2
+        14
       ],
       "positions": [
         {
-          "id": 12,
+          "id": 19,
           "col": 1,
           "row": 1,
           "w": 3,
           "h": 3
         },
         {
-          "id": 14,
-          "col": 4,
-          "row": 1,
-          "w": 8,
-          "h": 5
-        },
-        {
           "id": 17,
-          "col": 1,
-          "row": 6,
+          "col": 8,
+          "row": 1,
           "w": 5,
           "h": 3
         },
         {
-          "id": 4,
-          "col": 6,
-          "row": 6,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 2,
-          "col": 9,
-          "row": 6,
-          "w": 3,
-          "h": 3
+          "id": 14,
+          "col": 3,
+          "row": 4,
+          "w": 8,
+          "h": 5
         }
       ]
     },
@@ -299,8 +283,26 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        31,
+        23
+      ],
+      "positions": [
+        {
+          "id": 31,
+          "col": 1,
+          "row": 4,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 23,
+          "col": 7,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        }
+      ]
     },
     {
       "id": 13,
@@ -311,34 +313,8 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
-      "toiles": [
-        19,
-        27,
-        33
-      ],
-      "positions": [
-        {
-          "id": 19,
-          "col": 1,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 27,
-          "col": 4,
-          "row": 1,
-          "w": 8,
-          "h": 5
-        },
-        {
-          "id": 33,
-          "col": 1,
-          "row": 6,
-          "w": 4,
-          "h": 3
-        }
-      ]
+      "toiles": [],
+      "positions": []
     }
   ]
 }
