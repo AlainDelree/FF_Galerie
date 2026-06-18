@@ -208,7 +208,6 @@ let selectedToile = null;
 let peintureSurMurSel = null;
 let toilesSelectionnees = new Set(); // Multi-sélection pour mode placement
 let occupancy = {};
-let pendingChanges = false;
 let toileEnEdition = null;
 let salleCibleToile = null;
 let photoB64 = null;
@@ -542,8 +541,6 @@ async function sauvegarder(message) {
     ], 'Admin : ' + message);
     syncBadge('ok');
     toast('✓ Sauvegardé');
-    pendingChanges = false;
-    $('btn-sauver-flottant').classList.remove('visible');
   } catch (e) {
     rapporterErreur('Impossible de charger les données : ' + e.message, 'bloquant', e.stack || '');
     syncBadge('err');
@@ -552,10 +549,9 @@ async function sauvegarder(message) {
   }
 }
 
-function marquerChangement() {
-  pendingChanges = true;
-  $('btn-sauver-flottant').classList.add('visible');
-}
+/* marquerChangement() supprimée : le bouton flottant n'existe plus.
+   Toutes les sauvegardes passent par des boutons intégrés (Enregistrer
+   du mode Arranger, bottom-sheets Couleurs/Textures, modales toile, etc.) */
 
 function prochainId() {
   return toiles.length ? Math.max(...toiles.map(t => t.id)) + 1 : 1;
@@ -785,7 +781,6 @@ $('btn-grille-pl').addEventListener('click', function() {
     toilesSelectionnees.add(peintureSurMurSel);
     peintureSurMurSel = null; selectedToilePl = null;
     buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
-    marquerChangement();
     $("pl-aide").textContent = "\"" + titre + "\" retirée — clique sur le mur pour la replacer";
   });
 })();
@@ -795,13 +790,6 @@ window.addEventListener('popstate', () => {
   if ($('overlay-placement').classList.contains('ouvert')) {
     quitterModePlacement();
   }
-});
-$('btn-sauver-flottant').addEventListener('click', async () => {
-  const btn = $('btn-sauver-flottant');
-  btn.textContent = 'En cours…'; btn.disabled = true;
-  try { await sauvegarder('[admin] Mise à jour galerie'); marquerSalleEnAttente(salleActive?.id); }
-  catch (_) {}
-  btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
 });
 
 // Barre basse

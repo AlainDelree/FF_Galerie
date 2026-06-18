@@ -40,7 +40,6 @@ button{cursor:pointer;}
   transition:opacity .2s,transform .1s;letter-spacing:.04em;}
 .btn:active{transform:scale(.97);}
 .btn:disabled,.btn-or:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
-.btn-sauver-flottant:disabled{opacity:.6;cursor:not-allowed;}
 .btn-or{background:var(--gold);color:#111;width:100%;}
 .btn-or:hover{opacity:.9;}
 .btn-sm{padding:.5rem .9rem;font-size:13px;}
@@ -391,18 +390,6 @@ textarea.champ{resize:vertical;min-height:65px;}
 .restore-avert{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);
   border-radius:var(--r);padding:1rem;font-size:.85rem;line-height:1.7;}
 .restore-hint{font-size:.78rem;color:var(--muted);text-align:center;}
-
-/* ══ FLOTTANT SAUVEGARDER ══ */
-.btn-sauver-flottant{display:none;position:fixed;
-  bottom:max(4.5rem,calc(4.5rem + env(safe-area-inset-bottom)));
-  left:50%;transform:translateX(-50%);
-  padding:.8rem 1.8rem;background:var(--gold);color:#111;
-  border:none;border-radius:25px;font-weight:600;font-size:.88rem;
-  box-shadow:0 4px 24px rgba(200,160,80,.4);z-index:150;white-space:nowrap;
-  animation:pop-in .25s ease;}
-.btn-sauver-flottant.visible{display:block;}
-@keyframes pop-in{from{transform:translateX(-50%) scale(.85);opacity:0;}
-  to{transform:translateX(-50%) scale(1);opacity:1;}}
 
 /* ══ TOAST & LOADER ══ */
 #toast{position:fixed;bottom:max(1.5rem,env(safe-area-inset-bottom));

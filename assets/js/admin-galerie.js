@@ -156,38 +156,9 @@ function survolCelluleMur(col, row) {
 
 function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
 
-function placerToile(col, row) {
-  if (!selectedToile || !salleActive) return;
-  const { w, h } = calcCases(selectedToile.dimensions);
-  if (!canPlace(col, row, w, h, null)) { toast('Emplacement occupé', 'err'); return; }
-  // Retire de TOUTES les salles (toiles + positions) avant de placer
-  salles.forEach(s => {
-    s.toiles = s.toiles.filter(id => id !== selectedToile.id);
-    s.positions = (s.positions || []).filter(p => p.id !== selectedToile.id);
-  });
-  // Ajoute à la salle active
-  salleActive.positions.push({ id: selectedToile.id, col, row, w, h });
-  salleActive.toiles.push(selectedToile.id);
-  buildOccupancy();
-  afficherMur(); afficherStock();
-  selectedToile = null;
-  marquerChangement();
-  toast('✓ Toile placée');
-}
-
-function retirerToile(toileId) {
-  if (!salleActive) return;
-  salleActive.positions = (salleActive.positions || []).filter(p => p.id !== toileId);
-  peintureSurMurSel = null;
-  buildOccupancy(); afficherMur(); afficherStock(); marquerChangement();
-  toast('Toile retirée du mur');
-}
-
-function selectionnerPeintureMur(toileId) {
-  peintureSurMurSel = peintureSurMurSel === toileId ? null : toileId;
-  selectedToile = null;
-  afficherMur(); afficherStock();
-}
+/* placerToile / retirerToile / selectionnerPeintureMur supprimées :
+   placement en mode normal n'a plus lieu d'être. Toutes les opérations de
+   placement passent désormais exclusivement par le mode Arranger (afficherMurPlacement). */
 
 function deplacerPeinture(toileId, dCol, dRow) {
   const pos = salleActive.positions.find(p => p.id === toileId);
@@ -205,7 +176,7 @@ function deplacerPeinture(toileId, dCol, dRow) {
     toast('Impossible — bord ou emplacement occupé', 'err'); return;
   }
   pos.col = newCol; pos.row = newRow;
-  buildOccupancy(); afficherMur(); marquerChangement();
+  buildOccupancy(); afficherMur();
 }
 
 // ═══════════════════════════════════════════════
@@ -345,6 +316,115 @@ function afficherConfirmAutreSalle(toile, nomAutre) {
 // ═══════════════════════════════════════════════
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
+let _placementVue = 'pc'; // 'pc' ou 'gsm'
+
+/* Retourne les positions actives selon le mode vue */
+function _getPositions() {
+  if (!salleActive) return [];
+  if (_placementVue === 'gsm') {
+    if (!salleActive.positions_mobile) salleActive.positions_mobile = [];
+    return salleActive.positions_mobile;
+  }
+  return salleActive.positions || [];
+}
+
+/* Définit les positions actives selon le mode vue */
+function _setPositions(pos) {
+  if (!salleActive) return;
+  if (_placementVue === 'gsm') salleActive.positions_mobile = pos;
+  else salleActive.positions = pos;
+}
+
+/* DRAG-DROP GLOBAL — une seule paire de listeners */
+let _dragStarted = false;
+let _draggingPieceEl = null;
+let _draggingPiece = null;
+let _dragStartPos = { x: 0, y: 0 };
+let _dragContainer = null;
+
+function _startDragPiece(el, piecePos, mouseDownEvent, container) {
+  _dragStarted = false; /* Reset flag pour click */
+  _draggingPieceEl = el;
+  _draggingPiece = piecePos;
+  _dragStartPos = { x: mouseDownEvent.clientX, y: mouseDownEvent.clientY };
+  _dragContainer = container;
+  el.style.transition = 'none';
+  el.style.zIndex = '10';
+  document.addEventListener('mousemove', _onGlobalDragMove);
+  document.addEventListener('mouseup', _onGlobalDragEnd);
+}
+
+function _onGlobalDragMove(e) {
+  if (!_draggingPieceEl || !_draggingPiece) return;
+  e.preventDefault(); /* Empêcher la sélection de texte/grille */
+  _dragStarted = true; /* Marquer qu'il y a eu du mouvement */
+  const rect = _dragContainer.getBoundingClientRect();
+  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
+  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
+  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
+  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+  _draggingPieceEl.style.left = newX + '%';
+  _draggingPieceEl.style.bottom = newY + '%';
+}
+
+function _onGlobalDragEnd(e) {
+  if (!_draggingPieceEl || !_draggingPiece) return;
+  /* Appliquer les changements */
+  const rect = _dragContainer.getBoundingClientRect();
+  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
+  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
+  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
+  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
+
+  /* Anti-chevauchement : vérifier si la nouvelle position chevauche une autre pièce */
+  const overlap = _isSculpt ? _checkOverlap(_draggingPiece.id, newX, newY) : false;
+
+  _draggingPieceEl.style.transition = '';
+  _draggingPieceEl.style.zIndex = '';
+  document.removeEventListener('mousemove', _onGlobalDragMove);
+  document.removeEventListener('mouseup', _onGlobalDragEnd);
+  if (_dragStarted) {
+    if (overlap) {
+      /* Remettre à la position d'origine */
+      _draggingPieceEl.style.left = _draggingPiece.x + '%';
+      _draggingPieceEl.style.bottom = _draggingPiece.y + '%';
+      toast('⚠ Chevauchement — position annulée', 'err');
+    } else {
+      _draggingPiece.x = newX;
+      _draggingPiece.y = newY;
+      toast('✓ Pièce déplacée');
+    }
+  }
+  _draggingPieceEl = null;
+  _draggingPiece = null;
+}
+
+/* Vérifie si une pièce à (x,y) chevauche une autre pièce */
+function _checkOverlap(pieceId, x, y) {
+  if (!salleActive) return false;
+  var _pos = _getPositions();
+  const t1 = toiles.find(t => t.id === pieceId);
+  const r1 = _pieceRadius(t1);
+  for (const p of _pos) {
+    if (p.id === pieceId) continue;
+    const t2 = toiles.find(t => t.id === p.id);
+    const r2 = _pieceRadius(t2);
+    const dx = Math.abs(x - p.x);
+    const dy = Math.abs(y - p.y);
+    const minDist = r1 + r2;
+    if (dx < minDist && dy < minDist * 0.7) return true;
+  }
+  return false;
+}
+
+/* Rayon d'une pièce en % du sol (basé sur le socle) */
+function _pieceRadius(t) {
+  if (!t) return 3;
+  const socle = t.socle || t.dimensions?.largeur || 30;
+  /* Approximation : 30cm socle ≈ 5% du sol */
+  return Math.max(2, socle * 0.15);
+}
+
 
 function entrerModePlacement() {
   if (!salleActive) return;
@@ -437,7 +517,7 @@ function autoPlacerTout() {
     }
     if (!done) impossible++;
   }
-  afficherMurPlacement(); afficherStripPlacement(); marquerChangement();
+  afficherMurPlacement(); afficherStripPlacement();
   toast(impossible>0
     ? `${placees} placée(s) — ${impossible} ne rentrent pas sur le mur`
     : `✓ ${placees} toile(s) placée(s)`);
@@ -630,8 +710,8 @@ function placerToilePl(col, row) {
   buildOccupancy();
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
-  marquerChangement(); toast('✓ Placée');
-  $('pl-aide').textContent = 'Toile placée — continue ou clique ← Retour';
+  toast('✓ Placée');
+  $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique 💾 Enregistrer';
 }
 
 function survolCellule(col, row, bgId) {
@@ -1080,3 +1160,161 @@ async function creerSalle() {
 }
 // APPARENCE (couleurs + textures)
 // ═══════════════════════════════════════════════
+
+/* ══════════════════════════════════════════════════════════════
+   PLACEMENT SCULPTURE — parquet x,y au lieu de grille 12×8
+   ══════════════════════════════════════════════════════════════ */
+
+function afficherSolPlacement() {
+  /* Masquer l'aperçu normal */
+  $('mur-bg').innerHTML = '';
+  var oldMini = document.getElementById('mini-preview-autre');
+  if (oldMini) oldMini.remove();
+  var oldRow = document.getElementById('mur-row-wrap');
+  if (oldRow) {
+    var bg = $('mur-bg');
+    oldRow.parentNode.insertBefore(bg, oldRow);
+    oldRow.remove();
+  }
+
+  const container = $('mur-placement');
+  container.innerHTML = '';
+  container.className = '';
+
+  const isGsm = _placementVue === 'gsm';
+
+  /* Remplir tout l'espace disponible */
+  var zoneRect = container.parentElement.getBoundingClientRect();
+  var availH = zoneRect.height - 30; /* marge pour pl-aide */
+  container.style.cssText = isGsm
+    ? 'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;'
+    : 'height:' + availH + 'px;';
+
+  /* Wrapper iframe */
+  const iframeWrap = document.createElement('div');
+  iframeWrap.style.cssText = isGsm
+    ? 'height:100%;aspect-ratio:9/19;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
+    : 'width:100%;height:100%;border-radius:6px;overflow:hidden;position:relative;';
+
+  /* Label mode */
+  if (isGsm) {
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.1em;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;';
+    lbl.textContent = '📱 Vue GSM';
+    iframeWrap.appendChild(lbl);
+  }
+
+  /* Iframe charge la vraie galerie en mode édition */
+  const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-edit.html';
+  const iframe = document.createElement('iframe');
+  iframe.id = 'edit-galerie-iframe';
+  iframe.src = galeriePath + '?v=' + Date.now();
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+  iframeWrap.appendChild(iframe);
+  container.appendChild(iframeWrap);
+
+  /* Écouter les messages de l'iframe */
+  function onMessage(e) {
+    if (!e.data || !e.data.type) return;
+
+    if (e.data.type === 'edit-ready') {
+      /* Galerie prête */
+    }
+
+    if (e.data.type === 'positions-updated') {
+      /* Mettre à jour les positions dans les données admin */
+      if (isGsm) {
+        salleActive.positions_mobile = e.data.positions;
+      } else {
+        salleActive.positions = e.data.positions;
+      }
+    }
+
+    if (e.data.type === 'piece-removed') {
+      afficherStripPlacement();
+    }
+
+    if (e.data.type === 'sol-click') {
+      /* Placer la pièce sélectionnée dans le strip */
+      if (selectedToilePl) {
+        placerPieceSolViaIframe(e.data.x, e.data.y);
+      }
+    }
+  }
+
+  /* Nettoyer l'ancien listener si existait */
+  if (window._editMessageHandler) {
+    window.removeEventListener('message', window._editMessageHandler);
+  }
+  window._editMessageHandler = onMessage;
+  window.addEventListener('message', onMessage);
+
+  majCtrlPanel();
+}
+
+/* Placer une pièce via l'iframe */
+function placerPieceSolViaIframe(x, y) {
+  if (!selectedToilePl || !salleActive) return;
+  var piece = selectedToilePl;
+  var gab = _gabaritSculpt(piece.dimensions?.hauteur);
+  var pos = _getPositions();
+
+  /* Retirer si déjà placée dans ce mode */
+  var idx = pos.findIndex(function(p) { return p.id === piece.id; });
+  if (idx >= 0) pos.splice(idx, 1);
+
+  pos.push({ id: piece.id, x: x, y: y, gabarit: gab });
+
+  /* Rafraîchir l'iframe pour montrer la nouvelle pièce */
+  var iframe = document.getElementById('edit-galerie-iframe');
+  if (iframe) iframe.contentWindow.postMessage({ type: 'refresh' }, '*');
+
+  selectedToilePl = null;
+  afficherStripPlacement();
+  toast('"' + (piece.titre || '—') + '" placée');
+}
+
+
+function placerPieceSol(x, y) {
+  if (!selectedToilePl || !salleActive) return;
+  const piece = selectedToilePl;
+
+  /* Anti-chevauchement */
+  if (_checkOverlap(piece.id, x, y)) {
+    toast('⚠ Chevauchement — choisis un autre endroit', 'err');
+    return;
+  }
+
+  const gab = _gabaritSculpt(piece.dimensions?.hauteur);
+
+  /* Retirer des positions du mode actif (si déjà placée) */
+  var pos = _getPositions();
+  var idx = pos.findIndex(p => p.id === piece.id);
+  if (idx >= 0) pos.splice(idx, 1);
+
+  /* Placer dans le mode actif */
+  pos.push({ id: piece.id, x, y, gabarit: gab });
+
+  selectedToilePl = null; selectedToile = null;
+  afficherSolPlacement(); afficherStripPlacement();
+  toast('✓ Pièce placée en ' + x + ',' + y);
+  $('pl-aide').textContent = 'Pièce placée — continue ou clique 💾 Enregistrer';
+}
+
+function deplacerPieceSol(dx, dy) {
+  if (peintureSurMurSel === null) return;
+  const pos = _getPositions().find(p => p.id === peintureSurMurSel);
+  if (!pos) return;
+  pos.x = Math.max(5, Math.min(95, (pos.x || 50) + dx));
+  pos.y = Math.max(5, Math.min(95, (pos.y || 50) - dy)); /* -dy : Up=+y, Down=-y */
+  afficherSolPlacement();
+}
+
+/* Gabarit auto depuis hauteur (dupliqué de galerie-sculpture.js) */
+function _gabaritSculpt(h) {
+  if (!h)      return 'M';
+  if (h <= 25) return 'S';
+  if (h <= 50) return 'M';
+  if (h <= 100) return 'L';
+  return 'SOL';
+}

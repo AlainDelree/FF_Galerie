@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260618b">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260618e">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -780,9 +780,6 @@
   </div>
 </div>
 
-<!-- Flottant sauvegarder -->
-<button class="btn-sauver-flottant" id="btn-sauver-flottant">💾 Sauvegarder</button>
-
 <!-- ══ MODAL NOM TEXTURE ══ -->
 <div class="overlay" id="overlay-tex-nom">
   <div class="modal" style="max-width:320px;">
@@ -1019,6 +1016,247 @@
       if (typeof chargerTout === 'function' && typeof K !== 'undefined' && sessionStorage.getItem(K.auth) === '1') {
         chargerTout();
         if (typeof initTexturesUI === 'function') initTexturesUI();
+      }
+
+      /* Afficher/masquer les champs selon le type d'artiste */
+      const isSculpt = (window.ADMIN_TYPE || 'peinture') === 'sculpture';
+      document.querySelectorAll('.peinture-only').forEach(el => {
+        el.style.display = isSculpt ? 'none' : '';
+      });
+      document.querySelectorAll('.sculpture-only').forEach(el => {
+        el.style.display = isSculpt ? '' : 'none';
+      });
+      if (isSculpt) {
+        const mt = document.getElementById('modal-toile-tit');
+        if (mt && mt.textContent === 'Nouvelle toile') mt.textContent = 'Nouvelle pièce';
+        const lbl = document.getElementById('lbl-couleur-surface');
+        if (lbl) lbl.textContent = 'Sol';
+
+        /* Renommer les boutons */
+        const btnArr = document.getElementById('btn-arranger-mur');
+        if (btnArr) btnArr.textContent = '🔧 Arranger le sol';
+        const btnAjt = document.getElementById('btn-ajouter-toile');
+        if (btnAjt) btnAjt.textContent = '＋ Ajout pièce';
+        const btnMod = document.getElementById('btn-modifier-toile');
+        if (btnMod) btnMod.textContent = '✏️ Modifier pièce';
+        const btnSup = document.getElementById('btn-supprimer-toile');
+        if (btnSup) btnSup.textContent = '🗑 Supprimer';
+        const murAide = document.getElementById('mur-aide');
+        if (murAide) murAide.textContent = 'Utilise "🔧 Arranger le sol" pour placer les pièces';
+        const btnCoul = document.getElementById('btn-coul-toggle');
+        if (btnCoul) btnCoul.textContent = '🎨 Couleurs/Revêtement';
+        const btnGrille = document.getElementById('btn-grille-pl');
+        if (btnGrille) btnGrille.style.display = 'none';
+        /* Charger le CSS socles galerie pour l'arrangement */
+        if (!document.getElementById('css-galerie-sculpture')) {
+          var link = document.createElement('link');
+          link.id = 'css-galerie-sculpture';
+          link.rel = 'stylesheet';
+          link.href = 'assets/css/galerie-sculpture.css';
+          document.head.appendChild(link);
+        }
+        const btnSwitch = document.getElementById('btn-switch-vue');
+        if (btnSwitch) btnSwitch.style.display = '';
+        /* Masquer les flèches du D-pad, garder ✕ et nom */
+        var cross = document.querySelector('.pl-ctrl-cross');
+        if (cross) {
+          cross.style.display = 'flex';
+          cross.style.gap = '6px';
+          cross.style.alignItems = 'center';
+          cross.innerHTML = '';
+          var rmBtn = document.createElement('button');
+          rmBtn.className = 'pl-btn-arr pl-btn-suppr';
+          rmBtn.id = 'pl-btn-rm';
+          rmBtn.textContent = '✕ Retirer';
+          rmBtn.style.cssText = 'padding:.4rem .8rem;border-radius:6px;font-size:11px;';
+          rmBtn.addEventListener('click', function() {
+            if (peintureSurMurSel === null) return;
+            var pos = _getPositions();
+            var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
+            if (idx >= 0) pos.splice(idx, 1);
+            var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || '—';
+            peintureSurMurSel = null; selectedToilePl = null;
+            afficherSolPlacement(); afficherStripPlacement();
+            toast('"' + titre + '" retirée de cette vue');
+          });
+          cross.appendChild(rmBtn);
+        }
+
+        /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
+        (function() {
+          var body = document.querySelector('#overlay-toile .modal-body');
+          var photoGrp = document.getElementById('zone-photo').closest('.grp');
+          var glbGrp   = document.getElementById('zone-glb').closest('.grp');
+          var dimsGrp  = document.querySelector('#dims-lh').closest('.grp');
+          var titreGrp = document.getElementById('inp-titre').closest('.grp');
+          var dateGrp  = document.getElementById('inp-date').closest('.grp');
+          var matGrp   = document.getElementById('inp-mat').closest('.grp');
+          var prixGrp  = document.getElementById('inp-prix').closest('.grp');
+          var descGrp  = document.getElementById('inp-desc').closest('.grp');
+          var visGrp   = document.getElementById('inp-visible').closest('.grp');
+          var pillsGrp = document.getElementById('salle-pills')?.closest('.grp');
+          var zonePhoto = document.getElementById('zone-photo');
+          var prevImg   = document.getElementById('photo-prev');
+
+          /* ── Helper : créer un en-tête de section ── */
+          function sectionHeader(text) {
+            var h = document.createElement('div');
+            h.style.cssText = 'font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid rgba(200,160,80,.2);';
+            h.textContent = text;
+            return h;
+          }
+
+          /* ── 1. OBJET ── */
+          var hdrObjet = sectionHeader('Objet');
+          body.prepend(hdrObjet);
+
+          /* GLB zone dans le grp photo */
+          photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb)';
+          photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
+          photoGrp.insertBefore(document.getElementById('inp-glb'), zonePhoto);
+          photoGrp.insertBefore(document.getElementById('glb-thumb-status'), zonePhoto);
+          photoGrp.insertBefore(prevImg, zonePhoto);
+          prevImg.style.maxWidth = '200px'; prevImg.style.marginTop = '.5rem';
+
+          /* Bouton "Changer la photo…" */
+          var btnChg = document.createElement('button');
+          btnChg.type = 'button'; btnChg.id = 'btn-change-photo-sculpt';
+          btnChg.textContent = '📷 Changer la photo…';
+          btnChg.style.cssText = 'display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:.75rem;margin-top:.3rem;padding:0;text-decoration:underline;';
+          btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
+          photoGrp.insertBefore(btnChg, zonePhoto);
+
+          /* Bouton "Recréer depuis le 3D" */
+          var btnRegen = document.createElement('button');
+          btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
+          btnRegen.textContent = '🔄 Recréer depuis le 3D';
+          btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
+          btnRegen.addEventListener('click', async function() {
+            var glbPath = document.getElementById('inp-glb').value;
+            if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
+            btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
+            try {
+              /* Charger le GLB depuis le serveur */
+              var base = (window.GALERIE_ASSETS_BASE || window.ADMIN_CFG?.repoPath?.replace(/data\/?$/, '') || '');
+              var url = base ? '../../' + glbPath : glbPath;
+              var resp = await fetch(url + '?v=' + Date.now());
+              if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
+              var blob = await resp.blob();
+              var blobUrl = URL.createObjectURL(blob);
+              var result = await genererThumbnailGLB(blobUrl);
+              URL.revokeObjectURL(blobUrl);
+              photoB64 = result.b64;
+              document.getElementById('photo-prev').src = 'data:image/jpeg;base64,' + result.b64;
+              document.getElementById('photo-prev').style.display = 'block';
+              toast('✓ Photo recréée depuis le 3D');
+            } catch (e) {
+              toast('Erreur : ' + e.message, 'err');
+            }
+            btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
+          });
+          photoGrp.insertBefore(btnRegen, zonePhoto);
+          zonePhoto.style.display = 'none';
+          document.getElementById('btn-recadrer-photo').style.display = 'none';
+          document.getElementById('photo-qualite').style.display = 'none';
+          glbGrp.style.display = 'none';
+
+          /* Placer photo grp juste après header OBJET */
+          hdrObjet.after(photoGrp);
+
+          /* Dimensions L×H×P visibles */
+          dimsGrp.querySelector('.lbl').textContent = 'Dimensions de la pièce';
+          document.getElementById('dims-lh').style.display = '';
+          var favEl = document.getElementById('dims-favoris');
+          if (favEl) favEl.style.display = 'none';
+          photoGrp.after(dimsGrp);
+
+          /* ── 2. SOCLE ── */
+          var hdrSocle = sectionHeader('Socle');
+          dimsGrp.after(hdrSocle);
+
+          /* Stepper diamètre */
+          var socleGrp = document.createElement('div');
+          socleGrp.className = 'grp';
+          var socleLbl = document.createElement('label');
+          socleLbl.className = 'lbl'; socleLbl.textContent = 'Diamètre (cm)';
+          socleGrp.appendChild(socleLbl);
+
+          var stepper = document.createElement('div');
+          stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
+          var btnStyle = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+
+          var btnMoins = document.createElement('button');
+          btnMoins.type = 'button'; btnMoins.textContent = '−'; btnMoins.style.cssText = btnStyle;
+          var inpDiam = document.createElement('input');
+          inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
+          inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
+          inpDiam.min = '1'; inpDiam.max = '200'; inpDiam.placeholder = 'défaut';
+          var btnPlus = document.createElement('button');
+          btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
+          var unite = document.createElement('span');
+          unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
+
+          btnMoins.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value);
+            if (isNaN(v) || v <= 5) { inpDiam.value = ''; return; }
+            inpDiam.value = v - 5;
+          });
+          btnPlus.addEventListener('click', function() {
+            var v = parseInt(inpDiam.value);
+            if (isNaN(v)) { inpDiam.value = 5; return; }
+            inpDiam.value = Math.min(200, v + 5);
+          });
+
+          stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
+          stepper.appendChild(btnPlus); stepper.appendChild(unite);
+          var btnDefaut = document.createElement('button');
+          btnDefaut.type = 'button'; btnDefaut.textContent = 'Par défaut';
+          btnDefaut.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:.68rem;text-decoration:underline;margin-left:.3rem;padding:0;';
+          btnDefaut.addEventListener('click', function() { inpDiam.value = ''; });
+          stepper.appendChild(btnDefaut);
+          socleGrp.appendChild(stepper);
+          hdrSocle.after(socleGrp);
+
+          /* ── 3. DÉTAILS ── */
+          var hdrDetails = sectionHeader('Détails');
+          socleGrp.after(hdrDetails);
+
+          /* Placeholder matériaux */
+          document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
+
+          /* Réordonner : Titre, Date, Matériaux, Prix, Description, Visible, Salle */
+          var detailsOrder = [titreGrp, dateGrp, matGrp, prixGrp, descGrp, visGrp];
+          if (pillsGrp) detailsOrder.push(pillsGrp);
+          var prev = hdrDetails;
+          detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
+        })();
+
+        /* Aperçu plus grand */
+        const murBg = document.getElementById('mur-bg');
+        if (murBg) murBg.style.maxWidth = 'none';
+
+        /* CSS override pour le parquet sculpture */
+        const styleOverride = document.createElement('style');
+        styleOverride.textContent = `
+          .mur-bg {
+            display: block !important;
+            grid-template-columns: none !important;
+            grid-template-rows: none !important;
+          }
+        `;
+        document.head.appendChild(styleOverride);
+
+        /* Handler revêtement sol */
+        document.querySelectorAll('#sw-revetement .sw').forEach(sw => {
+          sw.addEventListener('click', function() {
+            document.querySelectorAll('#sw-revetement .sw').forEach(s => s.classList.remove('sel'));
+            this.classList.add('sel');
+            if (typeof textureActuelle !== 'undefined') {
+              textureActuelle = this.dataset.val;
+            }
+            if (typeof afficherMur === 'function') afficherMur();
+          });
+        });
       } else if (typeof chargerTexturesGitHub === 'function') {
         chargerTexturesGitHub(); // non connecté : charge quand même les textures partagées
       }
