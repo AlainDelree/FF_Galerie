@@ -12,7 +12,7 @@
 
 ## BUG-001 — Page Backup vide en prod
 
-- **Statut :** 🔴 Ouvert
+- **Statut :** 🟠 En cours (patch diagnostic poussé sur dev)
 - **Date apparition :** Inconnue (probablement post-audit)
 - **Branche concernée :** main (prod)
 - **Reproduction :**
@@ -25,8 +25,16 @@
   - Données absentes ou mal chargées
   - Élément DOM caché par CSS
   - Régression suite à modification post-audit
-- **Solution trouvée :** _(à remplir une fois corrigé)_
-- **Commit fix :** _(à remplir)_
+  - **Hypothèse la plus probable :** `apiGH` renvoie un objet d'erreur GitHub (`{message:"Bad credentials"...}`) au lieu d'un tableau, ce qui fait planter `.filter()` silencieusement → le spinner "Chargement…" reste à l'écran indéfiniment, ce qui donne l'impression d'une page "vide"
+- **Investigation en cours :** Patch poussé sur dev (`admin-backup.js`) qui :
+  - ajoute des garde-fous null (cont DOM, apiGH/REPO/ADMIN_CFG)
+  - détecte si la réponse n'est pas un tableau
+  - distingue "0 commits sur le chemin" vs "0 commits passent le filtre Admin :"
+  - logue dans la console le nombre de commits reçus/filtrés
+  - affiche tous les messages d'erreur directement dans la page (plus jamais "vide silencieux")
+- **À faire ensuite :** Tester sur `dev.frederiqueferette.be/admin.html` → la page Backup affichera maintenant un message diagnostique. Selon ce message, on saura quelle est la vraie cause.
+- **Solution trouvée :** _(à confirmer après diagnostic visuel)_
+- **Commit fix :** _(à remplir une fois confirmé)_
 
 ---
 
