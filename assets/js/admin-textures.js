@@ -54,8 +54,8 @@ function appliquerApparence() {
 
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
-    /* Texture image : multiply blend pour laisser voir la couleur */
-    bg.style.background = 'url("' + (TEXTURES[textureActuelle] || '').replace(/url\("|"\)/g,'') + '") center/cover, ' + couleurMurActuel;
+    /* Texture image : URL directe (textureActuelle est déjà le chemin) + multiply blend pour laisser voir la couleur */
+    bg.style.background = 'url("' + textureActuelle + '") center/cover, ' + couleurMurActuel;
     bg.style.backgroundBlendMode = 'multiply';
     return;
   }
