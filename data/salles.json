@@ -353,8 +353,18 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        13
+      ],
+      "positions": [
+        {
+          "id": 13,
+          "col": 3,
+          "row": 2,
+          "w": 8,
+          "h": 5
+        }
+      ]
     }
   ]
 }
