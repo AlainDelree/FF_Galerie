@@ -19,16 +19,6 @@
     "genre": "m"
   },
   {
-    "id": "raoul",
-    "nom": "Joseph",
-    "logo": "J",
-    "lien": "artistes/raoul/",
-    "repoPath": "artistes/raoul/data/",
-    "prefix": "raoul",
-    "draft": true,
-    "genre": "m"
-  },
-  {
     "id": "alex",
     "nom": "Alex",
     "logo": "A",
