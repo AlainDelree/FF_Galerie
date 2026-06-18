@@ -51,8 +51,8 @@ Pour chaque artiste : Daw, Alain Delree, Raoul, Dinso.
 - 🔄 **Sélection toile** — clic affiche miniature, badge taille (XXS/XS/M/XL/XXL/E)
 - 🔄 **Stock** — tri vert (disponibles), gris (placées ici), rouge (placées ailleurs)
 - 🔄 **Mode Arranger** — bouton ouvre vue plein écran
-- 💻 **Drag PC** — drag toile dans Arranger fonctionne (souris)
-- 📱 **Drag GSM (tactile)** — touch drag fonctionne, ✕ Retirer accessible
+- 🔄 **Placement clic + flèches** — clic sur toile dans le strip → clic sur cellule du mur pour placer ; clic sur toile posée → flèches haut/bas/gauche/droite s'affichent et permettent de déplacer
+- 🔄 **Apparence dans Arranger** — couleur de fond + texture identiques à l'aperçu admin (BUG-004 fixé)
 - 🔄 **Mode Arranger — aspect-ratio** — la grille en plein écran doit aussi respecter 12:8 sur toutes les salles
 - 🔄 **Bouton "Tout mettre"** — place toutes les toiles disponibles
 - 🔄 **Bottom sheet Couleurs/Textures** — s'ouvre, sélection persiste

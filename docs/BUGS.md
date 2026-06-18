@@ -113,7 +113,7 @@
   ```
   Pourquoi l'utilisateur voyait quand même la texture : à confirmer (probablement un état résiduel ou un comportement de cascade CSS non identifié — mais le fix règle le problème en imposant une apparence cohérente).
 - **Solution trouvée :** Porter la même logique que `appliquerApparence` (admin-textures.js) : détecter les textures image et utiliser le chemin directement avec `multiply blend`.
-- **Commit fix :** _(à compléter après push)_
+- **Commit fix :** `f1c2210` (dev) — à reporter sur main après validation
 
 ---
 
