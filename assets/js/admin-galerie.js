@@ -741,9 +741,16 @@ function afficherMurPlacement() {
   const bg = $('mur-placement');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
-  bg.style.background = couleurMurActuel;
-  const texStr = TEXTURES[textureActuelle] || '';
-  if (texStr) bg.style.background = `${texStr}, ${couleurMurActuel}`;
+  /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
+  const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
+  if (isImgTex) {
+    bg.style.background = 'url("' + textureActuelle + '") center/cover, ' + couleurMurActuel;
+    bg.style.backgroundBlendMode = 'multiply';
+  } else {
+    bg.style.backgroundBlendMode = '';
+    const texStr = TEXTURES[textureActuelle] || '';
+    bg.style.background = texStr ? `${texStr}, ${couleurMurActuel}` : couleurMurActuel;
+  }
   bg.classList.toggle('grille-on', grilleVisiblePl);
 
   // Toiles déjà posées
