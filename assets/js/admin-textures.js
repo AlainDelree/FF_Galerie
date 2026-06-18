@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════
 // ADMIN-TEXTURES.JS — Presets / Couleurs / Textures + Recadrage Cropper.js
-// Dépend de : afficherMur, marquerChangement, toast, $, ADMIN_CFG (admin.js)
+// Dépend de : afficherMur, toast, $, ADMIN_CFG (admin.js)
 
 let _snapshotApparence = null;
 
@@ -185,10 +185,13 @@ function chargerPreset() {
         salleActive.couleur_cadres   = couleurCadresActuel;
         salleActive.epaisseur_cadres = epaisseurCadresActuel;
         salleActive.texture          = textureActuelle;
-        marquerChangement();
       }
       appliquerApparence(); afficherMur();
       $('overlay-preset-charger').classList.remove('ouvert');
+      /* Auto-save : l'utilisateur a explicitement choisi un preset → sauvegarde immédiate sur GitHub */
+      if (salleActive && typeof sauvegarder === 'function') {
+        sauvegarder("[admin] Preset \"" + nom + "\" appliqué").catch(function(_){});
+      }
       toast("Preset \"" + nom + "\" appliqué");
     });
 

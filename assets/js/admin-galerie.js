@@ -308,38 +308,9 @@ function survolCelluleMur(col, row) {
 
 function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
 
-function placerToile(col, row) {
-  if (!selectedToile || !salleActive) return;
-  const { w, h } = calcCases(selectedToile.dimensions);
-  if (!canPlace(col, row, w, h, null)) { toast('Emplacement occupé', 'err'); return; }
-  // Retire de TOUTES les salles (toiles + positions) avant de placer
-  salles.forEach(s => {
-    s.toiles = s.toiles.filter(id => id !== selectedToile.id);
-    s.positions = (s.positions || []).filter(p => p.id !== selectedToile.id);
-  });
-  // Ajoute à la salle active
-  salleActive.positions.push({ id: selectedToile.id, col, row, w, h });
-  salleActive.toiles.push(selectedToile.id);
-  buildOccupancy();
-  afficherMur(); afficherStock();
-  selectedToile = null;
-  marquerChangement();
-  toast('✓ ' + LBL.Item + ' ' + LBL.placee);
-}
-
-function retirerToile(toileId) {
-  if (!salleActive) return;
-  salleActive.positions = (salleActive.positions || []).filter(p => p.id !== toileId);
-  peintureSurMurSel = null;
-  buildOccupancy(); afficherMur(); afficherStock(); marquerChangement();
-  toast(LBL.Item + ' ' + LBL.retiree);
-}
-
-function selectionnerPeintureMur(toileId) {
-  peintureSurMurSel = peintureSurMurSel === toileId ? null : toileId;
-  selectedToile = null;
-  afficherMur(); afficherStock();
-}
+/* placerToile / retirerToile / selectionnerPeintureMur supprimées :
+   placement en mode normal n'a plus lieu d'être. Toutes les opérations de
+   placement passent désormais exclusivement par le mode Arranger (afficherMurPlacement). */
 
 function deplacerPeinture(toileId, dCol, dRow) {
   const pos = salleActive.positions.find(p => p.id === toileId);
@@ -357,7 +328,7 @@ function deplacerPeinture(toileId, dCol, dRow) {
     toast('Impossible — bord ou emplacement occupé', 'err'); return;
   }
   pos.col = newCol; pos.row = newRow;
-  buildOccupancy(); afficherMur(); marquerChangement();
+  buildOccupancy(); afficherMur();
 }
 
 // ═══════════════════════════════════════════════
@@ -580,7 +551,6 @@ function _onGlobalDragEnd(e) {
     } else {
       _draggingPiece.x = newX;
       _draggingPiece.y = newY;
-      marquerChangement();
       toast('✓ Pièce déplacée');
     }
   }
@@ -709,7 +679,7 @@ function autoPlacerTout() {
     }
     if (!done) impossible++;
   }
-  afficherMurPlacement(); afficherStripPlacement(); marquerChangement();
+  afficherMurPlacement(); afficherStripPlacement();
   toast(impossible>0
     ? `${placees} placée(s) — ${impossible} ne rentrent pas sur le mur`
     : `✓ ${placees} toile(s) placée(s)`);
@@ -912,7 +882,7 @@ function placerToilePl(col, row) {
   buildOccupancy();
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
-  marquerChangement(); toast('✓ Placée');
+  toast('✓ Placée');
   $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique 💾 Enregistrer';
 }
 
@@ -1496,12 +1466,10 @@ function afficherSolPlacement() {
       } else {
         salleActive.positions = e.data.positions;
       }
-      marquerChangement();
     }
 
     if (e.data.type === 'piece-removed') {
       afficherStripPlacement();
-      marquerChangement();
     }
 
     if (e.data.type === 'sol-click') {
@@ -1534,7 +1502,6 @@ function placerPieceSolViaIframe(x, y) {
   if (idx >= 0) pos.splice(idx, 1);
 
   pos.push({ id: piece.id, x: x, y: y, gabarit: gab });
-  marquerChangement();
 
   /* Rafraîchir l'iframe pour montrer la nouvelle pièce */
   var iframe = document.getElementById('edit-galerie-iframe');
@@ -1568,7 +1535,6 @@ function placerPieceSol(x, y) {
 
   selectedToilePl = null; selectedToile = null;
   afficherSolPlacement(); afficherStripPlacement();
-  marquerChangement();
   toast('✓ Pièce placée en ' + x + ',' + y);
   $('pl-aide').textContent = 'Pièce placée — continue ou clique 💾 Enregistrer';
 }
@@ -1580,7 +1546,6 @@ function deplacerPieceSol(dx, dy) {
   pos.x = Math.max(5, Math.min(95, (pos.x || 50) + dx));
   pos.y = Math.max(5, Math.min(95, (pos.y || 50) - dy)); /* -dy : Up=+y, Down=-y */
   afficherSolPlacement();
-  marquerChangement();
 }
 
 /* Gabarit auto depuis hauteur (dupliqué de galerie-sculpture.js) */
