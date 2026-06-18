@@ -35,7 +35,7 @@
 
 ## BUG-002 — Mur d'aperçu déformé selon le contenu (GSM, aspect-ratio cassé)
 
-- **Statut :** 🟠 En cours (cause identifiée, fix proposé en attente de validation)
+- **Statut :** 🟢 Fixé (confirmé visuellement sur dev)
 - **Date apparition :** Inconnue (probablement post-audit)
 - **Branche concernée :** main (prod)
 - **Reproduction :**
@@ -59,8 +59,10 @@
   }
   ```
   Le `minmax(0, 1fr)` force le minimum à 0 (au lieu de auto), ignorant la taille intrinsèque du contenu. Risque : aucun connu — c'est exactement le pattern recommandé par MDN pour ce cas.
-- **Solution trouvée :** _(à confirmer après application et test visuel sur dev)_
-- **Commit fix :** _(à remplir)_
+- **Solution trouvée :** Double fix en deux niveaux. (1) Sur les tracks du grid (`.mur-bg`, `.placement-mur-bg`) : `repeat(N, 1fr)` → `repeat(N, minmax(0, 1fr))`. (2) Sur les grid items (`.toile-posee`) : ajout de `min-width:0; min-height:0` (par défaut `auto` = taille intrinsèque du contenu) + image en `position:absolute; inset:0` pour qu'elle sorte du flow et ne contribue plus au calcul de taille du parent.
+  - Le premier fix seul ne suffit pas : il contrôle le track mais pas le grid item.
+  - Le deuxième fix neutralise complètement l'influence de l'intrinsic size de l'image.
+- **Commit fix :** `5709983` (minmax sur tracks) + `7e7cf32` (min-height:0 + img absolute) — sur dev, à reporter sur main après validation smoke test
 
 ---
 
@@ -85,7 +87,7 @@
   ```js
   bg.style.background = 'url("' + textureActuelle + '") center/cover, ' + couleurMurActuel;
   ```
-- **Commit fix :** _(à compléter après push)_
+- **Commit fix :** `7e475a9` (dev) — à reporter sur main après validation
 
 ---
 
