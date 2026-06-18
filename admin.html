@@ -554,8 +554,9 @@
     <div style="padding:.6rem .8rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
 
     </div>
-    <div id="bloc-emailjs" style="padding:.6rem .8rem;border-bottom:1px solid var(--brd);">
-      <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;">Notifications email (EmailJS)</div>
+    <details id="bloc-emailjs" style="border-bottom:1px solid var(--brd);">
+      <summary style="padding:.6rem .8rem;cursor:pointer;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);user-select:none;list-style-position:inside;">Notifications email (EmailJS)</summary>
+      <div style="padding:0 .8rem .6rem;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.4rem;">
         <div>
           <label class="lbl" style="font-size:.65rem;">Service ID</label>
@@ -575,7 +576,8 @@
         </div>
       </div>
       <div id="ejs-status" style="font-size:.72rem;color:var(--muted);min-height:1em;"></div>
-    </div>
+      </div>
+    </details>
     <div id="commits-contenu" style="flex:1;overflow-y:auto;"><div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div></div>
   </div>
 
