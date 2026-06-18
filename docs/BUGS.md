@@ -44,6 +44,7 @@
   3. Sélectionner "Buanderie" → encore plus déformé
   4. Sélectionner "Entrée" (2 toiles) → presque normal
   5. **Preuve** : vider Couloir de ses toiles (sans sauvegarder) → le mur reprend immédiatement ses bonnes proportions
+  6. **Observation complémentaire** : la déformation dépend de l'orientation de la toile. Toiles portrait (hauteur > largeur en pixels intrinsèques) déforment ; toiles paysage non. Plus la toile est "portrait" (ratio hauteur/largeur élevé), plus la déformation est forte.
 - **Symptôme observable :** Le mur d'aperçu garde sa largeur (max ~470px sur mobile) mais sa hauteur s'allonge selon le contenu, cassant l'aspect-ratio 12:8. Mesures : Couloir ~470×365 (ratio 1.29 au lieu de 1.5), Entrée ~470×300 (ratio 1.57 ≈ 1.5).
 - **Cause réelle :** En CSS Grid, `grid-template-rows: repeat(8, 1fr)` est implicitement `repeat(8, minmax(auto, 1fr))`. Le `auto` minimum signifie "au moins aussi grand que le contenu intrinsèque". Quand on pose des `<img>` dans des cellules (toiles), leur taille intrinsèque (résolution native du fichier) impose un minimum aux cellules, ce qui force le grid à dépasser son `aspect-ratio:12/8`. Plus l'image est haute en pixels natifs, plus la cellule est forcée à s'étendre. Sur PC, la largeur disponible est généralement assez grande pour que ce dépassement reste invisible ; sur GSM (largeur contrainte), l'effet devient visible.
 - **Affecte aussi :** `.placement-mur-bg` (mode Arranger) avec `minmax(26px, 1fr)` — la valeur 26px minimum peut casser l'aspect-ratio sur écrans très étroits.
@@ -88,6 +89,31 @@
   bg.style.background = 'url("' + textureActuelle + '") center/cover, ' + couleurMurActuel;
   ```
 - **Commit fix :** `7e475a9` (dev) — à reporter sur main après validation
+
+---
+
+## BUG-004 — Mode Arranger affiche la texture sans la couleur de fond
+
+- **Statut :** 🟢 Fixé (à valider visuellement)
+- **Date apparition :** Latente (probablement depuis longtemps, révélée par l'attention portée aux textures)
+- **Branche concernée :** main (prod) et dev
+- **Reproduction :**
+  1. Ouvrir admin Frédérique
+  2. Sélectionner la salle Couloir (couleur `#29275e` bleu marine, texture `ecorce-grosse.jpg`)
+  3. **Aperçu admin** : mur bleu marine avec texture écorce → correct
+  4. Ouvrir mode Arranger
+  5. **Mode Arranger** : mur blanc (ou gris) avec texture écorce → couleur de fond manquante
+- **Symptôme attendu :** Apparence identique entre l'aperçu admin et le mode Arranger (couleur + texture).
+- **Cause réelle :** La fonction `afficherMurPlacement` (`admin-galerie.js`) avait la même limitation que `appliquerApparence` avant le fix BUG-003 : elle utilisait `TEXTURES[textureActuelle]` qui retourne undefined pour les chemins de fichier (.jpg/.png/.webp). Pour les textures image, le code passait silencieusement sans appliquer ni la texture ni un fond cohérent.
+  ```js
+  // BUGGY :
+  bg.style.background = couleurMurActuel;
+  const texStr = TEXTURES[textureActuelle] || '';   // undefined pour les images
+  if (texStr) bg.style.background = `${texStr}, ${couleurMurActuel}`;  // skipped
+  ```
+  Pourquoi l'utilisateur voyait quand même la texture : à confirmer (probablement un état résiduel ou un comportement de cascade CSS non identifié — mais le fix règle le problème en imposant une apparence cohérente).
+- **Solution trouvée :** Porter la même logique que `appliquerApparence` (admin-textures.js) : détecter les textures image et utiliser le chemin directement avec `multiply blend`.
+- **Commit fix :** _(à compléter après push)_
 
 ---
 
