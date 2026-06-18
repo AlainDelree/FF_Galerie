@@ -285,8 +285,34 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        26,
+        24,
+        23
+      ],
+      "positions": [
+        {
+          "id": 26,
+          "col": 1,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 24,
+          "col": 6,
+          "row": 1,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": 23,
+          "col": 1,
+          "row": 5,
+          "w": 5,
+          "h": 4
+        }
+      ]
     },
     {
       "id": 12,
