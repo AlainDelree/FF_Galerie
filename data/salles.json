@@ -9,26 +9,8 @@
       "epaisseur_cadres": 4,
       "texture": "pierre",
       "visible": false,
-      "toiles": [
-        3,
-        27
-      ],
-      "positions": [
-        {
-          "id": 3,
-          "col": 9,
-          "row": 2,
-          "w": 4,
-          "h": 5
-        },
-        {
-          "id": 27,
-          "col": 1,
-          "row": 1,
-          "w": 8,
-          "h": 5
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 6,
@@ -39,34 +21,8 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": true,
-      "toiles": [
-        19,
-        17,
-        14
-      ],
-      "positions": [
-        {
-          "id": 19,
-          "col": 1,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 17,
-          "col": 8,
-          "row": 1,
-          "w": 5,
-          "h": 3
-        },
-        {
-          "id": 14,
-          "col": 3,
-          "row": 4,
-          "w": 8,
-          "h": 5
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 7,
@@ -77,34 +33,8 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": true,
-      "toiles": [
-        13,
-        9,
-        22
-      ],
-      "positions": [
-        {
-          "id": 13,
-          "col": 1,
-          "row": 1,
-          "w": 8,
-          "h": 5
-        },
-        {
-          "id": 9,
-          "col": 4,
-          "row": 6,
-          "w": 7,
-          "h": 3
-        },
-        {
-          "id": 22,
-          "col": 10,
-          "row": 3,
-          "w": 3,
-          "h": 2
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 8,
@@ -115,42 +45,8 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [
-        18,
-        24,
-        32,
-        30
-      ],
-      "positions": [
-        {
-          "id": 18,
-          "col": 4,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 24,
-          "col": 7,
-          "row": 1,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 32,
-          "col": 1,
-          "row": 4,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 30,
-          "col": 7,
-          "row": 6,
-          "w": 3,
-          "h": 3
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 9,
@@ -161,34 +57,8 @@
       "epaisseur_cadres": 2,
       "texture": "velours",
       "visible": true,
-      "toiles": [
-        8,
-        11,
-        15
-      ],
-      "positions": [
-        {
-          "id": 8,
-          "col": 6,
-          "row": 3,
-          "w": 4,
-          "h": 5
-        },
-        {
-          "id": 11,
-          "col": 1,
-          "row": 4,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 15,
-          "col": 10,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 10,
@@ -199,34 +69,8 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [
-        20,
-        28,
-        21
-      ],
-      "positions": [
-        {
-          "id": 20,
-          "col": 9,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 28,
-          "col": 9,
-          "row": 5,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 21,
-          "col": 1,
-          "row": 2,
-          "w": 8,
-          "h": 5
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 11,
@@ -237,42 +81,8 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [
-        26,
-        25,
-        10,
-        29
-      ],
-      "positions": [
-        {
-          "id": 26,
-          "col": 1,
-          "row": 1,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 25,
-          "col": 1,
-          "row": 6,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 10,
-          "col": 4,
-          "row": 5,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 29,
-          "col": 9,
-          "row": 1,
-          "w": 4,
-          "h": 5
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 12,
@@ -283,26 +93,8 @@
       "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [
-        31,
-        23
-      ],
-      "positions": [
-        {
-          "id": 31,
-          "col": 1,
-          "row": 4,
-          "w": 5,
-          "h": 4
-        },
-        {
-          "id": 23,
-          "col": 7,
-          "row": 1,
-          "w": 5,
-          "h": 4
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 13,
