@@ -138,7 +138,7 @@
   - 🎨 : catalogue seul (ajout/modif/suppression de toile)
   - 📐 : placement seul (déplacement, couleurs, textures)
   Tooltip explicatif au survol.
-- **Commit fix :** _(à compléter après push)_
+- **Commit fix :** `dd0fb78` (dev) — à reporter sur main après validation
 
 ---
 
