@@ -4,14 +4,13 @@
       "id": 5,
       "nom": "Entrée",
       "theme": "",
-      "couleur_mur": "#e5a50a",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 4,
-      "texture": "pierre",
+      "couleur_mur": "#2a2420",
+      "couleur_cadres": "#5c3d2e",
+      "epaisseur_cadres": 20,
+      "texture": "brique",
       "visible": false,
       "toiles": [
-        16,
-        34
+        16
       ],
       "positions": [
         {
@@ -20,13 +19,6 @@
           "row": 3,
           "w": 3,
           "h": 3
-        },
-        {
-          "id": 34,
-          "col": 8,
-          "row": 4,
-          "w": 5,
-          "h": 4
         }
       ]
     },
@@ -290,7 +282,7 @@
       "positions": [
         {
           "id": 31,
-          "col": 1,
+          "col": 2,
           "row": 4,
           "w": 5,
           "h": 4
@@ -313,8 +305,26 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
-      "toiles": [],
-      "positions": []
+      "toiles": [
+        2,
+        3
+      ],
+      "positions": [
+        {
+          "id": 2,
+          "col": 2,
+          "row": 2,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 3,
+          "col": 7,
+          "row": 2,
+          "w": 4,
+          "h": 5
+        }
+      ]
     }
   ]
 }
