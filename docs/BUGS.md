@@ -28,7 +28,7 @@
 - **Fix appliqué :** `<div id="bloc-emailjs">` transformé en `<details>/<summary>` HTML natif, replié par défaut. Le panneau reste accessible (clic sur "Notifications email (EmailJS)" pour déplier) mais ne masque plus la liste.
 - **Patch défensif bonus** (commit `14ddee6`) : `admin-backup.js` durci avec garde-fous et messages d'erreur visibles — utile pour les futurs problèmes, sans rapport avec ce bug-ci.
 - **Solution trouvée :** Bloc EmailJS rendu repliable via `<details>` natif. Replié par défaut → la liste backup est immédiatement visible.
-- **Commit fix :** _(à compléter après push)_
+- **Commit fix :** `a9736d9` (dev) — à reporter sur main après validation visuelle
 - **Test à ajouter :** smoke test "ouvrir Backup → `#commits-contenu` est visible et non vide"
 
 ---
