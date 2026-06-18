@@ -39,34 +39,8 @@
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": true,
-      "toiles": [
-        19,
-        17,
-        14
-      ],
-      "positions": [
-        {
-          "id": 19,
-          "col": 1,
-          "row": 1,
-          "w": 3,
-          "h": 3
-        },
-        {
-          "id": 17,
-          "col": 8,
-          "row": 1,
-          "w": 5,
-          "h": 3
-        },
-        {
-          "id": 14,
-          "col": 3,
-          "row": 4,
-          "w": 8,
-          "h": 5
-        }
-      ]
+      "toiles": [],
+      "positions": []
     },
     {
       "id": 7,
