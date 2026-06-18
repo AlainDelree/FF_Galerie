@@ -10,31 +10,26 @@
 
 ---
 
-## BUG-001 — Page Backup vide en prod
+## BUG-001 — Page Backup vide en prod (PC uniquement)
 
-- **Statut :** 🟠 En cours (patch diagnostic poussé sur dev)
-- **Date apparition :** Inconnue (probablement post-audit)
+- **Statut :** 🟢 Fixé (à confirmer après déploiement dev)
+- **Date apparition :** Post-audit (probablement lors de l'ajout du panneau EmailJS)
 - **Branche concernée :** main (prod)
 - **Reproduction :**
-  1. Ouvrir admin Frédérique en prod
-  2. Naviguer vers la section Backup
-  3. La page apparaît vide (aucun contenu visible)
-- **Symptôme attendu :** Liste des backups disponibles + boutons de restauration
-- **Hypothèses à tester :**
-  - Erreur JS qui interrompt le rendu (vérifier console)
-  - Données absentes ou mal chargées
-  - Élément DOM caché par CSS
-  - Régression suite à modification post-audit
-  - **Hypothèse la plus probable :** `apiGH` renvoie un objet d'erreur GitHub (`{message:"Bad credentials"...}`) au lieu d'un tableau, ce qui fait planter `.filter()` silencieusement → le spinner "Chargement…" reste à l'écran indéfiniment, ce qui donne l'impression d'une page "vide"
-- **Investigation en cours :** Patch poussé sur dev (`admin-backup.js`) qui :
-  - ajoute des garde-fous null (cont DOM, apiGH/REPO/ADMIN_CFG)
-  - détecte si la réponse n'est pas un tableau
-  - distingue "0 commits sur le chemin" vs "0 commits passent le filtre Admin :"
-  - logue dans la console le nombre de commits reçus/filtrés
-  - affiche tous les messages d'erreur directement dans la page (plus jamais "vide silencieux")
-- **À faire ensuite :** Tester sur `dev.frederiqueferette.be/admin.html` → la page Backup affichera maintenant un message diagnostique. Selon ce message, on saura quelle est la vraie cause.
-- **Solution trouvée :** _(à confirmer après diagnostic visuel)_
-- **Commit fix :** _(à remplir une fois confirmé)_
+  1. Ouvrir admin Frédérique sur PC (zoom 100-150%)
+  2. Cliquer sur l'onglet Backup
+  3. Le panneau "Notifications email (EmailJS)" occupe la majorité de l'écran
+  4. La liste des commits est masquée derrière / sous le panneau
+- **Symptôme apparent :** Page Backup vide
+- **Cause réelle :** Le bloc `#bloc-emailjs` est physiquement à l'intérieur de `#vue-backup` (admin.html ligne 557). Sur PC, dans le conteneur flex column avec `max-height:calc(100vh-120px)`, le panneau EmailJS occupe ~250px, ne laissant qu'une bande étroite au `#commits-contenu` (`flex:1`). À zoom élevé, la liste devient quasi invisible. Sur GSM, le scroll natif évite le problème — d'où la différence PC/GSM constatée.
+- **Mauvaises hypothèses initiales :**
+  - Token GitHub expiré → INVALIDE (sinon login admin échouerait)
+  - Filtre `startsWith('admin :')` trop strict → faux positif partiel (le filtre est strict mais le bug visible était bien un problème de layout)
+- **Fix appliqué :** `<div id="bloc-emailjs">` transformé en `<details>/<summary>` HTML natif, replié par défaut. Le panneau reste accessible (clic sur "Notifications email (EmailJS)" pour déplier) mais ne masque plus la liste.
+- **Patch défensif bonus** (commit `14ddee6`) : `admin-backup.js` durci avec garde-fous et messages d'erreur visibles — utile pour les futurs problèmes, sans rapport avec ce bug-ci.
+- **Solution trouvée :** Bloc EmailJS rendu repliable via `<details>` natif. Replié par défaut → la liste backup est immédiatement visible.
+- **Commit fix :** _(à compléter après push)_
+- **Test à ajouter :** smoke test "ouvrir Backup → `#commits-contenu` est visible et non vide"
 
 ---
 
