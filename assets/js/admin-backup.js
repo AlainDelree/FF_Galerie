@@ -21,19 +21,37 @@ async function chargerCommits() {
   }
   cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
   try {
-    const url = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
-    const tousCommits = await apiGH(url);
-    // Diagnostic : log explicite pour faciliter le debug
-    console.log(`[BACKUP] API GitHub a renvoyé ${Array.isArray(tousCommits) ? tousCommits.length : 'non-tableau'} commits pour ${ADMIN_CFG.repoPath}toiles.json`);
-    if (!Array.isArray(tousCommits)) {
-      cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : réponse API inattendue (type ${typeof tousCommits}). Vérifier le token GitHub.</div>`;
+    /* Deux appels parallèles : commits sur toiles.json (catalogue) ET salles.json (placement).
+       Mergés par SHA pour éviter les doublons. Permet de voir l'historique complet,
+       pas seulement les modifs de catalogue. */
+    const urlT = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
+    const urlS = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50`;
+    const [commitsT, commitsS] = await Promise.all([apiGH(urlT), apiGH(urlS)]);
+    if (!Array.isArray(commitsT) || !Array.isArray(commitsS)) {
+      cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : réponse API inattendue (toiles=${typeof commitsT}, salles=${typeof commitsS}). Vérifier le token GitHub.</div>`;
       return;
     }
+    /* Marquer la provenance de chaque commit avant fusion */
+    const shasT = new Set(commitsT.map(c => c.sha));
+    const shasS = new Set(commitsS.map(c => c.sha));
+    const mapBySha = new Map();
+    [...commitsT, ...commitsS].forEach(c => {
+      if (!mapBySha.has(c.sha)) {
+        c._touchesT = shasT.has(c.sha);
+        c._touchesS = shasS.has(c.sha);
+        mapBySha.set(c.sha, c);
+      }
+    });
+    /* Tri par date décroissante (plus récent en premier) */
+    const tousCommits = [...mapBySha.values()].sort((a, b) =>
+      new Date(b.commit.author.date) - new Date(a.commit.author.date)
+    );
+    console.log(`[BACKUP] toiles.json: ${commitsT.length} commits, salles.json: ${commitsS.length} commits, fusionnés (uniques): ${tousCommits.length}`);
     if (tousCommits.length === 0) {
-      cont.innerHTML = `<div class="chargement" style="color:var(--muted)">Aucun commit trouvé sur <code>${ADMIN_CFG.repoPath}toiles.json</code>.<br><small>Vérifier le chemin et les permissions du token.</small></div>`;
+      cont.innerHTML = `<div class="chargement" style="color:var(--muted)">Aucun commit trouvé sur <code>${ADMIN_CFG.repoPath}{toiles,salles}.json</code>.<br><small>Vérifier le chemin et les permissions du token.</small></div>`;
       return;
     }
-    // Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit
+    /* Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit */
     const commits = tousCommits.filter((c, i) =>
       i === 0 || c.commit.message.toLowerCase().startsWith('admin :')
     );
@@ -47,13 +65,18 @@ async function chargerCommits() {
     commits.forEach((c, i) => {
       const msg = c.commit.message.replace(/^Admin\s*:\s*/i, '');
       const date = formaterDate(c.commit.author.date);
+      /* Badge : indique ce que le commit a modifié */
+      let badge = '';
+      if (c._touchesT && c._touchesS) badge = '<span title="Catalogue + Placement" style="font-size:.6rem;color:var(--muted);margin-left:.4rem;">🎨📐</span>';
+      else if (c._touchesT)            badge = '<span title="Catalogue (toiles, titres, photos)" style="font-size:.6rem;color:var(--muted);margin-left:.4rem;">🎨</span>';
+      else if (c._touchesS)            badge = '<span title="Placement (positions, couleurs, textures)" style="font-size:.6rem;color:var(--muted);margin-left:.4rem;">📐</span>';
       const item = document.createElement('div'); item.className = 'commit-item';
       item.innerHTML = `
         <div style="width:2rem;height:2rem;border-radius:50%;background:${i===0?'rgba(200,160,80,.15)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${i===0?'var(--gold)':'var(--muted)'}" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
         </div>
         <div class="commit-corps">
-          <div class="commit-msg">${msg}</div>
+          <div class="commit-msg">${msg}${badge}</div>
           <div class="commit-date">${date}</div>
         </div>
         ${i===0 ? '<span class="commit-actuel">Actuel</span>' : `<button class="btn btn-outline btn-sm" data-sha="${c.sha}" data-msg="${msg.replace(/"/g,'')}" data-date="${date}">Restaurer</button>`}`;

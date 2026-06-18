@@ -117,6 +117,31 @@
 
 ---
 
+## BUG-005 — Backup ignore les commits sur salles.json (placement masqué)
+
+- **Statut :** 🟢 Fixé (à valider visuellement)
+- **Date apparition :** Depuis toujours (architecturel)
+- **Branche concernée :** main (prod) et dev
+- **Reproduction :**
+  1. Ouvrir admin Frédérique
+  2. Faire plusieurs modifications de placement (déplacer/retirer/replacer des toiles, changer couleur/texture d'une salle)
+  3. Sauvegarder → un nouveau commit est créé sur `data/salles.json`
+  4. Ouvrir l'onglet Backup
+  5. Le commit n'apparaît pas. Le dernier commit listé date d'avant — soit la dernière modification du catalogue (ajout/suppression/modification de toile).
+- **Symptôme attendu :** Tout commit créé via admin doit apparaître dans Backup.
+- **Cause réelle :** `chargerCommits()` faisait un seul appel à l'API GitHub avec `path=toiles.json`. Or l'admin manipule **deux fichiers** distincts :
+  - `data/toiles.json` : catalogue (titres, photos, dimensions, tags)
+  - `data/salles.json` : placement (positions, couleurs, textures, ordre des salles)
+  Le travail quotidien de placement n'affecte que `salles.json` → invisible dans Backup. Asymétrie aggravante : la fonction `executerRestauration` restaurait pourtant déjà les deux fichiers.
+- **Solution trouvée :** Deux appels API parallèles (`toiles.json` + `salles.json`), fusion par SHA pour dédupliquer, tri par date décroissante. Ajout d'un badge à côté de chaque commit pour visualiser ce qu'il a modifié :
+  - 🎨📐 : catalogue + placement (commits qui touchent les deux)
+  - 🎨 : catalogue seul (ajout/modif/suppression de toile)
+  - 📐 : placement seul (déplacement, couleurs, textures)
+  Tooltip explicatif au survol.
+- **Commit fix :** _(à compléter après push)_
+
+---
+
 ## Template pour nouveau bug
 
 ```markdown
