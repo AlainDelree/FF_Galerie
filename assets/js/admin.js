@@ -829,6 +829,10 @@ $('btn-grille-pl').addEventListener('click', function() {
   $("pl-btn-down") ?.addEventListener("click", function(){ mvSel( 0, 1); });
   $("pl-btn-left") ?.addEventListener("click", function(){ mvSel(-1, 0); });
   $("pl-btn-right")?.addEventListener("click", function(){ mvSel( 1, 0); });
+  $("pl-btn-details")?.addEventListener("click", function() {
+    if (peintureSurMurSel === null) return;
+    if (typeof ouvrirFiche === 'function') ouvrirFiche(peintureSurMurSel);
+  });
   $("pl-btn-rm")   ?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
     var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || "—";

@@ -449,7 +449,12 @@ function afficherStock() {
       afficherStock();
       majBoutons();
     });
-    item.addEventListener('dblclick', () => ouvrirFiche(t.id));
+    /* dblclick uniquement sur device souris (PC). Sur GSM, le tap rapide
+       sur plusieurs toiles déclenchait par erreur la modal de détails.
+       Sur GSM, la fiche est accessible via le bouton 👁 dans le mode Arranger. */
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      item.addEventListener('dblclick', () => ouvrirFiche(t.id));
+    }
     list.appendChild(item);
   });
 }
