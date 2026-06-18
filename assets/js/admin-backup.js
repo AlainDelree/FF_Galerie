@@ -8,14 +8,40 @@
 // ═══════════════════════════════════════════════
 async function chargerCommits() {
   const cont = $('commits-contenu');
+  // Garde-fou : si l'élément n'existe pas, log et sort proprement
+  if (!cont) {
+    console.error('[BACKUP] Élément #commits-contenu introuvable dans le DOM');
+    if (typeof toast === 'function') toast('Erreur : conteneur backup absent', 'err', 4000);
+    return;
+  }
+  // Garde-fou : vérifie les dépendances avant l'appel API
+  if (typeof apiGH !== 'function' || typeof REPO === 'undefined' || typeof ADMIN_CFG === 'undefined') {
+    cont.innerHTML = '<div class="chargement" style="color:var(--danger)">Erreur : modules admin non chargés (apiGH/REPO/ADMIN_CFG manquant)</div>';
+    return;
+  }
   cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
   try {
-    const tousCommits = await apiGH(`/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`);
+    const url = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
+    const tousCommits = await apiGH(url);
+    // Diagnostic : log explicite pour faciliter le debug
+    console.log(`[BACKUP] API GitHub a renvoyé ${Array.isArray(tousCommits) ? tousCommits.length : 'non-tableau'} commits pour ${ADMIN_CFG.repoPath}toiles.json`);
+    if (!Array.isArray(tousCommits)) {
+      cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : réponse API inattendue (type ${typeof tousCommits}). Vérifier le token GitHub.</div>`;
+      return;
+    }
+    if (tousCommits.length === 0) {
+      cont.innerHTML = `<div class="chargement" style="color:var(--muted)">Aucun commit trouvé sur <code>${ADMIN_CFG.repoPath}toiles.json</code>.<br><small>Vérifier le chemin et les permissions du token.</small></div>`;
+      return;
+    }
     // Garde uniquement les commits admin (préfixe "Admin :") + le plus récent quel qu'il soit
-    const commits = tousCommits.filter((c, i) => 
+    const commits = tousCommits.filter((c, i) =>
       i === 0 || c.commit.message.toLowerCase().startsWith('admin :')
     );
-    if (!commits.length) { cont.innerHTML = '<div class="chargement" style="color:var(--muted)">Aucun historique.</div>'; return; }
+    console.log(`[BACKUP] Après filtrage "Admin :" : ${commits.length} commits affichables sur ${tousCommits.length} reçus`);
+    if (!commits.length) {
+      cont.innerHTML = `<div class="chargement" style="color:var(--muted)">Aucun historique restaurable.<br><small>${tousCommits.length} commits reçus mais aucun ne correspond au filtre "Admin :".</small></div>`;
+      return;
+    }
     cont.innerHTML = '';
     const liste = document.createElement('div'); liste.className = 'commits-liste';
     commits.forEach((c, i) => {
@@ -37,7 +63,10 @@ async function chargerCommits() {
     cont.querySelectorAll('[data-sha]').forEach(btn => {
       btn.addEventListener('click', () => demanderRestauration(btn.dataset.sha, btn.dataset.msg, btn.dataset.date));
     });
-  } catch (e) { cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : ${e.message}</div>`; }
+  } catch (e) {
+    console.error('[BACKUP] Erreur chargerCommits :', e);
+    cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : ${e.message || e}<br><small>Voir la console (F12) pour la stack complète.</small></div>`;
+  }
 }
 
 function demanderRestauration(sha, msg, date) {
