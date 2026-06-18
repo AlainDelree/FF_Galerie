@@ -220,8 +220,8 @@ button{cursor:pointer;}
 /* ── Zone mur ── */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
 .mur-bg{border-radius:6px;display:grid;
-  grid-template-columns:repeat(12,1fr);
-  grid-template-rows:repeat(8,1fr);
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  grid-template-rows:repeat(8,minmax(0,1fr));
   gap:2px;width:100%;aspect-ratio:12/8;
   position:relative;transition:background .3s;}
 .mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.18)!important;}
@@ -259,7 +259,7 @@ button{cursor:pointer;}
 .pl-titre{font-size:12px;color:var(--muted);}
 .pl-titre strong{color:var(--text);}
 .placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;}
-.placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(26px,1fr));grid-template-rows:repeat(8,minmax(26px,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
+.placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
 .placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.35)!important;border-width:1px!important;}
 .grille-ov{position:absolute;inset:0;pointer-events:none;z-index:3;
   background-image:
