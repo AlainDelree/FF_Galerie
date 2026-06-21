@@ -324,12 +324,6 @@ async function creerArtiste() {
   document.getElementById("btn-sauver-artiste").disabled = false;
 }
 
-async function sauvegarderArtistesJSON(message) {
-  await commitMulti([
-    { chemin: "data/artistes.json", contenu: JSON.stringify(artistesData, null, 2) }
-  ], message);
-}
-
 /* ── Chargement et cache des templates HTML ── */
 let _tplCache = null;
 async function chargerTemplates() {
