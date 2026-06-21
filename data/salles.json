@@ -362,7 +362,7 @@
       "id": 14,
       "nom": "Salle J",
       "theme": "",
-      "couleur_mur": "#2a2774",
+      "couleur_mur": "#ffee00",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "data/textures/miel.jpg",
