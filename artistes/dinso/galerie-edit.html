@@ -31,8 +31,28 @@
     window.GALERIE_ASSETS_BASE = "../../";
     window._GALERIE_EDIT = true;
   </script>
-  <script src="../../assets/js/galerie-core.js?v=20260621a"></script>
-  <script src="../../assets/js/galerie-sculpture.js?v=20260621a"></script>
-  <script>initGalerie();</script>
+  <script src="../../assets/js/galerie-core.js?v=20260621b"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260621b"></script>
+  <script>
+    /* Attendre les données injectées par l'admin parent.
+       Si rien ne vient (ouverture directe hors admin), fetch après court délai. */
+    var _initDone = false;
+    function _doInit() { if (_initDone) return; _initDone = true; initGalerie(); }
+
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'init-data' && !_initDone) {
+        window._GALERIE_INJECTED = { toiles: e.data.toiles, salles: e.data.salles };
+        _doInit();
+      }
+    });
+    /* Signaler au parent qu'on est prêt à recevoir les données */
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'iframe-awaiting-data' }, '*');
+      /* Fallback : si l'admin ne répond pas en 800ms, fetch normalement */
+      setTimeout(_doInit, 800);
+    } else {
+      _doInit();
+    }
+  </script>
 </body>
 </html>

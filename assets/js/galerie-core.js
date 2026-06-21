@@ -528,10 +528,19 @@ function initGalerie() {
     document.head.appendChild(editStyle);
   }
 
-  Promise.all([
-    fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-    fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  ])
+  /* Si l'admin a injecté les données (window._GALERIE_INJECTED), les utiliser
+     directement au lieu de fetch — évite le cache CDN périmé après sauvegarde. */
+  var _dataPromise;
+  if (window._GALERIE_INJECTED && window._GALERIE_INJECTED.toiles && window._GALERIE_INJECTED.salles) {
+    _dataPromise = Promise.resolve([window._GALERIE_INJECTED.toiles, window._GALERIE_INJECTED.salles]);
+  } else {
+    _dataPromise = Promise.all([
+      fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    ]);
+  }
+
+  _dataPromise
   .then(([tData, sData]) => {
     const salles = sData.salles || [];
     TOTAL_SALLES = salles.length;

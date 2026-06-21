@@ -1344,6 +1344,21 @@ function afficherSolPlacement() {
   function onMessage(e) {
     if (!e.data || !e.data.type) return;
 
+    if (e.data.type === 'iframe-awaiting-data') {
+      /* L'iframe attend les données — envoyer l'état admin en mémoire (toujours frais).
+         Évite que l'iframe lise un salles.json périmé via le CDN. */
+      var iframe = document.getElementById('edit-galerie-iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'init-data',
+          toiles: ADMIN_CFG.type === 'sculpture'
+            ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+            : { next_id: nextId, tailles: tailles, toiles: toiles },
+          salles: { salles: JSON.parse(JSON.stringify(salles)) }
+        }, '*');
+      }
+    }
+
     if (e.data.type === 'edit-ready') {
       /* Galerie prête */
     }
