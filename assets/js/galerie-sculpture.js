@@ -423,7 +423,9 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
    MODE ÉDITION — ?edit=1 dans l'URL
    Rend les socles draggables, communique via postMessage
    ══════════════════════════════════════════════════════════════ */
-window._GALERIE_EDIT = new URLSearchParams(location.search).has('edit');
+/* galerie-edit.html peut avoir mis _GALERIE_EDIT=true avant le chargement de ce script.
+   On utilise || pour ne pas l'écraser. */
+window._GALERIE_EDIT = window._GALERIE_EDIT || new URLSearchParams(location.search).has('edit');
 
 if (window._GALERIE_EDIT) {
   /* Désactiver la navigation entre salles et les clics immersifs */
@@ -441,8 +443,15 @@ if (window._GALERIE_EDIT) {
     _editSalles = salles;
     var salle = salles[0]; /* une seule salle visible */
     var isMobile = window.innerWidth <= 600;
-    _editPositions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
-      ? salle.positions_mobile : (salle.positions || []);
+    if (isMobile) {
+      /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC */
+      if (!salle.positions_mobile || !salle.positions_mobile.length) {
+        salle.positions_mobile = JSON.parse(JSON.stringify(salle.positions || []));
+      }
+      _editPositions = salle.positions_mobile;
+    } else {
+      _editPositions = salle.positions || [];
+    }
 
     var plancher = document.querySelector('.plancher-sol');
     if (!plancher) return;
