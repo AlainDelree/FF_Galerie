@@ -202,6 +202,7 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 let token = '';
 let tailles = []; // codes de taille {code, label}
 let toiles = [], salles = [];
+let nextId = 1; // ID plancher monotone — ne redescend jamais après suppression
 let salleActive = null;
 let selectedToile = null;
 let peintureSurMurSel = null;
@@ -491,6 +492,9 @@ async function chargerTout() {
     ]);
     toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
     tailles = ADMIN_CFG.type === 'sculpture' ? (tData.gabarits  || []) : (tData.tailles || []);
+    /* next_id : ID plancher qui ne redescend jamais (évite recyclage d'ID après suppression) */
+    const maxExistant = toiles.length ? Math.max(...toiles.map(t => t.id)) : 0;
+    nextId = Math.max(tData.next_id || 0, maxExistant + 1);
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -548,8 +552,8 @@ async function sauvegarder(message) {
     await commitMulti([
       { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
         ADMIN_CFG.type === 'sculpture'
-          ? { gabarits: tailles, pieces: toiles }
-          : { tailles, toiles }
+          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+          : { next_id: nextId, tailles, toiles }
       , null, 2) },
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, null, 2) }
     ], 'Admin : ' + message);
@@ -568,7 +572,9 @@ async function sauvegarder(message) {
    du mode Arranger, bottom-sheets Couleurs/Textures, modales toile, etc.) */
 
 function prochainId() {
-  return toiles.length ? Math.max(...toiles.map(t => t.id)) + 1 : 1;
+  const id = nextId;
+  nextId++;
+  return id;
 }
 
 // ═══════════════════════════════════════════════
