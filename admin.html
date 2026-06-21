@@ -139,7 +139,7 @@
             <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc"></div>
             <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5"></div>
             <div class="sw" style="background:#8a6228" data-val="#8a6228"></div>
-            <div class="sw-plus"><input type="color" id="mur-custom"><span style="pointer-events:none;">+</span></div>
+            <button class="sw-plus" type="button" id="btn-picker-mur" title="Plus de couleurs…">+</button>
           </div>
         </div>
         <div class="coul-row peinture-only">
@@ -150,7 +150,7 @@
             <div class="sw" style="background:#f0f0f0" data-val="#f0f0f0"></div>
             <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
             <div class="sw" style="background:#5c3d2e" data-val="#5c3d2e"></div>
-            <div class="sw-plus"><input type="color" id="cadres-custom" value="#3a3a3a"><span style="pointer-events:none;">+</span></div>
+            <button class="sw-plus" type="button" id="btn-picker-cad" title="Plus de couleurs…">+</button>
           </div>
         </div>
         <div class="coul-row peinture-only">
@@ -241,7 +241,7 @@
 
         <!-- Stock -->
         <div class="stock-col">
-          <div class="stock-hdr" id="stock-hdr">Stock <button id="btn-guide-tailles" title="Guide des tailles" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;">?</button></div>
+          <div class="stock-hdr" id="stock-hdr">Stock <button id="btn-catalogue" onclick="ouvrirCatalogue()" title="Catalogue PDF" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;margin-left:.3rem;">📄</button><button id="btn-guide-tailles" title="Guide des tailles" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;">?</button></div>
           <div class="stock-list" id="stock-list"></div>
           <div class="stock-leg">
             <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
@@ -1020,6 +1020,12 @@
         s.onload = resolve;
         document.body.appendChild(s);
       });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-catalogue.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
       /* Charge admin-artistes.js (combobox login) uniquement pour Frédérique */
       if (!id) {
         const s = document.createElement("script");
@@ -1316,6 +1322,41 @@
       <button class="bas-btn" onclick="document.getElementById('overlay-tex-upload').style.display='none'">Annuler</button>
     </div>
     <div id="tex-progress" style="font-size:.73rem;color:var(--muted);min-height:1em;"></div>
+  </div>
+</div>
+
+
+<!-- ══ PICKER COULEUR ARTISTE ══ -->
+<div id="overlay-picker-col" style="display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);align-items:center;justify-content:center;" onclick="if(event.target===this)fermerPickerCouleur()">
+  <div id="picker-panel" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <span style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">Choisir une couleur</span>
+      <button type="button" onclick="fermerPickerCouleur()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1;padding:0 0 0 .8rem;">×</button>
+    </div>
+    <div id="picker-grille"></div>
+    <div style="margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--brd);display:flex;align-items:center;gap:.6rem;">
+      <input type="color" id="picker-libre" style="width:30px;height:30px;border:none;padding:0;background:none;cursor:pointer;border-radius:50%;overflow:hidden;flex-shrink:0;">
+      <span style="font-size:.75rem;color:var(--muted);">Nuance libre…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CATALOGUE PDF ══ -->
+<div id="overlay-catalogue" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:1rem;">
+  <div class="cat-modal">
+    <div class="cat-modal-hdr">
+      <span>📄 Catalogue PDF</span>
+      <button onclick="fermerCatalogue()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+    </div>
+    <div class="cat-modal-ctrl">
+      <button onclick="cocherTousCatalogue(true)" class="cat-ctrl-btn">✓ Tout</button>
+      <button onclick="cocherTousCatalogue(false)" class="cat-ctrl-btn">○ Aucun</button>
+    </div>
+    <div id="cat-liste-toiles" class="cat-liste"></div>
+    <div class="cat-modal-foot">
+      <div id="cat-info" style="font-size:.72rem;color:var(--muted);min-height:1em;margin-bottom:.4rem;text-align:center;"></div>
+      <button onclick="genererCatalogueSelection()" class="cat-btn-gen">🖨 Générer le catalogue</button>
+    </div>
   </div>
 </div>
 

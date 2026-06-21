@@ -318,19 +318,31 @@ function initSwatches() {
     });
   });
 
-  // Picker mur : initialisé à la couleur courante
-  $('mur-custom').addEventListener('click', function() { this.value = couleurMurActuel; });
-  $('mur-custom').addEventListener('change', function(e) {
-    pushColorHist('mur', e.target.value);
-    setCouleurMur(e.target.value);
-  });
-
-  // Picker cadres : initialisé à la couleur courante
-  $('cadres-custom').addEventListener('click', function() { this.value = couleurCadresActuel; });
-  $('cadres-custom').addEventListener('change', function(e) {
-    pushColorHist('cadres', e.target.value);
-    setCouleurCadres(e.target.value);
-  });
+  // Picker couleur personnalisé (palette artiste)
+  var btnPickerMur = document.getElementById('btn-picker-mur');
+  if (btnPickerMur) {
+    btnPickerMur.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('mur');
+    });
+  }
+  var btnPickerCad = document.getElementById('btn-picker-cad');
+  if (btnPickerCad) {
+    btnPickerCad.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('cadres');
+    });
+  }
+  // Nuance libre (input color natif en dernier recours)
+  var pickerLibre = document.getElementById('picker-libre');
+  if (pickerLibre) {
+    pickerLibre.addEventListener('change', function(e) {
+      var col = e.target.value;
+      if (_pickerCouleurType === 'mur') { pushColorHist('mur', col); setCouleurMur(col); }
+      else { pushColorHist('cadres', col); setCouleurCadres(col); }
+      fermerPickerCouleur();
+    });
+  }
 
   // Slider épaisseur cadres
   $('ep-cadres').addEventListener('input', function() {
@@ -760,3 +772,89 @@ $('overlay-restore').addEventListener('click', e => { if (e.target === $('overla
 // Init swatches couleurs
 initSwatches();
 // initTailleForm() appelé dans admin.html après chargement admin-galerie.js
+
+/* ══════════════════════════════════════════════════════════════
+   PALETTE COULEUR ARTISTE
+   Remplace l'input[type=color] natif par une grille de teintes
+   organisées par familles, intuitive pour les artistes.
+   ══════════════════════════════════════════════════════════════ */
+
+var _pickerCouleurType  = null;  // 'mur' | 'cadres'
+var _pickerGrilleBuilt  = false;
+
+var COULEUR_PALETTE = [
+  { label: 'Noirs & sombres',    colors: ['#0d0d0d','#141414','#1a1a1a','#242424','#2e2e2e','#383838'] },
+  { label: 'Gris',               colors: ['#454545','#555555','#676767','#7a7a7a','#8e8e8e','#aaaaaa'] },
+  { label: 'Clairs & blancs',    colors: ['#d0ccc4','#dbd7cf','#e4e0d8','#edeae2','#f5f1ea','#fdfaf5'] },
+  { label: 'Terres & bois',      colors: ['#2a1a10','#3a2a1e','#5c3d2e','#7a5030','#8a6228','#a07540'] },
+  { label: 'Ocres & dorés',      colors: ['#c8a050','#d4ae60','#b8903a','#a07030','#7a5020','#caa878'] },
+  { label: 'Sablés & taupes',    colors: ['#c4a882','#b09070','#9a7858','#7a5c42','#5e4430','#6a5040'] },
+  { label: 'Bleus & ardoises',   colors: ['#0f1520','#1a2030','#2c2535','#1a3050','#254470','#38608a'] },
+  { label: 'Verts profonds',     colors: ['#0a1410','#162318','#1e3228','#1e3a2a','#2a4c38','#3d6040'] },
+  { label: 'Bordeaux & prunes',  colors: ['#1a0808','#2e1010','#4a1a1a','#4a1a30','#3a1042','#2a184a'] },
+];
+
+function _buildPickerGrille() {
+  if (_pickerGrilleBuilt) return;
+  var grille = document.getElementById('picker-grille');
+  if (!grille) return;
+
+  COULEUR_PALETTE.forEach(function(group) {
+    var lbl = document.createElement('div');
+    lbl.className = 'picker-lbl';
+    lbl.textContent = group.label;
+    grille.appendChild(lbl);
+
+    var row = document.createElement('div');
+    row.className = 'picker-row';
+    group.colors.forEach(function(col) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'picker-sw';
+      btn.style.background = col;
+      btn.title = col;
+      btn.addEventListener('click', function() {
+        _choisirCouleurPicker(col);
+      });
+      row.appendChild(btn);
+    });
+    grille.appendChild(row);
+  });
+
+  _pickerGrilleBuilt = true;
+}
+
+function ouvrirPickerCouleur(type) {
+  _pickerCouleurType = type;
+  _buildPickerGrille();
+
+  // Sync la couleur courante sur le picker libre
+  var libre = document.getElementById('picker-libre');
+  if (libre) libre.value = (type === 'mur') ? couleurMurActuel : couleurCadresActuel;
+
+  // Mettre en évidence la couleur active dans la grille
+  var actif = (type === 'mur') ? couleurMurActuel : couleurCadresActuel;
+  document.querySelectorAll('.picker-sw').forEach(function(btn) {
+    btn.classList.toggle('picker-sw-sel', btn.title.toLowerCase() === actif.toLowerCase());
+  });
+
+  var overlay = document.getElementById('overlay-picker-col');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function fermerPickerCouleur() {
+  var overlay = document.getElementById('overlay-picker-col');
+  if (overlay) overlay.style.display = 'none';
+  _pickerCouleurType = null;
+}
+
+function _choisirCouleurPicker(col) {
+  if (_pickerCouleurType === 'mur') {
+    pushColorHist('mur', col);
+    setCouleurMur(col);
+  } else {
+    pushColorHist('cadres', col);
+    setCouleurCadres(col);
+  }
+  fermerPickerCouleur();
+}
