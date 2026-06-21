@@ -16,7 +16,7 @@
     "lien": "artistes/alaindelree/",
     "repoPath": "artistes/alaindelree/data/",
     "prefix": "alaindelree",
-    "draft": true,
+    "draft": false,
     "genre": "m",
     "type": "peinture"
   },
