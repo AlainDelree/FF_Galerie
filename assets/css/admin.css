@@ -760,6 +760,20 @@ textarea.champ{resize:vertical;min-height:65px;}
   color:var(--muted);margin-bottom:.3rem;
   padding-top:.55rem;border-top:1px solid var(--brd);
 }
+.picker-tabs{
+  display:flex;gap:.3rem;margin-bottom:.4rem;
+}
+.picker-tab{
+  flex:1;padding:.28rem .3rem;font-size:.58rem;letter-spacing:.08em;
+  text-transform:uppercase;border-radius:5px;
+  border:0.5px solid var(--brd);background:none;
+  color:var(--muted);cursor:pointer;transition:all .12s;
+}
+.picker-tab:hover{color:var(--text);border-color:var(--text-doux);}
+.picker-tab.active{
+  background:rgba(200,160,80,.12);
+  border-color:var(--gold);color:var(--gold);
+}
 .picker-grille-rapide{
   display:flex;flex-wrap:wrap;gap:5px;
   max-height:88px;overflow-y:auto;

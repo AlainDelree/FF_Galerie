@@ -1358,8 +1358,14 @@
       <button type="button" class="picker-ok-btn" onclick="_confirmerPickerCouleur()">OK</button>
     </div>
 
-    <!-- Palette rapide -->
-    <div class="picker-rapide-lbl">Sélection rapide</div>
+    <!-- Palette rapide avec onglets -->
+    <div class="picker-rapide-lbl" style="margin-bottom:0;">
+      <div class="picker-tabs">
+        <button class="picker-tab active" data-tab="galerie">Galerie</button>
+        <button class="picker-tab" data-tab="pastels">Pastels</button>
+        <button class="picker-tab" data-tab="fluo">Fluo</button>
+      </div>
+    </div>
     <div id="picker-grille" class="picker-grille-rapide"></div>
 
   </div>

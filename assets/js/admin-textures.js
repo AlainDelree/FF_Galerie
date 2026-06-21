@@ -941,46 +941,103 @@ function _initPickerListeners() {
   }
 }
 
-/* ── Palette rapide (54 couleurs) ── */
-var COULEUR_PALETTE_RAPIDE = [
-  // Noirs → gris → blancs
-  '#0d0d0d','#1a1a1a','#2e2e2e','#454545','#676767','#8e8e8e',
-  '#aaaaaa','#c5c5c5','#dbd7cf','#e4e0d8','#edeae2','#fdfaf5',
-  // Terres & bois
-  '#2a1a10','#3a2a1e','#5c3d2e','#7a5030','#8a6228','#a07540',
-  // Ocres & sablés
-  '#c8a050','#d4ae60','#caa878','#b09070','#9a7858','#7a5c42',
-  // Bleus & ardoises
-  '#0f1520','#1a2030','#2c2535','#1a3050','#254470','#38608a',
-  // Verts
-  '#0a1410','#162318','#1e3228','#1e3a2a','#2a4c38','#3d6040',
-  // Bordeaux & prunes
-  '#1a0808','#2e1010','#4a1a1a','#4a1a30','#3a1042','#2a184a',
-  // Rouges terracotta
-  '#6a2020','#7a3020','#8a4030','#5a1a1a','#3a1010','#4a2820',
-  // Verts sauge & kaki
-  '#3a4a30','#4a5a38','#5a6a40','#6a7a50','#8a9060','#a0a870',
-];
+/* ── Palettes thématiques ── */
+var COULEUR_PALETTES = {
+  galerie: [
+    // Noirs → gris → blancs
+    '#0d0d0d','#1a1a1a','#2e2e2e','#454545','#676767','#8e8e8e',
+    '#aaaaaa','#c5c5c5','#dbd7cf','#e4e0d8','#edeae2','#fdfaf5',
+    // Terres & bois
+    '#2a1a10','#3a2a1e','#5c3d2e','#7a5030','#8a6228','#a07540',
+    // Ocres & sablés
+    '#c8a050','#d4ae60','#caa878','#b09070','#9a7858','#7a5c42',
+    // Bleus & ardoises
+    '#0f1520','#1a2030','#2c2535','#1a3050','#254470','#38608a',
+    // Verts
+    '#0a1410','#162318','#1e3228','#1e3a2a','#2a4c38','#3d6040',
+    // Bordeaux & prunes
+    '#1a0808','#2e1010','#4a1a1a','#4a1a30','#3a1042','#2a184a',
+    // Terracotta
+    '#6a2020','#7a3020','#8a4030','#5a1a1a','#3a1010','#4a2820',
+    // Kaki & sauge
+    '#3a4a30','#4a5a38','#5a6a40','#6a7a50','#8a9060','#a0a870',
+  ],
+  pastels: [
+    // Roses & mauves
+    '#f2d4d4','#f0c8d8','#e8c0d4','#e4b8e0','#d8c4ec','#ccc0f0',
+    // Bleus & ciels
+    '#c4d4f4','#b8dcf0','#b4e4f4','#b0ecf0','#b4ece8','#b8f0e0',
+    // Verts & anis
+    '#c0eccc','#c8f0bc','#d4f0b4','#e0f0b0','#ecf0b0','#f4ecb0',
+    // Jaunes & pêches
+    '#f4e4a8','#f4d8a0','#f4cc9c','#f4c098','#f4b498','#f4b0a8',
+    // Lavandes & lilas
+    '#e0ccf0','#e8c8ec','#ecc4e8','#f0c4e0','#f0c8d8','#f0cccc',
+    // Aquas & menthes
+    '#b0e8e8','#a8e4ec','#a8dcf0','#b0d4f4','#bccef4','#c8c8f4',
+  ],
+  fluo: [
+    // Roses & magentas
+    '#ff0066','#ff0099','#ff00cc','#ff33aa','#ff3388','#ee0055',
+    // Oranges & rouges
+    '#ff3300','#ff5500','#ff6600','#ff7700','#ff4400','#ff2200',
+    // Jaunes & limes
+    '#ffff00','#ffee00','#ffdd00','#ccff00','#aaff00','#88ff00',
+    // Verts
+    '#00ff00','#00ff33','#00ff66','#00ff99','#00ffbb','#33ff44',
+    // Bleus & cyans
+    '#00ffff','#00eeff','#00ccff','#0099ff','#0066ff','#0044ff',
+    // Violets & ultraviolets
+    '#6600ff','#8800ff','#aa00ff','#cc00ff','#ee00ff','#ff00ff',
+  ],
+};
+
+var _pickerGrilleBuilt = false;
+var _pickerTabActif = 'galerie';
 
 function _buildPickerGrille() {
   if (_pickerGrilleBuilt) return;
   var grille = document.getElementById('picker-grille');
   if (!grille) return;
 
-  COULEUR_PALETTE_RAPIDE.forEach(function(col) {
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'picker-sw';
-    btn.style.background = col;
-    btn.title = col;
-    btn.addEventListener('click', function() {
-      // Charger dans le picker HSV + appliquer directement
-      var hsv = _hexToHsv(col);
-      if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
-      _updatePickerUI();
-      _confirmerPickerCouleur();
+  // Construire les 3 palettes en conteneurs superposés
+  Object.keys(COULEUR_PALETTES).forEach(function(tab) {
+    var pane = document.createElement('div');
+    pane.id = 'picker-pane-' + tab;
+    pane.style.display = tab === 'galerie' ? 'flex' : 'none';
+    pane.style.flexWrap = 'wrap';
+    pane.style.gap = '5px';
+
+    COULEUR_PALETTES[tab].forEach(function(col) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'picker-sw';
+      btn.style.background = col;
+      btn.title = col;
+      btn.addEventListener('click', function() {
+        var hsv = _hexToHsv(col);
+        if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
+        _updatePickerUI();
+        _confirmerPickerCouleur();
+      });
+      pane.appendChild(btn);
     });
-    grille.appendChild(btn);
+
+    grille.appendChild(pane);
+  });
+
+  // Listeners onglets
+  document.querySelectorAll('.picker-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var nom = this.dataset.tab;
+      _pickerTabActif = nom;
+      document.querySelectorAll('.picker-tab').forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+      Object.keys(COULEUR_PALETTES).forEach(function(k) {
+        var pane = document.getElementById('picker-pane-' + k);
+        if (pane) pane.style.display = k === nom ? 'flex' : 'none';
+      });
+    });
   });
 
   _pickerGrilleBuilt = true;
