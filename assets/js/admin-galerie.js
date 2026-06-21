@@ -336,7 +336,8 @@ function afficherStock() {
   list.innerHTML = '';
   // Met à jour le compteur
   const hdr = $('stock-hdr');
-  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
+  const hdrSpan = hdr ? hdr.querySelector('span') : null;
+  if (hdrSpan) hdrSpan.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
   if (!salleActive) return;
 
   const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
@@ -996,7 +997,9 @@ function remplirFormToile(t) {
       var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
       this.onerror = null;
     };
-    prevImg.src = t.photo; prevImg.style.display = 'block';
+    /* _preview = base64 immédiat après upload (priorité sur l'URL qui peut être en cache) */
+    prevImg.src = t._preview || (t.photo + '?v=' + Date.now());
+    prevImg.style.display = 'block';
     $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
     /* Bouton "Changer la photo…" en mode sculpture */
@@ -1092,7 +1095,7 @@ async function sauverToile() {
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
       const lbl2 = _isSculpt ? 'pièce' : 'toile';
-      await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
       let photo = toiles[idx].photo;
@@ -1124,7 +1127,7 @@ async function sauverToile() {
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
       const lbl2 = _isSculpt ? 'pièce' : 'toile';
-      await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`);
+      await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
     const idSauve = toileEnEdition === null
       ? toiles[toiles.length - 1].id
@@ -1152,7 +1155,7 @@ async function supprimerToile() {
   if (toileEnEdition) fermerModalToile();
   toilesSelectionnees.clear(); selectedToile = null; majBoutons();
   try {
-    await sauvegarder(`[admin] Suppression toile #${idCible}${t?.titre ? ' — ' + t.titre : ''}`);
+    await sauvegarder(`[admin] Suppression toile #${idCible}${t?.titre ? ' — ' + t.titre : ''}`, '✓ Supprimé');
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
@@ -1244,7 +1247,7 @@ async function validerViderSalles() {
   if (salleActive && ids.indexOf(salleActive.id) >= 0) afficherMur();
 
   try {
-    await sauvegarder("Vider salle(s) : " + noms);
+    await sauvegarder("Vider salle(s) : " + noms, null);
     toast("✓ " + ids.length + " salle" + (ids.length > 1 ? "s vidées" : " vidée"));
   } catch(e) {
     toast("Erreur lors de la sauvegarde", "err", 3000);
@@ -1263,7 +1266,7 @@ async function creerSalle() {
   salles.splice(pos, 0, salle);
   fermerModalSalle();
   try {
-    await sauvegarder(`[admin] Ajout salle "${nom}"`);
+    await sauvegarder(`[admin] Ajout salle "${nom}"`, '✓ Salle ajoutée');
     marquerSalleEnAttente(newId);
     afficherPlan();
     selectSalle(newId);

@@ -318,20 +318,21 @@ function initSwatches() {
     });
   });
 
-  // Picker mur : initialisé à la couleur courante
-  $('mur-custom').addEventListener('click', function() { this.value = couleurMurActuel; });
-  $('mur-custom').addEventListener('change', function(e) {
-    pushColorHist('mur', e.target.value);
-    setCouleurMur(e.target.value);
-  });
-
-  // Picker cadres : initialisé à la couleur courante
-  $('cadres-custom').addEventListener('click', function() { this.value = couleurCadresActuel; });
-  $('cadres-custom').addEventListener('change', function(e) {
-    pushColorHist('cadres', e.target.value);
-    setCouleurCadres(e.target.value);
-  });
-
+  // Picker couleur personnalisé (palette artiste)
+  var btnPickerMur = document.getElementById('btn-picker-mur');
+  if (btnPickerMur) {
+    btnPickerMur.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('mur');
+    });
+  }
+  var btnPickerCad = document.getElementById('btn-picker-cad');
+  if (btnPickerCad) {
+    btnPickerCad.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('cadres');
+    });
+  }
   // Slider épaisseur cadres
   $('ep-cadres').addEventListener('input', function() {
     setEpaisseurCadres(parseInt(this.value));
@@ -760,3 +761,332 @@ $('overlay-restore').addEventListener('click', e => { if (e.target === $('overla
 // Init swatches couleurs
 initSwatches();
 // initTailleForm() appelé dans admin.html après chargement admin-galerie.js
+
+/* ══════════════════════════════════════════════════════════════
+   PICKER COULEUR HSV — Zone canvas + curseur teinte + palette
+   ══════════════════════════════════════════════════════════════ */
+
+var _pickerCouleurType = null;
+var _pickerGrilleBuilt = false;
+var _picker = { h: 0, s: 0.8, v: 0.35 };  // teinte 0-360, sat 0-1, val 0-1
+var _pickerDrag = null; // 'canvas' | 'hue' | null
+
+/* ── Conversions couleur ── */
+function _hsvToHex(h, s, v) {
+  var i = Math.floor(h / 60) % 6;
+  var f = h / 60 - Math.floor(h / 60);
+  var p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  var rgb = [[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i];
+  return '#' + rgb.map(function(x) {
+    return Math.round(x * 255).toString(16).padStart(2, '0');
+  }).join('');
+}
+
+function _hexToHsv(hex) {
+  if (!hex || hex.length < 7) return null;
+  var r = parseInt(hex.slice(1,3), 16) / 255;
+  var g = parseInt(hex.slice(3,5), 16) / 255;
+  var b = parseInt(hex.slice(5,7), 16) / 255;
+  var max = Math.max(r,g,b), min = Math.min(r,g,b), d = max - min;
+  var h = 0, s = max === 0 ? 0 : d / max, v = max;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+    else if (max === g) h = ((b - r) / d + 2) * 60;
+    else h = ((r - g) / d + 4) * 60;
+  }
+  return { h: h, s: s, v: v };
+}
+
+/* ── Rendu canvas HSV ── */
+function _drawPickerCanvas() {
+  var canvas = document.getElementById('picker-canvas');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  var pw = rect.width, ph = rect.height;
+  if (pw <= 0) return;
+  canvas.width  = pw * dpr;
+  canvas.height = ph * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  var w = pw, h = ph;
+
+  // Base : couleur de teinte pure
+  ctx.fillStyle = 'hsl(' + _picker.h + ',100%,50%)';
+  ctx.fillRect(0, 0, w, h);
+
+  // Dégradé blanc → transparent (gauche = blanc, droite = couleur)
+  var gW = ctx.createLinearGradient(0, 0, w, 0);
+  gW.addColorStop(0, 'rgba(255,255,255,1)');
+  gW.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gW;
+  ctx.fillRect(0, 0, w, h);
+
+  // Dégradé transparent → noir (haut = clair, bas = noir)
+  var gB = ctx.createLinearGradient(0, 0, 0, h);
+  gB.addColorStop(0, 'rgba(0,0,0,0)');
+  gB.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = gB;
+  ctx.fillRect(0, 0, w, h);
+
+  // Curseur
+  var cx = _picker.s * w;
+  var cy = (1 - _picker.v) * h;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,.4)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+/* ── Mise à jour UI ── */
+function _updatePickerUI() {
+  var hex = _hsvToHex(_picker.h, _picker.s, _picker.v);
+
+  // Redessiner le canvas
+  _drawPickerCanvas();
+
+  // Position poignée teinte
+  var thumb = document.getElementById('picker-hue-thumb');
+  if (thumb) thumb.style.left = (_picker.h / 360 * 100) + '%';
+
+  // Aperçu couleur
+  var prev = document.getElementById('picker-cur-col');
+  if (prev) prev.style.background = hex;
+
+  // Champ hex (ne pas écraser si l'utilisateur tape)
+  var inp = document.getElementById('picker-hex-inp');
+  if (inp && document.activeElement !== inp) inp.value = hex.toUpperCase();
+}
+
+/* ── Événements canvas ── */
+function _pickFromCanvas(e) {
+  var canvas = document.getElementById('picker-canvas');
+  var rect = canvas.getBoundingClientRect();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  _picker.s = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  _picker.v = Math.max(0, Math.min(1, 1 - (clientY - rect.top)  / rect.height));
+  _updatePickerUI();
+}
+
+function _pickFromHue(e) {
+  var track = document.getElementById('picker-hue-track');
+  var rect = track.getBoundingClientRect();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  _picker.h = Math.max(0, Math.min(360, ((clientX - rect.left) / rect.width) * 360));
+  _updatePickerUI();
+}
+
+/* ── Init listeners canvas/hue (une seule fois) ── */
+var _pickerListenersInit = false;
+function _initPickerListeners() {
+  if (_pickerListenersInit) return;
+  _pickerListenersInit = true;
+
+  var canvas = document.getElementById('picker-canvas');
+  var hueTrack = document.getElementById('picker-hue-track');
+  if (!canvas || !hueTrack) return;
+
+  // Canvas — mouse
+  canvas.addEventListener('mousedown', function(e) {
+    _pickerDrag = 'canvas'; _pickFromCanvas(e); e.preventDefault();
+  });
+  // Canvas — touch
+  canvas.addEventListener('touchstart', function(e) {
+    _pickerDrag = 'canvas'; _pickFromCanvas(e); e.preventDefault();
+  }, { passive: false });
+
+  // Hue track — mouse
+  hueTrack.addEventListener('mousedown', function(e) {
+    _pickerDrag = 'hue'; _pickFromHue(e); e.preventDefault();
+  });
+  // Hue track — touch
+  hueTrack.addEventListener('touchstart', function(e) {
+    _pickerDrag = 'hue'; _pickFromHue(e); e.preventDefault();
+  }, { passive: false });
+
+  // Move + end (globaux pour sortie du canvas)
+  document.addEventListener('mousemove', function(e) {
+    if (_pickerDrag === 'canvas') _pickFromCanvas(e);
+    else if (_pickerDrag === 'hue') _pickFromHue(e);
+  });
+  document.addEventListener('touchmove', function(e) {
+    if (_pickerDrag === 'canvas') { _pickFromCanvas(e); e.preventDefault(); }
+    else if (_pickerDrag === 'hue') { _pickFromHue(e); e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('mouseup',  function() { _pickerDrag = null; });
+  document.addEventListener('touchend', function() { _pickerDrag = null; });
+
+  // Saisie hex manuelle
+  var hexInp = document.getElementById('picker-hex-inp');
+  if (hexInp) {
+    hexInp.addEventListener('input', function() {
+      var v = this.value.trim();
+      if (!/^#[0-9a-fA-F]{6}$/.test(v)) return;
+      var hsv = _hexToHsv(v);
+      if (hsv) {
+        _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v;
+        _updatePickerUI();
+      }
+    });
+    hexInp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') _confirmerPickerCouleur();
+    });
+  }
+}
+
+/* ── Palettes thématiques ── */
+var COULEUR_PALETTES = {
+  galerie: [
+    // Noirs → gris → blancs
+    '#0d0d0d','#1a1a1a','#2e2e2e','#454545','#676767','#8e8e8e',
+    '#aaaaaa','#c5c5c5','#dbd7cf','#e4e0d8','#edeae2','#fdfaf5',
+    // Terres & bois
+    '#2a1a10','#3a2a1e','#5c3d2e','#7a5030','#8a6228','#a07540',
+    // Ocres & sablés
+    '#c8a050','#d4ae60','#caa878','#b09070','#9a7858','#7a5c42',
+    // Bleus & ardoises
+    '#0f1520','#1a2030','#2c2535','#1a3050','#254470','#38608a',
+    // Verts
+    '#0a1410','#162318','#1e3228','#1e3a2a','#2a4c38','#3d6040',
+    // Bordeaux & prunes
+    '#1a0808','#2e1010','#4a1a1a','#4a1a30','#3a1042','#2a184a',
+    // Terracotta
+    '#6a2020','#7a3020','#8a4030','#5a1a1a','#3a1010','#4a2820',
+    // Kaki & sauge
+    '#3a4a30','#4a5a38','#5a6a40','#6a7a50','#8a9060','#a0a870',
+  ],
+  pastels: [
+    // Roses & mauves
+    '#f2d4d4','#f0c8d8','#e8c0d4','#e4b8e0','#d8c4ec','#ccc0f0',
+    // Bleus & ciels
+    '#c4d4f4','#b8dcf0','#b4e4f4','#b0ecf0','#b4ece8','#b8f0e0',
+    // Verts & anis
+    '#c0eccc','#c8f0bc','#d4f0b4','#e0f0b0','#ecf0b0','#f4ecb0',
+    // Jaunes & pêches
+    '#f4e4a8','#f4d8a0','#f4cc9c','#f4c098','#f4b498','#f4b0a8',
+    // Lavandes & lilas
+    '#e0ccf0','#e8c8ec','#ecc4e8','#f0c4e0','#f0c8d8','#f0cccc',
+    // Aquas & menthes
+    '#b0e8e8','#a8e4ec','#a8dcf0','#b0d4f4','#bccef4','#c8c8f4',
+  ],
+  fluo: [
+    // Roses & magentas
+    '#ff0066','#ff0099','#ff00cc','#ff33aa','#ff3388','#ee0055',
+    // Oranges & rouges
+    '#ff3300','#ff5500','#ff6600','#ff7700','#ff4400','#ff2200',
+    // Jaunes & limes
+    '#ffff00','#ffee00','#ffdd00','#ccff00','#aaff00','#88ff00',
+    // Verts
+    '#00ff00','#00ff33','#00ff66','#00ff99','#00ffbb','#33ff44',
+    // Bleus & cyans
+    '#00ffff','#00eeff','#00ccff','#0099ff','#0066ff','#0044ff',
+    // Violets & ultraviolets
+    '#6600ff','#8800ff','#aa00ff','#cc00ff','#ee00ff','#ff00ff',
+  ],
+};
+
+var _pickerGrilleBuilt = false;
+var _pickerTabActif = 'galerie';
+
+function _buildPickerGrille() {
+  if (_pickerGrilleBuilt) return;
+  var grille = document.getElementById('picker-grille');
+  if (!grille) return;
+
+  // Construire les 3 palettes en conteneurs superposés
+  Object.keys(COULEUR_PALETTES).forEach(function(tab) {
+    var pane = document.createElement('div');
+    pane.id = 'picker-pane-' + tab;
+    pane.style.display = tab === 'galerie' ? 'flex' : 'none';
+    pane.style.flexWrap = 'wrap';
+    pane.style.gap = '5px';
+
+    COULEUR_PALETTES[tab].forEach(function(col) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'picker-sw';
+      btn.style.background = col;
+      btn.title = col;
+      btn.addEventListener('click', function() {
+        var hsv = _hexToHsv(col);
+        if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
+        _updatePickerUI();
+        _confirmerPickerCouleur();
+      });
+      pane.appendChild(btn);
+    });
+
+    grille.appendChild(pane);
+  });
+
+  // Listeners onglets
+  document.querySelectorAll('.picker-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var nom = this.dataset.tab;
+      _pickerTabActif = nom;
+      document.querySelectorAll('.picker-tab').forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+      Object.keys(COULEUR_PALETTES).forEach(function(k) {
+        var pane = document.getElementById('picker-pane-' + k);
+        if (pane) pane.style.display = k === nom ? 'flex' : 'none';
+      });
+    });
+  });
+
+  _pickerGrilleBuilt = true;
+}
+
+/* ── API publique ── */
+function ouvrirPickerCouleur(type) {
+  _pickerCouleurType = type;
+
+  // Mettre à jour le titre
+  var titre = document.getElementById('picker-titre');
+  if (titre) titre.textContent = type === 'mur' ? 'Couleur du mur' : 'Couleur des cadres';
+
+  // Charger la couleur courante dans le picker
+  var hex = (type === 'mur') ? couleurMurActuel : couleurCadresActuel;
+  var hsv = _hexToHsv(hex);
+  if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
+
+  _buildPickerGrille();
+
+  var overlay = document.getElementById('overlay-picker-col');
+  if (overlay) overlay.style.display = 'flex';
+
+  // Marquer couleur active dans palette rapide
+  document.querySelectorAll('.picker-sw').forEach(function(btn) {
+    btn.classList.toggle('picker-sw-sel', btn.title.toLowerCase() === hex.toLowerCase());
+  });
+
+  // Init listeners une seule fois (le canvas doit être visible pour getBoundingClientRect)
+  _initPickerListeners();
+
+  // Render après que le navigateur a calculé le layout
+  requestAnimationFrame(function() { _updatePickerUI(); });
+}
+
+function fermerPickerCouleur() {
+  var overlay = document.getElementById('overlay-picker-col');
+  if (overlay) overlay.style.display = 'none';
+  _pickerCouleurType = null;
+  _pickerDrag = null;
+}
+
+function _confirmerPickerCouleur() {
+  var hex = _hsvToHex(_picker.h, _picker.s, _picker.v);
+  // Normaliser depuis champ hex si l'utilisateur a tapé
+  var inp = document.getElementById('picker-hex-inp');
+  if (inp && /^#[0-9a-fA-F]{6}$/.test(inp.value)) hex = inp.value.toLowerCase();
+  if (_pickerCouleurType === 'mur') { pushColorHist('mur', hex); setCouleurMur(hex); }
+  else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
+  fermerPickerCouleur();
+}
+

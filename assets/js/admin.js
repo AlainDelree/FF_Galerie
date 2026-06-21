@@ -202,6 +202,7 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 let token = '';
 let tailles = []; // codes de taille {code, label}
 let toiles = [], salles = [];
+let nextId = 1; // ID plancher monotone — ne redescend jamais après suppression
 let salleActive = null;
 let selectedToile = null;
 let peintureSurMurSel = null;
@@ -374,11 +375,17 @@ async function apiGH(url, methode = 'GET', corps = null) {
     }
   };
   if (corps) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(corps); }
-  const rep = await fetch(API + url, opts);
+  let rep = await fetch(API + url, opts);
+  /* 401 sur écriture : retry unique après 1.5s avant de conclure que le token est révoqué
+     (GitHub peut envoyer un 401 transitoire sans que le token soit réellement invalide) */
+  if (!rep.ok && rep.status === 401 && methode !== 'GET') {
+    await new Promise(r => setTimeout(r, 1500));
+    rep = await fetch(API + url, opts);
+  }
   if (!rep.ok) {
     const e = await rep.json().catch(() => ({ message: rep.statusText }));
     if (rep.status === 401 && methode !== 'GET') {
-      /* 401 sur écriture → token révoqué, redirection obligatoire */
+      /* Toujours 401 après retry → token vraiment révoqué */
       localStorage.removeItem(K.token);
       token = '';
       rapporterErreur('Token GitHub invalide ou révoqué — admin inaccessible', 'effondrement', url);
@@ -485,6 +492,9 @@ async function chargerTout() {
     ]);
     toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
     tailles = ADMIN_CFG.type === 'sculpture' ? (tData.gabarits  || []) : (tData.tailles || []);
+    /* next_id : ID plancher qui ne redescend jamais (évite recyclage d'ID après suppression) */
+    const maxExistant = toiles.length ? Math.max(...toiles.map(t => t.id)) : 0;
+    nextId = Math.max(tData.next_id || 0, maxExistant + 1);
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -534,7 +544,7 @@ async function chargerTout() {
   }
 }
 
-async function sauvegarder(message) {
+async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
@@ -542,13 +552,13 @@ async function sauvegarder(message) {
     await commitMulti([
       { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
         ADMIN_CFG.type === 'sculpture'
-          ? { gabarits: tailles, pieces: toiles }
-          : { tailles, toiles }
+          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+          : { next_id: nextId, tailles, toiles }
       , null, 2) },
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, null, 2) }
     ], 'Admin : ' + message);
     syncBadge('ok');
-    toast('✓ Sauvegardé');
+    if (toastMsg) toast(toastMsg);
   } catch (e) {
     rapporterErreur('Impossible de charger les données : ' + e.message, 'bloquant', e.stack || '');
     syncBadge('err');
@@ -562,7 +572,9 @@ async function sauvegarder(message) {
    du mode Arranger, bottom-sheets Couleurs/Textures, modales toile, etc.) */
 
 function prochainId() {
-  return toiles.length ? Math.max(...toiles.map(t => t.id)) + 1 : 1;
+  const id = nextId;
+  nextId++;
+  return id;
 }
 
 // ═══════════════════════════════════════════════
@@ -609,6 +621,7 @@ $('btn-token').addEventListener('click', validerToken);
 
 // Logout
 $('btn-logout').addEventListener('click', () => { if (confirm('Se déconnecter ?')) deconnecter(); });
+$('btn-changer-token')?.addEventListener('click', () => { token = ''; afficherEcran('ecran-token'); });
 
 // Onglets
 document.querySelectorAll('.onglet').forEach(o => {
@@ -644,7 +657,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   const btnDel = $('btn-supprimer-salle');
   btnDel.disabled = true;
   try {
-    await sauvegarder(`[admin] Suppression salle`);
+    await sauvegarder('[admin] Suppression salle', '✓ Salle supprimée');
     if (typeof afficherPlan === 'function') afficherPlan();
     if (salles.length) selectSalle(salles[0].id);
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
@@ -681,7 +694,7 @@ $('btn-sauver-coul').addEventListener('click', async () => {
   const btn = $('btn-sauver-coul');
   btn.textContent = 'En cours…'; btn.disabled = true;
   try {
-    await sauvegarder('[admin] Couleurs/texture salle');
+    await sauvegarder('[admin] Couleurs/texture salle', '✓ Apparence sauvegardée');
     _snapshotApparence = null;
     fermerPanneauCoul();
   } catch (_) {}
@@ -738,7 +751,7 @@ $('btn-rename').addEventListener('click', async () => {
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
   btnRn.disabled = true;
-  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); if (typeof afficherPlan === 'function') afficherPlan(); }
+  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`, '✓ Renommé'); marquerSalleEnAttente(salleActive?.id); if (typeof afficherPlan === 'function') afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
   finally { btnRn.disabled = false; }
 });
@@ -768,7 +781,7 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   try {
     const lbl = _isSculpt ? 'pièces' : 'toiles';
     salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
-    await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'));
+    await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'), null);
     toast('✓ Placement enregistré');
     quitterModePlacement();
   } catch (e) {
