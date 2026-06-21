@@ -301,19 +301,29 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(badge);
   }
 
-  /* Piédestal + ombre — hauteur proportionnelle à la photo (pas le 200px CSS fixe).
-     Sinon le piédestal domine et déborde dans les petits conteneurs (aperçu). */
-  const ped = document.createElement('div');
-  ped.className = 'socle-piedestal socle-piedestal--' + gCode;
-  if (gCode !== 'sol') {
-    /* 0.7×photoH, plafonné à 200px (valeur historique plein écran) */
-    var pedH = Math.min(200, Math.round(photoH * 0.7));
-    ped.style.height = pedH + 'px';
+  /* Piédestal + ombre — sauf si la pièce est posée directement au sol (sans_socle).
+     Hauteur proportionnelle à la photo (pas le 200px CSS fixe) sinon ça déborde. */
+  if (piece.sans_socle) {
+    /* Pas de piédestal — juste une ombre au sol sous la pièce */
+    const ombreSeule = document.createElement('div');
+    ombreSeule.className = 'socle-ombre';
+    ombreSeule.style.position = 'relative';
+    ombreSeule.style.bottom = '0';
+    ombreSeule.style.marginTop = '2px';
+    socle.appendChild(ombreSeule);
+  } else {
+    const ped = document.createElement('div');
+    ped.className = 'socle-piedestal socle-piedestal--' + gCode;
+    if (gCode !== 'sol') {
+      /* 0.7×photoH, plafonné à 200px (valeur historique plein écran) */
+      var pedH = Math.min(200, Math.round(photoH * 0.7));
+      ped.style.height = pedH + 'px';
+    }
+    const ombre = document.createElement('div');
+    ombre.className = 'socle-ombre';
+    ped.appendChild(ombre);
+    socle.appendChild(ped);
   }
-  const ombre = document.createElement('div');
-  ombre.className = 'socle-ombre';
-  ped.appendChild(ombre);
-  socle.appendChild(ped);
 
   /* Titre */
   if (piece.titre) {

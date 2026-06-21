@@ -909,6 +909,7 @@ function viderFormToile() {
   $('inp-visible').checked = true;
   $('inp-larg').value = ''; $('inp-haut').value = '';
   if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = '';
+  if ($('inp-sans-socle')) { $('inp-sans-socle').checked = false; $('inp-sans-socle').dispatchEvent(new Event('change')); }
   $('sel-format').value = '';
   document.querySelectorAll('#dims-favoris .dim-chip').forEach(c => c.classList.remove('sel'));
   remplirSelectTaille();
@@ -1007,6 +1008,11 @@ function remplirFormToile(t) {
   /* Remplir stepper socle */
   var inpDiamS = document.getElementById('inp-diam-sculpt');
   if (inpDiamS) inpDiamS.value = t.socle || '';
+  var cbSansSocle = document.getElementById('inp-sans-socle');
+  if (cbSansSocle) {
+    cbSansSocle.checked = !!t.sans_socle;
+    cbSansSocle.dispatchEvent(new Event('change')); /* applique le grisé */
+  }
   document.querySelectorAll('.salle-pill').forEach(p => {
     p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
   });
@@ -1038,6 +1044,8 @@ function lireFormToile() {
   if ($('inp-glb') && $('inp-glb').value) result.glb = $('inp-glb').value;
   var inpDiamS = document.getElementById('inp-diam-sculpt');
   if (inpDiamS) result.socle = inpDiamS.value ? parseInt(inpDiamS.value) : undefined;
+  var cbSansSocle = document.getElementById('inp-sans-socle');
+  if (cbSansSocle && cbSansSocle.checked) result.sans_socle = true;
   return result;
 }
 
@@ -1091,6 +1099,8 @@ async function sauverToile() {
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
+      /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
+      if (!donnees.sans_socle) delete toiles[idx].sans_socle;
       const lbl2 = _isSculpt ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
