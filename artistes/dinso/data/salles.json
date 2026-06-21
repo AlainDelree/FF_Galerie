@@ -10,14 +10,8 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        4,
-        1,
-        3
-      ],
-      "positions": [],
-      "positions_mobile": [],
-      "pieces": []
+      "toiles": [],
+      "positions": []
     }
   ]
 }
