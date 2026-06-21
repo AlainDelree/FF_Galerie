@@ -427,43 +427,10 @@ function afficherStock() {
   });
 }
 
-function majBtnPlacer() { /* bouton Placer supprimé — Arranger le mur le remplace */ }
-
 function majBoutons() {
   const n = toilesSelectionnees.size;
   $('btn-modifier-toile').disabled  = (n !== 1);
   $('btn-supprimer-toile').disabled = (n !== 1);
-}
-
-function afficherConfirmAutreSalle(toile, nomAutre) {
-  const ancien = document.getElementById('confirm-autre-salle');
-  if (ancien) ancien.remove();
-  const div = document.createElement('div');
-  div.id = 'confirm-autre-salle';
-  div.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:400;background:var(--bg2);border:1.5px solid var(--gold);border-radius:14px;padding:.9rem 1rem;max-width:310px;width:88%;box-shadow:0 8px 32px rgba(0,0,0,.6);';
-  div.innerHTML = `<p style="font-size:13px;margin-bottom:.75rem;line-height:1.5;"><strong style="color:var(--gold);">"${toile.titre||'Sans titre'}"</strong> est dans <strong>${nomAutre}</strong>.<br>Que faire ?</p>
-    <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
-      <button id="conf-ann" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:12px;cursor:pointer;">Annuler</button>
-      <button id="conf-edit" style="flex:1;padding:.5rem;border-radius:8px;border:0.5px solid var(--gold);background:transparent;color:var(--gold);font-size:12px;cursor:pointer;">✏️ Modifier</button>
-      <button id="conf-ok" style="flex:1;padding:.5rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-size:12px;font-weight:600;cursor:pointer;">Retirer et placer ici</button>
-    </div>`;
-  document.body.appendChild(div);
-  document.getElementById('conf-ann').addEventListener('click', () => div.remove());
-  document.getElementById('conf-edit').addEventListener('click', () => {
-    div.remove();
-    ouvrirFormulaireEdition(toile.id);
-  });
-  document.getElementById('conf-ok').addEventListener('click', () => {
-    div.remove();
-    toilesSelectionnees.add(toile.id);
-    selectedToile = toile;
-    afficherStock(); majBoutons();
-    toast(`"${toile.titre||'—'}" prête — sera retirée de ${nomAutre} à la sauvegarde`);
-  });
-  setTimeout(() => {
-    const fermer = e => { if (!div.contains(e.target)) { div.remove(); document.removeEventListener('click', fermer); } };
-    document.addEventListener('click', fermer);
-  }, 150);
 }
 
 
@@ -484,102 +451,11 @@ function _getPositions() {
   return salleActive.positions || [];
 }
 
-/* Définit les positions actives selon le mode vue */
-function _setPositions(pos) {
-  if (!salleActive) return;
-  if (_placementVue === 'gsm') salleActive.positions_mobile = pos;
-  else salleActive.positions = pos;
-}
-
-/* DRAG-DROP GLOBAL — une seule paire de listeners */
-let _dragStarted = false;
-let _draggingPieceEl = null;
-let _draggingPiece = null;
-let _dragStartPos = { x: 0, y: 0 };
-let _dragContainer = null;
-
-function _startDragPiece(el, piecePos, mouseDownEvent, container) {
-  _dragStarted = false; /* Reset flag pour click */
-  _draggingPieceEl = el;
-  _draggingPiece = piecePos;
-  _dragStartPos = { x: mouseDownEvent.clientX, y: mouseDownEvent.clientY };
-  _dragContainer = container;
-  el.style.transition = 'none';
-  el.style.zIndex = '10';
-  document.addEventListener('mousemove', _onGlobalDragMove);
-  document.addEventListener('mouseup', _onGlobalDragEnd);
-}
-
-function _onGlobalDragMove(e) {
-  if (!_draggingPieceEl || !_draggingPiece) return;
-  e.preventDefault(); /* Empêcher la sélection de texte/grille */
-  _dragStarted = true; /* Marquer qu'il y a eu du mouvement */
-  const rect = _dragContainer.getBoundingClientRect();
-  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
-  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
-  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
-  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
-  _draggingPieceEl.style.left = newX + '%';
-  _draggingPieceEl.style.bottom = newY + '%';
-}
-
-function _onGlobalDragEnd(e) {
-  if (!_draggingPieceEl || !_draggingPiece) return;
-  /* Appliquer les changements */
-  const rect = _dragContainer.getBoundingClientRect();
-  const dx = ((e.clientX - _dragStartPos.x) / rect.width) * 100;
-  const dy = -((e.clientY - _dragStartPos.y) / rect.height) * 100;
-  const newX = Math.max(5, Math.min(95, parseFloat(_draggingPiece.x) + dx));
-  const newY = Math.max(5, Math.min(95, parseFloat(_draggingPiece.y) + dy));
-
-  /* Anti-chevauchement : vérifier si la nouvelle position chevauche une autre pièce */
-  const overlap = _isSculpt ? _checkOverlap(_draggingPiece.id, newX, newY) : false;
-
-  _draggingPieceEl.style.transition = '';
-  _draggingPieceEl.style.zIndex = '';
-  document.removeEventListener('mousemove', _onGlobalDragMove);
-  document.removeEventListener('mouseup', _onGlobalDragEnd);
-  if (_dragStarted) {
-    if (overlap) {
-      /* Remettre à la position d'origine */
-      _draggingPieceEl.style.left = _draggingPiece.x + '%';
-      _draggingPieceEl.style.bottom = _draggingPiece.y + '%';
-      toast('⚠ Chevauchement — position annulée', 'err');
-    } else {
-      _draggingPiece.x = newX;
-      _draggingPiece.y = newY;
-      toast('✓ Pièce déplacée');
-    }
-  }
-  _draggingPieceEl = null;
-  _draggingPiece = null;
-}
-
-/* Vérifie si une pièce à (x,y) chevauche une autre pièce */
-function _checkOverlap(pieceId, x, y) {
-  if (!salleActive) return false;
-  var _pos = _getPositions();
-  const t1 = toiles.find(t => t.id === pieceId);
-  const r1 = _pieceRadius(t1);
-  for (const p of _pos) {
-    if (p.id === pieceId) continue;
-    const t2 = toiles.find(t => t.id === p.id);
-    const r2 = _pieceRadius(t2);
-    const dx = Math.abs(x - p.x);
-    const dy = Math.abs(y - p.y);
-    const minDist = r1 + r2;
-    if (dx < minDist && dy < minDist * 0.7) return true;
-  }
-  return false;
-}
-
-/* Rayon d'une pièce en % du sol (basé sur le socle) */
-function _pieceRadius(t) {
-  if (!t) return 3;
-  const socle = t.socle || t.dimensions?.largeur || 30;
-  /* Approximation : 30cm socle ≈ 5% du sol */
-  return Math.max(2, socle * 0.15);
-}
+/* Le bloc drag-drop socle (variables + _setPositions, _startDragPiece,
+   _onGlobalDragMove, _onGlobalDragEnd, _checkOverlap, _pieceRadius) a été
+   supprimé : ancien essai de drag dans admin remplacé par l'iframe
+   d'arrangement (galerie-edit.html) qui implémente son propre drag dans
+   galerie-sculpture.js. */
 
 
 function entrerModePlacement() {
@@ -1403,8 +1279,6 @@ async function creerSalle() {
 function afficherSolPlacement() {
   /* Masquer l'aperçu normal */
   $('mur-bg').innerHTML = '';
-  var oldMini = document.getElementById('mini-preview-autre');
-  if (oldMini) oldMini.remove();
   var oldRow = document.getElementById('mur-row-wrap');
   if (oldRow) {
     var bg = $('mur-bg');
@@ -1510,31 +1384,9 @@ function placerPieceSolViaIframe(x, y) {
 }
 
 
-function placerPieceSol(x, y) {
-  if (!selectedToilePl || !salleActive) return;
-  const piece = selectedToilePl;
-
-  /* Anti-chevauchement */
-  if (_checkOverlap(piece.id, x, y)) {
-    toast('⚠ Chevauchement — choisis un autre endroit', 'err');
-    return;
-  }
-
-  const gab = _gabaritSculpt(piece.dimensions?.hauteur);
-
-  /* Retirer des positions du mode actif (si déjà placée) */
-  var pos = _getPositions();
-  var idx = pos.findIndex(p => p.id === piece.id);
-  if (idx >= 0) pos.splice(idx, 1);
-
-  /* Placer dans le mode actif */
-  pos.push({ id: piece.id, x, y, gabarit: gab });
-
-  selectedToilePl = null; selectedToile = null;
-  afficherSolPlacement(); afficherStripPlacement();
-  toast('✓ Pièce placée en ' + x + ',' + y);
-  $('pl-aide').textContent = 'Pièce placée — continue ou clique 💾 Enregistrer';
-}
+/* placerPieceSol supprimée : ancienne version utilisant _checkOverlap
+   (du bloc drag supprimé). Remplacée par placerPieceSolViaIframe qui
+   reçoit les coordonnées via postMessage depuis l'iframe d'arrangement. */
 
 function deplacerPieceSol(dx, dy) {
   if (peintureSurMurSel === null) return;
