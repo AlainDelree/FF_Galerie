@@ -296,6 +296,8 @@ button{cursor:pointer;}
 .bas-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
 .bas-btn-danger{color:var(--rouge,#c0392b);}
 .bas-btn-danger:hover:not(:disabled){border-color:var(--rouge,#c0392b)!important;color:var(--rouge,#c0392b)!important;}
+.bas-btn-catalogue{color:var(--gold);}
+.bas-btn-catalogue:hover{border-color:var(--gold)!important;color:var(--gold)!important;}
 
 /* ══ FICHE CONSULTATION ══ */
 #overlay-fiche{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);

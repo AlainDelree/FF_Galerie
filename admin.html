@@ -241,7 +241,13 @@
 
         <!-- Stock -->
         <div class="stock-col">
-          <div class="stock-hdr" id="stock-hdr">Stock <button id="btn-catalogue" onclick="ouvrirCatalogue()" title="Catalogue PDF" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;margin-left:.3rem;">📄</button><button id="btn-guide-tailles" title="Guide des tailles" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;">?</button></div>
+          <div class="stock-hdr" id="stock-hdr" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Stock</span>
+            <div style="display:flex;align-items:center;gap:.3rem;">
+              <button id="btn-catalogue" onclick="ouvrirCatalogue()" title="Générer un catalogue PDF" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;padding:0;line-height:1;" aria-label="Catalogue PDF">📄</button>
+              <button id="btn-guide-tailles" title="Guide des tailles" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0;line-height:1;">?</button>
+            </div>
+          </div>
           <div class="stock-list" id="stock-list"></div>
           <div class="stock-leg">
             <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
@@ -269,6 +275,7 @@
         <button class="bas-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
         <button class="bas-btn" id="btn-modifier-toile" disabled>✏️ Modifier toile</button>
         <button class="bas-btn bas-btn-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
+        <button class="bas-btn bas-btn-catalogue" id="btn-catalogue-bas" onclick="ouvrirCatalogue()">📄 Catalogue</button>
       </div>
 
     </div><!-- /edit-section -->
