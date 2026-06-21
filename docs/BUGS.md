@@ -164,7 +164,7 @@
   - Bug d'affichage CSS → INVALIDE (le display:none est piloté par JS)
 - **Solution trouvée :** Ajouter `?ref=${BRANCH}` au GET de listing et au GET de SHA, et `branch: BRANCH` dans le body du DELETE. Le pattern correct existait déjà ailleurs dans `lireRaw()` et `commitMulti()` — c'est juste qu'il manquait sur ces deux fonctions textures.
 - **Reste à faire :** 3 autres endroits ont le même bug latent mais moins visible (uploaderPhoto/Musique en update sur `admin-media.js:98, 128`, création artiste sur `admin-vue-artistes.js:155`). À fixer dans une session dédiée à l'audit cross-fichier des appels `apiGH` sans `?ref=`.
-- **Commit fix :** _(à compléter)_
+- **Commit fix :** `dc91b03` (dev) — à reporter sur main après validation
 
 ---
 
