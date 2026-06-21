@@ -649,10 +649,8 @@ function afficherStripPlacement() {
   const poseeIds = new Set((_isSculpt ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
   /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
-     Peinture : placées + sélectionnées + selectedToilePl */
-  const tousIds = _isSculpt
-    ? [...new Set([...(salleActive.toiles || []), ...poseeIds, ...toilesSelectionnees])]
-    : [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
+     Sculpture et peinture : placées + sélectionnées dans le stock */
+  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
 
   if (tousIds.length === 0) {
     strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
