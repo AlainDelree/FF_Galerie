@@ -193,8 +193,6 @@ const BRANCH = (
   location.hostname === 'localhost'
 ) ? 'dev' : 'main';
 const API    = 'https://api.github.com';
-const MAX_PX = 1400;
-const JPEG_Q = 0.83;
 const COLS = 12, ROWS = 8; // grille magnétique
 const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 
