@@ -336,7 +336,8 @@ function afficherStock() {
   list.innerHTML = '';
   // Met à jour le compteur
   const hdr = $('stock-hdr');
-  if (hdr) hdr.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
+  const hdrSpan = hdr ? hdr.querySelector('span') : null;
+  if (hdrSpan) hdrSpan.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
   if (!salleActive) return;
 
   const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
@@ -996,7 +997,9 @@ function remplirFormToile(t) {
       var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
       this.onerror = null;
     };
-    prevImg.src = t.photo; prevImg.style.display = 'block';
+    /* _preview = base64 immédiat après upload (priorité sur l'URL qui peut être en cache) */
+    prevImg.src = t._preview || (t.photo + '?v=' + Date.now());
+    prevImg.style.display = 'block';
     $('photo-ph').style.display = 'none';
     $('btn-recadrer-photo').classList.add('visible');
     /* Bouton "Changer la photo…" en mode sculpture */
