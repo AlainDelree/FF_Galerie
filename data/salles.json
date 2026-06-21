@@ -364,6 +364,7 @@
       "theme": "",
       "couleur_mur": "#2e2e2e",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [],
