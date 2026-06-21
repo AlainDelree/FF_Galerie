@@ -249,11 +249,15 @@
             </div>
           </div>
           <div class="stock-list" id="stock-list"></div>
-          <div class="stock-leg">
-            <div class="leg-li"><div class="leg-sq" style="color:var(--success);"></div>Cette salle</div>
-            <div class="leg-li"><div class="leg-sq" style="color:rgba(192,57,43,.6);"></div>Autre salle</div>
-            <div class="leg-li"><div class="leg-sq" style="color:var(--brd2);"></div>Réserve</div>
+
+          <!-- Actions toiles (remplace bas-barre) -->
+          <div class="stock-actions">
+            <button class="stock-act-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
+            <button class="stock-act-btn" id="btn-modifier-toile" disabled>✏️ Modifier</button>
+            <button class="stock-act-btn stock-act-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
+            <button class="stock-act-btn stock-act-cat" id="btn-catalogue-bas" onclick="ouvrirCatalogue()">📄 Catalogue</button>
           </div>
+
         </div>
 
         <!-- Mur grille 12×8 -->
@@ -270,13 +274,6 @@
 
       </div><!-- /edit-corps -->
 
-      <!-- Barre basse -->
-      <div class="bas-barre">
-        <button class="bas-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
-        <button class="bas-btn" id="btn-modifier-toile" disabled>✏️ Modifier toile</button>
-        <button class="bas-btn bas-btn-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
-        <button class="bas-btn bas-btn-catalogue" id="btn-catalogue-bas" onclick="ouvrirCatalogue()">📄 Catalogue</button>
-      </div>
 
     </div><!-- /edit-section -->
   </div><!-- /vue-galerie -->
