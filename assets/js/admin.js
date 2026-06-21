@@ -559,6 +559,14 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
     ], 'Admin : ' + message);
     syncBadge('ok');
     if (toastMsg) toast(toastMsg);
+    /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
+    if (typeof _arrangerSnapshot !== 'undefined' && _arrangerSnapshot && salleActive) {
+      _arrangerSnapshot = {
+        positions:        JSON.parse(JSON.stringify(salleActive.positions        || [])),
+        positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
+        toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || []))
+      };
+    }
   } catch (e) {
     rapporterErreur('Impossible de charger les données : ' + e.message, 'bloquant', e.stack || '');
     syncBadge('err');

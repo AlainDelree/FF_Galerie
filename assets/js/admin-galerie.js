@@ -441,6 +441,7 @@ function majBoutons() {
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
 let _placementVue = 'pc'; // 'pc' ou 'gsm'
+let _arrangerSnapshot = null; // snapshot positions avant ouverture Arranger
 
 /* Retourne les positions actives selon le mode vue */
 function _getPositions() {
@@ -503,6 +504,12 @@ function entrerModePlacement() {
 
 function ouvrirArrangerApresConfirm() {
   if (!salleActive) return;
+  /* Snapshot — restauré si retour sans sauvegarder */
+  _arrangerSnapshot = {
+    positions:        JSON.parse(JSON.stringify(salleActive.positions        || [])),
+    positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
+    toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || []))
+  };
   const nbPlacees = (salleActive.positions||[]).length;
   _placementVue = 'pc'; /* Toujours démarrer en mode PC */
   var btnSw = document.getElementById('btn-switch-vue');
@@ -561,10 +568,17 @@ function autoPlacerTout() {
 
 function quitterModePlacement() {
   $('overlay-placement').classList.remove('ouvert');
+  /* Restaurer l'état avant ouverture si pas sauvegardé */
+  if (_arrangerSnapshot && salleActive) {
+    salleActive.positions        = _arrangerSnapshot.positions;
+    salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
+    salleActive.toiles           = _arrangerSnapshot.toiles;
+  }
+  _arrangerSnapshot = null;
   toilesSelectionnees.clear();
   selectedToilePl = null;
   selectedToile = null;
-  peintureSurMurSel = null; // efface la sélection avant de revenir en vue normale
+  peintureSurMurSel = null;
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   afficherPlan();
   toilesSelectionnees.clear(); afficherStock(); majBoutons();
