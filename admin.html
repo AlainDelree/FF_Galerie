@@ -250,14 +250,6 @@
           </div>
           <div class="stock-list" id="stock-list"></div>
 
-          <!-- Actions toiles (remplace bas-barre) -->
-          <div class="stock-actions">
-            <button class="stock-act-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
-            <button class="stock-act-btn" id="btn-modifier-toile" disabled>✏️ Modifier</button>
-            <button class="stock-act-btn stock-act-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
-            <button class="stock-act-btn stock-act-cat" id="btn-catalogue-bas" onclick="ouvrirCatalogue()">📄 Catalogue</button>
-          </div>
-
         </div>
 
         <!-- Mur grille 12×8 -->
@@ -270,7 +262,14 @@
           </div>
           <!-- Arranger déplacé ici, sous l'aperçu du mur -->
           <button class="bas-btn" id="btn-arranger-mur" style="width:100%;margin-top:.3rem;justify-content:center;">🔧 Arranger le mur</button>
-        </div>
+
+          <!-- Boutons action dans l'espace libre sous le mur -->
+          <div class="mur-actions">
+            <button class="mur-act-btn" id="btn-ajouter-toile">＋ Ajout toile</button>
+            <button class="mur-act-btn" id="btn-modifier-toile" disabled>✏️ Modifier</button>
+            <button class="mur-act-btn mur-act-danger" id="btn-supprimer-toile" disabled>🗑 Supprimer</button>
+            <button class="mur-act-btn mur-act-cat" id="btn-catalogue-bas" onclick="ouvrirCatalogue()">📄 Catalogue</button>
+          </div>
 
       </div><!-- /edit-corps -->
 

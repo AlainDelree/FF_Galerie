@@ -216,28 +216,26 @@ button{cursor:pointer;}
 .leg-li{display:flex;align-items:center;gap:3px;font-size:8px;color:var(--muted);}
 .leg-sq{width:8px;height:8px;border-radius:1px;border:1.5px solid currentColor;flex-shrink:0;}
 
-/* ── Boutons actions dans stock-col ── */
-.stock-actions{
-  border-top:1px solid var(--brd);
-  padding:.3rem .35rem;
-  display:flex;flex-direction:column;gap:3px;
+/* ── Boutons action sous le mur (espace libre mur-zone) ── */
+.mur-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;
+  padding:.1rem 0;
   flex-shrink:0;
 }
-.stock-act-btn{
-  display:flex;align-items:center;gap:4px;
-  font-size:10.5px;padding:.3rem .4rem;
-  border-radius:5px;border:0.5px solid var(--brd);
+.mur-act-btn{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  font-size:11px;padding:.38rem .3rem;
+  border-radius:6px;border:0.5px solid var(--brd);
   background:none;color:var(--text);
-  cursor:pointer;width:100%;text-align:left;
-  transition:border-color .12s,color .12s;
-  white-space:nowrap;overflow:hidden;
+  cursor:pointer;transition:border-color .12s,color .12s;
+  white-space:nowrap;
 }
-.stock-act-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
-.stock-act-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
-.stock-act-danger{color:var(--rouge,#c0392b);}
-.stock-act-danger:hover:not(:disabled){border-color:var(--rouge,#c0392b)!important;color:var(--rouge,#c0392b)!important;}
-.stock-act-cat{color:var(--gold);}
-.stock-act-cat:hover{border-color:var(--gold)!important;}
+.mur-act-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+.mur-act-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
+.mur-act-danger{color:var(--rouge,#c0392b);}
+.mur-act-danger:hover:not(:disabled){border-color:var(--rouge,#c0392b)!important;color:var(--rouge,#c0392b)!important;}
+.mur-act-cat{color:var(--gold);}
+.mur-act-cat:hover{border-color:var(--gold)!important;}
 
 /* ── Zone mur ── */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
@@ -635,8 +633,8 @@ textarea.champ{resize:vertical;min-height:65px;}
   .stock-item .simg { height: 50px; }
   .stock-item .snom { font-size: 7px; }
   .taille-badge     { font-size: 9.5px; padding: 1px 4px; }
-  .stock-actions    { padding: .25rem .3rem; gap: 2px; }
-  .stock-act-btn    { font-size: 9.5px; padding: .24rem .35rem; }
+  .mur-actions      { gap: 4px; }
+  .mur-act-btn      { font-size: 10px; padding: .3rem .2rem; }
 
   /* Zone mur : max-width calculé pour que le mur tienne dans le viewport
      sans scroll — 215px = hauteur de tout le chrome au-dessus+dessous */
