@@ -240,9 +240,6 @@ function afficherMur() {
     return;
   }
 
-  /* ── PEINTURE : grille mur ── */
-  bg.classList.toggle('grille-on', grilleVisible);
-
   // Toiles posées
   (salleActive.positions || []).forEach(p => {
     const t = toiles.find(x => x.id === p.id);

@@ -393,19 +393,6 @@ async function apiGH(url, methode = 'GET', corps = null) {
   return methode === 'DELETE' ? null : rep.json();
 }
 
-async function lireFichierJSON(chemin) {
-  const rep = await apiGH(`/repos/${REPO}/contents/${chemin}`);
-  const bytes = Uint8Array.from(atob(rep.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-  const contenu = new TextDecoder('utf-8').decode(bytes);
-  return { data: JSON.parse(contenu), sha: rep.sha };
-}
-
-async function lireFichierTexte(chemin) {
-  const rep = await apiGH(`/repos/${REPO}/contents/${chemin}`);
-  const bytes = Uint8Array.from(atob(rep.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-  return new TextDecoder('utf-8').decode(bytes);
-}
-
 /* Lecture via l'API GitHub (toujours frais, pas de cache CDN).
    Décode le contenu base64 retourné par l'API.
    Les écritures (commitMulti, uploaderPhoto) restent sur l'API. */
@@ -578,16 +565,6 @@ async function sauvegarder(message) {
 
 function prochainId() {
   return toiles.length ? Math.max(...toiles.map(t => t.id)) + 1 : 1;
-}
-
-// ═══════════════════════════════════════════════
-// GRILLE toggle
-// ═══════════════════════════════════════════════
-let grilleVisible = false;
-function toggleGrille() {
-  grilleVisible = !grilleVisible;
-  $('mur-bg').classList.toggle('grille-on', grilleVisible);
-  $('btn-grille').classList.toggle('on', grilleVisible);
 }
 
 // ═══════════════════════════════════════════════
