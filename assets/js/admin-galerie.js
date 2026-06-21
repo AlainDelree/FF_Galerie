@@ -122,14 +122,7 @@ function afficherMur() {
     const texSol = textureActuelle || 'parquet';
     bg.style.cssText =
       'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      (function() {
-      var isMob = window.innerWidth <= 600;
-      var overhead = isMob ? 250 : 220;
-      var r = (window.innerWidth / Math.max(300, window.innerHeight - overhead)).toFixed(3);
-      return isMob
-        ? 'display:block;width:100%;border-radius:6px;aspect-ratio:' + r + ';max-height:55vh;'
-        : 'display:block;border-radius:6px;margin:0 auto;height:42vh;width:auto;aspect-ratio:' + r + ';max-width:100%;';
-    })();
+      'display:block;width:100%;border-radius:6px;aspect-ratio:16/9;max-height:55vh;margin:0 auto;';
 
     /* Pièces avec socles perspective */
     (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
