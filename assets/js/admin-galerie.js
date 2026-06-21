@@ -386,8 +386,8 @@ function afficherStock() {
     const nom = document.createElement('div'); nom.className = 'snom';
     nom.textContent = t.titre || '—'; item.appendChild(nom);
 
-    // Badge taille en haut à droite
-    if (t.taille || t.dimensions) {
+    // Badge taille en haut à droite (peinture uniquement — pas de sens pour sculpture)
+    if (!_isSculpt && (t.taille || t.dimensions)) {
       const badge = document.createElement('div'); badge.className = 'taille-badge';
       badge.textContent = t.taille || (t.dimensions ? `${t.dimensions.largeur}×${t.dimensions.hauteur}` : '');
       item.appendChild(badge);
