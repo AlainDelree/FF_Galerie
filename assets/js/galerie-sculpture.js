@@ -301,9 +301,15 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(badge);
   }
 
-  /* Piédestal + ombre */
+  /* Piédestal + ombre — hauteur proportionnelle à la photo (pas le 200px CSS fixe).
+     Sinon le piédestal domine et déborde dans les petits conteneurs (aperçu). */
   const ped = document.createElement('div');
   ped.className = 'socle-piedestal socle-piedestal--' + gCode;
+  if (gCode !== 'sol') {
+    /* 0.7×photoH, plafonné à 200px (valeur historique plein écran) */
+    var pedH = Math.min(200, Math.round(photoH * 0.7));
+    ped.style.height = pedH + 'px';
+  }
   const ombre = document.createElement('div');
   ombre.className = 'socle-ombre';
   ped.appendChild(ombre);
