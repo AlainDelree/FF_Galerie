@@ -234,8 +234,8 @@ button{cursor:pointer;}
 .mur-act-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
 .mur-act-danger{color:var(--rouge,#c0392b);}
 .mur-act-danger:hover:not(:disabled){border-color:var(--rouge,#c0392b)!important;color:var(--rouge,#c0392b)!important;}
-.mur-act-cat{color:var(--gold);}
-.mur-act-cat:hover{border-color:var(--gold)!important;}
+.mur-act-cat{background:rgba(200,160,80,.15);border-color:var(--gold);color:var(--gold);font-weight:600;}
+.mur-act-cat:hover{background:rgba(200,160,80,.28)!important;border-color:var(--gold)!important;}
 
 /* ── Zone mur ── */
 .mur-zone{flex:1;padding:.55rem;display:flex;flex-direction:column;gap:.4rem;overflow:auto;}
