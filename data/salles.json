@@ -357,6 +357,28 @@
           "h": 5
         }
       ]
+    },
+    {
+      "id": 14,
+      "nom": "Salle J",
+      "theme": "",
+      "couleur_mur": "#ffee00",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
+      "texture": "data/textures/miel.jpg",
+      "visible": true,
+      "toiles": [
+        2
+      ],
+      "positions": [
+        {
+          "id": 2,
+          "col": 5,
+          "row": 2,
+          "w": 3,
+          "h": 3
+        }
+      ]
     }
   ]
 }
