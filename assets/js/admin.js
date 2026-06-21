@@ -544,7 +544,7 @@ async function chargerTout() {
   }
 }
 
-async function sauvegarder(message) {
+async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
@@ -558,7 +558,7 @@ async function sauvegarder(message) {
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, null, 2) }
     ], 'Admin : ' + message);
     syncBadge('ok');
-    toast('✓ Sauvegardé');
+    if (toastMsg) toast(toastMsg);
   } catch (e) {
     rapporterErreur('Impossible de charger les données : ' + e.message, 'bloquant', e.stack || '');
     syncBadge('err');
@@ -657,7 +657,7 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   const btnDel = $('btn-supprimer-salle');
   btnDel.disabled = true;
   try {
-    await sauvegarder(`[admin] Suppression salle`);
+    await sauvegarder('[admin] Suppression salle', '✓ Salle supprimée');
     if (typeof afficherPlan === 'function') afficherPlan();
     if (salles.length) selectSalle(salles[0].id);
     else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
@@ -694,7 +694,7 @@ $('btn-sauver-coul').addEventListener('click', async () => {
   const btn = $('btn-sauver-coul');
   btn.textContent = 'En cours…'; btn.disabled = true;
   try {
-    await sauvegarder('[admin] Couleurs/texture salle');
+    await sauvegarder('[admin] Couleurs/texture salle', '✓ Apparence sauvegardée');
     _snapshotApparence = null;
     fermerPanneauCoul();
   } catch (_) {}
@@ -751,7 +751,7 @@ $('btn-rename').addEventListener('click', async () => {
   $('badge-salle').textContent = nom;
   $('inp-rename').value = '';
   btnRn.disabled = true;
-  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`); marquerSalleEnAttente(salleActive?.id); if (typeof afficherPlan === 'function') afficherPlan(); }
+  try { await sauvegarder(`[admin] Renommage salle → "${nom}"`, '✓ Renommé'); marquerSalleEnAttente(salleActive?.id); if (typeof afficherPlan === 'function') afficherPlan(); }
   catch (e) { toast('Erreur : ' + e.message, 'err'); }
   finally { btnRn.disabled = false; }
 });
@@ -781,7 +781,7 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   try {
     const lbl = _isSculpt ? 'pièces' : 'toiles';
     salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
-    await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'));
+    await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'), null);
     toast('✓ Placement enregistré');
     quitterModePlacement();
   } catch (e) {
