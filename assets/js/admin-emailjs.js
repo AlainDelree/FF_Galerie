@@ -1,30 +1,3 @@
-/* ── Test du système de rapport d'erreurs ── */
-async function testerRapports() {
-  const res = document.getElementById('test-rapport-resultat');
-  const btn = document.getElementById('btn-test-rapport');
-  if (!token) { res.textContent = "⚠ Connectez-vous d'abord (token requis)."; return; }
-  btn.disabled = true;
-  res.textContent = 'Envoi de 4 issues test…';
-
-  /* Vider le cache session pour ce test */
-  const cleTest = 'Bug : [TEST] Rapport automatique — issue de test'.slice(0, 80);
-  delete _rapportCache[cleTest];
-
-  for (let i = 1; i <= 4; i++) {
-    res.textContent = 'Envoi ' + i + '/4…';
-    /* Vider le cache session avant chaque envoi pour que le vrai anti-spam (GitHub Search) s'applique */
-    delete _rapportCache[cleTest];
-    await rapporterErreur('[TEST] Rapport automatique — issue de test', 'bug', 'Envoi ' + i + '/4 — test du système anti-spam (3 max par 24h)');
-    /* Délai entre chaque appel pour laisser GitHub Search se mettre à jour */
-    await new Promise(r => setTimeout(r, 1500));
-  }
-  res.textContent = '✓ Terminé — vérifie tes emails et github.com/' + REPO + '/issues';
-  btn.disabled = false;
-}
-
-document.getElementById('btn-test-rapport')?.addEventListener('click', testerRapports);
-
-
 // ═══════════════════════════════════════════════
 // TEXTURES GITHUB — upload + listing
 // ═══════════════════════════════════════════════
