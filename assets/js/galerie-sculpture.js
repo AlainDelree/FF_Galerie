@@ -22,10 +22,18 @@ function _estMobile() {
   return window.innerWidth <= 600;
 }
 
-/* ── Facteur d'échelle px/cm (dynamique pour responsive) ── */
-function _getEchelle()  { return _estMobile() ? 1.5 : 2.5; }
-function _getEMin()     { return _estMobile() ? 55  : 90; }
-function _getEMaxH()    { return _estMobile() ? 200 : 380; }
+/* ── Facteur d'échelle px/cm (dynamique pour responsive) ──
+   Les valeurs de base sont calibrées pour un viewport plein écran.
+   _vpFactor réduit proportionnellement quand on rend dans un conteneur plus
+   petit (mini-iframe d'aperçu admin) pour garder des socles à la bonne taille. */
+function _vpFactor() {
+  var ref = _estMobile() ? 390 : 1280; /* largeur de référence plein écran */
+  var f = window.innerWidth / ref;
+  return Math.max(0.2, Math.min(1, f)); /* borné [0.2, 1] */
+}
+function _getEchelle()  { return (_estMobile() ? 1.5 : 2.5) * _vpFactor(); }
+function _getEMin()     { return (_estMobile() ? 55  : 90)  * _vpFactor(); }
+function _getEMaxH()    { return (_estMobile() ? 200 : 380) * _vpFactor(); }
 
 /* ── Patterns sol (miroir de admin-galerie.js) ── */
 const SOL_PATTERNS_PUB = {
