@@ -1,23 +1,21 @@
 {
-  "salles": [
-    {
-      "id": 1,
-      "nom": "Salle I",
-      "type": "sculpture",
-      "theme": "",
-      "couleur_mur": "#99c1f1",
-      "couleur_cadres": "#5c3d2e",
-      "epaisseur_cadres": 2,
-      "texture": "parquet",
-      "visible": true,
-      "toiles": [
-        4,
-        1,
-        3
-      ],
-      "positions": [],
-      "positions_mobile": [],
-      "pieces": []
-    }
-  ]
+    "salles": [
+        {
+            "id": 1,
+            "nom": "Salle I",
+            "type": "sculpture",
+            "theme": "",
+            "couleur_mur": "#99c1f1",
+            "couleur_cadres": "#5c3d2e",
+            "epaisseur_cadres": 2,
+            "texture": "parquet",
+            "visible": true,
+            "toiles": [
+                1,
+                2,
+                4
+            ],
+            "positions": []
+        }
+    ]
 }
