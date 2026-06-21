@@ -75,9 +75,12 @@ async function uploaderTextureConfirmee() {
     }
     _texData = null;
     toast('✓ Texture "' + nomSaisi + '" ajoutée');
-    // Refresh depuis GitHub après 3s (le temps que le commit soit indexé)
-    window._texturesGHChargees = false;
-    setTimeout(function() { chargerTexturesGitHub(); }, 3000);
+    /* Le swatch a déjà été ajouté manuellement ci-dessus (ligne 74).
+       Pas besoin de relancer chargerTexturesGitHub() ici : l'API GitHub
+       a un délai de propagation imprévisible (3-10s) après un commit, et
+       un refresh prématuré renvoie une liste sans le fichier qu'on vient
+       d'uploader → cont.innerHTML='' efface le swatch fraîchement ajouté.
+       La synchro complète se fait au prochain login (BUG-006 historique). */
   } catch(e) { $('tex-progress').textContent = 'Erreur : ' + e.message; }
   $('btn-tex-confirmer').disabled = false;
 }
