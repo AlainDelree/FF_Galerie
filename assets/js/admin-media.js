@@ -113,7 +113,7 @@ async function uploaderMusique(fichier) {
     if (ancienFichier && ancienFichier !== cheminStocke) {
       var ancienGH = base + ancienFichier;
       try {
-        var rAnc = await apiGH('/repos/' + REPO + '/contents/' + ancienGH);
+        var rAnc = await apiGH('/repos/' + REPO + '/contents/' + ancienGH + '?ref=' + BRANCH);
         await apiGH('/repos/' + REPO + '/contents/' + ancienGH, 'DELETE', {
           message: 'Admin : Suppression ancienne musique', sha: rAnc.sha, branch: BRANCH
         });
@@ -143,7 +143,7 @@ async function supprimerMusique() {
   var base = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
   var cheminGH = base + fichier;
   try {
-    var r = await apiGH('/repos/' + REPO + '/contents/' + cheminGH);
+    var r = await apiGH('/repos/' + REPO + '/contents/' + cheminGH + '?ref=' + BRANCH);
     await apiGH('/repos/' + REPO + '/contents/' + cheminGH, 'DELETE', {
       message: 'Admin : Suppression musique galerie', sha: r.sha, branch: BRANCH
     });
