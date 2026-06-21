@@ -423,7 +423,9 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
    MODE ÉDITION — ?edit=1 dans l'URL
    Rend les socles draggables, communique via postMessage
    ══════════════════════════════════════════════════════════════ */
-window._GALERIE_EDIT = new URLSearchParams(location.search).has('edit');
+/* galerie-edit.html peut avoir mis _GALERIE_EDIT=true avant le chargement de ce script.
+   On utilise || pour ne pas l'écraser. */
+window._GALERIE_EDIT = window._GALERIE_EDIT || new URLSearchParams(location.search).has('edit');
 
 if (window._GALERIE_EDIT) {
   /* Désactiver la navigation entre salles et les clics immersifs */
@@ -433,16 +435,25 @@ if (window._GALERIE_EDIT) {
   });
 
   /* Stocker les salles/positions pour les envoyer au parent */
-  var _editSalles = null;
+  var _editSalles    = null;
+  var _editTData     = null; /* toiles + gabarits — pour créer des socles sans re-fetch */
   var _editPositions = null; /* référence directe vers salle.positions ou salle.positions_mobile */
 
   /* Appelé après initGalerie — rend les socles draggables */
-  window._initEditDrag = function(salles) {
+  window._initEditDrag = function(salles, tData) {
     _editSalles = salles;
+    _editTData  = tData;
     var salle = salles[0]; /* une seule salle visible */
     var isMobile = window.innerWidth <= 600;
-    _editPositions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
-      ? salle.positions_mobile : (salle.positions || []);
+    if (isMobile) {
+      /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC */
+      if (!salle.positions_mobile || !salle.positions_mobile.length) {
+        salle.positions_mobile = JSON.parse(JSON.stringify(salle.positions || []));
+      }
+      _editPositions = salle.positions_mobile;
+    } else {
+      _editPositions = salle.positions || [];
+    }
 
     var plancher = document.querySelector('.plancher-sol');
     if (!plancher) return;
@@ -582,8 +593,35 @@ if (window._GALERIE_EDIT) {
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
       if (e.data.type === 'refresh') {
-        var conteneur = document.getElementById('conteneurSalles');
-        if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
+        if (e.data.injectPositions !== undefined && _editTData) {
+          /* Placement d'une nouvelle pièce — pas de re-fetch */
+          var gabarits = {}; var pieces = {};
+          (_editTData.gabarits || []).forEach(function(g) { gabarits[g.code] = g; });
+          (_editTData.pieces   || []).forEach(function(p) { pieces[p.id]   = p; });
+          var plancher = document.querySelector('.plancher-sol');
+          if (!plancher) return;
+          (e.data.injectPositions || []).forEach(function(np) {
+            /* Ajouter seulement les positions pas encore dans _editPositions */
+            var existing = _editPositions.find(function(p) { return p.id === np.id; });
+            if (!existing) {
+              _editPositions.push(np);
+              var piece = pieces[np.id];
+              if (!piece) return;
+              var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+              var gabarit = gabarits[gCode] || gabarits['M'];
+              var wrap    = creerSocle(piece, gabarit, np);
+              wrap.style.cursor = 'grab';
+              /* Bloquer clics immersifs sur le nouveau socle */
+              wrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
+              plancher.appendChild(wrap);
+              _sendPositions();
+            }
+          });
+        } else {
+          /* Refresh complet (fallback) */
+          var conteneur = document.getElementById('conteneurSalles');
+          if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
+        }
       }
     });
 

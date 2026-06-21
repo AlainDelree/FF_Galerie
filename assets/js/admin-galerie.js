@@ -1377,9 +1377,12 @@ function placerPieceSolViaIframe(x, y) {
 
   pos.push({ id: piece.id, x: x, y: y, gabarit: gab });
 
-  /* Rafraîchir l'iframe pour montrer la nouvelle pièce */
+  /* Rafraîchir l'iframe — passer les positions mises à jour pour éviter re-fetch */
   var iframe = document.getElementById('edit-galerie-iframe');
-  if (iframe) iframe.contentWindow.postMessage({ type: 'refresh' }, '*');
+  if (iframe) iframe.contentWindow.postMessage({
+    type: 'refresh',
+    injectPositions: [{ id: piece.id, x: x, y: y, gabarit: gab }]
+  }, '*');
 
   selectedToilePl = null;
   afficherStripPlacement();
