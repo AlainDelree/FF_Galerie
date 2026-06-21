@@ -651,7 +651,7 @@ function afficherStripPlacement() {
   /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
      Peinture : placées + sélectionnées + selectedToilePl */
   const tousIds = _isSculpt
-    ? [...new Set([...(salleActive.toiles || []), ...poseeIds])]
+    ? [...new Set([...(salleActive.toiles || []), ...poseeIds, ...toilesSelectionnees])]
     : [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
 
   if (tousIds.length === 0) {
@@ -1376,6 +1376,10 @@ function placerPieceSolViaIframe(x, y) {
   if (idx >= 0) pos.splice(idx, 1);
 
   pos.push({ id: piece.id, x: x, y: y, gabarit: gab });
+
+  /* Assigner à la salle si pas encore dedans */
+  if (!salleActive.toiles) salleActive.toiles = [];
+  if (!salleActive.toiles.includes(piece.id)) salleActive.toiles.push(piece.id);
 
   /* Rafraîchir l'iframe — passer les positions mises à jour pour éviter re-fetch */
   var iframe = document.getElementById('edit-galerie-iframe');
