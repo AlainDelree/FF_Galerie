@@ -152,7 +152,7 @@ async function toggleDraftArtiste(idx) {
   for (const page of ['index.html', 'galerie.html', 'infos.html', 'contact.html']) {
     const chemin = base + page;
     try {
-      const r = await apiGH('/repos/' + REPO + '/contents/' + chemin);
+      const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH);
       let c = decodeURIComponent(escape(atob(r.content.replace(/\s/g, ''))));
       if (publier) {
         c = c.replace(NOINDEX, '');
