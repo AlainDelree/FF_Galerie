@@ -374,11 +374,17 @@ async function apiGH(url, methode = 'GET', corps = null) {
     }
   };
   if (corps) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(corps); }
-  const rep = await fetch(API + url, opts);
+  let rep = await fetch(API + url, opts);
+  /* 401 sur écriture : retry unique après 1.5s avant de conclure que le token est révoqué
+     (GitHub peut envoyer un 401 transitoire sans que le token soit réellement invalide) */
+  if (!rep.ok && rep.status === 401 && methode !== 'GET') {
+    await new Promise(r => setTimeout(r, 1500));
+    rep = await fetch(API + url, opts);
+  }
   if (!rep.ok) {
     const e = await rep.json().catch(() => ({ message: rep.statusText }));
     if (rep.status === 401 && methode !== 'GET') {
-      /* 401 sur écriture → token révoqué, redirection obligatoire */
+      /* Toujours 401 après retry → token vraiment révoqué */
       localStorage.removeItem(K.token);
       token = '';
       rapporterErreur('Token GitHub invalide ou révoqué — admin inaccessible', 'effondrement', url);
