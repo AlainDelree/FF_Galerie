@@ -575,7 +575,7 @@ function initGalerie() {
     }
     /* Mode édition — activer le drag sur les socles */
     if (window._GALERIE_EDIT && typeof window._initEditDrag === 'function') {
-      requestAnimationFrame(function() { window._initEditDrag(salles); });
+      requestAnimationFrame(function() { window._initEditDrag(salles, tData); });
     }
   })
   .catch(err => {
