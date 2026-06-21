@@ -169,15 +169,6 @@ async function _sauvegarderTout(badgeId, btnId) {
     if (btn) { btn.disabled = false; btn.textContent = lblOrig || 'Enregistrer'; }
   }
 }
-async function sauvegarderInfos() { await _sauvegarderTout('badge-infos', null); }
-async function sauvegarderAgenda() {
-  if (document.getElementById('form-event-wrap')?.style.display !== 'none') sauverFormulaireEvent();
-  await _sauvegarderTout('badge-agenda', 'btn-gh-sauver-agenda');
-}
-async function sauvegarderLiens() {
-  if (document.getElementById('form-collegue-wrap')?.style.display !== 'none') sauverCollegue();
-  await _sauvegarderTout('badge-liens', 'btn-gh-sauver-liens');
-}
 async function sauvegarderContact() { await _sauvegarderTout('badge-contact', 'btn-gh-sauver-contact'); }
 async function sauvegarderPresentation() { await _sauvegarderTout('badge-pres', 'btn-gh-sauver-pres'); }
 
