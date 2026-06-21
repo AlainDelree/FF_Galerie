@@ -748,7 +748,10 @@ function afficherStripPlacement() {
           ? `"${t.titre||'—'}" → clique sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
           : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
       }
-      afficherMurPlacement(); afficherStripPlacement();
+      /* Sculpture : ne PAS recréer l'iframe (flash + pièces perdues).
+         Peinture : afficherMurPlacement met à jour les cases occupées. */
+      if (!_isSculpt) afficherMurPlacement();
+      afficherStripPlacement();
     });
     strip.appendChild(item);
   });
