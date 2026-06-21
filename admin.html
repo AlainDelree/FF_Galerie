@@ -1326,18 +1326,35 @@
 </div>
 
 
-<!-- ══ PICKER COULEUR ARTISTE ══ -->
-<div id="overlay-picker-col" style="display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);align-items:center;justify-content:center;" onclick="if(event.target===this)fermerPickerCouleur()">
+<!-- ══ PICKER COULEUR HSV ══ -->
+<div id="overlay-picker-col" style="display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.6);align-items:center;justify-content:center;" onclick="if(event.target===this)fermerPickerCouleur()">
   <div id="picker-panel" onclick="event.stopPropagation()">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <span style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">Choisir une couleur</span>
-      <button type="button" onclick="fermerPickerCouleur()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1;padding:0 0 0 .8rem;">×</button>
+
+    <!-- En-tête -->
+    <div class="picker-hdr">
+      <span id="picker-titre">Couleur du mur</span>
+      <button type="button" onclick="fermerPickerCouleur()" class="picker-close">×</button>
     </div>
-    <div id="picker-grille"></div>
-    <div style="margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--brd);display:flex;align-items:center;gap:.6rem;">
-      <input type="color" id="picker-libre" style="width:30px;height:30px;border:none;padding:0;background:none;cursor:pointer;border-radius:50%;overflow:hidden;flex-shrink:0;">
-      <span style="font-size:.75rem;color:var(--muted);">Nuance libre…</span>
+
+    <!-- Zone HSV (canvas) -->
+    <canvas id="picker-canvas" class="picker-canvas" touch-action="none"></canvas>
+
+    <!-- Curseur de teinte -->
+    <div id="picker-hue-track" class="picker-hue-track">
+      <div id="picker-hue-thumb" class="picker-hue-thumb"></div>
     </div>
+
+    <!-- Prévisualisation + valeur hex -->
+    <div class="picker-preview-row">
+      <div id="picker-cur-col" class="picker-preview-swatch"></div>
+      <input type="text" id="picker-hex-inp" class="picker-hex-inp" maxlength="7" placeholder="#2e2e2e" spellcheck="false">
+      <button type="button" class="picker-ok-btn" onclick="_confirmerPickerCouleur()">OK</button>
+    </div>
+
+    <!-- Palette rapide -->
+    <div class="picker-rapide-lbl">Sélection rapide</div>
+    <div id="picker-grille" class="picker-grille-rapide"></div>
+
   </div>
 </div>
 
