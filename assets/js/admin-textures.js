@@ -202,37 +202,11 @@ function chargerPreset() {
 }
 
 
-let _pendingTextureFile = null;
-
-function gererTextureCustom(fichier) {
-  if (!fichier) return;
-  _pendingTextureFile = fichier;
-  var suggestion = fichier.name.replace(/\.[^.]+$/, '').replace(/[_\-]/g, ' ').replace(/\s+/g, ' ').trim();
-  $('inp-tex-nom').value = suggestion;
-  $('overlay-tex-nom').classList.add('ouvert');
-  setTimeout(function() { $('inp-tex-nom').select(); }, 150);
-}
-
-function confirmerTextureNom() {
-  var nom = $('inp-tex-nom').value.trim();
-  if (!nom) { toast("Entrez un nom pour la texture", "err"); return; }
-  if (!_pendingTextureFile) return;
-  $('overlay-tex-nom').classList.remove('ouvert');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    const key = 'tex_custom_' + Date.now();
-    const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
-    customs.push({ key, url: dataUrl, nom });
-    if (customs.length > 5) customs.shift();
-    localStorage.setItem(K.textures, JSON.stringify(customs));
-    afficherTexturesCustom();
-    setTexture(key);
-    toast("✓ Texture \"" + nom + "\" ajoutée");
-    _pendingTextureFile = null;
-  };
-  reader.readAsDataURL(_pendingTextureFile);
-}
+/* gererTextureCustom + confirmerTextureNom + _pendingTextureFile supprimés :
+   ancien système d'upload texture (vers localStorage) remplacé par
+   ouvrirOverlayTexture + uploaderTextureConfirmee (vers GitHub) dans
+   admin-emailjs.js. La modale #overlay-tex-nom associée est aussi
+   supprimée de admin.html. */
 
 function renommerTexture(key) {
   var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
@@ -367,10 +341,6 @@ function initSwatches() {
   $('btn-preset-charger').addEventListener('click', chargerPreset);
   $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
   $('btn-annuler-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
-  $('btn-close-tex-nom').addEventListener('click', function() { $('overlay-tex-nom').classList.remove('ouvert'); _pendingTextureFile = null; });
-  $('btn-annuler-tex-nom').addEventListener('click', function() { $('overlay-tex-nom').classList.remove('ouvert'); _pendingTextureFile = null; });
-  $('btn-confirmer-tex-nom').addEventListener('click', confirmerTextureNom);
-  $('inp-tex-nom').addEventListener('keydown', function(e){ if(e.key==='Enter') confirmerTextureNom(); });
   $('btn-close-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('btn-annuler-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('overlay-preset-charger').addEventListener('click', function(e) { if(e.target===$('overlay-preset-charger')) $('overlay-preset-charger').classList.remove('ouvert'); });
