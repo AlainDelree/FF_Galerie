@@ -2,7 +2,7 @@
   "salles": [
     {
       "id": 5,
-      "nom": "Entrée",
+      "nom": "Vestibule",
       "theme": "",
       "couleur_mur": "#e5a50a",
       "couleur_cadres": "#3a3a3a",
@@ -24,7 +24,7 @@
         },
         {
           "id": 8,
-          "col": 6,
+          "col": 7,
           "row": 1,
           "w": 4,
           "h": 5
