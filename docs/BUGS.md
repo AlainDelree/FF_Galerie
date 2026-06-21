@@ -168,6 +168,32 @@
 
 ---
 
+## BUG-007 — Publier un artiste écrase sa galerie.html avec une version obsolète de main
+
+- **Statut :** 🟢 Fixé sur dev (Alain régénéré manuellement)
+- **Date apparition :** Depuis la refacto galerie multi-type (14 juin 2026, commit `9c6fb7e`)
+- **Branche concernée :** dev (visible uniquement sur dev.frederiqueferette.be)
+- **Reproduction (sur dev.frederiqueferette.be) :**
+  1. Avoir un artiste invité en draft (`draft: true`, donc `noindex`) sur dev
+  2. Cliquer "Publier" depuis la vue Artistes invités de l'admin Fred
+  3. Le commit "Publication artiste : X" est créé
+  4. Aller voir la galerie publique de l'artiste → elle ne charge plus rien (page semble bouger mais les salles buguent en navigation)
+  5. Voir le diff du commit publication : il a remplacé `galerie-core.js + galerie-peinture.js + initGalerie()` par `galerie.js?v=20260608b` (fichier qui n'existe plus depuis la refacto)
+- **Symptôme apparent :** Après publication, la galerie publique de l'artiste invité est cassée (navigation entre salles ne fonctionne plus).
+- **Cause réelle :** `toggleDraftArtiste` (admin-vue-artistes.js:155) lisait les 4 fichiers HTML de l'artiste via l'API GitHub `/repos/{owner}/{repo}/contents/{path}` SANS paramètre `?ref=`. L'API renvoyait donc le contenu sur la **branche par défaut (main)**, et non sur dev où le user travaillait. Or sur main, ces fichiers HTML n'ont jamais été regénérés depuis la refacto du 14 juin : ils contiennent encore l'ancien `<script src="galerie.js?v=20260608b">` qui n'existe plus. La fonction retire le `noindex` de cet état obsolète et le re-commit sur dev → la galerie de l'artiste est régressée à un état non fonctionnel.
+- **Mauvaises hypothèses initiales :**
+  - Données invalides dans `salles.json` ou `toiles.json` d'Alain → INVALIDE (structure cohérente, positions valides)
+  - Bug pré-existant indépendant de la session de cleanup → PARTIELLEMENT VRAI (le bug `?ref=` existait, mais a été révélé par le geste "publier")
+- **Solution trouvée :**
+  - Ajouter `?ref=${BRANCH}` au GET de `toggleDraftArtiste` (pattern identique à BUG-006)
+  - Régénérer manuellement `artistes/alaindelree/galerie.html` avec le bon chargement (`galerie-core.js + galerie-peinture.js + initGalerie()`)
+- **Reste à faire :**
+  - Quand le fix sera cherry-pické sur main, regénérer aussi tous les `galerie.html` des artistes invités sur main pour qu'ils utilisent le nouveau chargement (sinon les futures publications depuis main referont la même régression)
+  - Pareillement pour `admin-media.js:98, 128` (3e endroit identifié avec le même bug latent)
+- **Commit fix :** _(à compléter)_
+
+---
+
 ## Template pour nouveau bug
 
 ```markdown
