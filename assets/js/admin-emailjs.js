@@ -120,7 +120,7 @@ async function chargerTexturesGitHub() {
     var d = dossiers[i];
     if (!d.cont) continue;
     try {
-      var files = await apiGH('/repos/' + REPO + '/contents/' + d.chemin);
+      var files = await apiGH('/repos/' + REPO + '/contents/' + d.chemin + '?ref=' + BRANCH);
       var imgs  = files.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
       if (!imgs.length) { if (d.wrap) d.wrap.style.display = 'none'; continue; }
       if (d.wrap) d.wrap.style.display = '';
@@ -168,10 +168,11 @@ function creerSwatchGH(chemin, url, suppressible) {
 
 async function supprimerTextureGitHub(chemin) {
   try {
-    var file = await apiGH('/repos/' + REPO + '/contents/' + chemin);
+    var file = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH);
     await apiGH('/repos/' + REPO + '/contents/' + chemin, 'DELETE', {
       message: 'Suppression texture : ' + chemin.split('/').pop(),
-      sha: file.sha
+      sha: file.sha,
+      branch: BRANCH
     });
     if (textureActuelle === chemin) { setTexture('none'); }
     await chargerTexturesGitHub();

@@ -142,6 +142,32 @@
 
 ---
 
+## BUG-006 — Textures GitHub : chargement et suppression lisent toujours main
+
+- **Statut :** 🟢 Fixé sur dev
+- **Date apparition :** Depuis l'ajout de la fonctionnalité textures GitHub
+- **Branche concernée :** dev (visible uniquement sur dev.frederiqueferette.be car en prod main=main, donc transparent)
+- **Reproduction (uniquement sur dev.frederiqueferette.be) :**
+  1. Ouvrir admin en navigation privée (= aucun cache)
+  2. Aller sur Couleurs/Textures
+  3. Uploader une nouvelle texture (privée ou partagée)
+  4. Toast "✓ Texture ajoutée" → le swatch apparaît dans le panneau correspondant
+  5. **~3 secondes plus tard** : le panneau disparaît visuellement (la nouvelle texture semble s'être perdue)
+  6. Refresh complet → le compte de textures affiché est différent de ce qui existe réellement sur la branche dev
+- **Symptôme apparent :** Les textures uploadées ne s'enregistrent pas (alors qu'elles sont bien sur GitHub).
+- **Cause réelle :** `chargerTexturesGitHub()` (admin-emailjs.js:96) et `supprimerTextureGitHub()` (L144-145) appellent l'API GitHub `/repos/{owner}/{repo}/contents/{path}` **sans paramètre `?ref=`**. L'API renvoie alors le contenu de la **branche par défaut** (main). Conséquence sur dev :
+  - Le listing ne voit que les fichiers présents sur main, pas ceux qui n'existent que sur dev
+  - 3s après upload sur dev, `chargerTexturesGitHub()` est appelée par `setTimeout`, lit main, ne voit pas le fichier juste uploadé, et fait `display:none` sur le wrap → le panneau "MES TEXTURES" disparaît avec le swatch fraîchement ajouté
+  - Le DELETE échouait aussi si le fichier n'existait que sur dev (SHA de main inutilisable)
+- **Mauvaises hypothèses initiales :**
+  - "Manque de place" dans le panneau (sur GSM) → INVALIDE (les swatches sont 20×20px et wrappent)
+  - Bug d'affichage CSS → INVALIDE (le display:none est piloté par JS)
+- **Solution trouvée :** Ajouter `?ref=${BRANCH}` au GET de listing et au GET de SHA, et `branch: BRANCH` dans le body du DELETE. Le pattern correct existait déjà ailleurs dans `lireRaw()` et `commitMulti()` — c'est juste qu'il manquait sur ces deux fonctions textures.
+- **Reste à faire :** 3 autres endroits ont le même bug latent mais moins visible (uploaderPhoto/Musique en update sur `admin-media.js:98, 128`, création artiste sur `admin-vue-artistes.js:155`). À fixer dans une session dédiée à l'audit cross-fichier des appels `apiGH` sans `?ref=`.
+- **Commit fix :** _(à compléter)_
+
+---
+
 ## Template pour nouveau bug
 
 ```markdown
