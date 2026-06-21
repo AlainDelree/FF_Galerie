@@ -15,10 +15,17 @@
   }
 })();
 
+/* ── Détection mobile — peut être forcée via _GALERIE_FORCE_MOBILE (aperçu admin) ── */
+function _estMobile() {
+  if (window._GALERIE_FORCE_MOBILE === true)  return true;
+  if (window._GALERIE_FORCE_MOBILE === false) return false;
+  return window.innerWidth <= 600;
+}
+
 /* ── Facteur d'échelle px/cm (dynamique pour responsive) ── */
-function _getEchelle()  { return window.innerWidth <= 600 ? 1.5 : 2.5; }
-function _getEMin()     { return window.innerWidth <= 600 ? 55  : 90; }
-function _getEMaxH()    { return window.innerWidth <= 600 ? 200 : 380; }
+function _getEchelle()  { return _estMobile() ? 1.5 : 2.5; }
+function _getEMin()     { return _estMobile() ? 55  : 90; }
+function _getEMaxH()    { return _estMobile() ? 200 : 380; }
 
 /* ── Patterns sol (miroir de admin-galerie.js) ── */
 const SOL_PATTERNS_PUB = {
@@ -389,7 +396,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
         }
       });
     }
-    var isMobile = window.innerWidth <= 600;
+    var isMobile = _estMobile();
     var positions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
       ? salle.positions_mobile : (salle.positions || []);
     positions.slice().sort((a, b) => b.y - a.y).forEach(pos => {
@@ -406,9 +413,11 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
 
 /* ── Re-render quand le viewport croise le seuil 600px (toggle F12 responsive) ── */
 (function() {
-  var _wasMobile = window.innerWidth <= 600;
+  var _wasMobile = _estMobile();
   window.addEventListener('resize', function() {
-    var isMobile = window.innerWidth <= 600;
+    /* Si le mode est forcé (aperçu admin), ne pas re-render sur resize */
+    if (window._GALERIE_FORCE_MOBILE === true || window._GALERIE_FORCE_MOBILE === false) return;
+    var isMobile = _estMobile();
     if (isMobile !== _wasMobile) {
       _wasMobile = isMobile;
       if (typeof initGalerie === 'function') {

@@ -115,120 +115,77 @@ function afficherMur() {
   bg.innerHTML = '';
   if (!salleActive) return;
 
-  /* ── SCULPTURE : aperçu parquet avec socles en perspective ── */
+  /* ── SCULPTURE : aperçu via iframes read-only (vrai moteur de rendu) ── */
   if (_isSculpt) {
     bg.className = '';
-    const coulParquet = couleurMurActuel || '#8a6228';
-    const texSol = textureActuelle || 'parquet';
-    bg.style.cssText =
-      'background:' + solPatternCSS(texSol, coulParquet) + ';position:relative;overflow:visible;' +
-      'display:block;width:100%;border-radius:6px;aspect-ratio:16/9;max-height:55vh;margin:0 auto;';
+    bg.style.cssText = '';
+    bg.innerHTML = '';
 
-    /* Pièces avec socles perspective */
-    (salleActive.positions || []).slice().sort((a, b) => b.y - a.y).forEach(p => {
-      const t = toiles.find(x => x.id === p.id); if (!t) return;
-      const scale = (1 - (p.y / 100) * 0.42).toFixed(3);
-      const zIdx  = Math.round((100 - p.y) * 10);
-
-      const wrap = document.createElement('div');
-      wrap.style.cssText =
-        'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;' +
-        'transform:translateX(-50%) scale(' + scale + ');transform-origin:bottom center;' +
-        'z-index:' + zIdx + ';display:flex;flex-direction:column;align-items:center;';
-
-      /* Image ou placeholder */
-      const imgWrap = document.createElement('div');
-      imgWrap.style.cssText = 'width:50px;height:50px;display:flex;align-items:flex-end;justify-content:center;';
-      if (t.photo || t._preview) {
-        const img = document.createElement('img');
-        img.src = t._preview || t.photo; img.alt = ''; img.draggable = false;
-        img.style.cssText = 'max-width:50px;max-height:50px;object-fit:contain;';
-        imgWrap.appendChild(img);
-      } else {
-        const ph = document.createElement('div');
-        ph.style.cssText = 'width:36px;height:44px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.6);';
-        ph.textContent = t.glb ? '3D' : '?';
-        imgWrap.appendChild(ph);
-      }
-      wrap.appendChild(imgWrap);
-
-      /* Piédestal marbre */
-      const ped = document.createElement('div');
-      ped.style.cssText =
-        'width:40px;height:28px;border-radius:5px;' +
-        'background:linear-gradient(to right,rgba(0,0,0,.15),rgba(255,255,255,.08) 45%,rgba(255,255,255,.12) 55%,rgba(0,0,0,.12));' +
-        'background-color:#eae6de;position:relative;';
-      /* Ellipse dessus */
-      const top = document.createElement('div');
-      top.style.cssText =
-        'position:absolute;top:-4px;left:-15%;width:130%;height:8px;' +
-        'background:radial-gradient(ellipse at 42% 40%,#f8f6f2,#d8d2c8);border-radius:50%;';
-      ped.appendChild(top);
-      wrap.appendChild(ped);
-
-      /* Ombre */
-      const ombre = document.createElement('div');
-      ombre.style.cssText =
-        'width:55px;height:6px;background:rgba(0,0,0,.25);border-radius:50%;filter:blur(3px);margin-top:1px;';
-      wrap.appendChild(ombre);
-
-      /* Titre */
-      const lbl = document.createElement('div');
-      lbl.style.cssText =
-        'font-size:8px;color:#fff;white-space:nowrap;max-width:70px;overflow:hidden;' +
-        'text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);margin-top:2px;';
-      lbl.textContent = t.titre || '—';
-      wrap.appendChild(lbl);
-
-      bg.appendChild(wrap);
-    });
-
-    /* ── Aperçu GSM à côté ── */
-    var oldGsmPrev = document.getElementById('gsm-preview-aside');
-    if (oldGsmPrev) oldGsmPrev.remove();
+    /* Nettoyer un éventuel ancien row-wrap */
     var oldRow = document.getElementById('mur-row-wrap');
-    if (oldRow) { /* Dé-wrapper si déjà wrappé */
-      oldRow.parentNode.insertBefore(bg, oldRow);
-      oldRow.remove();
+    if (oldRow) { oldRow.parentNode.insertBefore(bg, oldRow); oldRow.remove(); }
+
+    var apercuPath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-apercu.html';
+
+    /* Données admin en mémoire à injecter dans les iframes */
+    var injectData = {
+      type: 'init-data',
+      toiles: ADMIN_CFG.type === 'sculpture'
+        ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+        : { next_id: nextId, tailles: tailles, toiles: toiles },
+      salles: { salles: JSON.parse(JSON.stringify(salles)) }
+    };
+    function brancherApercu(iframe) {
+      function onMsg(e) {
+        if (e.source === iframe.contentWindow && e.data && e.data.type === 'iframe-awaiting-data') {
+          iframe.contentWindow.postMessage(injectData, '*');
+        }
+      }
+      window.addEventListener('message', onMsg);
     }
 
-    var mobilePos = (salleActive.positions_mobile && salleActive.positions_mobile.length)
-      ? salleActive.positions_mobile : (salleActive.positions || []);
+    /* Row : aperçu PC (large) + aperçu GSM (étroit) côte à côte */
+    var rowWrap = document.createElement('div');
+    rowWrap.id = 'mur-row-wrap';
+    rowWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start;';
+    bg.parentNode.insertBefore(rowWrap, bg);
+
+    /* Aperçu PC */
+    var pcCol = document.createElement('div');
+    pcCol.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;';
+    var pcLbl = document.createElement('div');
+    pcLbl.style.cssText = 'text-align:center;font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.1em;';
+    pcLbl.textContent = '🖥 PC';
+    var pcFrame = document.createElement('div');
+    pcFrame.style.cssText = 'width:100%;aspect-ratio:16/9;border-radius:6px;overflow:hidden;border:1px solid var(--brd);position:relative;';
+    var pcIframe = document.createElement('iframe');
+    pcIframe.src = apercuPath + '?vue=pc&v=' + Date.now();
+    pcIframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+    brancherApercu(pcIframe);
+    pcFrame.appendChild(pcIframe);
+    pcCol.appendChild(pcLbl); pcCol.appendChild(pcFrame);
+
+    /* Aperçu GSM */
     var hasCustomMobile = !!(salleActive.positions_mobile && salleActive.positions_mobile.length);
-    if (mobilePos.length) {
-      /* Wrapper row pour côte à côte */
-      var rowWrap = document.createElement('div');
-      rowWrap.id = 'mur-row-wrap';
-      rowWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start;';
-      bg.parentNode.insertBefore(rowWrap, bg);
-      rowWrap.appendChild(bg);
-      bg.style.flex = '1';
+    var gsmCol = document.createElement('div');
+    gsmCol.style.cssText = 'flex:0 0 90px;display:flex;flex-direction:column;gap:3px;';
+    var gsmLbl = document.createElement('div');
+    gsmLbl.style.cssText = 'text-align:center;font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.05em;';
+    gsmLbl.textContent = hasCustomMobile ? '📱 GSM' : '📱 GSM (=PC)';
+    var gsmFrame = document.createElement('div');
+    gsmFrame.style.cssText = 'width:90px;aspect-ratio:9/19;border-radius:8px;overflow:hidden;border:1.5px solid var(--gold);position:relative;';
+    var gsmIframe = document.createElement('iframe');
+    gsmIframe.src = apercuPath + '?vue=gsm&v=' + Date.now();
+    gsmIframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+    brancherApercu(gsmIframe);
+    gsmFrame.appendChild(gsmIframe);
+    gsmCol.appendChild(gsmLbl); gsmCol.appendChild(gsmFrame);
 
-      var miniGsm = document.createElement('div');
-      miniGsm.id = 'gsm-preview-aside';
-      miniGsm.style.cssText = 'flex:0 0 80px;height:160px;border-radius:10px;overflow:hidden;border:1.5px solid var(--gold);display:flex;flex-direction:column;';
-
-      var gsmLbl = document.createElement('div');
-      gsmLbl.style.cssText = 'text-align:center;font-size:7px;color:#fff;padding:3px 0;background:#7a7a7a;font-weight:700;letter-spacing:.1em;';
-      gsmLbl.textContent = hasCustomMobile ? '📱 GSM' : '📱 GSM (=PC)';
-      miniGsm.appendChild(gsmLbl);
-
-      var gsmMur = document.createElement('div');
-      gsmMur.style.cssText = 'flex:0 0 20%;background:#7a7a7a;';
-      miniGsm.appendChild(gsmMur);
-
-      var gsmSol = document.createElement('div');
-      gsmSol.style.cssText = 'flex:1;position:relative;background:' + solPatternCSS(texSol, coulParquet) + ';';
-      mobilePos.forEach(function(p) {
-        var t2 = toiles.find(function(x){ return x.id === p.id; }); if (!t2) return;
-        var sc = 1 - (p.y / 100) * 0.42;
-        var dot = document.createElement('div');
-        dot.style.cssText = 'position:absolute;left:' + p.x + '%;bottom:' + p.y + '%;transform:translateX(-50%) scale(' + (sc * 0.7).toFixed(2) + ');transform-origin:bottom center;width:8px;height:10px;background:#eae6de;border-radius:2px;border:1px solid rgba(0,0,0,.25);';
-        gsmSol.appendChild(dot);
-      });
-      miniGsm.appendChild(gsmSol);
-      rowWrap.appendChild(miniGsm);
-    }
+    rowWrap.appendChild(pcCol);
+    rowWrap.appendChild(gsmCol);
+    /* bg n'est plus utilisé pour le rendu sculpture — le cacher */
+    bg.style.display = 'none';
+    rowWrap.appendChild(bg);
 
     return;
   }
