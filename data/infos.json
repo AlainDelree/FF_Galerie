@@ -1,12 +1,16 @@
 {
   "musique": {
-    "fichier": ""
+    "fichier": "assets/music/musique.mp3",
+    "titre": "Pictures at an Exhibition",
+    "auteur": "Mussorgsky",
+    "interprete": "Alexander Ghindin",
+    "lien": "https://musopen.org/music/performer/alexander-ghindin/",
+    "licence": "CC BY"
   },
   "evenements": [
     {
-      "id": 1,
       "titre": "Exposition Montmartre à Dinant",
-      "dateAffichage": "27 septembre 2026",
+      "dateAffichage": "27/09/2026",
       "lieu": "Dinant, Belgique",
       "description": "Edition spéciale 30 ans.\nDinant Montmartre accueille et rassemble près de 200 artistes et attire plus de 7000 visiteurs pour une exposition d'art dans les ruelles du vieux Dinant.",
       "lien": "https://dinant-montmartre.odoo.com/"
@@ -16,13 +20,13 @@
     {
       "id": 1,
       "nom": "Exemple — Artiste Peintre",
-      "description": "Aquarelles et huiles sur toiles",
+      "description": "Aquarelles",
       "lien": "https://example.com",
       "type": "site"
     }
   ],
   "presentation": {
-    "titre": "Frédérique Ferette.",
+    "titre": "Frédérique Ferette",
     "texte": "Je suis une artiste peintre belge. Je travaille avec beaucoup de matériaux différents — la couleur, bien sûr, mais aussi la colle, le film alimentaire, des morceaux de bois, des perles, et d'autres choses encore. Je les utilise pour créer de la texture, parce que c'est ce langage-là qui m'intéresse : exprimer une émotion, une sensation, à travers la matière plutôt qu'avec des mots.\n\nChaque toile est une exploration. Je me laisse guider par ce que je ressens, et je cherche comment traduire ça en couleur, en texture, en matière. Ce qui compte pour moi, c'est cette rencontre entre ce que je ressens et ce qui naît sur la toile — pas la perfection, mais l'authenticité.",
     "photo": "assets/images/about/frederique-ferette.jpg"
   }
