@@ -700,8 +700,8 @@ function afficherStripPlacement() {
       si.appendChild(ph);
     }
 
-    // Grille W×H sur la miniature quand mode grille actif
-    if (grilleVisiblePl) {
+    // Grille W×H sur la miniature quand mode grille actif (peinture uniquement)
+    if (grilleVisiblePl && !_isSculpt) {
       var _pos = (salleActive.positions||[]).find(function(p){ return p.id===id; });
       var _wh  = _pos ? {w:_pos.w, h:_pos.h} : calcCases(t.dimensions);
       si.style.position = 'relative';
@@ -726,7 +726,7 @@ function afficherStripPlacement() {
     // Badge état
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
-    badge.textContent = estPlace ? '🔒 sur le mur' : '+ à placer';
+    badge.textContent = estPlace ? (_isSculpt ? '🔒 sur le sol' : '🔒 sur le mur') : '+ à placer';
     item.appendChild(badge);
 
     const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
