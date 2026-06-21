@@ -190,7 +190,7 @@
 - **Reste à faire :**
   - Quand le fix sera cherry-pické sur main, regénérer aussi tous les `galerie.html` des artistes invités sur main pour qu'ils utilisent le nouveau chargement (sinon les futures publications depuis main referont la même régression)
   - Pareillement pour `admin-media.js:98, 128` (3e endroit identifié avec le même bug latent)
-- **Commit fix :** _(à compléter)_
+- **Commit fix :** `780b225` (dev) — à reporter sur main après regen des galerie.html des invités sur main
 
 ---
 
