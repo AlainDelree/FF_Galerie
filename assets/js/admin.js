@@ -609,6 +609,7 @@ $('btn-token').addEventListener('click', validerToken);
 
 // Logout
 $('btn-logout').addEventListener('click', () => { if (confirm('Se déconnecter ?')) deconnecter(); });
+$('btn-changer-token')?.addEventListener('click', () => { token = ''; afficherEcran('ecran-token'); });
 
 // Onglets
 document.querySelectorAll('.onglet').forEach(o => {
