@@ -847,6 +847,25 @@ if (window._GALERIE_EDIT) {
     /* Recevoir messages du parent */
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
+
+      if (e.data.type === 'retirer-piece') {
+        /* Retrait demandé depuis le panneau Support (bouton 🗑) */
+        var rid = e.data.id;
+        var ridx = _editPositions.findIndex(function(p) { return p.id === rid; });
+        if (ridx >= 0) _editPositions.splice(ridx, 1);
+        var plancherR = document.querySelector('.plancher-sol');
+        if (plancherR) {
+          plancherR.querySelectorAll('.socle-wrapper').forEach(function(w) {
+            if (parseInt(w.dataset.pieceId) === rid) w.remove();
+          });
+        }
+        _selected = null;
+        _sendPositions();
+        parent.postMessage({ type: 'piece-removed', id: rid }, '*');
+        parent.postMessage({ type: 'piece-deselected' }, '*');
+        return;
+      }
+
       if (e.data.type === 'refresh') {
         if (e.data.injectPositions !== undefined && _editTData) {
           /* Placement d'une nouvelle pièce — pas de re-fetch */

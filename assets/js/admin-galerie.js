@@ -1495,6 +1495,13 @@ function ouvrirPanneauSupport(pieceId) {
     document.getElementById('support-close').addEventListener('click', function() {
       fermerPanneauSupport();
     });
+    document.getElementById('support-retirer').addEventListener('click', function() {
+      if (_supportPieceId == null) return;
+      var iframe = document.getElementById('edit-galerie-iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'retirer-piece', id: _supportPieceId }, '*');
+      }
+    });
     /* Type */
     document.querySelectorAll('.support-type-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
