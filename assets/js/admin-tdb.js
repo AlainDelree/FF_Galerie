@@ -315,12 +315,14 @@ function _creerCarteVue(facette, salle, lbl) {
     /* Injection des données dans l'iframe */
     (function(ifr) {
       var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+      /* N'injecter QUE la salle de cette carte (sinon l'aperçu montre la 1re salle) */
+      var salleSeule = JSON.parse(JSON.stringify(salle));
       var injectData = {
         type: 'init-data',
         toiles: _isSculptType
           ? { next_id: nextId, gabarits: tailles, pieces: toiles }
           : { next_id: nextId, tailles:  tailles, toiles: toiles },
-        salles: { salles: JSON.parse(JSON.stringify(salles || [])) }
+        salles: { salles: [salleSeule] }
       };
       function onMsg(e) {
         if (e.source === ifr.contentWindow && e.data && e.data.type === 'iframe-awaiting-data') {
