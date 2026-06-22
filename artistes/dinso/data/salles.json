@@ -93,8 +93,8 @@
       "id": 7,
       "nom": "Salle E",
       "type": "sculpture",
-      "couleur_mur": "#2a2520",
-      "texture": "none",
+      "couleur_mur": "#8a6228",
+      "texture": "parquet",
       "visible": true,
       "toiles": [
         4
