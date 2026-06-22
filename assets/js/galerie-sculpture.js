@@ -732,14 +732,23 @@ if (window._GALERIE_EDIT) {
       _dragging = null;
     });
 
-    /* Clic sol → placer une pièce (si parent demande) */
-    /* Tap sur sol vide (mobile) → placer une pièce. Le click synthétique étant
-       ignoré, on émet sol-click ici si le tap n'a pas touché de pièce. */
+    /* Tap sur sol vide (mobile) :
+       - si une pièce posée est sélectionnée → désélectionner
+       - sinon → sol-click (placer la pièce du strip) */
     plancher.addEventListener('touchend', function(e) {
-      if (_dragging) return; /* un drag/tap sur pièce est géré par l'autre touchend */
+      if (_dragging) return; /* tap/drag sur pièce géré par l'autre touchend */
       var t = e.changedTouches[0];
       var el = document.elementFromPoint(t.clientX, t.clientY);
-      if (el && el.closest('.socle-wrapper')) return; /* tap sur pièce, pas sur sol */
+      if (el && el.closest('.socle-wrapper')) return; /* tap sur pièce */
+      if (_selected) {
+        /* Désélectionner la pièce posée */
+        _selected.classList.remove('edit-selected');
+        _selected.style.outline = '';
+        var b = _selected.querySelector('.edit-rm-btn'); if (b) b.remove();
+        _selected = null;
+        parent.postMessage({ type: 'piece-deselected' }, '*');
+        return;
+      }
       var rect = plancher.getBoundingClientRect();
       var x = Math.round(((t.clientX - rect.left) / rect.width) * 100);
       var y = Math.round((1 - (t.clientY - rect.top) / rect.height) * 100);
