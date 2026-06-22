@@ -6,6 +6,15 @@
  * retourTableauBord()   — retour au hub depuis l'éditeur
  */
 
+/* Décor par défaut (miroir de DECOR_IMMERSIVE_DEFAUT dans salle-immersive.js) */
+var DECOR_IMMERSIVE_DEFAUT = {
+  fond:   '#12100c',
+  sol:    '#8a6228',
+  mur:    '#2e2a35',
+  piquet: '#c8a050',
+  corde:  '#8b0020'
+};
+
 /* ─── Registre des types de salle ─── */
 var TYPES_SALLE = {
   peinture:  { vues: ['galerie-pc', 'galerie-gsm'], greffons: [] },
