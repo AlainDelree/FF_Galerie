@@ -94,6 +94,8 @@
       "nom": "Salle E",
       "type": "sculpture",
       "couleur_mur": "#8a6228",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
       "toiles": [
@@ -121,46 +123,6 @@
       "toiles": [],
       "positions": [],
       "positions_mobile": []
-    },
-    {
-      "id": 4,
-      "nom": "Salle AD",
-      "type": "sculpture",
-      "couleur_mur": "#a07540",
-      "couleur_cadres": "#5c3d2e",
-      "epaisseur_cadres": 2,
-      "texture": "none",
-      "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": [],
-      "greffons": {
-        "immersive": {
-          "actif": true,
-          "decor": {
-            "fond": "#12100c",
-            "exposure": 1,
-            "sol": "#040404",
-            "socle_couleur": "#f0ece4",
-            "socle_use_piece": false,
-            "pan_a": "#f0ece4",
-            "pan_b": "#f0ece4",
-            "pan_c": "#f0ece4",
-            "pan_d": "#f0ece4",
-            "piquet": "#c8a050",
-            "corde": "#8b0020"
-          }
-        },
-        "descriptive": {
-          "actif": true,
-          "decor": {
-            "pan_a": "#e0f0b0",
-            "pan_b": "#e0f0b0",
-            "pan_c": "#e0f0b0",
-            "pan_d": "#e0f0b0"
-          }
-        }
-      }
     },
     {
       "id": 2,
