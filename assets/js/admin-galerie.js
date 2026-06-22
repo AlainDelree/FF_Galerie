@@ -504,7 +504,7 @@ function _refreshArrangerSnapshot() {
     supports: toiles.map(function(t) {
       return {
         id:         t.id,
-        support:    t.support    ? JSON.parse(JSON.stringify(t.support)) : undefined,
+        support:    t.support    ? JSON.parse(JSON.stringify(t.support)) : null,
         sans_socle: t.sans_socle || false
       };
     })
