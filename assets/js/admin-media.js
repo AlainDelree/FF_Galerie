@@ -210,13 +210,12 @@ function genererThumbnailGLB(blobUrl) {
     loadModelViewerAdmin().then(() => {
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', blobUrl);
+      mv.setAttribute('auto-rotate', '');
+      mv.setAttribute('camera-controls', '');
       mv.setAttribute('interaction-prompt', 'none');
-      /* Vue de face (azimut 0) → objet centré horizontalement dans le thumbnail.
-         Un léger angle vertical (75deg) donne du relief sans décaler en X. */
-      mv.setAttribute('camera-orbit', '0deg 75deg auto');
-      mv.setAttribute('field-of-view', '36deg');
-      mv.setAttribute('shadow-intensity', '0');
-      /* Fond transparent (PNG) */
+      /* Pas de camera-orbit forcé : le cadrage par défaut de model-viewer
+         centre l'objet symétriquement sur son bounding-box. */
+      /* Fond transparent (PNG) — visible mais quasi invisible (WebGL off-screen skippé) */
       mv.style.cssText = 'width:512px;height:512px;position:fixed;left:0;top:0;opacity:0.01;pointer-events:none;z-index:-1;--poster-color:transparent;background:transparent;';
       document.body.appendChild(mv);
 
