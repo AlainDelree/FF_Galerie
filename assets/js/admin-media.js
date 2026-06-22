@@ -210,7 +210,6 @@ function genererThumbnailGLB(blobUrl) {
     loadModelViewerAdmin().then(() => {
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', blobUrl);
-      mv.setAttribute('camera-controls', '');
       mv.setAttribute('interaction-prompt', 'none');
       /* Vue de face (azimut 0) → objet centré horizontalement dans le thumbnail.
          Un léger angle vertical (75deg) donne du relief sans décaler en X. */

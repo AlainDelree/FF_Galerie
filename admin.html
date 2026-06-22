@@ -1268,7 +1268,8 @@
               var result = await genererThumbnailGLB(blobUrl);
               URL.revokeObjectURL(blobUrl);
               photoB64 = result.b64;
-              document.getElementById('photo-prev').src = 'data:image/jpeg;base64,' + result.b64;
+              window.photoEstPng = true;
+              document.getElementById('photo-prev').src = 'data:image/png;base64,' + result.b64;
               document.getElementById('photo-prev').style.display = 'block';
               toast('✓ Photo recréée depuis le 3D');
             } catch (e) {
