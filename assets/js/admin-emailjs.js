@@ -72,7 +72,7 @@ async function uploaderTextureConfirmee() {
     /* Injecter dans "Mes textures" (popover #pop-texture) — privée ou partagée par moi */
     var contMesTex = $('sw-texture');
     if (contMesTex) {
-      contMesTex.appendChild(creerSwatchGH(chemin, _texData.dataUrl, true));
+      contMesTex.prepend(creerSwatchGH(chemin, _texData.dataUrl, true));
     }
     _texData = null;
     toast('✓ Texture "' + nomSaisi + '" ajoutée');
@@ -108,7 +108,7 @@ async function chargerTexturesGitHub() {
     var imgsP  = prives.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
     imgsP.forEach(function(f) {
       TEXTURES[f.path] = 'url("' + f.download_url + '")';
-      if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
+      if (contMesTex) contMesTex.prepend(creerSwatchGH(f.path, f.download_url, true));
     });
   } catch(e) { /* dossier inexistant : OK */ }
 
@@ -136,7 +136,7 @@ async function chargerTexturesGitHub() {
             TEXTURES[f.path] = 'url("' + f.download_url + '")';
             if (auteur === monPrefix) {
               /* C'est ma texture → Mes textures, suppressible */
-              if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
+              if (contMesTex) contMesTex.prepend(creerSwatchGH(f.path, f.download_url, true));
             } else {
               /* Texture d'un autre artiste → Système */
               _texturesPartagees.push({
