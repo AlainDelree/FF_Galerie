@@ -1284,7 +1284,6 @@ async function supprimerToile() {
 // ═══════════════════════════════════════════════
 function ouvrirModalSalle() {
   $('inp-salle-nom').value = `Salle ${String.fromCharCode(65 + salles.length)}`;
-  $('inp-salle-theme').value = '';
   // Positions possibles
   const pg = $('pos-grille');
   pg.innerHTML = '';
@@ -1386,7 +1385,6 @@ async function validerViderSalles() {
 
 async function creerSalle() {
   const nom    = $('inp-salle-nom').value.trim() || `Salle ${salles.length + 1}`;
-  const theme  = $('inp-salle-theme').value.trim();
   const posOpt = $('pos-grille').querySelector('.pos-opt.sel');
   const pos    = posOpt ? parseInt(posOpt.dataset.pos) : salles.length;
   const newId  = Math.max(...salles.map(s => s.id), 0) + 1;
@@ -1396,7 +1394,7 @@ async function creerSalle() {
   const src   = srcId ? salles.find(function(s) { return s.id === srcId; }) : null;
 
   const salle = {
-    id: newId, nom, theme,
+    id: newId, nom,
     couleur_mur:      src ? src.couleur_mur      : '#2e2e2e',
     couleur_cadres:   src ? src.couleur_cadres   : '#3a3a3a',
     epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
