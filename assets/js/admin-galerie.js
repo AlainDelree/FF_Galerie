@@ -61,6 +61,53 @@ function afficherPlan() {
   add.innerHTML = '＋ Salle';
   add.addEventListener('click', () => ouvrirModalSalle());
   cont.appendChild(add);
+
+  /* Ligne de clonage esthétique (cible = salle active) */
+  _renderCloneSalleRow();
+}
+
+/* Affiche la ligne "Cloner l'esthétique vers la salle active depuis une autre salle" */
+function _renderCloneSalleRow() {
+  var row = document.getElementById('clone-salle-row');
+  if (!row) return;
+  row.innerHTML = '';
+  if (!salleActive) { row.style.display = 'none'; return; }
+  var typeAct = salleActive.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+  var autres = salles.filter(function(o) {
+    var ot = o.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+    return o.id !== salleActive.id && ot === typeAct;
+  });
+  if (autres.length === 0) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+
+  var lbl = document.createElement('span');
+  lbl.style.cssText = 'font-size:.74rem;color:var(--muted);';
+  lbl.textContent = 'Cloner l\u0027esthétique de « ' + (salleActive.nom || 'salle') + ' » depuis :';
+
+  var sel = document.createElement('select');
+  sel.style.cssText = 'font-size:.78rem;padding:.25rem .4rem;border:1px solid var(--brd);border-radius:6px;background:var(--bg3);color:var(--text);';
+  var opt0 = document.createElement('option');
+  opt0.value = ''; opt0.textContent = '— choisir —';
+  sel.appendChild(opt0);
+  autres.forEach(function(o) {
+    var op = document.createElement('option');
+    op.value = o.id; op.textContent = o.nom || ('Salle ' + o.id);
+    sel.appendChild(op);
+  });
+
+  var btn = document.createElement('button');
+  btn.className = 'plan-btn';
+  btn.style.cssText = 'font-size:.78rem;';
+  btn.textContent = '🎨 Cloner';
+  btn.addEventListener('click', function() {
+    var srcId = parseInt(sel.value);
+    if (!srcId) { toast('Choisis une salle source', 'err'); return; }
+    if (typeof _clonerEsthetique === 'function') _clonerEsthetique(srcId, salleActive.id);
+  });
+
+  row.appendChild(lbl);
+  row.appendChild(sel);
+  row.appendChild(btn);
 }
 
 function selectSalle(id) {
@@ -71,6 +118,7 @@ function selectSalle(id) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
   const chips = $('chips-salles').querySelectorAll('.chip');
   chips.forEach((c, i) => { if (salles[i]?.id === id) c.classList.add('sel'); });
+  if (typeof _renderCloneSalleRow === 'function') _renderCloneSalleRow();
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurCadresActuel = salleActive.couleur_cadres;
