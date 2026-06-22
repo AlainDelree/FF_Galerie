@@ -1267,9 +1267,9 @@
             if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
             btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
             try {
-              /* Charger le GLB depuis le serveur */
-              var base = (window.GALERIE_ASSETS_BASE || window.ADMIN_CFG?.repoPath?.replace(/data\/?$/, '') || '');
-              var url = base ? '../../' + glbPath : glbPath;
+              /* glbPath est stocké depuis la racine du repo ; admin.html est à la racine
+                 → utiliser glbPath tel quel (pas de préfixe ../../). */
+              var url = /^https?:\/\//.test(glbPath) ? glbPath : glbPath;
               var resp = await fetch(url + '?v=' + Date.now());
               if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
               var blob = await resp.blob();
