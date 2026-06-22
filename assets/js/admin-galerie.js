@@ -1393,14 +1393,23 @@ async function creerSalle() {
   const srcId = parseInt(($('inp-salle-copier') || {}).value) || null;
   const src   = srcId ? salles.find(function(s) { return s.id === srcId; }) : null;
 
+  const estSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
+  const couleurMurDefaut    = estSculpt ? '#2a2520' : '#2e2e2e';
+  const couleurCadresDefaut = estSculpt ? undefined : '#3a3a3a';
+  const textureDefaut       = estSculpt ? 'none'    : 'none';
+
   const salle = {
     id: newId, nom,
-    couleur_mur:      src ? src.couleur_mur      : '#2e2e2e',
-    couleur_cadres:   src ? src.couleur_cadres   : '#3a3a3a',
+    type:             estSculpt ? 'sculpture' : undefined,
+    couleur_mur:      src ? src.couleur_mur      : couleurMurDefaut,
+    couleur_cadres:   src ? src.couleur_cadres   : couleurCadresDefaut,
     epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
-    texture:          src ? src.texture          : 'none',
+    texture:          src ? src.texture          : textureDefaut,
     greffons:         src && src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined,
-    visible: true, toiles: [], positions: []
+    visible: true,
+    toiles: [],
+    positions: [],
+    positions_mobile: []
   };
 
   salles.splice(pos, 0, salle);
