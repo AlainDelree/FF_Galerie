@@ -90,6 +90,16 @@
       }
     },
     {
+      "id": 5,
+      "nom": "Salle E",
+      "couleur_mur": "#2e2e2e",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": []
+    },
+    {
       "id": 3,
       "nom": "Salle AC",
       "type": "sculpture",
@@ -132,10 +142,15 @@
     {
       "id": 4,
       "nom": "Salle AD",
+      "type": "sculpture",
       "couleur_mur": "#a07540",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
       "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
@@ -162,11 +177,7 @@
             "pan_d": "#e0f0b0"
           }
         }
-      },
-      "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": []
+      }
     },
     {
       "id": 2,
