@@ -58,74 +58,11 @@ function appliquerApparence() {
 
 // PRESETS
 // ═══════════════════════════════════════════════
-/* Retourne le nom lisible d'une texture (builtin ou custom) */
-function getTextureName(key) {
-  var nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
-  if (nomsTex[key]) return nomsTex[key];
-  // Texture custom localStorage
-  var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
-  var found = customs.find(function(t){ return t.key === key; });
-  if (found) return found.nom;
-  // Texture GitHub : nom depuis le fichier (tirets/underscores → espaces, capitalize)
-  if (key && key.indexOf('/') >= 0) {
-    var fichier = key.split('/').pop().replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-    return fichier.charAt(0).toUpperCase() + fichier.slice(1);
-  }
-  return key || 'Uni';
-}
-
 /* gererTextureCustom + confirmerTextureNom + _pendingTextureFile supprimés :
    ancien système d'upload texture (vers localStorage) remplacé par
    ouvrirOverlayTexture + uploaderTextureConfirmee (vers GitHub) dans
    admin-emailjs.js. La modale #overlay-tex-nom associée est aussi
    supprimée de admin.html. */
-
-function renommerTexture(key) {
-  var customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
-  var t = customs.find(function(x){ return x.key === key; });
-  if (!t) return;
-  var nouveau = prompt("Nouveau nom pour \"" + t.nom + "\" :", t.nom);
-  if (!nouveau || !nouveau.trim()) return;
-  t.nom = nouveau.trim();
-  localStorage.setItem(K.textures, JSON.stringify(customs));
-  afficherTexturesCustom();
-  toast("✓ Renommé en \"" + t.nom + "\"");
-}
-
-function afficherTexturesCustom() {
-  const cont = $('textures-custom'); if (!cont) return;
-  cont.innerHTML = '';
-  const customs = JSON.parse(localStorage.getItem(K.textures) || '[]');
-  customs.forEach(t => {
-    TEXTURES[t.key] = `url("${t.url}")`;
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;display:inline-block;';
-    const sw = document.createElement('div');
-    sw.className = 'sw' + (textureActuelle === t.key ? ' sel' : '');
-    sw.style.backgroundImage = `url("${t.url}")`;
-    sw.style.backgroundSize = 'cover';
-    sw.dataset.val = t.key;
-    sw.title = t.nom;
-    sw.addEventListener('click', () => {
-      document.querySelectorAll('#sw-texture .sw, #textures-custom .sw').forEach(s => s.classList.remove('sel'));
-      sw.classList.add('sel'); setTexture(t.key);
-    });
-    // Bouton renommer (petit crayon au survol)
-    const btnRen = document.createElement('button');
-    btnRen.textContent = '✎';
-    btnRen.title = 'Renommer';
-    btnRen.style.cssText = 'position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;border:none;background:var(--gold);color:#111;font-size:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;opacity:0;transition:opacity .15s;';
-    wrap.addEventListener('mouseenter', function(){ btnRen.style.opacity='1'; });
-    wrap.addEventListener('mouseleave', function(){ btnRen.style.opacity='0'; });
-    btnRen.addEventListener('click', function(e){ e.stopPropagation(); renommerTexture(t.key); });
-    wrap.appendChild(sw);
-    wrap.appendChild(btnRen);
-    cont.appendChild(wrap);
-  });
-}
-
-
-
 
 function swSelect(el, groupe) {
   el.closest('.swatches').querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
@@ -210,7 +147,6 @@ function initSwatches() {
     setEpaisseurCadres(parseInt(this.value));
   });
 
-  afficherTexturesCustom();
 }
 
 /* Rafraîchit les aperçus PC/GSM du TDB avec un léger délai pour grouper les changements rapides (slider) */
