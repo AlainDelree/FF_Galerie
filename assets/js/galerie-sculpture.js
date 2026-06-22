@@ -688,7 +688,10 @@ if (window._GALERIE_EDIT) {
        (robuste, contrairement à la comparaison de coordonnées en continu). */
     document.querySelectorAll('.socle-wrapper').forEach(function(wrap) {
       wrap.style.cursor = 'grab';
-      wrap.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); }, true);
+      wrap.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-rm-btn')) return; /* laisser le bouton Retirer recevoir son clic */
+        e.stopPropagation(); e.preventDefault();
+      }, true);
       /* Trouver l'id par position (une seule fois) */
       var left = parseFloat(wrap.style.left);
       var bottom = parseFloat(wrap.style.bottom);
@@ -864,7 +867,7 @@ if (window._GALERIE_EDIT) {
               var wrap    = creerSocle(piece, gabarit, np, null);
               wrap.style.cursor = "grab"; wrap.dataset.pieceId = piece.id;
               /* Bloquer clics immersifs sur le nouveau socle */
-              wrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
+              wrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
               plancher.appendChild(wrap);
               _sendPositions();
             }
@@ -901,7 +904,7 @@ if (window._GALERIE_EDIT) {
         var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
         var newWrap  = creerSocle(piece, gabarit2, pos, null);
         newWrap.style.cursor = "grab"; newWrap.dataset.pieceId = piece.id;
-        newWrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
+        newWrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
         if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
         else { plancher2.appendChild(newWrap); }
       }
