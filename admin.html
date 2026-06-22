@@ -791,59 +791,6 @@
   </div>
 </div>
 
-<!-- ══ MODAL PRESET CHARGER ══ -->
-<div class="overlay" id="overlay-preset-charger">
-  <div class="modal" style="max-width:380px;">
-    <div class="modal-handle"></div>
-    <div class="modal-hdr">
-      <span class="modal-tit">Charger un preset</span>
-      <button class="btn-close" id="btn-close-preset-charger">×</button>
-    </div>
-    <div class="modal-body" id="preset-charger-liste" style="gap:.4rem;padding:.7rem 1rem;max-height:55vh;overflow-y:auto;"></div>
-    <div class="modal-foot">
-      <button class="btn btn-outline" id="btn-annuler-preset-charger">Fermer</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL PRESET ══ -->
-<div class="overlay" id="overlay-preset">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-hdr">
-      <span class="modal-tit">Sauvegarder le preset</span>
-      <button class="btn-close" id="btn-close-preset">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="grp">
-        <label class="lbl" for="inp-preset-nom">Nom du preset</label>
-        <input class="champ" type="text" id="inp-preset-nom" placeholder="ex : Cosmos sombre, Galerie blanche…">
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r);padding:.9rem;display:flex;flex-direction:column;gap:.6rem;">
-        <p style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);">Éléments sauvegardés</p>
-        <div style="display:flex;align-items:center;gap:.7rem;">
-          <div id="preset-prev-mur" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;"></div>
-          <span style="font-size:13px;color:var(--text);">Couleur du mur</span>
-          <span id="preset-prev-mur-val" style="font-size:11px;color:var(--muted);margin-left:auto;font-family:monospace;"></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.7rem;">
-          <div id="preset-prev-cadres" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;border:2px solid var(--brd);"></div>
-          <span style="font-size:13px;color:var(--text);">Couleur des cadres</span>
-          <span id="preset-prev-cadres-val" style="font-size:11px;color:var(--muted);margin-left:auto;font-family:monospace;"></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.7rem;">
-          <div id="preset-prev-texture" style="width:28px;height:28px;border-radius:4px;flex-shrink:0;background:var(--bg2);border:1px solid var(--brd);"></div>
-          <span style="font-size:13px;color:var(--text);">Texture</span>
-          <span id="preset-prev-texture-val" style="font-size:11px;color:var(--muted);margin-left:auto;"></span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline btn-sm" id="btn-annuler-preset">Annuler</button>
-      <button class="btn btn-or" id="btn-confirmer-preset">Sauvegarder</button>
-    </div>
-  </div>
-</div>
 
 <!-- ══ OVERLAY MODE PLACEMENT ══ -->
 <div class="placement-overlay" id="overlay-placement">
