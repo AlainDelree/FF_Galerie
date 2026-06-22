@@ -862,7 +862,7 @@ $('btn-grille-pl').addEventListener('click', function() {
     toilesSelectionnees.add(peintureSurMurSel);
     peintureSurMurSel = null; selectedToilePl = null;
     buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
-    $("pl-aide").textContent = "\"" + titre + "\" retirée — clique sur le mur pour la replacer";
+    $("pl-aide").textContent = "\"" + titre + "\" retirée — cliquez sur " + (ADMIN_CFG && ADMIN_CFG.type === 'sculpture' ? 'le sol' : 'le mur') + " pour la replacer";
   });
 })();
 
