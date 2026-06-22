@@ -428,7 +428,7 @@ function creerSocle(piece, gabarit, pos, opts) {
     mv.setAttribute('field-of-view', '36deg');
     mv.setAttribute('shadow-intensity', '0.6');
     mv.style.cssText =
-      'width:100%;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
+      'width:' + socleW + 'px;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
       '--poster-color:transparent;background:transparent;';
     socle.appendChild(mv);
   } else if (piece.photo) {
