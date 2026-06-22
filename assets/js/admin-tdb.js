@@ -563,13 +563,20 @@ function ouvrirEditeurImmersif(salle) {
         if (titreEl) titreEl.textContent = 'Couleur — ' + champ.label;
       });
 
-      /* Saisie live */
-      inp.addEventListener('input', function() { appliquerHex(inp.value.trim()); });
+      /* Sélectionner tout au focus (facilite coller-remplace) */
+      inp.addEventListener('focus', function() { inp.select(); });
+
+      /* Saisie live — normalise les ## en # */
+      inp.addEventListener('input', function() {
+        var v = inp.value.trim().replace(/^#+/, '#');
+        appliquerHex(v);
+      });
 
       /* Restaurer si invalide au blur */
       inp.addEventListener('blur', function() {
-        var v = inp.value.trim();
-        if (!/^#[0-9a-fA-F]{6}$/.test(v)) inp.value = p.title; /* restaure dernier valide */
+        var v = inp.value.trim().replace(/^#+/, '#');
+        if (!/^#[0-9a-fA-F]{6}$/.test(v)) inp.value = p.title;
+        else if (v !== inp.value) inp.value = v;
       });
 
       /* Copier */
