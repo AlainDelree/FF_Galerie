@@ -351,10 +351,19 @@ function initSwatches() {
   afficherTexturesCustom();
 }
 
+/* Rafraîchit les aperçus PC/GSM du TDB avec un léger délai pour grouper les changements rapides (slider) */
+var _tdbRefreshTimer = null;
+function _rafraichirApercusTDB() {
+  if (typeof _renderTDB !== 'function') return;
+  clearTimeout(_tdbRefreshTimer);
+  _tdbRefreshTimer = setTimeout(function() { _renderTDB(); }, 250);
+}
+
 function setCouleurMur(col) {
   couleurMurActuel = col;
   if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
+  _rafraichirApercusTDB();
 }
 
 function setCouleurCadres(col) {
@@ -362,6 +371,7 @@ function setCouleurCadres(col) {
   if (salleActive) { salleActive.couleur_cadres = col; }
   appliquerApparence();
   afficherMur();
+  _rafraichirApercusTDB();
 }
 
 function setEpaisseurCadres(ep) {
@@ -371,12 +381,14 @@ function setEpaisseurCadres(ep) {
   document.querySelectorAll('.toile-posee').forEach(function(el) {
     if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
   });
+  _rafraichirApercusTDB();
 }
 
 function setTexture(val) {
   textureActuelle = val;
   if (salleActive) { salleActive.texture = val; }
   appliquerApparence();
+  _rafraichirApercusTDB();
 }
 
 // RECADRAGE PHOTO (Cropper.js)
