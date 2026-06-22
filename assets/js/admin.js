@@ -506,7 +506,9 @@ async function chargerTout() {
       texture: s.texture || 'none',
       visible: s.visible !== false,
       toiles: s.toiles || [],
-      positions: s.positions || []
+      positions: s.positions || [],
+      positions_mobile: s.positions_mobile || [],
+      greffons: s.greffons || undefined
     }));
     if (typeof afficherPlan === 'function') afficherPlan();
     if (salles.length > 0) selectSalle(salles[0].id);
