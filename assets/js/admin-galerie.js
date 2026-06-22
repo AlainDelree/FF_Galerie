@@ -1334,6 +1334,15 @@ function afficherSolPlacement() {
 
     if (e.data.type === 'piece-removed') {
       afficherStripPlacement();
+      fermerPanneauSupport();
+    }
+
+    if (e.data.type === 'piece-selected') {
+      ouvrirPanneauSupport(e.data.id);
+    }
+
+    if (e.data.type === 'piece-deselected') {
+      fermerPanneauSupport();
     }
 
     if (e.data.type === 'sol-click') {
@@ -1404,4 +1413,143 @@ function _gabaritSculpt(h) {
   if (h <= 50) return 'M';
   if (h <= 100) return 'L';
   return 'SOL';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANNEAU SUPPORT (sculpture) — édition graphique dans l'Arranger
+   support attaché à la pièce : { type, couleur, texture, taille }
+   ══════════════════════════════════════════════════════════════ */
+var _supportPieceId = null;
+
+function _supportDefaut() {
+  return { type: 'socle', couleur: '#eae6de', texture: 'marbre', taille: 40 };
+}
+
+function ouvrirPanneauSupport(pieceId) {
+  var piece = toiles.find(function(t) { return t.id === pieceId; });
+  if (!piece) return;
+  _supportPieceId = pieceId;
+
+  /* Migration douce : sans_socle → type aucun ; sinon socle par défaut */
+  if (!piece.support) {
+    piece.support = piece.sans_socle ? { type: 'aucun' } : _supportDefaut();
+  }
+  /* Compléter les champs manquants */
+  var s = piece.support;
+  if (s.type !== 'aucun') {
+    if (!s.couleur) s.couleur = '#eae6de';
+    if (!s.texture) s.texture = 'marbre';
+    if (!s.taille)  s.taille = 40;
+  }
+
+  var panel = document.getElementById('support-panel');
+  if (!panel) return;
+  document.getElementById('support-piece-nom').textContent = piece.titre || '—';
+
+  _supportSyncUI();
+  panel.style.display = 'block';
+
+  /* Brancher les contrôles une seule fois */
+  if (!panel.dataset.bound) {
+    panel.dataset.bound = '1';
+    document.getElementById('support-close').addEventListener('click', function() {
+      fermerPanneauSupport();
+    });
+    /* Type */
+    document.querySelectorAll('.support-type-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        if (!p) return;
+        var type = btn.dataset.type;
+        if (type === 'aucun') {
+          p.support = { type: 'aucun' };
+        } else {
+          if (!p.support || p.support.type === 'aucun') p.support = _supportDefaut();
+          p.support.type = type;
+        }
+        _supportSyncUI();
+        _supportAppliquer();
+      });
+    });
+    /* Texture */
+    document.querySelectorAll('.support-tex-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        if (!p || !p.support || p.support.type === 'aucun') return;
+        p.support.texture = btn.dataset.tex;
+        _supportSyncUI();
+        _supportAppliquer();
+      });
+    });
+    /* Couleur → picker HSV */
+    document.getElementById('support-couleur-btn').addEventListener('click', function() {
+      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      if (!p || !p.support || p.support.type === 'aucun') return;
+      window._supportPickerCouleur = p.support.couleur || '#eae6de';
+      window._supportPickerOnConfirm = function(hex) {
+        p.support.couleur = hex;
+        _supportSyncUI();
+        _supportAppliquer();
+      };
+      ouvrirPickerCouleur('support');
+    });
+    /* Taille */
+    document.getElementById('support-taille').addEventListener('input', function() {
+      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      if (!p || !p.support || p.support.type === 'aucun') return;
+      p.support.taille = parseInt(this.value);
+      document.getElementById('support-taille-val').textContent = this.value + ' cm';
+    });
+    document.getElementById('support-taille').addEventListener('change', function() {
+      _supportAppliquer();
+    });
+  }
+}
+
+function fermerPanneauSupport() {
+  var panel = document.getElementById('support-panel');
+  if (panel) panel.style.display = 'none';
+  _supportPieceId = null;
+}
+
+/* Reflète l'état de piece.support dans l'UI du panneau */
+function _supportSyncUI() {
+  var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+  if (!p || !p.support) return;
+  var s = p.support;
+
+  document.querySelectorAll('.support-type-btn').forEach(function(b) {
+    b.classList.toggle('sel', b.dataset.type === s.type);
+  });
+
+  var app = document.getElementById('support-apparence');
+  if (s.type === 'aucun') { app.style.display = 'none'; return; }
+  app.style.display = 'block';
+
+  document.querySelectorAll('.support-tex-btn').forEach(function(b) {
+    b.classList.toggle('sel', b.dataset.tex === s.texture);
+  });
+  var btnCol = document.getElementById('support-couleur-btn');
+  if (btnCol) btnCol.style.background = s.couleur || '#eae6de';
+  var hexLbl = document.getElementById('support-couleur-hex');
+  if (hexLbl) hexLbl.textContent = s.couleur || '#eae6de';
+
+  var unite = document.getElementById('support-taille-unite');
+  if (unite) unite.textContent = s.type === 'socle' ? '(diamètre cm)' : '(largeur cm)';
+  var rng = document.getElementById('support-taille');
+  if (rng) rng.value = s.taille || 40;
+  var val = document.getElementById('support-taille-val');
+  if (val) val.textContent = (s.taille || 40) + ' cm';
+}
+
+/* Pousse le changement vers l'iframe (re-render de la pièce) + persiste en mémoire */
+function _supportAppliquer() {
+  var iframe = document.getElementById('edit-galerie-iframe');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({
+      type: 'support-updated',
+      pieceId: _supportPieceId,
+      piece: JSON.parse(JSON.stringify(toiles.find(function(t) { return t.id === _supportPieceId; })))
+    }, '*');
+  }
 }

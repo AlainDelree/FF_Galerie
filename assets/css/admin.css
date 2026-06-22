@@ -891,3 +891,14 @@ textarea.champ{resize:vertical;min-height:65px;}
   transition:opacity .15s;
 }
 .cat-btn-gen:hover{opacity:.88;}
+
+/* ── Panneau Support (sculpture) ── */
+.support-type-btn, .support-tex-btn {
+  font-size: .8rem; padding: .4rem .7rem; border-radius: 8px;
+  border: 1px solid var(--brd); background: var(--bg3); color: var(--text);
+  cursor: pointer; transition: all .15s;
+}
+.support-type-btn:hover, .support-tex-btn:hover { border-color: var(--gold); }
+.support-type-btn.sel, .support-tex-btn.sel {
+  background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600;
+}

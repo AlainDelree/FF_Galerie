@@ -1049,10 +1049,10 @@ function ouvrirPickerCouleur(type) {
 
   // Mettre à jour le titre
   var titre = document.getElementById('picker-titre');
-  if (titre) titre.textContent = type === 'mur' ? 'Couleur du mur' : 'Couleur des cadres';
+  if (titre) titre.textContent = type === 'mur' ? 'Couleur du mur' : type === 'support' ? 'Couleur du support' : 'Couleur des cadres';
 
   // Charger la couleur courante dans le picker
-  var hex = (type === 'mur') ? couleurMurActuel : couleurCadresActuel;
+  var hex = (type === 'mur') ? couleurMurActuel : (type === 'support') ? (window._supportPickerCouleur || '#eae6de') : couleurCadresActuel;
   var hsv = _hexToHsv(hex);
   if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
 
@@ -1086,6 +1086,7 @@ function _confirmerPickerCouleur() {
   var inp = document.getElementById('picker-hex-inp');
   if (inp && /^#[0-9a-fA-F]{6}$/.test(inp.value)) hex = inp.value.toLowerCase();
   if (_pickerCouleurType === 'mur') { pushColorHist('mur', hex); setCouleurMur(hex); }
+  else if (_pickerCouleurType === 'support') { if (typeof window._supportPickerOnConfirm === 'function') window._supportPickerOnConfirm(hex); }
   else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
   fermerPickerCouleur();
 }

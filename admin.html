@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260621a">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260621h">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -882,6 +882,54 @@
     <div class="placement-mur-bg" id="mur-placement" style="background:#2e2e2e;"></div>
     <div class="placement-aide" id="pl-aide">Sélectionne une toile dans le bas, puis clique sur le mur pour la placer</div>
   </div>
+
+  <!-- ══ PANNEAU SUPPORT (sculpture) ══ -->
+  <div id="support-panel" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg2);border-top:1.5px solid var(--gold);border-radius:14px 14px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);padding:.9rem 1rem 1.2rem;max-height:70vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;">
+      <strong style="font-size:.95rem;color:var(--text);">🎨 Support — <span id="support-piece-nom">—</span></strong>
+      <button id="support-close" style="background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Type -->
+    <div style="margin-bottom:.8rem;">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Type</div>
+      <div id="support-type-row" style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="support-type-btn" data-type="socle">🏛 Socle</button>
+        <button class="support-type-btn" data-type="etagere">▭ Étagère</button>
+        <button class="support-type-btn" data-type="presentoir">▯ Présentoir</button>
+        <button class="support-type-btn" data-type="aucun">🗿 Aucun</button>
+      </div>
+    </div>
+
+    <!-- Couleur + Texture (cachés si type=aucun) -->
+    <div id="support-apparence">
+      <div style="margin-bottom:.8rem;">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Couleur</div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <button id="support-couleur-btn" style="width:42px;height:42px;border-radius:10px;border:2px solid var(--brd);cursor:pointer;background:#eae6de;"></button>
+          <span id="support-couleur-hex" style="font-family:monospace;font-size:.8rem;color:var(--muted);">#eae6de</span>
+        </div>
+      </div>
+      <div style="margin-bottom:.8rem;">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Texture</div>
+        <div id="support-texture-row" style="display:flex;gap:.4rem;flex-wrap:wrap;">
+          <button class="support-tex-btn" data-tex="lisse">Lisse</button>
+          <button class="support-tex-btn" data-tex="marbre">Marbre</button>
+          <button class="support-tex-btn" data-tex="bois">Bois</button>
+          <button class="support-tex-btn" data-tex="pierre">Pierre</button>
+          <button class="support-tex-btn" data-tex="metal">Métal</button>
+        </div>
+      </div>
+      <div id="support-taille-grp" style="margin-bottom:.5rem;">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em;">Taille <span id="support-taille-unite">(diamètre cm)</span></div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="support-taille" min="20" max="120" step="5" value="40" style="flex:1;">
+          <span id="support-taille-val" style="font-family:monospace;font-size:.85rem;min-width:42px;text-align:right;">40 cm</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="pl-ctrl-panel" id="pl-ctrl-panel">
     <div class="pl-ctrl-cross">
       <span></span>

@@ -341,7 +341,7 @@ function creerSocle(piece, gabarit, pos) {
   const lCm    = dim.largeur || 30;
   const ratio  = hCm / lCm;
   const pCm    = dim.profondeur || Math.round(lCm * 0.5);
-  const socleDiam = piece.socle || pCm;
+  const socleDiam = (piece.support && piece.support.taille) || piece.socle || pCm;
   const photoH = Math.min(_getEMaxH(),
     Math.max(_getEMin(), Math.round(hCm * _getEchelle() * (ratio < 1 ? ratio : 1))));
   /* Échelle effective = même rapport que la pièce (plafonnée) */
@@ -751,6 +751,36 @@ if (window._GALERIE_EDIT) {
           if (conteneur) { conteneur.innerHTML = ''; initGalerie(); }
         }
       }
+
+      if (e.data.type === 'support-updated' && _editTData) {
+        /* Re-render le socle de la pièce avec son nouveau support */
+        var piece = e.data.piece;
+        if (!piece) return;
+        /* Mettre à jour la pièce dans _editTData pour cohérence */
+        (_editTData.pieces || []).forEach(function(p, i) {
+          if (p.id === piece.id) _editTData.pieces[i] = piece;
+        });
+        var pos = _editPositions.find(function(p) { return p.id === piece.id; });
+        if (!pos) return;
+        /* Retrouver l'ancien wrap par position et le remplacer */
+        var plancher2 = document.querySelector('.plancher-sol');
+        if (!plancher2) return;
+        var wraps = plancher2.querySelectorAll('.socle-wrapper');
+        var oldWrap = null;
+        wraps.forEach(function(w) {
+          if (Math.abs(parseFloat(w.style.left) - pos.x) < 0.5 &&
+              Math.abs(parseFloat(w.style.bottom) - pos.y) < 0.5) oldWrap = w;
+        });
+        var gabarits2 = {};
+        (_editTData.gabarits || []).forEach(function(g) { gabarits2[g.code] = g; });
+        var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+        var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
+        var newWrap  = creerSocle(piece, gabarit2, pos);
+        newWrap.style.cursor = 'grab';
+        newWrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
+        if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
+        else { plancher2.appendChild(newWrap); }
+      }
     });
 
     parent.postMessage({ type: 'edit-ready' }, '*');
@@ -776,11 +806,13 @@ if (window._GALERIE_EDIT) {
       var oldBtn = old.querySelector('.edit-rm-btn');
       if (oldBtn) oldBtn.remove();
     }
-    if (_selected === wrap) { _selected = null; return; }
+    if (_selected === wrap) { _selected = null; parent.postMessage({ type: 'piece-deselected' }, '*'); return; }
     _selected = wrap;
     wrap.classList.add('edit-selected');
     wrap.style.outline = '3px solid #c8a050';
     wrap.style.overflow = 'visible';
+    /* Notifier le parent admin pour ouvrir le panneau Support */
+    parent.postMessage({ type: 'piece-selected', id: _findPieceId(wrap) }, '*');
     var btn = document.createElement('button');
     btn.className = 'edit-rm-btn';
     btn.textContent = '✕ Retirer';
@@ -794,6 +826,7 @@ if (window._GALERIE_EDIT) {
       _selected = null;
       _sendPositions();
       parent.postMessage({ type: 'piece-removed', id: pid }, '*');
+      parent.postMessage({ type: 'piece-deselected' }, '*');
     });
     wrap.querySelector('.socle').appendChild(btn);
   }
