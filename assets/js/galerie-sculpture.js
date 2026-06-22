@@ -566,6 +566,7 @@ if (window._GALERIE_EDIT) {
   var _editSalles    = null;
   var _editTData     = null; /* toiles + gabarits — pour créer des socles sans re-fetch */
   var _editPositions = null; /* référence directe vers salle.positions ou salle.positions_mobile */
+  var _selected      = null; /* socle-wrapper actuellement sélectionné (partagé avec _toggleSelect) */
 
   /* Appelé après initGalerie — rend les socles draggables */
   window._initEditDrag = function(salles, tData) {
@@ -611,7 +612,6 @@ if (window._GALERIE_EDIT) {
     /* Variables drag */
     var _dragging = null; /* { el, pos, startX, startY } */
     var _moved = false;
-    var _selected = null; /* élément sélectionné */
 
     plancher.addEventListener('mousedown', function(e) {
       var wrap = e.target.closest('.socle-wrapper');
