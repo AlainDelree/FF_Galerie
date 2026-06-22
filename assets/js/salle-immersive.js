@@ -40,9 +40,11 @@ function _hexToInt(hex) {
 
 /* Décor par défaut (valeurs originales) */
 var DECOR_IMMERSIVE_DEFAUT = {
-  fond:     '#12100c',      /* atmosphère/fog (non exposé en config) */
-  exposure: 1.0,            /* exposition renderer (0.5–3.0) */
-  sol:      '#8a6228',
+  fond:            '#12100c',   /* atmosphère/fog (non exposé en config) */
+  exposure:        1.0,         /* exposition renderer (0.5–3.0) */
+  sol:             '#8a6228',
+  socle_couleur:   '#f0ece4',   /* couleur par défaut du socle */
+  socle_use_piece: false,       /* si true : utilise piece.support.couleur */
   pan_a:  '#7a2525',        /* palette des 12 panneaux du mur */
   pan_b:  '#1a3055',
   pan_c:  '#2a5035',
@@ -61,9 +63,10 @@ async function ouvrirSalleImmersive(piece, decor) {
   var C_SOL    = _hexToInt(D.sol)    || 0x8a6228;
   var C_PIQUET = _hexToInt(D.piquet) || 0xc8a050;
   var C_CORDE  = _hexToInt(D.corde)  || 0x8b0020;
-  /* Socle : couleur du support de la pièce si disponible */
-  var C_SOCLE  = (piece.support && piece.support.couleur)
-    ? (_hexToInt(piece.support.couleur) || 0xf0ece4) : 0xf0ece4;
+  /* Socle : couleur selon decor.socle_use_piece */
+  var C_SOCLE  = ((D.socle_use_piece && piece.support && piece.support.couleur)
+    ? (_hexToInt(piece.support.couleur) || _hexToInt(D.socle_couleur) || 0xf0ece4)
+    : (_hexToInt(D.socle_couleur) || 0xf0ece4));
 
   const VW = window.innerWidth;
   const VH = window.innerHeight;
@@ -527,7 +530,9 @@ async function renderImmersiveApercu(canvas, piece, decor) {
   }
 
   /* Piédestal */
-  var C_SOCLE = (piece && piece.support && piece.support.couleur) ? (_hexToInt(piece.support.couleur) || 0xf0ece4) : 0xf0ece4;
+  var C_SOCLE = ((D.socle_use_piece && piece.support && piece.support.couleur)
+    ? (_hexToInt(piece.support.couleur) || _hexToInt(D.socle_couleur) || 0xf0ece4)
+    : (_hexToInt(D.socle_couleur) || 0xf0ece4));
   var pedMat = new THREE.MeshStandardMaterial({ color: C_SOCLE, roughness: 0.35, metalness: 0.02 });
   var ped = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 1.1, 24), pedMat);
   ped.position.y = 0.55; ped.castShadow = true; ped.receiveShadow = true; scene.add(ped);
@@ -627,6 +632,10 @@ async function renderImmersiveApercu(canvas, piece, decor) {
       piqMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.piquet) || 0xc8a050); });
       cordMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.corde)  || 0x8b0020); });
       if (typeof D2.exposure === 'number') renderer.toneMappingExposure = D2.exposure;
+      var _newSocle = ((D2.socle_use_piece && piece && piece.support && piece.support.couleur)
+        ? (_hexToInt(piece.support.couleur) || _hexToInt(D2.socle_couleur) || 0xf0ece4)
+        : (_hexToInt(D2.socle_couleur) || 0xf0ece4));
+      pedMat.color.setHex(_newSocle);
     },
     dispose: function() { cancelAnimationFrame(_raf); renderer.dispose(); }
   };

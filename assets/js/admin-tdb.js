@@ -8,9 +8,11 @@
 
 /* Décor par défaut (miroir de DECOR_IMMERSIVE_DEFAUT dans salle-immersive.js) */
 var DECOR_IMMERSIVE_DEFAUT = {
-  fond:     '#12100c',
-  exposure: 1.0,
-  sol:      '#8a6228',
+  fond:            '#12100c',
+  exposure:        1.0,
+  sol:             '#8a6228',
+  socle_couleur:   '#f0ece4',
+  socle_use_piece: false,
   pan_a:  '#7a2525',
   pan_b:  '#1a3055',
   pan_c:  '#2a5035',
@@ -312,6 +314,7 @@ var _DECOR_CHAMPS = [
   { key: 'pan_c',  label: 'Panneau C', defaut: '#2a5035' },
   { key: 'pan_d',  label: 'Panneau D', defaut: '#a04820' },
   { key: 'sol',    label: 'Sol',       defaut: '#8a6228' },
+  { key: 'socle_couleur', label: 'Socle',  defaut: '#f0ece4' },
   { key: 'piquet', label: 'Piquet',    defaut: '#c8a050' },
   { key: 'corde',  label: 'Corde',     defaut: '#8b0020' }
 ];
@@ -588,12 +591,35 @@ function ouvrirEditeurImmersif(salle) {
       });
     })(champ.key, pastille, hexInp, copyBtn);
 
+    if (champ.key === 'socle_couleur') row.dataset.socleRow = '1';
     row.appendChild(lbl);
     row.appendChild(pastille);
     row.appendChild(hexInp);
     row.appendChild(copyBtn);
     panel.appendChild(row);
   });
+
+  /* Checkbox socle_use_piece */
+  var cbRow = document.createElement('div');
+  cbRow.style.cssText = 'display:flex;align-items:center;gap:.4rem;margin:.2rem 0 .4rem;';
+  var cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.id = 'cb-socle-piece';
+  cb.checked = !!(decor.socle_use_piece);
+  cb.style.cssText = 'accent-color:var(--gold);cursor:pointer;';
+  var cbLbl = document.createElement('label');
+  cbLbl.htmlFor = 'cb-socle-piece';
+  cbLbl.style.cssText = 'font-size:.65rem;color:var(--muted);cursor:pointer;line-height:1.3;';
+  cbLbl.textContent = "Socle = support de l\u0027\u0153uvre (GSM)";
+  cb.addEventListener('change', function() {
+    decor.socle_use_piece = cb.checked;
+    /* Griser le picker socle si case cochée */
+    var socleLo = panel.querySelector('[data-socle-row]');
+    if (socleLo) socleLo.style.opacity = cb.checked ? '.4' : '1';
+    iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
+  });
+  cbRow.appendChild(cb);
+  cbRow.appendChild(cbLbl);
+  panel.appendChild(cbRow);
 
   /* Slider exposition */
   var expRow = document.createElement('div');
