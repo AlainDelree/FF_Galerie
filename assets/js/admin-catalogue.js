@@ -65,7 +65,7 @@ function genererCatalogueSelection() {
 
   if (selection.length === 0) {
     var info = document.getElementById('cat-info');
-    if (info) { info.textContent = 'Sélectionne au moins une œuvre.'; info.style.color = 'var(--danger)'; }
+    if (info) { info.textContent = 'Sélectionnez au moins une œuvre.'; info.style.color = 'var(--danger)'; }
     return;
   }
 
@@ -263,7 +263,7 @@ cartes + '\n' +
 
   var win = window.open('', '_blank', 'width=920,height=720,scrollbars=yes');
   if (!win) {
-    alert('Le navigateur a bloqué la nouvelle fenêtre. Autorise les pop-ups pour ce site.');
+    alert('Le navigateur a bloqué la nouvelle fenêtre. Autorisez les pop-ups pour ce site.');
     return;
   }
   win.document.open();
