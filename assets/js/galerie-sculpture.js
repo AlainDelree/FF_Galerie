@@ -346,11 +346,13 @@ function creerSocle(piece, gabarit, pos) {
     Math.max(_getEMin(), Math.round(hCm * _getEchelle() * (ratio < 1 ? ratio : 1))));
   /* Échelle effective = même rapport que la pièce (plafonnée) */
   const effScale = photoH / hCm;
-  /* Si une taille de support explicite est fixée, la respecter (plafond large).
-     Sinon, plafond auto à 60% de la hauteur photo pour éviter un socle absurde. */
+  /* Le socle a sa propre échelle stable (px/cm), indépendante de effScale qui
+     explose pour les pièces plates (photoH plafonné à EMin → ratio énorme). */
+  const socleScale = _getEchelle(); /* px par cm, même base que la galerie */
   const tailleExplicite = !!(piece.support && piece.support.taille);
-  const plafondW = tailleExplicite ? Math.round(photoH * 2) : Math.round(photoH * 0.6);
-  const socleW = Math.max(_getEMin(), Math.min(plafondW, Math.round(socleDiam * effScale)));
+  const plafondW = tailleExplicite ? Math.round(photoH * 2.5) : Math.round(photoH * 0.6);
+  const socleW = Math.max(_getEMin() * 0.5,
+    Math.min(plafondW, Math.round(socleDiam * socleScale)));
 
   const hasGlb = !!piece.glb;
 
