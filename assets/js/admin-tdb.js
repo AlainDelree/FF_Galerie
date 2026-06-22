@@ -535,18 +535,25 @@ function ouvrirEditeurImmersif(salle) {
     hexInp.value = decor[champ.key] || champ.defaut;
     hexInp.style.cssText = 'width:5rem;font-size:.65rem;padding:.2rem .3rem;border:1px solid var(--brd);border-radius:4px;background:var(--bg3);color:var(--text);font-family:monospace;';
 
-    (function(k, p, inp) {
-      /* Sync picker → pastille + input */
+    var copyBtn = document.createElement('button');
+    copyBtn.title = 'Copier';
+    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:.75rem;padding:0 2px;color:var(--muted);line-height:1;flex-shrink:0;';
+    copyBtn.textContent = '⎘';
+
+    (function(k, p, inp, btn) {
+      /* Applique un hex valide */
       function appliquerHex(hex) {
-        if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return false;
         hex = hex.toLowerCase();
         p.style.background = hex;
         p.title = hex;
         inp.value = hex;
         decor[k] = hex;
         iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
+        return true;
       }
 
+      /* Picker */
       p.addEventListener('click', function() {
         if (typeof ouvrirPickerCouleur !== 'function') return;
         window._supportPickerCouleur   = p.title;
@@ -556,13 +563,28 @@ function ouvrirEditeurImmersif(salle) {
         if (titreEl) titreEl.textContent = 'Couleur — ' + champ.label;
       });
 
+      /* Saisie live */
       inp.addEventListener('input', function() { appliquerHex(inp.value.trim()); });
-      inp.addEventListener('change', function() { appliquerHex(inp.value.trim()); });
-    })(champ.key, pastille, hexInp);
+
+      /* Restaurer si invalide au blur */
+      inp.addEventListener('blur', function() {
+        var v = inp.value.trim();
+        if (!/^#[0-9a-fA-F]{6}$/.test(v)) inp.value = p.title; /* restaure dernier valide */
+      });
+
+      /* Copier */
+      btn.addEventListener('click', function() {
+        navigator.clipboard && navigator.clipboard.writeText(inp.value).then(function() {
+          btn.textContent = '✓';
+          setTimeout(function() { btn.textContent = '⎘'; }, 1200);
+        });
+      });
+    })(champ.key, pastille, hexInp, copyBtn);
 
     row.appendChild(lbl);
     row.appendChild(pastille);
     row.appendChild(hexInp);
+    row.appendChild(copyBtn);
     panel.appendChild(row);
   });
 
