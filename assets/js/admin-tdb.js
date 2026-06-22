@@ -196,6 +196,80 @@ function _renderTDB() {
     });
     tdb.appendChild(gridG);
   }
+
+  /* ── Section esthétique : cloner depuis une autre salle de même type ── */
+  var autresSalles = (typeof salles !== 'undefined' ? salles : []).filter(function(o) {
+    var ot = o.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+    return o.id !== s.id && ot === type;
+  });
+  if (autresSalles.length > 0) {
+    var titreEsth = document.createElement('div');
+    titreEsth.className = 'tdb-section-lbl';
+    titreEsth.textContent = 'Esthétique';
+    tdb.appendChild(titreEsth);
+
+    var cloneRow = document.createElement('div');
+    cloneRow.style.cssText = 'display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;';
+    var lblClone = document.createElement('span');
+    lblClone.style.cssText = 'font-size:.78rem;color:var(--muted);';
+    lblClone.textContent = 'Copier l\u0027apparence et les présentations depuis :';
+    var sel = document.createElement('select');
+    sel.id = 'tdb-clone-source';
+    sel.style.cssText = 'font-size:.8rem;padding:.3rem .5rem;border:1px solid var(--brd);border-radius:6px;background:var(--bg3);color:var(--text);';
+    var opt0 = document.createElement('option');
+    opt0.value = ''; opt0.textContent = '— choisir une salle —';
+    sel.appendChild(opt0);
+    autresSalles.forEach(function(o) {
+      var op = document.createElement('option');
+      op.value = o.id; op.textContent = o.nom || ('Salle ' + o.id);
+      sel.appendChild(op);
+    });
+    var btnClone = document.createElement('button');
+    btnClone.className = 'ctrl-btn';
+    btnClone.style.cssText = 'font-size:.8rem;';
+    btnClone.textContent = '🎨 Cloner';
+    btnClone.addEventListener('click', function() {
+      var srcId = parseInt(sel.value);
+      if (!srcId) { if (typeof toast === 'function') toast('Choisis une salle source', 'err'); return; }
+      _clonerEsthetique(srcId, s.id);
+    });
+    cloneRow.appendChild(lblClone);
+    cloneRow.appendChild(sel);
+    cloneRow.appendChild(btnClone);
+    tdb.appendChild(cloneRow);
+  }
+}
+
+/* Clone l'esthétique (apparence + greffons) d'une salle source vers la salle cible.
+   Ne touche jamais aux positions, positions_mobile, toiles, nom, id, visible. */
+function _clonerEsthetique(srcId, cibleId) {
+  var src   = salles.find(function(o) { return o.id === srcId; });
+  var cible = salles.find(function(o) { return o.id === cibleId; });
+  if (!src || !cible) return;
+
+  var nomSrc = src.nom || ('Salle ' + srcId);
+  if (!confirm('Copier toute l\u0027esthétique de « ' + nomSrc + ' » vers cette salle ?\n\n' +
+    'Apparence (couleur, texture, thème) + présentations immersive/descriptive (activation et décors).\n' +
+    'Le placement des pièces n\u0027est pas affecté.')) return;
+
+  /* Apparence de salle */
+  cible.couleur_mur     = src.couleur_mur;
+  cible.couleur_cadres  = src.couleur_cadres;
+  cible.epaisseur_cadres= src.epaisseur_cadres;
+  cible.texture         = src.texture;
+  cible.theme           = src.theme;
+
+  /* Greffons (activation + décor) — copie profonde */
+  cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
+
+  /* Rafraîchir l'aperçu + sauvegarder */
+  if (typeof appliquerApparence === 'function') appliquerApparence();
+  _renderTDB();
+  if (typeof sauvegarder === 'function') {
+    sauvegarder('[admin] Clonage esthétique « ' + nomSrc + ' » → « ' + (cible.nom || 'salle') + ' »', null)
+      .then(function() { if (typeof toast === 'function') toast('✓ Esthétique clonée'); })
+      .catch(function(e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+  }
 }
 
 /* ── Carte d'une vue arrangeable (PC / GSM) ── */
