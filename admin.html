@@ -153,7 +153,7 @@
       </div>
 
       <div class="popover" id="pop-texture">
-        <div class="pop-titre">Texture du mur</div>
+        <div class="pop-titre">Mes textures</div>
         <div class="swatches" id="sw-texture">
           <div class="sw" style="background:#2e2e2e;" data-val="none" title="Uni"></div>
           <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
@@ -163,6 +163,26 @@
           <div class="sw" style="background:repeating-conic-gradient(#555 0% 25%,#444 0% 50%) 0 0/6px 6px;" data-val="damier" title="Damier"></div>
           <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="velours" title="Velours"></div>
           <div class="sw" style="background:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%23444%22/%3E%3Crect x=%220%22 y=%220%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3Crect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3C/svg%3E') 0 0/8px 8px;" data-val="brique" title="Béton/Brique"></div>
+          <!-- Mes textures GitHub (privées + partagées par moi) — injectées en JS -->
+        </div>
+        <button class="sw-plus pop-plus" type="button" id="btn-tex-plus" title="Ajouter une texture">+</button>
+      </div>
+
+      <!-- Sous-popover : choix textures système / upload -->
+      <div class="popover" id="pop-tex-plus">
+        <div class="pop-titre">Ajouter une texture</div>
+        <button type="button" class="pop-action" id="btn-tex-systeme">🖼 Textures système</button>
+        <label class="pop-action" for="inp-texture-custom" style="cursor:pointer;">
+          📤 Télécharger une texture
+          <input type="file" id="inp-texture-custom" accept="image/*" style="display:none;">
+        </label>
+      </div>
+
+      <!-- Popover textures système (partagées non miennes) -->
+      <div class="popover" id="pop-tex-systeme">
+        <div class="pop-titre">Textures système</div>
+        <div class="swatches" id="sw-tex-systeme">
+          <div class="pop-vide" id="tex-systeme-vide" style="display:none;font-size:.72rem;color:var(--muted);padding:.3rem 0;">Aucune texture système disponible.</div>
         </div>
       </div>
 
