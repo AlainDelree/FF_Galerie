@@ -1057,7 +1057,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 
 /* ── Éditeur immersif (overlay fullscreen) ── */
 .imm-edit-panel {
-  width: 180px; flex-shrink: 0;
+  width: 220px; flex-shrink: 0;
   background: var(--bg); border-left: 1px solid var(--brd);
   padding: .7rem .6rem; display: flex; flex-direction: column;
   overflow-y: auto;

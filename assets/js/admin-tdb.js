@@ -528,25 +528,40 @@ function ouvrirEditeurImmersif(salle) {
     pastille.style.background = decor[champ.key] || champ.defaut;
     pastille.title = decor[champ.key] || champ.defaut;
 
-    (function(k, p) {
+    var hexInp = document.createElement('input');
+    hexInp.type = 'text';
+    hexInp.maxLength = 7;
+    hexInp.value = decor[champ.key] || champ.defaut;
+    hexInp.style.cssText = 'width:5rem;font-size:.65rem;padding:.2rem .3rem;border:1px solid var(--brd);border-radius:4px;background:var(--bg3);color:var(--text);font-family:monospace;';
+
+    (function(k, p, inp) {
+      /* Sync picker → pastille + input */
+      function appliquerHex(hex) {
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+        hex = hex.toLowerCase();
+        p.style.background = hex;
+        p.title = hex;
+        inp.value = hex;
+        decor[k] = hex;
+        iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
+      }
+
       p.addEventListener('click', function() {
         if (typeof ouvrirPickerCouleur !== 'function') return;
         window._supportPickerCouleur   = p.title;
-        window._supportPickerOnConfirm = function(hex) {
-          p.style.background = hex;
-          p.title = hex;
-          decor[k] = hex;
-          /* Mise à jour live de l'iframe */
-          iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
-        };
+        window._supportPickerOnConfirm = function(hex) { appliquerHex(hex); };
         ouvrirPickerCouleur('support');
         var titreEl = document.getElementById('picker-titre');
         if (titreEl) titreEl.textContent = 'Couleur — ' + champ.label;
       });
-    })(champ.key, pastille);
+
+      inp.addEventListener('input', function() { appliquerHex(inp.value.trim()); });
+      inp.addEventListener('change', function() { appliquerHex(inp.value.trim()); });
+    })(champ.key, pastille, hexInp);
 
     row.appendChild(lbl);
     row.appendChild(pastille);
+    row.appendChild(hexInp);
     panel.appendChild(row);
   });
 
