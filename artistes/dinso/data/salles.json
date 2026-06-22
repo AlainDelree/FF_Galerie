@@ -96,8 +96,17 @@
       "couleur_mur": "#2a2520",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": [],
+      "toiles": [
+        4
+      ],
+      "positions": [
+        {
+          "id": 4,
+          "x": 39,
+          "y": 52,
+          "gabarit": "S"
+        }
+      ],
       "positions_mobile": []
     },
     {
@@ -186,12 +195,6 @@
           "x": 36,
           "y": 37,
           "gabarit": "M"
-        },
-        {
-          "id": 4,
-          "x": 74,
-          "y": 77,
-          "gabarit": "S"
         }
       ],
       "greffons": {
