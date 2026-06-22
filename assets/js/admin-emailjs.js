@@ -67,11 +67,12 @@ async function uploaderTextureConfirmee() {
     $('overlay-tex-upload').style.display = 'none';
     // Afficher le swatch immédiatement avec le dataUrl local
     TEXTURES[chemin] = 'url("' + _texData.dataUrl + '")';
-    var _cont = partager ? $('textures-gh-partage') : $('textures-gh-prive');
-    var _wrap = partager ? $('tex-gh-partage-wrap') : $('tex-gh-prive-wrap');
-    if (_cont && _wrap) {
-      _wrap.style.display = '';
-      _cont.appendChild(creerSwatchGH(chemin, _texData.dataUrl, partager && ADMIN_CFG.prefix === 'ff'));
+    /* Mémoriser comme texture mienne si partagée */
+    if (partager && typeof addMyOwnedTexture === 'function') addMyOwnedTexture(chemin);
+    /* Injecter dans "Mes textures" (popover #pop-texture) — privée ou partagée par moi */
+    var contMesTex = $('sw-texture');
+    if (contMesTex) {
+      contMesTex.appendChild(creerSwatchGH(chemin, _texData.dataUrl, true));
     }
     _texData = null;
     toast('✓ Texture "' + nomSaisi + '" ajoutée');
@@ -85,31 +86,66 @@ async function uploaderTextureConfirmee() {
   $('btn-tex-confirmer').disabled = false;
 }
 
+/* Cache des textures partagées (utilisées par afficherTexturesSysteme) */
+var _texturesPartagees = []; // [{ path, download_url }]
+
 async function chargerTexturesGitHub() {
-  var dossiers = [
-    { chemin: 'assets/images/textures',        wrap: $('tex-gh-partage-wrap'), cont: $('textures-gh-partage'),
-      suppressible: ADMIN_CFG.prefix === 'ff'  /* Fred peut supprimer les partagées, pas les invités */ },
-    { chemin: ADMIN_CFG.repoPath + 'textures', wrap: $('tex-gh-prive-wrap'),   cont: $('textures-gh-prive'),
-      suppressible: true }
-  ];
-  for (var i = 0; i < dossiers.length; i++) {
-    var d = dossiers[i];
-    if (!d.cont) continue;
-    try {
-      var files = await apiGH('/repos/' + REPO + '/contents/' + d.chemin + '?ref=' + BRANCH);
-      var imgs  = files.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
-      if (!imgs.length) { if (d.wrap) d.wrap.style.display = 'none'; continue; }
-      if (d.wrap) d.wrap.style.display = '';
-      d.cont.innerHTML = '';
-      imgs.forEach(function(f) {
-        TEXTURES[f.path] = 'url("' + f.download_url + '")';
-        d.cont.appendChild(creerSwatchGH(f.path, f.download_url, d.suppressible));
-      });
-    } catch(e) { if (d.wrap) d.wrap.style.display = 'none'; }
+  /* Privées : toujours dans "Mes textures" du popover #pop-texture */
+  var cheminsOwn = (typeof getMyOwnedTextures === 'function') ? getMyOwnedTextures() : [];
+  var contMesTex = $('sw-texture');
+
+  /* Retirer d'éventuelles textures GitHub déjà injectées (rerender) */
+  if (contMesTex) {
+    contMesTex.querySelectorAll('.sw.tex-gh').forEach(function(el){ el.remove(); });
   }
-  // Rafraîchir le mur si une texture GitHub est active (race avec chargerTout)
+
+  /* 1) Textures privées de l'artiste → toutes dans Mes textures */
+  try {
+    var prives = await apiGH('/repos/' + REPO + '/contents/' + ADMIN_CFG.repoPath + 'textures?ref=' + BRANCH);
+    var imgsP  = prives.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
+    imgsP.forEach(function(f) {
+      TEXTURES[f.path] = 'url("' + f.download_url + '")';
+      if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
+    });
+  } catch(e) { /* dossier inexistant : OK */ }
+
+  /* 2) Textures partagées → séparer mes textures vs système */
+  _texturesPartagees = [];
+  try {
+    var partages = await apiGH('/repos/' + REPO + '/contents/assets/images/textures?ref=' + BRANCH);
+    var imgsS    = partages.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
+    var suppressibleSysteme = (ADMIN_CFG.prefix === 'ff'); // Fred peut supprimer même celles des autres
+    imgsS.forEach(function(f) {
+      TEXTURES[f.path] = 'url("' + f.download_url + '")';
+      var estMienne = cheminsOwn.indexOf(f.path) >= 0;
+      if (estMienne) {
+        if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
+      } else {
+        _texturesPartagees.push({ path: f.path, download_url: f.download_url, suppressible: suppressibleSysteme });
+      }
+    });
+  } catch(e) { /* dossier inexistant : OK */ }
+
+  /* Rafraîchir le mur si une texture GitHub est active (race avec chargerTout) */
   if (salleActive && typeof appliquerApparence === 'function') appliquerApparence();
   window._texturesGHChargees = true;
+}
+
+/* Affiche les textures système (partagées non miennes) dans #sw-tex-systeme */
+function afficherTexturesSysteme() {
+  var cont = $('sw-tex-systeme');
+  if (!cont) return;
+  /* Vider sauf le placeholder "Aucune texture système" */
+  cont.querySelectorAll('.sw.tex-gh').forEach(function(el){ el.remove(); });
+  var vide = $('tex-systeme-vide');
+  if (!_texturesPartagees.length) {
+    if (vide) vide.style.display = '';
+    return;
+  }
+  if (vide) vide.style.display = 'none';
+  _texturesPartagees.forEach(function(t) {
+    cont.appendChild(creerSwatchGH(t.path, t.download_url, t.suppressible));
+  });
 }
 
 function creerSwatchGH(chemin, url, suppressible) {
@@ -151,7 +187,10 @@ async function supprimerTextureGitHub(chemin) {
       branch: BRANCH
     });
     if (textureActuelle === chemin) { setTexture('none'); }
+    if (typeof removeMyOwnedTexture === 'function') removeMyOwnedTexture(chemin);
     await chargerTexturesGitHub();
+    /* Rafraîchir aussi le popover système si ouvert */
+    if (typeof afficherTexturesSysteme === 'function') afficherTexturesSysteme();
     toast('✓ Texture supprimée');
   } catch(e) { alert('Erreur : ' + e.message); }
 }
