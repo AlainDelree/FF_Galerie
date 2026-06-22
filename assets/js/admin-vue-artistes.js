@@ -385,8 +385,8 @@ async function genererFichiers(a) {
   }, null, 2);
 
   const sallesSculpture = JSON.stringify({
-    salles: [{id:1,nom:"Salle I",couleur_mur:"#2a2520",couleur_sol:"#b8a890",
-      texture:"none",visible:true,pieces:[],positions:[]}]
+    salles: [{id:1,nom:"Salle I",couleur_mur:"#2a2520",
+      texture:"none",visible:true,pieces:[],positions:[],positions_mobile:[]}]
   }, null, 2);
 
   const estSculpture = a.type === "sculpture";
