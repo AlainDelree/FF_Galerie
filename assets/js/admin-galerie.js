@@ -1302,6 +1302,17 @@ function ouvrirModalSalle() {
   const fin = document.createElement('div');
   fin.className = 'pos-opt sel'; fin.textContent = 'En dernier'; fin.dataset.pos = salles.length;
   pg.appendChild(fin);
+  // Peupler le select "Copier l'apparence de…"
+  const selCopier = $('inp-salle-copier');
+  if (selCopier) {
+    selCopier.innerHTML = '<option value="">— Nouvelle salle vierge —</option>';
+    salles.forEach(function(s) {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nom || ('Salle ' + s.id);
+      selCopier.appendChild(opt);
+    });
+  }
   $('overlay-salle').classList.add('ouvert');
 }
 
@@ -1374,17 +1385,31 @@ async function validerViderSalles() {
 
 
 async function creerSalle() {
-  const nom = $('inp-salle-nom').value.trim() || `Salle ${salles.length + 1}`;
-  const theme = $('inp-salle-theme').value.trim();
-  const couleur = $('overlay-salle').querySelector('.sw.sel')?.dataset.val || '#2e2e2e';
+  const nom    = $('inp-salle-nom').value.trim() || `Salle ${salles.length + 1}`;
+  const theme  = $('inp-salle-theme').value.trim();
   const posOpt = $('pos-grille').querySelector('.pos-opt.sel');
-  const pos = posOpt ? parseInt(posOpt.dataset.pos) : salles.length;
-  const newId = Math.max(...salles.map(s => s.id), 0) + 1;
-  const salle = { id: newId, nom, theme, couleur_mur: couleur, couleur_cadres: '#3a3a3a', texture: 'none', visible: true, toiles: [], positions: [] };
+  const pos    = posOpt ? parseInt(posOpt.dataset.pos) : salles.length;
+  const newId  = Math.max(...salles.map(s => s.id), 0) + 1;
+
+  // Copie d'apparence depuis une salle source (optionnelle)
+  const srcId = parseInt(($('inp-salle-copier') || {}).value) || null;
+  const src   = srcId ? salles.find(function(s) { return s.id === srcId; }) : null;
+
+  const salle = {
+    id: newId, nom, theme,
+    couleur_mur:      src ? src.couleur_mur      : '#2e2e2e',
+    couleur_cadres:   src ? src.couleur_cadres   : '#3a3a3a',
+    epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
+    texture:          src ? src.texture          : 'none',
+    greffons:         src && src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined,
+    visible: true, toiles: [], positions: []
+  };
+
   salles.splice(pos, 0, salle);
   fermerModalSalle();
   try {
-    await sauvegarder(`[admin] Ajout salle "${nom}"`, '✓ Salle ajoutée');
+    const logSrc = src ? ` (depuis "${src.nom}")` : '';
+    await sauvegarder(`[admin] Ajout salle "${nom}"${logSrc}`, '✓ Salle ajoutée');
     marquerSalleEnAttente(newId);
     afficherPlan();
     selectSalle(newId);
