@@ -508,6 +508,7 @@ async function chargerTout() {
       greffons: s.greffons || undefined
     }));
     if (typeof afficherPlan === 'function') afficherPlan();
+    if (typeof majAlertePhotoManquante === 'function') majAlertePhotoManquante();
     if (salles.length > 0) selectSalle(salles[0].id);
     syncBadge('ok');
 

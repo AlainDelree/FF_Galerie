@@ -1060,7 +1060,7 @@ function lireFormToile() {
 async function sauverToile() {
   const donnees = lireFormToile();
 
-  /* Alerte : pièce visible aux visiteurs mais sans photo/thumbnail.
+  /* Blocage : une pièce visible aux visiteurs DOIT avoir une photo/thumbnail.
      photoExistante = thumbnail déjà uploadé (édition) OU nouvelle photo en attente. */
   var photoExistante = !!photoB64;
   if (toileEnEdition !== null) {
@@ -1068,13 +1068,12 @@ async function sauverToile() {
     if (tEdit && tEdit.photo) photoExistante = true;
   }
   if (donnees.visible && !photoExistante) {
-    var ok = confirm(
-      'Cette ' + LBL.item + ' n\u0027a pas de photo (l\u0027aperçu sera un appareil photo barré).\n\n' +
-      'Elle sera visible par les visiteurs du site dans cet état.\n\n' +
-      'Conseil : générez le thumbnail depuis le 3D, ou ajoutez une photo perso.\n\n' +
-      'Enregistrer quand même ?'
+    alert(
+      'Impossible de rendre cette ' + LBL.item + ' visible sans photo valide.\n\n' +
+      'Régénérez le thumbnail depuis le 3D, ou téléchargez votre propre image.\n\n' +
+      'Vous pouvez aussi décocher « Visible » pour l\u0027enregistrer en brouillon.'
     );
-    if (!ok) { return; }
+    return;
   }
 
   const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile'), btnAnn = $('btn-annuler-toile');
@@ -1142,6 +1141,7 @@ async function sauverToile() {
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
     if (typeof afficherOeuvres === 'function' && typeof _oeuvresTabActif === 'function' && _oeuvresTabActif()) afficherOeuvres();
+    if (typeof majAlertePhotoManquante === 'function') majAlertePhotoManquante();
     toast("✓ Enregistré — site mis à jour dans ~1 min", "ok", 5000);
   } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); }
   finally { btn.disabled = false; btnAnn.disabled = false; lbl.textContent = 'Enregistrer'; }
@@ -1164,6 +1164,7 @@ async function supprimerToile() {
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
     if (typeof afficherOeuvres === 'function' && typeof _oeuvresTabActif === 'function' && _oeuvresTabActif()) afficherOeuvres();
+    if (typeof majAlertePhotoManquante === 'function') majAlertePhotoManquante();
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
 }
 
@@ -1693,6 +1694,26 @@ function _teinteApercu(hex, f) {
   var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   function adj(c){ return Math.max(0, Math.min(255, Math.round(c + 255*f))); }
   return 'rgb(' + adj(r) + ',' + adj(g) + ',' + adj(b) + ')';
+}
+
+/* Affiche/masque le bandeau d'alerte si une ou plusieurs pièces n'ont pas de photo */
+function majAlertePhotoManquante() {
+  var el = document.getElementById('alerte-photo-manquante');
+  if (!el) return;
+  var sansPhoto = (Array.isArray(toiles) ? toiles : []).filter(function(t) {
+    return !t.photo;
+  });
+  if (sansPhoto.length === 0) {
+    el.style.display = 'none';
+    el.textContent = '';
+    return;
+  }
+  var motItem = (typeof LBL !== 'undefined' ? LBL.items : 'objets');
+  el.textContent =
+    'Un ou plusieurs de vos ' + motItem + ' n\u0027ont pas de photo valide. ' +
+    'Vous pouvez tenter de régénérer l\u0027image via Pièces > Modifier ou télécharger votre propre image dans Pièces > Modifier. ' +
+    'Toute mise sur la galerie lui sera refusée dans cet état.';
+  el.style.display = '';
 }
 
 /* Pousse le changement vers l'iframe (re-render de la pièce) + persiste en mémoire */
