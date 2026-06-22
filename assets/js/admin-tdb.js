@@ -286,9 +286,15 @@ function _creerCarteGreffon(greffon, salle) {
   footer.appendChild(badge);
   footer.appendChild(toggleBtn);
 
-  /* Config décor (immersive uniquement, quand actif) */
+  /* Bouton "Configurer" (immersive uniquement, quand actif) */
   if (actif && greffon === 'immersive') {
-    footer.appendChild(_creerConfigDecor(salle));
+    var cfgBtn = document.createElement('button');
+    cfgBtn.className = 'ctrl-btn tdb-edit-btn';
+    cfgBtn.textContent = '🎨 Configurer';
+    (function(s) {
+      cfgBtn.addEventListener('click', function() { entrerVue('immersive'); });
+    })(salle);
+    footer.appendChild(cfgBtn);
   }
 
   card.appendChild(footer);

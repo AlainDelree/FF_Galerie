@@ -484,7 +484,12 @@ async function renderImmersiveApercu(canvas, piece, decor) {
   var spot = new THREE.SpotLight(0xfff0d0, 1.8, 14, Math.PI / 5, 0.5);
   spot.position.set(0, 6, 0); spot.target.position.set(0, 1.1, 0);
   spot.castShadow = true; scene.add(spot); scene.add(spot.target);
-  scene.add(Object.assign(new THREE.PointLight(0xfff0d0, 0.6, 12), { position: { x: -3, y: 3, z: 2 } }));
+  var fill1 = new THREE.PointLight(0xfff0d0, 0.6, 12);
+  fill1.position.set(-3, 3, 2); scene.add(fill1);
+  var fill2 = new THREE.PointLight(0xe0e8ff, 0.4, 12);
+  fill2.position.set(3, 2.5, -2); scene.add(fill2);
+  var fill3 = new THREE.PointLight(0xfff0d0, 0.3, 10);
+  fill3.position.set(0, 3, -4); scene.add(fill3);
   var hemi = new THREE.HemisphereLight(0xfff8f0, _hexToInt(D.sol) || 0x8a6228, 0.5);
   scene.add(hemi);
 
