@@ -192,7 +192,13 @@
       },
       "visible": true,
       "socle": 137,
-      "glb": "artistes/dinso/assets/models/piece-009.glb"
+      "glb": "artistes/dinso/assets/models/piece-009.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     }
   ]
 }
