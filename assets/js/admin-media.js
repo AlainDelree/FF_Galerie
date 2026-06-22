@@ -212,8 +212,9 @@ function genererThumbnailGLB(blobUrl) {
       mv.setAttribute('src', blobUrl);
       mv.setAttribute('camera-controls', '');
       mv.setAttribute('interaction-prompt', 'none');
-      /* Même cadrage que la galerie pour un thumbnail cohérent */
-      mv.setAttribute('camera-orbit', '25deg 70deg auto');
+      /* Vue de face (azimut 0) → objet centré horizontalement dans le thumbnail.
+         Un léger angle vertical (75deg) donne du relief sans décaler en X. */
+      mv.setAttribute('camera-orbit', '0deg 75deg auto');
       mv.setAttribute('field-of-view', '36deg');
       mv.setAttribute('shadow-intensity', '0');
       /* Fond transparent (PNG) */
