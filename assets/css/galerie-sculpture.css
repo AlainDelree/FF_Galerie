@@ -5,13 +5,9 @@
 /* Pages sculpture : pas de scroll. Le body remplit le viewport et la galerie
    prend l'espace restant après header/footer (et non une hauteur fixe qui
    s'ajoute à eux). Posé via .page-sculpture (JS) — vaut pour toutes les tailles. */
-body.page-sculpture { height: 100dvh; overflow: hidden; outline: 4px solid red; outline-offset: -4px; }
-
-/* === DIAGNOSTIC TEMPORAIRE — marqueurs visuels === */
-body.page-sculpture .barre-navigation { background: magenta !important; outline: 3px solid lime !important; }
-body.page-sculpture .nav-mobile { background: cyan !important; outline: 3px solid orange !important; }
-body.page-sculpture .galerie-principale { outline: 3px dashed yellow !important; outline-offset: -8px; }
-/* === FIN DIAGNOSTIC === */
+body.page-sculpture { height: 100dvh !important; min-height: 0 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+body.page-sculpture .galerie-principale { flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important; }
+body.page-sculpture .pied { flex-shrink: 0 !important; }
 body.page-sculpture .galerie-principale { min-height: 0 !important; overflow: hidden; }
 
 .salle.salle-sculpture {
