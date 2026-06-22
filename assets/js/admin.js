@@ -68,11 +68,28 @@ const K = {
   token:    'ff_gh_token',          /* token partagé — même repo */
   textures: ADMIN_CFG.prefix + '_textures_custom',
   mur_hist: ADMIN_CFG.prefix + '_mur_hist',
-  cad_hist: ADMIN_CFG.prefix + '_cad_hist'
+  cad_hist: ADMIN_CFG.prefix + '_cad_hist',
+  texOwn:   ADMIN_CFG.prefix + '_textures_owned'
 };
 
 const MUR_DEFAULTS = ['#2e2e2e','#1c1c1c','#2a2420','#2c2535','#1e3a2a','#3a2a1e','#e8e4dc','#f5f5f5'];
 const CAD_DEFAULTS = ['#3a3a3a','#c8a050','#f0f0f0','#1c1c1c','#5c3d2e'];
+
+/* Textures partagées dont JE suis l'auteur (= apparaissent dans "Mes textures") */
+function getMyOwnedTextures() {
+  try { return JSON.parse(localStorage.getItem(K.texOwn)) || []; } catch(e) { return []; }
+}
+function addMyOwnedTexture(chemin) {
+  var liste = getMyOwnedTextures();
+  if (liste.indexOf(chemin) < 0) {
+    liste.push(chemin);
+    try { localStorage.setItem(K.texOwn, JSON.stringify(liste)); } catch(e) {}
+  }
+}
+function removeMyOwnedTexture(chemin) {
+  var liste = getMyOwnedTextures().filter(function(c){ return c !== chemin; });
+  try { localStorage.setItem(K.texOwn, JSON.stringify(liste)); } catch(e) {}
+}
 
 // ═══════════════════════════════════════════════
 // RAPPORT D'ERREURS AUTOMATIQUE → GitHub Issues
@@ -746,6 +763,17 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopo
     if (popId === 'pop-musique') chargerEtAfficherMusique();
     if (popId === 'pop-texture' && !window._texturesGHChargees) chargerTexturesGitHub();
   });
+});
+
+/* Sous-popovers Texture : "Ajouter une texture" et "Textures système" */
+document.getElementById('btn-tex-plus')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  ouvrirPopover('pop-tex-plus', 'btn-tex-plus');
+});
+document.getElementById('btn-tex-systeme')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  ouvrirPopover('pop-tex-systeme', 'btn-tex-systeme');
+  if (typeof afficherTexturesSysteme === 'function') afficherTexturesSysteme();
 });
 
 // ── Modal Vider salles ───────────────────────────────────────────
