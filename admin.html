@@ -904,13 +904,15 @@
   </div>
 
   <!-- ══ PANNEAU SUPPORT (sculpture) ══ -->
-  <div id="support-panel" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:360;background:var(--bg2);border-top:1.5px solid var(--gold);border-radius:14px 14px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);padding:.9rem 1rem 1.2rem;max-height:70vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;gap:.5rem;">
-      <strong style="font-size:.95rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎨 Support — <span id="support-piece-nom">—</span></strong>
+  <div id="support-panel" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:360;background:var(--bg2);border-top:1.5px solid var(--gold);border-radius:14px 14px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);max-height:75vh;overflow-y:auto;">
+    <div id="support-barre" style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.7rem 1rem;cursor:pointer;user-select:none;">
+      <span id="support-chevron" style="font-size:.85rem;color:var(--gold);transition:transform .2s;flex-shrink:0;">▸</span>
+      <strong style="font-size:.92rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎨 Support — <span id="support-piece-nom">—</span></strong>
       <button id="support-retirer" style="background:var(--danger);border:none;color:#fff;font-size:.78rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;cursor:pointer;flex-shrink:0;">🗑 Retirer</button>
       <button id="support-close" style="background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;flex-shrink:0;">✕</button>
     </div>
 
+    <div id="support-corps" style="display:none;padding:0 1rem 1.2rem;">
     <!-- Aperçu live de la pièce sur son support -->
     <div id="support-apercu" style="display:flex;align-items:flex-end;justify-content:center;height:150px;margin-bottom:.9rem;background:linear-gradient(#cfe3f5,#a9cdee);border-radius:10px;overflow:hidden;padding:8px 0 0;"></div>
 
@@ -962,8 +964,9 @@
           <span id="support-hauteur-val" style="font-family:monospace;font-size:.85rem;min-width:48px;text-align:right;">auto</span>
         </div>
       </div>
+      </div>
     </div>
-  </div>
+  </div><!-- /support-corps + /support-panel -->
 
   <div class="pl-ctrl-panel" id="pl-ctrl-panel">
     <div class="pl-ctrl-cross">

@@ -1488,10 +1488,18 @@ function ouvrirPanneauSupport(pieceId) {
 
   _supportSyncUI();
   panel.style.display = 'block';
+  /* Toujours replié à l'ouverture (ne gêne pas le placement/déplacement) */
+  _supportCorpsOuvert(false);
 
   /* Brancher les contrôles une seule fois */
   if (!panel.dataset.bound) {
     panel.dataset.bound = '1';
+    /* Toggle accordéon au clic sur la barre (sauf boutons) */
+    document.getElementById('support-barre').addEventListener('click', function(e) {
+      if (e.target.closest('#support-retirer') || e.target.closest('#support-close')) return;
+      var corps = document.getElementById('support-corps');
+      _supportCorpsOuvert(corps.style.display === 'none');
+    });
     document.getElementById('support-close').addEventListener('click', function() {
       fermerPanneauSupport();
     });
@@ -1581,6 +1589,14 @@ function fermerPanneauSupport() {
   var panel = document.getElementById('support-panel');
   if (panel) panel.style.display = 'none';
   _supportPieceId = null;
+}
+
+/* Déplie (true) ou replie (false) le corps de l'accordéon support */
+function _supportCorpsOuvert(ouvert) {
+  var corps = document.getElementById('support-corps');
+  var chevron = document.getElementById('support-chevron');
+  if (corps) corps.style.display = ouvert ? 'block' : 'none';
+  if (chevron) chevron.style.transform = ouvert ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
 /* Reflète l'état de piece.support dans l'UI du panneau */
