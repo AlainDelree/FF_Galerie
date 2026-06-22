@@ -4,10 +4,10 @@
       "id": 1,
       "nom": "Salle I",
       "type": "sculpture",
-      "couleur_mur": "#e66100",
+      "couleur_mur": "#99f1b7",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "parquet",
+      "texture": "carrelage",
       "visible": true,
       "toiles": [
         1,
