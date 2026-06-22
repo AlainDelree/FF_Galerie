@@ -26,7 +26,8 @@ function initOeuvresTab() {
 
   if (btnMod) btnMod.addEventListener('click', function() {
     var id = [..._oeuvresSelection][0];
-    if (id != null && typeof ouvrirFiche === 'function') ouvrirFiche(id);
+    if (id != null && typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
+    else if (id != null && typeof ouvrirFiche === 'function') ouvrirFiche(id);
   });
 
   if (btnSup) btnSup.addEventListener('click', function() {
@@ -73,7 +74,8 @@ function afficherOeuvres() {
       majBoutonsOeuvres();
     },
     onDblClick: function(id) {
-      if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
+      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
+      else if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
     }
   });
 
