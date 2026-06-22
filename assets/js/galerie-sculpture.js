@@ -488,6 +488,23 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
 
   salleDiv.classList.add('salle-sculpture');
   document.body.classList.add('page-sculpture');
+  /* DIAG TEMP — mesure du débordement */
+  setTimeout(function() {
+    var d = document.getElementById('_hdbg') || (function(){
+      var x = document.createElement('div'); x.id='_hdbg';
+      x.style.cssText='position:fixed;top:50%;left:4px;z-index:999999;background:#000;color:#0f0;font:11px monospace;padding:6px 8px;border-radius:5px;max-width:90vw;line-height:1.5;';
+      document.body.appendChild(x); return x;
+    })();
+    var b = document.body, dE = document.documentElement;
+    var cs = getComputedStyle(b);
+    d.innerHTML =
+      'innerH=' + window.innerHeight + ' innerW=' + window.innerWidth + '<br>' +
+      'body.scrollH=' + b.scrollHeight + ' clientH=' + b.clientH + '<br>' +
+      'html.scrollH=' + dE.scrollHeight + '<br>' +
+      'body display=' + cs.display + ' overflow=' + cs.overflow + '<br>' +
+      'body height=' + cs.height + '<br>' +
+      'débordement=' + (dE.scrollHeight - window.innerHeight) + 'px';
+  }, 600);
 
   const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
   const sils = plancher.querySelector('.silhouettes-sol');
