@@ -320,11 +320,12 @@ function _creerConfigDecor(salle) {
     pastille.dataset.key = champ.key;
     pastille.title = val;
 
-    /* Clic → picker HSV existant */
-    (function(k, p) {
+    /* Clic → picker couleur existant (mécanisme support) */
+    (function(k, p, lbl) {
       pastille.addEventListener('click', function() {
-        if (typeof ouvrirPickerHSV !== 'function') return;
-        ouvrirPickerHSV(p.style.background, function(hex) {
+        if (typeof ouvrirPickerCouleur !== 'function') return;
+        window._supportPickerCouleur    = p.style.background || p.title;
+        window._supportPickerOnConfirm  = function(hex) {
           p.style.background = hex;
           p.title = hex;
           /* Mettre à jour greffons en mémoire */
@@ -332,9 +333,13 @@ function _creerConfigDecor(salle) {
           if (!salle.greffons.immersive) salle.greffons.immersive = { actif: true };
           if (!salle.greffons.immersive.decor) salle.greffons.immersive.decor = {};
           salle.greffons.immersive.decor[k] = hex;
-        });
+        };
+        ouvrirPickerCouleur('support');
+        /* Titre contextualisé */
+        var titreEl = document.getElementById('picker-titre');
+        if (titreEl) titreEl.textContent = 'Couleur — ' + lbl;
       });
-    })(champ.key, pastille);
+    })(champ.key, pastille, champ.label);
 
     row.appendChild(lbl);
     row.appendChild(pastille);
