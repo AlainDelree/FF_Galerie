@@ -1283,18 +1283,19 @@ function afficherSolPlacement() {
 
   const isGsm = _placementVue === 'gsm';
 
-  /* Remplir tout l'espace disponible */
+  /* Remplir tout l'espace disponible, en respectant le ratio cible.
+     L'aspect-ratio + max-width/max-height laisse le navigateur choisir la
+     dimension limitante (largeur ou hauteur) pour ne jamais déformer. */
   var zoneRect = container.parentElement.getBoundingClientRect();
   var availH = zoneRect.height - 30; /* marge pour pl-aide */
-  container.style.cssText = isGsm
-    ? 'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;'
-    : 'height:' + availH + 'px;';
+  container.style.cssText =
+    'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;';
 
-  /* Wrapper iframe */
+  /* Wrapper iframe — ratio fixe (PC 16:9, GSM 9:19), contenu dans la zone */
   const iframeWrap = document.createElement('div');
   iframeWrap.style.cssText = isGsm
-    ? 'height:100%;aspect-ratio:9/19;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
-    : 'width:100%;height:100%;border-radius:6px;overflow:hidden;position:relative;';
+    ? 'aspect-ratio:9/19;max-height:100%;max-width:100%;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
+    : 'aspect-ratio:16/9;max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;position:relative;';
 
   /* Label mode */
   if (isGsm) {
