@@ -890,8 +890,8 @@ if (window._GALERIE_EDIT) {
     var btn = document.createElement('button');
     btn.className = 'edit-rm-btn';
     btn.textContent = '✕ Retirer';
-    btn.style.cssText = 'position:absolute;top:-16px;left:50%;transform:translateX(-50%);padding:3px 12px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:11px;font-weight:700;cursor:pointer;z-index:9999;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.5);';
-    btn.addEventListener('click', function(ev) {
+    btn.style.cssText = 'position:absolute;top:-30px;left:50%;transform:translateX(-50%);padding:7px 16px;border-radius:12px;border:none;background:#c0392b;color:#fff;font-size:13px;font-weight:700;cursor:pointer;z-index:99999;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.6);';
+    var _retirer = function(ev) {
       ev.stopPropagation(); ev.preventDefault();
       var pid = _findPieceId(wrap);
       var idx = _editPositions.findIndex(function(p) { return p.id === pid; });
@@ -901,7 +901,11 @@ if (window._GALERIE_EDIT) {
       _sendPositions();
       parent.postMessage({ type: 'piece-removed', id: pid }, '*');
       parent.postMessage({ type: 'piece-deselected' }, '*');
-    });
+    };
+    /* touchend dédié + stopPropagation au touchstart pour ne pas armer le drag */
+    btn.addEventListener('touchstart', function(ev) { ev.stopPropagation(); }, { passive: true });
+    btn.addEventListener('touchend', function(ev) { ev.stopPropagation(); _retirer(ev); });
+    btn.addEventListener('click', _retirer);
     wrap.querySelector('.socle').appendChild(btn);
   }
 

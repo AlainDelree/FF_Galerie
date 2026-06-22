@@ -476,6 +476,7 @@ function ouvrirArrangerApresConfirm() {
   $('btn-grille-pl').style.borderColor = 'var(--gold)';
   selectedToilePl = null;
   peintureSurMurSel = null;
+  if (typeof fermerPanneauSupport === 'function') fermerPanneauSupport();
   afficherMurPlacement();
   afficherStripPlacement();
   $('pl-aide').textContent = nbPlacees > 0

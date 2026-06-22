@@ -399,6 +399,8 @@
 
 @media (max-width: 600px) {
   .porte-nav { display: none; }
+  /* Éviter le scroll : la salle sculpture tient dans le viewport disponible */
+  .salle-sculpture .plancher-sol { min-height: 0 !important; }
 }
 
 /* ══════════════════════════════════════
