@@ -75,7 +75,28 @@ function gabaritDepuisHauteur(h) {
    ══════════════════════════════════════════════════════════════ */
 let _obsRAF = null; /* réservé pour usage futur */
 
-function ouvrirSalleObservation(piece) {
+/* ─── Décor par défaut de la salle descriptive ─── */
+var DECOR_DESCRIPTIVE_DEFAUT = {
+  pan_a: '#1a1510',
+  pan_b: '#2a2018',
+  pan_c: '#1a1510',
+  pan_d: '#2a2018'
+};
+
+/* Applique les bandes colorées dans le div chambre */
+function _appliquerBandesObservation(chambre, decor) {
+  var D = Object.assign({}, DECOR_DESCRIPTIVE_DEFAUT, decor || {});
+  var palette = [D.pan_a, D.pan_b, D.pan_c, D.pan_d];
+  chambre.innerHTML = '';
+  chambre.style.cssText = 'position:absolute;inset:0;display:flex;overflow:hidden;z-index:1;';
+  for (var i = 0; i < 12; i++) {
+    var band = document.createElement('div');
+    band.style.cssText = 'flex:1;height:100%;background:' + palette[i % palette.length] + ';';
+    chambre.appendChild(band);
+  }
+}
+
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive) {
   /* Éviter les doublons */
   if (document.querySelector('.obs-overlay')) return;
 
@@ -91,9 +112,10 @@ function ouvrirSalleObservation(piece) {
     'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
     'background:#1a1510;opacity:0;transition:opacity .35s ease;';
 
-  /* ── Décor de salle ── */
+  /* ── Décor de salle — bandes colorées ── */
   const chambre = document.createElement('div');
   chambre.className = 'obs-chambre';
+  _appliquerBandesObservation(chambre, decor);
   overlay.appendChild(chambre);
 
   /* ── Contenu — viewer plein écran, titre/meta superposés ── */
@@ -150,8 +172,8 @@ function ouvrirSalleObservation(piece) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
-  /* ── Porte gauche → retour salle immersive ── */
-  if (typeof ouvrirSalleImmersive === 'function') {
+  /* ── Porte gauche → retour salle immersive (si greffon actif) ── */
+  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const porteG = document.createElement('div');
     porteG.className = 'porte-nav porte-nav--gauche';
     porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
@@ -180,7 +202,7 @@ function ouvrirSalleObservation(piece) {
   overlay.appendChild(porteD);
 
   /* ── Pancartes mobiles ── */
-  if (typeof ouvrirSalleImmersive === 'function') {
+  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const plaqueG = document.createElement('div');
     plaqueG.className = 'plaque-nav plaque-nav--gauche';
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
@@ -461,12 +483,17 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(titre);
   }
 
-  /* Clic → salle d'observation (sauf en aperçu read-only ou en édition) */
-  if (hasGlb && !window._GALERIE_READONLY && !window._GALERIE_EDIT) {
+  /* Clic → greffon actif sur la salle (immersive > descriptive, sinon rien) */
+  if (hasGlb && !window._GALERIE_READONLY && !window._GALERIE_EDIT
+      && (_immActif || _descActif)) {
     const ouvrir = () => {
-      if (typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(piece, _immDecor);
-      else ouvrirSalleObservation(piece);
+      if (_immActif && typeof ouvrirSalleImmersive === 'function') {
+        ouvrirSalleImmersive(piece, _immDecor);
+      } else if (_descActif && typeof ouvrirSalleObservation === 'function') {
+        ouvrirSalleObservation(piece, _descDecor, _immActif);
+      }
     };
+    socle.style.cursor = 'pointer';
     socle.addEventListener('click', ouvrir);
     socle.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); }
@@ -481,9 +508,12 @@ function creerSocle(piece, gabarit, pos) {
    RENDERER SCULPTURE — enregistré dans GALERIE_RENDERERS
    ══════════════════════════════════════════════════════════════ */
 GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
-  /* Décor immersif de la salle (peut être null = valeurs par défaut) */
-  var _immDecor = salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor
-    ? salle.greffons.immersive.decor : null;
+  /* Greffons de la salle */
+  var _immActif  = !!(salle.greffons && salle.greffons.immersive  && salle.greffons.immersive.actif);
+  var _descActif = !!(salle.greffons && salle.greffons.descriptive && salle.greffons.descriptive.actif);
+  var _immDecor  = (_immActif  && salle.greffons.immersive.decor)  ? salle.greffons.immersive.decor  : null;
+  var _descDecor = (_descActif && salle.greffons.descriptive && salle.greffons.descriptive.decor)
+    ? salle.greffons.descriptive.decor : null;
 
   const gabarits = {};
   const pieces   = {};

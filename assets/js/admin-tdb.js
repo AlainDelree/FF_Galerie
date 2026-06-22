@@ -21,6 +21,14 @@ var DECOR_IMMERSIVE_DEFAUT = {
   corde:  '#8b0020'
 };
 
+/* Décor par défaut salle descriptive (bandes uniquement) */
+var DECOR_DESCRIPTIVE_DEFAUT = {
+  pan_a: '#1a1510',
+  pan_b: '#2a2018',
+  pan_c: '#1a1510',
+  pan_d: '#2a2018'
+};
+
 /* ─── Registre des types de salle ─── */
 var TYPES_SALLE = {
   peinture:  { vues: ['galerie-pc', 'galerie-gsm'], greffons: [] },
@@ -67,6 +75,24 @@ var FACETTES_META = {
     badge: function(salle) {
       var a = salle.greffons && salle.greffons.descriptive && salle.greffons.descriptive.actif;
       return a ? '● Activée' : '○ Désactivée';
+    },
+    creerApercu: function(salle) {
+      /* Aperçu CSS : bandes colorées + icône 🔍 centré */
+      var D = Object.assign({}, DECOR_DESCRIPTIVE_DEFAUT,
+        (salle.greffons && salle.greffons.descriptive && salle.greffons.descriptive.decor) || {});
+      var palette = [D.pan_a, D.pan_b, D.pan_c, D.pan_d];
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:16/9;max-height:180px;overflow:hidden;border-radius:6px 6px 0 0;display:flex;';
+      for (var i = 0; i < 12; i++) {
+        var b = document.createElement('div');
+        b.style.cssText = 'flex:1;height:100%;background:' + palette[i % palette.length] + ';';
+        wrap.appendChild(b);
+      }
+      var ico = document.createElement('div');
+      ico.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.4;pointer-events:none;';
+      ico.textContent = '🔍';
+      wrap.appendChild(ico);
+      return wrap;
     }
   }
 };
@@ -284,6 +310,9 @@ function _creerCarteGreffon(greffon, salle) {
     })(ifr);
     iframeWrap.appendChild(ifr);
     preview.appendChild(iframeWrap);
+  } else if (actif && meta.creerApercu) {
+    /* Aperçu CSS généré par la facette (ex: descriptive → bandes) */
+    preview.appendChild(meta.creerApercu(salle));
   } else {
     /* Placeholder icône */
     preview.classList.add('tdb-preview-greffon');
@@ -459,6 +488,8 @@ function entrerVue(facette) {
   if (meta.greffon) {
     if (facette === 'immersive' && typeof ouvrirEditeurImmersif === 'function') {
       ouvrirEditeurImmersif(salleActive);
+    } else if (facette === 'descriptive' && typeof ouvrirEditeurDescriptif === 'function') {
+      ouvrirEditeurDescriptif(salleActive);
     }
     return;
   }
@@ -717,6 +748,157 @@ function ouvrirEditeurImmersif(salle) {
   panel.appendChild(btnBack);
 
   overlay.appendChild(iframe);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
+
+/* ══════════════════════════════════════════════════════
+   ÉDITEUR DESCRIPTIF — overlay avec aperçu CSS live
+   ══════════════════════════════════════════════════════ */
+function ouvrirEditeurDescriptif(salle) {
+  if (!salle) return;
+  if (document.getElementById('overlay-desc-edit')) return;
+
+  var decor = Object.assign({}, DECOR_DESCRIPTIVE_DEFAUT,
+    (salle.greffons && salle.greffons.descriptive && salle.greffons.descriptive.decor) || {});
+
+  var _CHAMPS_DESC = [
+    { key: 'pan_a', label: 'Panneau A', defaut: DECOR_DESCRIPTIVE_DEFAUT.pan_a },
+    { key: 'pan_b', label: 'Panneau B', defaut: DECOR_DESCRIPTIVE_DEFAUT.pan_b },
+    { key: 'pan_c', label: 'Panneau C', defaut: DECOR_DESCRIPTIVE_DEFAUT.pan_c },
+    { key: 'pan_d', label: 'Panneau D', defaut: DECOR_DESCRIPTIVE_DEFAUT.pan_d }
+  ];
+
+  /* ── Overlay ── */
+  var overlay = document.createElement('div');
+  overlay.id = 'overlay-desc-edit';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:400;display:flex;background:#111;';
+
+  /* ── Aperçu CSS bandes (zone principale) ── */
+  var apercu = document.createElement('div');
+  apercu.style.cssText = 'flex:1;display:flex;position:relative;';
+
+  function _majApercu() {
+    var palette = [decor.pan_a, decor.pan_b, decor.pan_c, decor.pan_d];
+    apercu.innerHTML = '';
+    for (var i = 0; i < 12; i++) {
+      var b = document.createElement('div');
+      b.style.cssText = 'flex:1;height:100%;background:' + palette[i % palette.length] + ';';
+      apercu.appendChild(b);
+    }
+    /* Icône centrale */
+    var ico = document.createElement('div');
+    ico.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.2;pointer-events:none;';
+    ico.textContent = '🔍';
+    apercu.appendChild(ico);
+  }
+  _majApercu();
+
+  /* ── Panneau de contrôle ── */
+  var panel = document.createElement('div');
+  panel.className = 'imm-edit-panel';
+
+  var panTitre = document.createElement('div');
+  panTitre.style.cssText = 'font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;';
+  panTitre.textContent = (salle.nom || 'Salle') + ' — Descriptive';
+  panel.appendChild(panTitre);
+
+  /* 4 lignes de couleur */
+  _CHAMPS_DESC.forEach(function(champ) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem;';
+
+    var lbl = document.createElement('span');
+    lbl.style.cssText = 'font-size:.7rem;color:var(--muted);width:2.8rem;flex-shrink:0;';
+    lbl.textContent = champ.label;
+
+    var pastille = document.createElement('div');
+    pastille.className = 'tdb-decor-pastille';
+    pastille.style.background = decor[champ.key] || champ.defaut;
+    pastille.title = decor[champ.key] || champ.defaut;
+
+    var hexInp = document.createElement('input');
+    hexInp.type = 'text'; hexInp.maxLength = 7;
+    hexInp.value = decor[champ.key] || champ.defaut;
+    hexInp.style.cssText = 'width:5rem;font-size:.65rem;padding:.2rem .3rem;border:1px solid var(--brd);border-radius:4px;background:var(--bg3);color:var(--text);font-family:monospace;';
+
+    var copyBtn = document.createElement('button');
+    copyBtn.title = 'Copier';
+    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:.75rem;padding:0 2px;color:var(--muted);line-height:1;flex-shrink:0;';
+    copyBtn.textContent = '⎘';
+
+    (function(k, p, inp, btn) {
+      function appliquerHex(hex) {
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return false;
+        hex = hex.toLowerCase();
+        p.style.background = hex; p.title = hex; inp.value = hex;
+        decor[k] = hex; _majApercu(); return true;
+      }
+      p.addEventListener('click', function() {
+        if (typeof ouvrirPickerCouleur !== 'function') return;
+        window._supportPickerCouleur   = p.title;
+        window._supportPickerOnConfirm = function(hex) { appliquerHex(hex); };
+        ouvrirPickerCouleur('support');
+        var t = document.getElementById('picker-titre');
+        if (t) t.textContent = 'Couleur — ' + champ.label;
+      });
+      inp.addEventListener('focus', function() { inp.select(); });
+      inp.addEventListener('input', function() {
+        appliquerHex(inp.value.trim().replace(/^#+/, '#'));
+      });
+      inp.addEventListener('blur', function() {
+        var v = inp.value.trim().replace(/^#+/, '#');
+        if (!/^#[0-9a-fA-F]{6}$/.test(v)) inp.value = p.title;
+      });
+      btn.addEventListener('click', function() {
+        navigator.clipboard && navigator.clipboard.writeText(inp.value).then(function() {
+          btn.textContent = '✓'; setTimeout(function() { btn.textContent = '⎘'; }, 1200);
+        });
+      });
+    })(champ.key, pastille, hexInp, copyBtn);
+
+    row.appendChild(lbl); row.appendChild(pastille);
+    row.appendChild(hexInp); row.appendChild(copyBtn);
+    panel.appendChild(row);
+  });
+
+  /* Séparateur + boutons */
+  var sep = document.createElement('div');
+  sep.style.cssText = 'height:1px;background:var(--brd);margin:.5rem 0;';
+  panel.appendChild(sep);
+
+  var btnSave = document.createElement('button');
+  btnSave.className = 'ctrl-btn';
+  btnSave.style.cssText = 'width:100%;margin-bottom:.3rem;justify-content:center;';
+  btnSave.textContent = '💾 Enregistrer';
+  btnSave.addEventListener('click', function() {
+    btnSave.disabled = true; btnSave.textContent = 'En cours…';
+    if (!salle.greffons) salle.greffons = {};
+    if (!salle.greffons.descriptive) salle.greffons.descriptive = { actif: true };
+    salle.greffons.descriptive.decor = Object.assign({}, decor);
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Décor descriptif — ' + (salle.nom || 'salle'), null)
+        .then(function() {
+          btnSave.disabled = false; btnSave.textContent = '✓ Enregistré';
+          setTimeout(function() { btnSave.textContent = '💾 Enregistrer'; }, 2000);
+          _renderTDB();
+        })
+        .catch(function() { btnSave.disabled = false; btnSave.textContent = '⚠ Erreur'; });
+    }
+  });
+  panel.appendChild(btnSave);
+
+  var btnBack = document.createElement('button');
+  btnBack.className = 'ctrl-btn';
+  btnBack.style.cssText = 'width:100%;justify-content:center;';
+  btnBack.textContent = '← Retour';
+  btnBack.addEventListener('click', function() {
+    overlay.remove();
+    afficherTableauBord();
+  });
+  panel.appendChild(btnBack);
+
+  overlay.appendChild(apercu);
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
 }
