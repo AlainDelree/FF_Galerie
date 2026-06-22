@@ -458,7 +458,11 @@ function ouvrirArrangerApresConfirm() {
   _arrangerSnapshot = {
     positions:        JSON.parse(JSON.stringify(salleActive.positions        || [])),
     positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
-    toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || []))
+    toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || [])),
+    /* Supports des pièces (vivent dans toiles[], hors salle) */
+    supports:         toiles.map(function(t) {
+      return { id: t.id, support: t.support ? JSON.parse(JSON.stringify(t.support)) : null, sans_socle: t.sans_socle || false };
+    })
   };
   const nbPlacees = (salleActive.positions||[]).length;
   _placementVue = 'pc'; /* Toujours démarrer en mode PC */
@@ -523,6 +527,15 @@ function quitterModePlacement() {
     salleActive.positions        = _arrangerSnapshot.positions;
     salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
     salleActive.toiles           = _arrangerSnapshot.toiles;
+    /* Restaurer les supports des pièces */
+    if (_arrangerSnapshot.supports) {
+      _arrangerSnapshot.supports.forEach(function(snap) {
+        var t = toiles.find(function(x) { return x.id === snap.id; });
+        if (!t) return;
+        if (snap.support) t.support = snap.support; else delete t.support;
+        if (snap.sans_socle) t.sans_socle = true; else delete t.sans_socle;
+      });
+    }
   }
   _arrangerSnapshot = null;
   toilesSelectionnees.clear();
