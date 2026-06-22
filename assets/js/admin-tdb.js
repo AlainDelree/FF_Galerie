@@ -8,8 +8,9 @@
 
 /* Décor par défaut (miroir de DECOR_IMMERSIVE_DEFAUT dans salle-immersive.js) */
 var DECOR_IMMERSIVE_DEFAUT = {
-  fond:   '#12100c',
-  sol:    '#8a6228',
+  fond:     '#12100c',
+  exposure: 1.0,
+  sol:      '#8a6228',
   pan_a:  '#7a2525',
   pan_b:  '#1a3055',
   pan_c:  '#2a5035',
@@ -564,6 +565,29 @@ function ouvrirEditeurImmersif(salle) {
     row.appendChild(hexInp);
     panel.appendChild(row);
   });
+
+  /* Slider exposition */
+  var expRow = document.createElement('div');
+  expRow.style.cssText = 'display:flex;align-items:center;gap:.4rem;margin:.4rem 0 .1rem;';
+  var expLbl = document.createElement('span');
+  expLbl.style.cssText = 'font-size:.7rem;color:var(--muted);width:2.8rem;flex-shrink:0;';
+  expLbl.textContent = 'Expo.';
+  var expSlider = document.createElement('input');
+  expSlider.type = 'range'; expSlider.min = '0.5'; expSlider.max = '3.0'; expSlider.step = '0.1';
+  expSlider.value = String(decor.exposure || 1.0);
+  expSlider.style.cssText = 'flex:1;accent-color:var(--gold);';
+  var expVal = document.createElement('span');
+  expVal.style.cssText = 'font-size:.65rem;color:var(--muted);width:2rem;text-align:right;font-family:monospace;';
+  expVal.textContent = expSlider.value;
+  expSlider.addEventListener('input', function() {
+    expVal.textContent = expSlider.value;
+    decor.exposure = parseFloat(expSlider.value);
+    iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
+  });
+  expRow.appendChild(expLbl);
+  expRow.appendChild(expSlider);
+  expRow.appendChild(expVal);
+  panel.appendChild(expRow);
 
   /* Boutons */
   var btnSep = document.createElement('div');

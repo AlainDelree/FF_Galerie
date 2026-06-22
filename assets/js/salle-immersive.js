@@ -40,8 +40,9 @@ function _hexToInt(hex) {
 
 /* Décor par défaut (valeurs originales) */
 var DECOR_IMMERSIVE_DEFAUT = {
-  fond:   '#12100c',        /* atmosphère/fog (non exposé en config) */
-  sol:    '#8a6228',
+  fond:     '#12100c',      /* atmosphère/fog (non exposé en config) */
+  exposure: 1.0,            /* exposition renderer (0.5–3.0) */
+  sol:      '#8a6228',
   pan_a:  '#7a2525',        /* palette des 12 panneaux du mur */
   pan_b:  '#1a3055',
   pan_c:  '#2a5035',
@@ -171,7 +172,7 @@ async function ouvrirSalleImmersive(piece, decor) {
   renderer.shadowMap.enabled = true;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.LinearToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = (typeof D.exposure === 'number') ? D.exposure : 1.0;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(C_FOND);
@@ -477,7 +478,7 @@ async function renderImmersiveApercu(canvas, piece, decor) {
   renderer.shadowMap.enabled = true;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.LinearToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = (typeof D.exposure === 'number') ? D.exposure : 1.0;
 
   var scene = new THREE.Scene();
   scene.background = new THREE.Color(_hexToInt(D.fond) || 0x12100c);
@@ -625,6 +626,7 @@ async function renderImmersiveApercu(canvas, piece, decor) {
       wallMats.forEach(function(m, idx) { m.color.setHex(_pal2[idx % _pal2.length]); });
       piqMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.piquet) || 0xc8a050); });
       cordMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.corde)  || 0x8b0020); });
+      if (typeof D2.exposure === 'number') renderer.toneMappingExposure = D2.exposure;
     },
     dispose: function() { cancelAnimationFrame(_raf); renderer.dispose(); }
   };
