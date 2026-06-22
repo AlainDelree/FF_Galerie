@@ -1,5 +1,5 @@
 {
-  "next_id": 6,
+  "next_id": 7,
   "gabarits": [
     {
       "code": "S",
@@ -136,6 +136,25 @@
       "visible": true,
       "socle": 43,
       "glb": "artistes/dinso/assets/models/piece-005.glb"
+    },
+    {
+      "id": 6,
+      "photo": "artistes/dinso/assets/images/toiles/piece-006.png",
+      "source_photo": "admin",
+      "titre": "Escargot pointu",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 18,
+        "hauteur": 69,
+        "profondeur": 17
+      },
+      "visible": true,
+      "socle": 24,
+      "glb": "artistes/dinso/assets/models/piece-006.glb"
     }
   ]
 }
