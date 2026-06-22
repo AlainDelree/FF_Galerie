@@ -92,12 +92,15 @@
     {
       "id": 5,
       "nom": "Salle E",
+      "type": "sculpture",
       "couleur_mur": "#2e2e2e",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [],
-      "positions": []
+      "positions": [],
+      "positions_mobile": []
     },
     {
       "id": 3,
@@ -138,6 +141,17 @@
           }
         }
       }
+    },
+    {
+      "id": 6,
+      "nom": "Salle F",
+      "type": "sculpture",
+      "couleur_mur": "#2a2520",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": []
     },
     {
       "id": 4,
