@@ -73,10 +73,10 @@
           mv.setAttribute('field-of-view', '36deg');
           document.body.appendChild(mv);
         }
+      }
 
-        if (e.data.type === 'descriptive-decor-update') {
-          appliquerDecor(e.data.decor || {});
-        }
+      if (e.data.type === 'descriptive-decor-update') {
+        appliquerDecor(e.data.decor || {});
       }
     });
 
