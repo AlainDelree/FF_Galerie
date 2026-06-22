@@ -11,18 +11,11 @@
       "texture": "parquet",
       "visible": true,
       "toiles": [
-        4,
         1,
         2,
         3
       ],
       "positions": [
-        {
-          "id": 4,
-          "x": 51.42804330709398,
-          "y": 67.41924043150584,
-          "gabarit": "S"
-        },
         {
           "id": 1,
           "x": 19,
@@ -63,9 +56,9 @@
         "descriptive": {
           "actif": true,
           "decor": {
-            "pan_a": "#ed0f31",
+            "pan_a": "#b4e4f4",
             "pan_b": "#e0f0b0",
-            "pan_c": "#b4e4f4",
+            "pan_c": "#d8c4ec",
             "pan_d": "#f4b0a8"
           }
         }
