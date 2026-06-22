@@ -2,31 +2,6 @@
 // ADMIN-TEXTURES.JS — Presets / Couleurs / Textures + Recadrage Cropper.js
 // Dépend de : afficherMur, toast, $, ADMIN_CFG (admin.js)
 
-let _snapshotApparence = null;
-
-function prendreSnapshotApparence() {
-  _snapshotApparence = {
-    couleur_mur:     couleurMurActuel,
-    couleur_cadres:  couleurCadresActuel,
-    epaisseur_cadres:epaisseurCadresActuel,
-    texture:         textureActuelle
-  };
-}
-
-function restaurerSnapshotApparence() {
-  if (!_snapshotApparence || !salleActive) return;
-  couleurMurActuel      = _snapshotApparence.couleur_mur;
-  couleurCadresActuel   = _snapshotApparence.couleur_cadres;
-  epaisseurCadresActuel = _snapshotApparence.epaisseur_cadres;
-  textureActuelle       = _snapshotApparence.texture;
-  salleActive.couleur_mur      = couleurMurActuel;
-  salleActive.couleur_cadres   = couleurCadresActuel;
-  salleActive.epaisseur_cadres = epaisseurCadresActuel;
-  salleActive.texture          = textureActuelle;
-  appliquerApparence();
-  if (typeof afficherMur === 'function') afficherMur();
-  _snapshotApparence = null;
-}
 //             afficherQualitePhoto (admin-media.js)
 //             photoB64, _origPhotoMaxDim, toiles, salles (admin.js globals)
 // ═══════════════════════════════════════════════
@@ -99,24 +74,6 @@ function getTextureName(key) {
   return key || 'Uni';
 }
 
-function ouvrirModalPreset() {
-  // Fermer le panneau couleurs pour ne pas gêner la saisie
-  $('coul-panel').classList.remove('ouvert');
-  $('coul-overlay').classList.remove('ouvert');
-  $('btn-coul-toggle').classList.remove('on');
-  // Prérempli la preview
-  $('preset-prev-mur').style.background = couleurMurActuel;
-  $('preset-prev-mur-val').textContent = couleurMurActuel;
-  $('preset-prev-cadres').style.background = couleurCadresActuel;
-  $('preset-prev-cadres-val').textContent = couleurCadresActuel;
-  const nomsTex = {none:'Uni',tissu:'Tissu',bois:'Bois clair',parquet:'Parquet',pierre:'Pierre',damier:'Damier',velours:'Velours',brique:'Béton/Brique'};
-  $('preset-prev-texture-val').textContent = getTextureName(textureActuelle);
-  if (TEXTURES[textureActuelle]) $('preset-prev-texture').style.background = TEXTURES[textureActuelle] + ',#555';
-  $('inp-preset-nom').value = '';
-  $('overlay-preset').classList.add('ouvert');
-  setTimeout(() => $('inp-preset-nom').focus(), 200);
-}
-
 function confirmerPreset() {
   const nom = $('inp-preset-nom').value.trim();
   if (!nom) { toast('Entrez un nom pour le preset', 'err'); return; }
@@ -126,81 +83,6 @@ function confirmerPreset() {
   $('overlay-preset').classList.remove('ouvert');
   toast(`✓ Preset "${nom}" sauvegardé`);
 }
-
-function chargerPreset() {
-  // Fermer le panneau couleurs pour ne pas le laisser devant
-  $('coul-panel').classList.remove('ouvert');
-  $('coul-overlay').classList.remove('ouvert');
-  $('btn-coul-toggle').classList.remove('on');
-  const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
-  const noms = Object.keys(presets);
-  if (!noms.length) { toast("Aucun preset — sauvegardez-en un d'abord", 'err'); return; }
-
-  const liste = $('preset-charger-liste');
-  liste.innerHTML = '';
-
-  noms.forEach(function(nom) {
-    const p = presets[nom];
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:.65rem;padding:.55rem .6rem;border-radius:6px;cursor:pointer;border:1px solid var(--brd);background:var(--bg3);transition:border-color .15s;';
-    row.addEventListener('mouseenter', function(){ row.style.borderColor = 'var(--gold)'; });
-    row.addEventListener('mouseleave', function(){ row.style.borderColor = 'var(--brd)'; });
-
-    const prevMur = document.createElement('div');
-    prevMur.style.cssText = 'width:28px;height:28px;border-radius:4px;flex-shrink:0;';
-    prevMur.style.background = p.couleur_mur || '#2e2e2e';
-
-    const prevCad = document.createElement('div');
-    prevCad.style.cssText = 'width:14px;height:28px;border-radius:3px;flex-shrink:0;';
-    prevCad.style.background = p.couleur_cadres || '#3a3a3a';
-
-    const infos = document.createElement('div');
-    infos.style.cssText = 'flex:1;min-width:0;';
-    const ep = p.epaisseur_cadres && p.epaisseur_cadres !== 2 ? ' · ' + p.epaisseur_cadres + 'px' : '';
-    infos.innerHTML = '<div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + nom + '</div>'
-      + '<div style="font-size:.7rem;color:var(--muted);">' + getTextureName(p.texture) + ep + '</div>';
-
-    const btnDel = document.createElement('button');
-    btnDel.textContent = '🗑';
-    btnDel.style.cssText = 'background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:2px 4px;flex-shrink:0;';
-    btnDel.title = 'Supprimer';
-    btnDel.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const ps = JSON.parse(localStorage.getItem(K.presets) || '{}');
-      delete ps[nom];
-      localStorage.setItem(K.presets, JSON.stringify(ps));
-      row.remove();
-      if (!liste.children.length) $('overlay-preset-charger').classList.remove('ouvert');
-    });
-
-    row.appendChild(prevMur); row.appendChild(prevCad); row.appendChild(infos); row.appendChild(btnDel);
-
-    row.addEventListener('click', function() {
-      couleurMurActuel      = p.couleur_mur || '#2e2e2e';
-      couleurCadresActuel   = p.couleur_cadres || '#3a3a3a';
-      epaisseurCadresActuel = p.epaisseur_cadres || 2;
-      textureActuelle       = p.texture || 'none';
-      if (salleActive) {
-        salleActive.couleur_mur      = couleurMurActuel;
-        salleActive.couleur_cadres   = couleurCadresActuel;
-        salleActive.epaisseur_cadres = epaisseurCadresActuel;
-        salleActive.texture          = textureActuelle;
-      }
-      appliquerApparence(); afficherMur();
-      $('overlay-preset-charger').classList.remove('ouvert');
-      /* Auto-save : l'utilisateur a explicitement choisi un preset → sauvegarde immédiate sur GitHub */
-      if (salleActive && typeof sauvegarder === 'function') {
-        sauvegarder("[admin] Preset \"" + nom + "\" appliqué").catch(function(_){});
-      }
-      toast("Preset \"" + nom + "\" appliqué");
-    });
-
-    liste.appendChild(row);
-  });
-
-  $('overlay-preset-charger').classList.add('ouvert');
-}
-
 
 /* gererTextureCustom + confirmerTextureNom + _pendingTextureFile supprimés :
    ancien système d'upload texture (vers localStorage) remplacé par
@@ -274,7 +156,7 @@ function pushColorHist(type, color) {
   if (!alreadyIn) {
     hist = hist.filter(function(c){ return c.toLowerCase() !== color.toLowerCase(); });
     hist.unshift(color);
-    hist = hist.slice(0, 8);
+    hist = hist.slice(0, 5);
     try { localStorage.setItem(key, JSON.stringify(hist)); } catch(e) {}
   }
   renderColorSwatches(type);
@@ -338,11 +220,6 @@ function initSwatches() {
     setEpaisseurCadres(parseInt(this.value));
   });
 
-  $('btn-preset-sauver').addEventListener('click', ouvrirModalPreset);
-  $('btn-preset-charger').addEventListener('click', chargerPreset);
-  $('btn-close-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
-  $('btn-annuler-preset').addEventListener('click', function() { $('overlay-preset').classList.remove('ouvert'); });
-  $('btn-close-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('btn-annuler-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
   $('overlay-preset-charger').addEventListener('click', function(e) { if(e.target===$('overlay-preset-charger')) $('overlay-preset-charger').classList.remove('ouvert'); });
   $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
@@ -359,11 +236,24 @@ function _rafraichirApercusTDB() {
   _tdbRefreshTimer = setTimeout(function() { _renderTDB(); }, 250);
 }
 
+/* Auto-sauvegarde GitHub debouncée (1.5s après dernier changement d'apparence) */
+var _autoSaveTimer = null;
+function _autoSaveApparence() {
+  if (typeof sauvegarder !== 'function') return;
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(function() {
+    sauvegarder('[admin] Apparence salle', null).catch(function(e) {
+      if (typeof toast === 'function') toast('Erreur sauvegarde : ' + e.message, 'err', 4000);
+    });
+  }, 1500);
+}
+
 function setCouleurMur(col) {
   couleurMurActuel = col;
   if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
   _rafraichirApercusTDB();
+  _autoSaveApparence();
 }
 
 function setCouleurCadres(col) {
@@ -372,6 +262,7 @@ function setCouleurCadres(col) {
   appliquerApparence();
   afficherMur();
   _rafraichirApercusTDB();
+  _autoSaveApparence();
 }
 
 function setEpaisseurCadres(ep) {
@@ -382,6 +273,7 @@ function setEpaisseurCadres(ep) {
     if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
   });
   _rafraichirApercusTDB();
+  _autoSaveApparence();
 }
 
 function setTexture(val) {
@@ -389,6 +281,7 @@ function setTexture(val) {
   if (salleActive) { salleActive.texture = val; }
   appliquerApparence();
   _rafraichirApercusTDB();
+  _autoSaveApparence();
 }
 
 // RECADRAGE PHOTO (Cropper.js)
