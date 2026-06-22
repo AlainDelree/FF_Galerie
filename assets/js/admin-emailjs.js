@@ -210,17 +210,6 @@ async function supprimerTextureGitHub(chemin) {
   /* _texBound_module */
 })();
 
-/* Mode suppression textures */
-let _texDelMode = false;
-function toggleModeSupprTexture() {
-  _texDelMode = !_texDelMode;
-  document.querySelectorAll('.tex-del-btn').forEach(function(b) {
-    b.style.display = _texDelMode ? '' : 'none';
-  });
-  var btn = document.getElementById('btn-tex-del-toggle');
-  if (btn) btn.style.color = _texDelMode ? '#c0392b' : '';
-}
-
 /* ── Configuration EmailJS ── */
 function chargerConfigEmailJS() {
   /* Charger depuis GitHub en priorité (disponible pour tous les admins)
