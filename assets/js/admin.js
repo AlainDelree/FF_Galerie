@@ -774,7 +774,11 @@ $('btn-arranger-mur').addEventListener('click', () => entrerModePlacement());
 $('btn-modifier-toile').addEventListener('click', () => {
   if (selectedToile) ouvrirFormulaireEdition(selectedToile.id);
 });
-$('btn-apercu-placement').addEventListener('click', () => quitterModePlacement());
+$('btn-apercu-placement').addEventListener('click', () => {
+  if (confirm('Toutes les modifications non enregistrées vont être effacées.\n\nConfirmer le retour ?')) {
+    quitterModePlacement();
+  }
+});
 
 /* Switch vue PC / GSM pour sculpture */
 $('btn-switch-vue')?.addEventListener('click', function() {
