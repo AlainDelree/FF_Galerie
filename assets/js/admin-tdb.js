@@ -286,10 +286,11 @@ function _toggleGreffon(greffon) {
      (à implémenter dans la prochaine itération). */
 }
 
-/* ── Entrer dans l'éditeur d'une vue ── */
+/* ── Entrer dans l'éditeur d'une vue (ouvre l'arranger directement) ── */
 function entrerVue(facette) {
   _tdbFacetteActive = facette;
   var meta = FACETTES_META[facette] || {};
+  var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
 
   /* Synchroniser _placementVue pour sculpture (PC/GSM) */
   if (typeof _placementVue !== 'undefined' && meta.vue) {
@@ -302,10 +303,27 @@ function entrerVue(facette) {
     }
   }
 
-  _basculeVueTDB(false);
-  if (typeof buildOccupancy   === 'function') buildOccupancy();
-  if (typeof afficherMur      === 'function') afficherMur();
-  if (typeof afficherStock    === 'function') afficherStock();
+  /* Ouvrir l'arranger directement — skip écran mur+stock */
+  if (_isSculptType) {
+    if (typeof ouvrirArrangerApresConfirm === 'function') ouvrirArrangerApresConfirm();
+  } else {
+    /* Peinture : pré-sélectionner toutes les toiles de cette salle + libres
+       pour qu'elles apparaissent dans le strip de l'arranger */
+    if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
+        && typeof salles !== 'undefined' && salleActive) {
+      toilesSelectionnees.clear();
+      var autresIds = new Set();
+      salles.forEach(function(s) {
+        if (s.id === salleActive.id) return;
+        (s.positions        || []).forEach(function(p) { autresIds.add(p.id); });
+        (s.positions_mobile || []).forEach(function(p) { autresIds.add(p.id); });
+      });
+      toiles.forEach(function(t) {
+        if (!autresIds.has(t.id)) toilesSelectionnees.add(t.id);
+      });
+    }
+    if (typeof entrerModePlacement === 'function') entrerModePlacement();
+  }
 }
 
 /* ── Retour au tableau de bord depuis l'éditeur ── */

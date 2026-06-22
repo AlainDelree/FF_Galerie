@@ -303,11 +303,13 @@ function afficherStock() {
     legendes:   _isSculpt ? ['disponibilite'] : ['disponibilite', 'taille'],
     selection:  toilesSelectionnees,
     onSelect: function(id) {
+      /* Toggle sans rebuild pour que le double-clic fonctionne */
       if (toilesSelectionnees.has(id)) toilesSelectionnees.delete(id);
       else toilesSelectionnees.add(id);
       selectedToile = toilesSelectionnees.size === 1
         ? toiles.find(function(x) { return x.id === [...toilesSelectionnees][0]; }) : null;
-      afficherStock();
+      var el = list.querySelector('[data-id="' + id + '"]');
+      if (el) el.classList.toggle('sel', toilesSelectionnees.has(id));
       majBoutons();
     },
     onDblClick: function(id) { ouvrirFiche(id); }
@@ -491,6 +493,24 @@ function _arrangerADesModifs() {
   return false;
 }
 
+/* Met à jour le snapshot pour refléter l'état sauvegardé.
+   Appelé après chaque save réussi depuis l'arranger. */
+function _refreshArrangerSnapshot() {
+  if (!salleActive) return;
+  _arrangerSnapshot = {
+    positions:        JSON.parse(JSON.stringify(salleActive.positions || [])),
+    positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
+    toiles:           JSON.parse(JSON.stringify(salleActive.toiles || [])),
+    supports: toiles.map(function(t) {
+      return {
+        id:         t.id,
+        support:    t.support    ? JSON.parse(JSON.stringify(t.support)) : undefined,
+        sans_socle: t.sans_socle || false
+      };
+    })
+  };
+}
+
 function quitterModePlacement() {
   $('overlay-placement').classList.remove('ouvert');
   /* Restaurer l'état avant ouverture si pas sauvegardé */
@@ -515,8 +535,12 @@ function quitterModePlacement() {
   peintureSurMurSel = null;
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
   afficherPlan();
-  toilesSelectionnees.clear(); afficherStock(); majBoutons();
-  buildOccupancy(); afficherMur();
+  toilesSelectionnees.clear(); majBoutons();
+  if (typeof afficherTableauBord === 'function') {
+    afficherTableauBord();
+  } else {
+    afficherStock(); buildOccupancy(); afficherMur();
+  }
 }
 
 /* Met à jour le panneau de contrôle fixe selon la toile sélectionnée sur le mur */
