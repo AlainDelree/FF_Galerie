@@ -725,10 +725,17 @@ function afficherStripPlacement() {
 
     // Badge état
     const estAutreSalle = _salleDOrigine(id);
+    /* Posée dans l'AUTRE vue (PC↔GSM) de la même salle ? */
+    const autreVue = (_placementVue === 'gsm') ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
+    const estAutreVue = autreVue.some(function(p) { return p.id === id; });
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
     if (estPlace) {
       badge.textContent = _isSculpt ? '🔒 sur le sol' : '🔒 sur le mur';
+    } else if (estAutreVue) {
+      /* Dans cette salle mais sur l'autre vue (ex: posée en PC, absente en GSM) */
+      badge.textContent = (_placementVue === 'gsm') ? '🖥 posée en PC' : '📱 posée en GSM';
+      badge.style.background = 'rgba(60,90,160,.85)';
     } else if (estAutreSalle) {
       badge.textContent = '📦 ' + estAutreSalle.nom;
       badge.style.background = 'rgba(160,90,30,.85)';
