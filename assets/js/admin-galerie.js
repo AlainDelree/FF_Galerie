@@ -629,6 +629,19 @@ function afficherMurPlacement() {
   }
 }
 
+/* Retourne la salle (autre que salleActive) où la pièce est placée, ou null. */
+function _salleDOrigine(id) {
+  if (!salleActive) return null;
+  for (var i = 0; i < salles.length; i++) {
+    var s = salles[i];
+    if (s.id === salleActive.id) continue;
+    var dansPos = (s.positions || []).some(function(p) { return p.id === id; });
+    var dansMob = (s.positions_mobile || []).some(function(p) { return p.id === id; });
+    if (dansPos || dansMob) return s;
+  }
+  return null;
+}
+
 function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const poseeIds = new Set((_isSculpt ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
@@ -695,9 +708,17 @@ function afficherStripPlacement() {
     }
 
     // Badge état
+    const estAutreSalle = _salleDOrigine(id);
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
-    badge.textContent = estPlace ? (_isSculpt ? '🔒 sur le sol' : '🔒 sur le mur') : '+ à placer';
+    if (estPlace) {
+      badge.textContent = _isSculpt ? '🔒 sur le sol' : '🔒 sur le mur';
+    } else if (estAutreSalle) {
+      badge.textContent = '📦 ' + estAutreSalle.nom;
+      badge.style.background = 'rgba(160,90,30,.85)';
+    } else {
+      badge.textContent = '+ à placer';
+    }
     item.appendChild(badge);
 
     const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
@@ -711,7 +732,13 @@ function afficherStripPlacement() {
           ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
           : 'Clique un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
       } else {
-        // Sélection pour placer
+        // Sélection pour placer — confirmer si la pièce est dans une autre salle
+        if (!(selectedToilePl && selectedToilePl.id === id)) {
+          var origine = _salleDOrigine(id);
+          if (origine && !confirm('\u00ab ' + (t.titre || 'Cette pièce') + ' \u00bb est déjà placée dans \u00ab ' + origine.nom + ' \u00bb.\n\nLa placer ici la retirera de \u00ab ' + origine.nom + ' \u00bb.\n\nContinuer ?')) {
+            return;
+          }
+        }
         selectedToilePl = selectedToilePl?.id===id ? null : t;
         selectedToile = selectedToilePl;
         peintureSurMurSel = null;
@@ -1422,6 +1449,14 @@ function placerPieceSolViaIframe(x, y) {
   var piece = selectedToilePl;
   var gab = _gabaritSculpt(piece.dimensions?.hauteur);
   var pos = _getPositions();
+
+  /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) */
+  salles.forEach(function(s) {
+    if (s.id === salleActive.id) return;
+    if (s.positions)        s.positions        = s.positions.filter(function(p) { return p.id !== piece.id; });
+    if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(function(p) { return p.id !== piece.id; });
+    if (s.toiles)           s.toiles           = s.toiles.filter(function(t) { return t !== piece.id; });
+  });
 
   /* Retirer si déjà placée dans ce mode */
   var idx = pos.findIndex(function(p) { return p.id === piece.id; });

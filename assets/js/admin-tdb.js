@@ -607,19 +607,13 @@ function entrerVue(facette) {
     }
   }
 
-  /* Toutes les œuvres disponibles dans le strip — même logique sculpture et peinture.
-     On charge toutes les œuvres qui ne sont pas dans une AUTRE salle. */
+  /* Toutes les œuvres dans le strip. Celles déjà dans une AUTRE salle sont
+     incluses aussi (marquées dans le strip) — déplaçables avec confirmation. */
   if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
       && typeof salles !== 'undefined' && salleActive) {
     toilesSelectionnees.clear();
-    var autresIds = new Set();
-    salles.forEach(function(s) {
-      if (s.id === salleActive.id) return;
-      (s.positions        || []).forEach(function(p) { autresIds.add(p.id); });
-      (s.positions_mobile || []).forEach(function(p) { autresIds.add(p.id); });
-    });
     toiles.forEach(function(t) {
-      if (!autresIds.has(t.id)) toilesSelectionnees.add(t.id);
+      toilesSelectionnees.add(t.id);
     });
   }
 
