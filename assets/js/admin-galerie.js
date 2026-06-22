@@ -800,7 +800,7 @@ function afficherStripPlacement() {
         peintureSurMurSel = peintureSurMurSel===id ? null : id;
         selectedToilePl = null; selectedToile = null;
         $('pl-aide').textContent = peintureSurMurSel
-          ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
+          ? `"${t.titre||'—'}" → utilisez les flèches ou ✕ pour retirer`
           : 'Cliquez sur un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
       } else {
         // Sélection pour placer — confirmer si la pièce est dans une autre salle
@@ -814,7 +814,7 @@ function afficherStripPlacement() {
         selectedToile = selectedToilePl;
         peintureSurMurSel = null;
         $('pl-aide').textContent = selectedToilePl
-          ? `"${t.titre||'—'}" → clique sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
+          ? `"${t.titre||'—'}" → cliquez sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
           : 'Sélectionnez un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
       }
       /* Sculpture : ne PAS recréer l'iframe (flash + pièces perdues).
