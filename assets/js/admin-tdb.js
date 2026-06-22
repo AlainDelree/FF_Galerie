@@ -305,6 +305,12 @@ function entrerVue(facette) {
 
   /* Ouvrir l'arranger directement — skip écran mur+stock */
   if (_isSculptType) {
+    /* Sculpture : ajouter toutes les pièces non posées dans toilesSelectionnees
+       pour qu'elles apparaissent dans le strip de l'arranger */
+    if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined') {
+      var posIds = new Set((typeof _getPositions === 'function' ? _getPositions() : (salleActive && salleActive.positions || [])).map(function(p) { return p.id; }));
+      toiles.forEach(function(t) { if (!posIds.has(t.id)) toilesSelectionnees.add(t.id); });
+    }
     if (typeof ouvrirArrangerApresConfirm === 'function') ouvrirArrangerApresConfirm();
   } else {
     /* Peinture : pré-sélectionner toutes les toiles de cette salle + libres
