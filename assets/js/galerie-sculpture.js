@@ -337,7 +337,7 @@ const SUPPORT_RENDERERS = {
     ped.className = 'support-etagere';
     var h = Math.max(14, Math.round(photoH * 0.22));
     ped.style.cssText =
-      'position:relative;width:130%;left:-15%;height:' + h + 'px;border-radius:3px;' +
+      'position:relative;width:130%;height:' + h + 'px;border-radius:3px;' +
       'background:' + supportBgCSS(support, false) + ';background-color:' + ((support && support.couleur) || '#cbb89a') + ';' +
       'box-shadow:0 4px 10px rgba(0,0,0,.22),inset 0 2px 0 rgba(255,255,255,.10);';
     return ped;
@@ -349,13 +349,13 @@ const SUPPORT_RENDERERS = {
     ped.className = 'support-presentoir';
     var h = Math.min(220, Math.round(photoH * 0.9));
     ped.style.cssText =
-      'position:relative;width:55%;left:22.5%;height:' + h + 'px;border-radius:4px 4px 2px 2px;' +
+      'position:relative;width:55%;height:' + h + 'px;border-radius:4px 4px 2px 2px;' +
       'background:' + supportBgCSS(support, true) + ';background-color:' + ((support && support.couleur) || '#eae6de') + ';' +
       'box-shadow:2px 3px 8px rgba(0,0,0,.18);';
-    /* Base élargie */
+    /* Base élargie — centrée sous la colonne */
     var base = document.createElement('div');
     base.style.cssText =
-      'position:absolute;bottom:-3px;left:-25%;width:150%;height:10px;border-radius:3px;' +
+      'position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:150%;height:10px;border-radius:3px;' +
       'background:' + ((support && support.couleur) || '#ddd8d0') + ';box-shadow:0 2px 5px rgba(0,0,0,.2);';
     ped.appendChild(base);
     return ped;
