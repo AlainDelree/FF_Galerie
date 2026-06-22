@@ -169,11 +169,11 @@ function afficherTexturesSysteme() {
   }
   if (vide) vide.style.display = 'none';
   _texturesPartagees.forEach(function(t) {
-    cont.appendChild(creerSwatchGH(t.path, t.download_url, t.suppressible));
+    cont.appendChild(creerSwatchGH(t.path, t.download_url, t.suppressible, /* estSysteme */ true));
   });
 }
 
-function creerSwatchGH(chemin, url, suppressible) {
+function creerSwatchGH(chemin, url, suppressible, estSysteme) {
   var sw = document.createElement('div');
   sw.className = 'sw tex-gh' + (textureActuelle === chemin ? ' sel' : '');
   sw.style.cssText = 'background-image:url("' + url + '");background-size:cover;position:relative;';
@@ -198,13 +198,107 @@ function creerSwatchGH(chemin, url, suppressible) {
     del.title = 'Supprimer';
     del.addEventListener('click', async function(e) {
       e.stopPropagation();
-      if (!confirm('Supprimer cette texture ?')) return;
-      await supprimerTextureGitHub(chemin);
+      if (estSysteme) {
+        /* Texture système (= autre auteur ou héritée) : modale renforcée */
+        ouvrirModaleSupprTexture(chemin, url);
+      } else {
+        /* Texture mienne : confirm() natif suffit */
+        if (!confirm('Supprimer cette texture ?')) return;
+        await supprimerTextureGitHub(chemin);
+      }
     });
     sw.appendChild(del);
   }
   return sw;
 }
+
+/* Modale de confirmation renforcée pour suppression d'une texture système */
+function ouvrirModaleSupprTexture(chemin, url) {
+  var overlay = $('overlay-suppr-tex');
+  if (!overlay) {
+    /* Fallback si la modale n'est pas dans le DOM */
+    if (confirm('Supprimer cette texture partagée ?')) supprimerTextureGitHub(chemin);
+    return;
+  }
+  /* Aperçu */
+  $('suppr-tex-prev').style.backgroundImage = 'url("' + url + '")';
+  /* Nom (dernière partie du chemin sans extension) */
+  var fichier = chemin.split('/').pop();
+  $('suppr-tex-nom').textContent = fichier.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  /* Auteur (segment <prefix> entre /textures/ et /<fichier>) */
+  var m = chemin.match(/assets\/images\/textures\/([^\/]+)\//);
+  var auteurLbl;
+  if (m) {
+    var auteurPrefix = m[1];
+    /* Trouver le nom complet de l'artiste dans artistesData (admin Fred) */
+    var nom = auteurPrefix;
+    if (auteurPrefix === 'ff') nom = 'Frédérique Ferette';
+    else if (typeof artistesData !== 'undefined' && artistesData) {
+      var a = artistesData.find(function(x){ return x.prefix === auteurPrefix || x.id === auteurPrefix; });
+      if (a) nom = a.nom;
+    }
+    auteurLbl = 'Texture partagée par ' + nom;
+  } else {
+    auteurLbl = 'Texture héritée (ancien système)';
+  }
+  $('suppr-tex-auteur').textContent = auteurLbl;
+  /* Salles affectées (dans la galerie en cours uniquement — on ne peut pas savoir pour les autres artistes) */
+  var sallesUtilisant = [];
+  if (typeof salles !== 'undefined' && salles) {
+    salles.forEach(function(s) { if (s.texture === chemin) sallesUtilisant.push(s.nom || ('Salle ' + s.id)); });
+  }
+  var avert = $('suppr-tex-salles');
+  if (sallesUtilisant.length) {
+    avert.innerHTML = '<strong>⚠ Salles affectées dans cette galerie :</strong><br>'
+      + sallesUtilisant.map(function(n){ return '• ' + n; }).join('<br>')
+      + '<br><br>Ces salles repasseront en "Uni" après la suppression.';
+    avert.style.display = '';
+  } else {
+    avert.innerHTML = 'Aucune salle de cette galerie n\'utilise cette texture.<br>'
+      + '<em style="color:var(--muted);">(D\'autres artistes peuvent l\'utiliser dans leur galerie.)</em>';
+    avert.style.display = '';
+  }
+  /* Réinitialiser le champ et le bouton */
+  $('inp-suppr-tex').value = '';
+  var btnOk = $('btn-suppr-tex-ok');
+  btnOk.disabled = true;
+  btnOk.style.opacity = '.4';
+  /* Mémoriser le chemin pour le bouton OK */
+  overlay.dataset.cheminAsuppr = chemin;
+  overlay.style.display = 'flex';
+  setTimeout(function() { $('inp-suppr-tex').focus(); }, 100);
+}
+
+/* Bind une fois (au load) les listeners de la modale */
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var inp = $('inp-suppr-tex');
+    var btnOk = $('btn-suppr-tex-ok');
+    var btnAnn = $('btn-suppr-tex-ann');
+    var overlay = $('overlay-suppr-tex');
+    if (!inp || !btnOk || !btnAnn || !overlay) return;
+
+    inp.addEventListener('input', function() {
+      var ok = inp.value.trim().toUpperCase() === 'SUPPRIMER';
+      btnOk.disabled = !ok;
+      btnOk.style.opacity = ok ? '1' : '.4';
+    });
+    btnAnn.addEventListener('click', function() {
+      overlay.style.display = 'none';
+    });
+    /* Clic en dehors du panneau ferme aussi */
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.style.display = 'none';
+    });
+    btnOk.addEventListener('click', async function() {
+      if (btnOk.disabled) return;
+      var chemin = overlay.dataset.cheminAsuppr;
+      if (!chemin) return;
+      overlay.style.display = 'none';
+      await supprimerTextureGitHub(chemin);
+    });
+  });
+})();
 
 async function supprimerTextureGitHub(chemin) {
   try {
