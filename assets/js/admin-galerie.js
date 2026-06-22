@@ -520,6 +520,27 @@ function autoPlacerTout() {
     : `✓ ${placees} toile(s) placée(s)`);
 }
 
+/* Compare l'état actuel au snapshot (= dernier état enregistré).
+   Retourne true s'il y a des modifications non sauvegardées. */
+function _arrangerADesModifs() {
+  if (!_arrangerSnapshot || !salleActive) return false;
+  var j = function(o) { return JSON.stringify(o || []); };
+  if (j(salleActive.positions)        !== j(_arrangerSnapshot.positions))        return true;
+  if (j(salleActive.positions_mobile) !== j(_arrangerSnapshot.positions_mobile)) return true;
+  if (j(salleActive.toiles)           !== j(_arrangerSnapshot.toiles))           return true;
+  /* Supports */
+  if (_arrangerSnapshot.supports) {
+    for (var i = 0; i < _arrangerSnapshot.supports.length; i++) {
+      var snap = _arrangerSnapshot.supports[i];
+      var t = toiles.find(function(x) { return x.id === snap.id; });
+      if (!t) continue;
+      if (JSON.stringify(t.support || null) !== JSON.stringify(snap.support)) return true;
+      if ((t.sans_socle || false) !== snap.sans_socle) return true;
+    }
+  }
+  return false;
+}
+
 function quitterModePlacement() {
   $('overlay-placement').classList.remove('ouvert');
   /* Restaurer l'état avant ouverture si pas sauvegardé */
