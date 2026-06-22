@@ -1,5 +1,5 @@
 {
-  "next_id": 7,
+  "next_id": 9,
   "gabarits": [
     {
       "code": "S",
@@ -155,6 +155,44 @@
       "visible": true,
       "socle": 24,
       "glb": "artistes/dinso/assets/models/piece-006.glb"
+    },
+    {
+      "id": 7,
+      "photo": "artistes/dinso/assets/images/toiles/piece-007.png",
+      "source_photo": "admin",
+      "titre": "Ammonite",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 35,
+        "hauteur": 30,
+        "profondeur": 16
+      },
+      "visible": true,
+      "socle": 46,
+      "glb": "artistes/dinso/assets/models/piece-007.glb"
+    },
+    {
+      "id": 8,
+      "photo": "artistes/dinso/assets/images/toiles/piece-008.png",
+      "source_photo": "admin",
+      "titre": "Fleche",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 105,
+        "hauteur": 47,
+        "profondeur": 13
+      },
+      "visible": true,
+      "socle": 137,
+      "glb": "artistes/dinso/assets/models/piece-008.glb"
     }
   ]
 }
