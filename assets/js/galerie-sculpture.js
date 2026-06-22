@@ -372,7 +372,12 @@ function renderSupport(piece, photoH, gCode) {
   return { el: fn(support, photoH, gCode), type: support.type };
 }
 
-function creerSocle(piece, gabarit, pos) {
+function creerSocle(piece, gabarit, pos, opts) {
+  /* Greffons passés par le renderer (opts évite d'accéder à des vars hors scope) */
+  var _immActif  = opts && opts.immActif  || false;
+  var _descActif = opts && opts.descActif || false;
+  var _immDecor  = (opts && opts.immDecor)  || null;
+  var _descDecor = (opts && opts.descDecor) || null;
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
   const wrapper = document.createElement('div');
@@ -593,7 +598,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
       const gabarit = gabarits[gCode] || gabarits['M'];
       if (!piece) return;
-      plancherSol.appendChild(creerSocle(piece, gabarit, pos));
+      plancherSol.appendChild(creerSocle(piece, gabarit, pos, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
     });
   }
 
@@ -848,7 +853,7 @@ if (window._GALERIE_EDIT) {
               if (!piece) return;
               var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
               var gabarit = gabarits[gCode] || gabarits['M'];
-              var wrap    = creerSocle(piece, gabarit, np);
+              var wrap    = creerSocle(piece, gabarit, np, null);
               wrap.style.cursor = "grab"; wrap.dataset.pieceId = piece.id;
               /* Bloquer clics immersifs sur le nouveau socle */
               wrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
@@ -886,7 +891,7 @@ if (window._GALERIE_EDIT) {
         (_editTData.gabarits || []).forEach(function(g) { gabarits2[g.code] = g; });
         var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
         var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
-        var newWrap  = creerSocle(piece, gabarit2, pos);
+        var newWrap  = creerSocle(piece, gabarit2, pos, null);
         newWrap.style.cursor = "grab"; newWrap.dataset.pieceId = piece.id;
         newWrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
         if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
