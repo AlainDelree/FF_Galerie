@@ -630,7 +630,9 @@ if (window._GALERIE_EDIT) {
     document.addEventListener('mousemove', function(e) {
       if (!_dragging) return;
       e.preventDefault();
-      _moved = true;
+      /* Seuil : ne considérer comme drag qu'au-delà de 6px (sinon = clic) */
+      if (Math.abs(e.clientX - _dragging.startX) > 6 || Math.abs(e.clientY - _dragging.startY) > 6) _moved = true;
+      if (!_moved) return;
       var rect = plancher.getBoundingClientRect();
       var dx = ((e.clientX - _dragging.startX) / rect.width) * 100;
       var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
@@ -679,9 +681,11 @@ if (window._GALERIE_EDIT) {
     }, { passive: true });
     document.addEventListener('touchmove', function(e) {
       if (!_dragging) return;
-      e.preventDefault();
-      _moved = true;
       var touch = e.touches[0];
+      /* Seuil tactile : 8px (le doigt bouge toujours un peu sur un tap) */
+      if (Math.abs(touch.clientX - _dragging.startX) > 8 || Math.abs(touch.clientY - _dragging.startY) > 8) _moved = true;
+      if (!_moved) return;
+      e.preventDefault();
       var rect = plancher.getBoundingClientRect();
       var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
       var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
