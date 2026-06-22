@@ -369,7 +369,7 @@ async function genererFichiers(a) {
   }, null, 2);
 
   const sallesPeinture = JSON.stringify({
-    salles: [{id:1,nom:"Salle I",theme:"",couleur_mur:"#1e1e1e",
+    salles: [{id:1,nom:"Salle I",couleur_mur:"#1e1e1e",
       couleur_cadres:"#3a3a3a",texture:"none",visible:true,toiles:[],positions:[]}]
   }, null, 2);
 
@@ -385,7 +385,7 @@ async function genererFichiers(a) {
   }, null, 2);
 
   const sallesSculpture = JSON.stringify({
-    salles: [{id:1,nom:"Salle I",theme:"",couleur_mur:"#2a2520",couleur_sol:"#b8a890",
+    salles: [{id:1,nom:"Salle I",couleur_mur:"#2a2520",couleur_sol:"#b8a890",
       texture:"none",visible:true,pieces:[],positions:[]}]
   }, null, 2);
 
