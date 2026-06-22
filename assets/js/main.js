@@ -68,11 +68,11 @@ document.querySelectorAll('.btn-theme').forEach(btn => {
 });
 
 /* ── Musique ────────────────────────────────────────────────────
-   Active par défaut — l'utilisateur peut couper via le bouton ♪
+   Éteinte par défaut — l'utilisateur active via le bouton ♪
    ────────────────────────────────────────────────────────────── */
 let audio       = null;
 let fadeTicker  = null;
-let musiqueActive = localStorage.getItem(MUSIC_KEY) !== 'off'; // on par défaut
+let musiqueActive = localStorage.getItem(MUSIC_KEY) === 'on'; // off par défaut
 
 function creerAudio() {
   if (audio && audio.readyState > 0 && !audio.error) return;
