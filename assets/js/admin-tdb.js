@@ -239,7 +239,7 @@ function _creerCarteGreffon(greffon, salle) {
   var card = document.createElement('div');
   card.className = 'tdb-card tdb-card-greffon';
 
-  /* Zone icône (placeholder — pas d'iframe) */
+  /* Zone icône */
   var preview = document.createElement('div');
   preview.className = 'tdb-preview tdb-preview-greffon';
   var ico = document.createElement('span');
@@ -270,8 +270,101 @@ function _creerCarteGreffon(greffon, salle) {
   footer.appendChild(labelEl);
   footer.appendChild(badge);
   footer.appendChild(toggleBtn);
+
+  /* Config décor (immersive uniquement, quand actif) */
+  if (actif && greffon === 'immersive') {
+    footer.appendChild(_creerConfigDecor(salle));
+  }
+
   card.appendChild(footer);
   return card;
+}
+
+/* ── Panneau de config décor immersif ── */
+var _DECOR_CHAMPS = [
+  { key: 'fond',   label: 'Fond',   defaut: '#12100c' },
+  { key: 'sol',    label: 'Sol',    defaut: '#8a6228' },
+  { key: 'mur',    label: 'Mur',    defaut: '#2e2a35' },
+  { key: 'piquet', label: 'Piquet', defaut: '#c8a050' },
+  { key: 'corde',  label: 'Corde',  defaut: '#8b0020' }
+];
+
+function _creerConfigDecor(salle) {
+  var decor = (salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor)
+    ? salle.greffons.immersive.decor : {};
+
+  var wrap = document.createElement('div');
+  wrap.className = 'tdb-decor-wrap';
+
+  var titre = document.createElement('div');
+  titre.className = 'tdb-section-lbl';
+  titre.textContent = 'Décor';
+  wrap.appendChild(titre);
+
+  var grille = document.createElement('div');
+  grille.className = 'tdb-decor-grille';
+
+  _DECOR_CHAMPS.forEach(function(champ) {
+    var val = decor[champ.key] || champ.defaut;
+
+    var row = document.createElement('div');
+    row.className = 'tdb-decor-row';
+
+    var lbl = document.createElement('span');
+    lbl.className = 'tdb-decor-lbl';
+    lbl.textContent = champ.label;
+
+    var pastille = document.createElement('div');
+    pastille.className = 'tdb-decor-pastille';
+    pastille.style.background = val;
+    pastille.dataset.key = champ.key;
+    pastille.title = val;
+
+    /* Clic → picker HSV existant */
+    (function(k, p) {
+      pastille.addEventListener('click', function() {
+        if (typeof ouvrirPickerHSV !== 'function') return;
+        ouvrirPickerHSV(p.style.background, function(hex) {
+          p.style.background = hex;
+          p.title = hex;
+          /* Mettre à jour greffons en mémoire */
+          if (!salle.greffons) salle.greffons = {};
+          if (!salle.greffons.immersive) salle.greffons.immersive = { actif: true };
+          if (!salle.greffons.immersive.decor) salle.greffons.immersive.decor = {};
+          salle.greffons.immersive.decor[k] = hex;
+        });
+      });
+    })(champ.key, pastille);
+
+    row.appendChild(lbl);
+    row.appendChild(pastille);
+    grille.appendChild(row);
+  });
+  wrap.appendChild(grille);
+
+  /* Bouton Enregistrer */
+  var saveBtn = document.createElement('button');
+  saveBtn.className = 'ctrl-btn tdb-edit-btn';
+  saveBtn.textContent = '💾 Enregistrer décor';
+  saveBtn.addEventListener('click', function() {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'En cours…';
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Décor immersif — ' + (salle.nom || 'salle'), null)
+        .then(function() {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '✓ Enregistré';
+          setTimeout(function() { saveBtn.textContent = '💾 Enregistrer décor'; }, 2000);
+        })
+        .catch(function(e) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '⚠ Erreur';
+        });
+    }
+  });
+  wrap.appendChild(saveBtn);
+
+  return wrap;
 }
 
 /* ── Toggle greffon on/off ── */

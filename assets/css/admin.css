@@ -1042,3 +1042,15 @@ textarea.champ{resize:vertical;min-height:65px;}
   flex: 1; overflow-y: auto; padding: .3rem .5rem;
   display: flex; flex-direction: column;
 }
+
+/* ── Config décor immersif (TDB carte greffon) ── */
+.tdb-decor-wrap { margin-top: .45rem; padding-top: .4rem; border-top: .5px solid var(--brd); }
+.tdb-decor-grille { display: flex; flex-direction: column; gap: .25rem; margin: .3rem 0; }
+.tdb-decor-row { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.tdb-decor-lbl { font-size: .65rem; color: var(--muted); flex: 1; }
+.tdb-decor-pastille {
+  width: 1.6rem; height: 1.6rem; border-radius: 4px; flex-shrink: 0;
+  border: 1.5px solid var(--brd2); cursor: pointer;
+  transition: transform .1s;
+}
+.tdb-decor-pastille:hover { transform: scale(1.15); border-color: var(--gold); }

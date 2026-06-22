@@ -163,7 +163,7 @@ function ouvrirSalleObservation(piece) {
       document.body.appendChild(ecran);
       fermer();
       setTimeout(() => {
-        ouvrirSalleImmersive(piece);
+        ouvrirSalleImmersive(piece, _immDecor);
         setTimeout(() => ecran.remove(), 150);
       }, 350);
     });
@@ -189,7 +189,7 @@ function ouvrirSalleObservation(piece) {
       ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
       document.body.appendChild(ecran);
       fermer();
-      setTimeout(() => { ouvrirSalleImmersive(piece); setTimeout(() => ecran.remove(), 150); }, 350);
+      setTimeout(() => { ouvrirSalleImmersive(piece, _immDecor); setTimeout(() => ecran.remove(), 150); }, 350);
     });
     overlay.appendChild(plaqueG);
   }
@@ -464,7 +464,7 @@ function creerSocle(piece, gabarit, pos) {
   /* Clic → salle d'observation (sauf en aperçu read-only ou en édition) */
   if (hasGlb && !window._GALERIE_READONLY && !window._GALERIE_EDIT) {
     const ouvrir = () => {
-      if (typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(piece);
+      if (typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(piece, _immDecor);
       else ouvrirSalleObservation(piece);
     };
     socle.addEventListener('click', ouvrir);
@@ -481,6 +481,10 @@ function creerSocle(piece, gabarit, pos) {
    RENDERER SCULPTURE — enregistré dans GALERIE_RENDERERS
    ══════════════════════════════════════════════════════════════ */
 GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
+  /* Décor immersif de la salle (peut être null = valeurs par défaut) */
+  var _immDecor = salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor
+    ? salle.greffons.immersive.decor : null;
+
   const gabarits = {};
   const pieces   = {};
   (tData.gabarits || []).forEach(g => { gabarits[g.code] = g; });

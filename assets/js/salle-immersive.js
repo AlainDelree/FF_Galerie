@@ -32,9 +32,35 @@ function chargerThreeJS() {
 /* ══════════════════════════════════════════════════════════════
    SALLE IMMERSIVE THREE.JS
    ══════════════════════════════════════════════════════════════ */
-async function ouvrirSalleImmersive(piece) {
+/* Convertit '#rrggbb' en entier 0xrrggbb pour Three.js */
+function _hexToInt(hex) {
+  if (!hex || typeof hex !== 'string') return null;
+  return parseInt(hex.replace('#', ''), 16) || null;
+}
+
+/* Décor par défaut (valeurs originales) */
+var DECOR_IMMERSIVE_DEFAUT = {
+  fond:   '#12100c',
+  sol:    '#8a6228',
+  mur:    '#2e2a35',
+  piquet: '#c8a050',
+  corde:  '#8b0020'
+};
+
+async function ouvrirSalleImmersive(piece, decor) {
   if (document.querySelector('.imm-overlay')) return;
   await chargerThreeJS();
+
+  /* Fusion décor reçu + valeurs par défaut */
+  var D = Object.assign({}, DECOR_IMMERSIVE_DEFAUT, decor || {});
+  var C_FOND   = _hexToInt(D.fond)   || 0x12100c;
+  var C_SOL    = _hexToInt(D.sol)    || 0x8a6228;
+  var C_MUR    = _hexToInt(D.mur)    || 0x2e2a35;
+  var C_PIQUET = _hexToInt(D.piquet) || 0xc8a050;
+  var C_CORDE  = _hexToInt(D.corde)  || 0x8b0020;
+  /* Socle : couleur du support de la pièce si disponible */
+  var C_SOCLE  = (piece.support && piece.support.couleur)
+    ? (_hexToInt(piece.support.couleur) || 0xf0ece4) : 0xf0ece4;
 
   const VW = window.innerWidth;
   const VH = window.innerHeight;
@@ -146,8 +172,8 @@ async function ouvrirSalleImmersive(piece) {
   renderer.toneMappingExposure = 1.8;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x12100c);
-  scene.fog = new THREE.Fog(0x12100c, 10, 22);
+  scene.background = new THREE.Color(C_FOND);
+  scene.fog = new THREE.Fog(C_FOND, 10, 22);
 
   const camera = new THREE.PerspectiveCamera(50, VW / VH, 0.1, 50);
   camera.position.set(0, 2.2, 5);
@@ -177,13 +203,13 @@ async function ouvrirSalleImmersive(piece) {
   scene.add(fill3);
 
   /* Environment pour matériaux PBR des GLB */
-  const hemiLight = new THREE.HemisphereLight(0xfff8f0, 0x8a6228, 0.5);
+  const hemiLight = new THREE.HemisphereLight(0xfff8f0, C_SOL, 0.5);
   scene.add(hemiLight);
 
   /* ── SOL — parquet ── */
   const floorGeo = new THREE.PlaneGeometry(14, 14);
   const floorMat = new THREE.MeshStandardMaterial({
-    color: 0x8a6228, roughness: 0.75, metalness: 0.05
+    color: C_SOL, roughness: 0.75, metalness: 0.05
   });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
@@ -194,17 +220,13 @@ async function ouvrirSalleImmersive(piece) {
   const WALL_R  = 6;
   const WALL_H  = 5;
   const SEGMENTS = 12;
-  const COLORS = [0x7a2525, 0x1a3055, 0x2a5035, 0xa04820, 0x1a4555,
-                  0x4a2060, 0x805020, 0x2a1a55, 0x405010, 0x5c2040,
-                  0x7a2525, 0x1a3055];
-
   for (let i = 0; i < SEGMENTS; i++) {
     const geo = new THREE.CylinderGeometry(
       WALL_R, WALL_R, WALL_H, 1, 1, true,
       i * Math.PI * 2 / SEGMENTS, Math.PI * 2 / SEGMENTS
     );
     const mat = new THREE.MeshStandardMaterial({
-      color: COLORS[i], side: THREE.BackSide, roughness: 0.85
+      color: C_MUR, side: THREE.BackSide, roughness: 0.85
     });
     const panel = new THREE.Mesh(geo, mat);
     panel.position.y = WALL_H / 2;
@@ -224,7 +246,7 @@ async function ouvrirSalleImmersive(piece) {
   /* ── PIÉDESTAL marbre ── */
   const pedGeo = new THREE.CylinderGeometry(0.35, 0.38, 1.1, 24);
   const pedMat = new THREE.MeshStandardMaterial({
-    color: 0xf0ece4, roughness: 0.35, metalness: 0.02
+    color: C_SOCLE, roughness: 0.35, metalness: 0.02
   });
   const pedestal = new THREE.Mesh(pedGeo, pedMat);
   pedestal.position.y = 0.55;
@@ -246,7 +268,7 @@ async function ouvrirSalleImmersive(piece) {
 
     /* Colonne */
     const colGeo = new THREE.CylinderGeometry(PIQ_R, PIQ_R, PIQ_H, 8);
-    const colMat = new THREE.MeshStandardMaterial({ color: 0xc8a050, metalness: 0.7, roughness: 0.3 });
+    const colMat = new THREE.MeshStandardMaterial({ color: C_PIQUET, metalness: 0.7, roughness: 0.3 });
     const col = new THREE.Mesh(colGeo, colMat);
     col.position.set(x, PIQ_H / 2, z);
     col.castShadow = true;
@@ -254,14 +276,14 @@ async function ouvrirSalleImmersive(piece) {
 
     /* Chapeau */
     const capGeo = new THREE.SphereGeometry(0.06, 12, 8);
-    const capMat = new THREE.MeshStandardMaterial({ color: 0xf0d080, metalness: 0.8, roughness: 0.2 });
+    const capMat = new THREE.MeshStandardMaterial({ color: C_PIQUET, metalness: 0.8, roughness: 0.2 });
     const cap = new THREE.Mesh(capGeo, capMat);
     cap.position.set(x, PIQ_H + 0.03, z);
     scene.add(cap);
 
     /* Base */
     const baseGeo = new THREE.CylinderGeometry(0.08, 0.10, 0.04, 12);
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x8a6800, metalness: 0.6, roughness: 0.4 });
+    const baseMat = new THREE.MeshStandardMaterial({ color: C_PIQUET, metalness: 0.6, roughness: 0.4 });
     const base = new THREE.Mesh(baseGeo, baseMat);
     base.position.set(x, 0.02, z);
     scene.add(base);
@@ -279,7 +301,7 @@ async function ouvrirSalleImmersive(piece) {
       new THREE.Vector3(s2.x, CORDE_H, s2.z)
     );
     const tubeGeo = new THREE.TubeGeometry(curve, 16, 0.018, 6, false);
-    const tubeMat = new THREE.MeshStandardMaterial({ color: 0x8b0020, roughness: 0.8 });
+    const tubeMat = new THREE.MeshStandardMaterial({ color: C_CORDE, roughness: 0.8 });
     const tube = new THREE.Mesh(tubeGeo, tubeMat);
     tube.castShadow = true;
     scene.add(tube);
