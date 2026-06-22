@@ -1027,3 +1027,8 @@ textarea.champ{resize:vertical;min-height:65px;}
   cursor: pointer; flex-shrink: 0; font-weight: 600;
 }
 #btn-retour-tdb:hover { border-color: var(--gold); color: var(--gold); }
+.lo-sync-badge {
+  position: absolute; bottom: 3px; left: 0; right: 0;
+  text-align: center; font-size: 7px; font-weight: 600;
+  color: var(--gold); pointer-events: none;
+}

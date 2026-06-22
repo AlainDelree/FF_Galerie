@@ -287,100 +287,44 @@ function deplacerPeinture(toileId, dCol, dRow) {
 // STOCK
 // ═══════════════════════════════════════════════
 function afficherStock() {
-  const list = $('stock-list');
-  list.innerHTML = '';
-  // Met à jour le compteur
-  const hdr = $('stock-hdr');
-  const hdrSpan = hdr ? hdr.querySelector('span') : null;
+  var list = $('stock-list');
+  if (!list) return;
+  var hdrSpan = $('stock-hdr') && $('stock-hdr').querySelector('span');
   if (hdrSpan) hdrSpan.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
-  if (!salleActive) return;
+  if (!salleActive) { list.innerHTML = ''; return; }
 
-  const poseesDansCetteSalle = new Set((salleActive.positions || []).map(p => p.id));
-  const poseesDansAutres = new Set(
-    salles.filter(s => s.id !== salleActive.id)
-          .flatMap(s => (s.positions || []).map(p => p.id))
-  );
-
-  // Tri : sur ce mur (0) → disponible (1) → autre salle (2)
-  const grpOf = t => poseesDansCetteSalle.has(t.id) ? 0 : poseesDansAutres.has(t.id) ? 2 : 1;
-  const toilesTri = [...toiles].sort((a, b) => grpOf(a) - grpOf(b));
-  const labelsGrp = ['Sur ce mur', 'Disponibles', 'Autre salle'];
-  let dernierGrp = -1;
-
-  toilesTri.forEach(t => {
-    const grp = grpOf(t);
-    if (grp !== dernierGrp) {
-      const sep = document.createElement('div');
-      sep.style.cssText = 'font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:5px 3px 2px;flex-shrink:0;border-top:0.5px solid var(--brd);margin-top:2px;';
-      if (dernierGrp === -1) sep.style.borderTop = 'none';
-      sep.textContent = labelsGrp[grp];
-      list.appendChild(sep);
-      dernierGrp = grp;
-    }
-
-    const item = document.createElement('div');
-    item.className = 'stock-item';
-    if (poseesDansCetteSalle.has(t.id)) item.classList.add('pose');
-    else if (poseesDansAutres.has(t.id)) item.classList.add('autre');
-    if (toilesSelectionnees.has(t.id)) item.classList.add('coche');
-    if (selectedToile && selectedToile.id === t.id) item.classList.add('sel');
-
-    const simgDiv = document.createElement('div');
-    simgDiv.className = 'simg';
-    simgDiv.style.cssText = 'width:100%;height:72px;overflow:hidden;flex-shrink:0;display:block;';
-    if (t.photo) {
-      const img = document.createElement('img');
-      img.alt = t.titre || ''; img.draggable = false; img.loading = 'lazy';
-      img.onerror = function() { this.onerror=null; };
-      img.src = t._preview || t.photo;
-      simgDiv.appendChild(img);
-    } else {
-      const ph = document.createElement('div'); ph.className = 'sph';
-      ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);font-size:11px;color:var(--muted);';
-      ph.textContent = t.glb ? '3D' : '?';
-      simgDiv.appendChild(ph);
-    }
-    item.appendChild(simgDiv);
-
-    const chk = document.createElement('div'); chk.className = 'check-ov'; chk.textContent = '✓';
-    item.appendChild(chk);
-
-    const nom = document.createElement('div'); nom.className = 'snom';
-    nom.textContent = t.titre || '—'; item.appendChild(nom);
-
-    // Badge taille en haut à droite (peinture uniquement — pas de sens pour sculpture)
-    if (!_isSculpt && (t.taille || t.dimensions)) {
-      const badge = document.createElement('div'); badge.className = 'taille-badge';
-      badge.textContent = t.taille || (t.dimensions ? `${t.dimensions.largeur}×${t.dimensions.hauteur}` : '');
-      item.appendChild(badge);
-    }
-
-    item.dataset.toileId = t.id;
-    if (toilesEnAttente.has(t.id)) {
-      const elapsed = Math.floor((Date.now() - toilesEnAttente.get(t.id)) / 1000);
-      const restant = Math.max(0, 60 - elapsed);
-      const sb = document.createElement('div');
-      sb.className = 'sync-badge'; sb.dataset.syncId = t.id;
-      sb.textContent = restant > 0 ? `⏳ ${restant}s` : '✓ publié';
-      item.appendChild(sb);
-    }
-
-    item.addEventListener('click', () => {
-      if (toilesSelectionnees.has(t.id)) toilesSelectionnees.delete(t.id);
-      else toilesSelectionnees.add(t.id);
+  listeOeuvres({
+    container:  list,
+    filtre:     'toutes',
+    salleRef:   salleActive,
+    vue:        _placementVue,
+    tri:        'statut',
+    mode:       'selection',
+    legendes:   _isSculpt ? ['disponibilite'] : ['disponibilite', 'taille'],
+    selection:  toilesSelectionnees,
+    onSelect: function(id) {
+      if (toilesSelectionnees.has(id)) toilesSelectionnees.delete(id);
+      else toilesSelectionnees.add(id);
       selectedToile = toilesSelectionnees.size === 1
-        ? toiles.find(x => x.id === [...toilesSelectionnees][0]) : null;
+        ? toiles.find(function(x) { return x.id === [...toilesSelectionnees][0]; }) : null;
       afficherStock();
       majBoutons();
-    });
-    /* dblclick uniquement sur device souris (PC). Sur GSM, le tap rapide
-       sur plusieurs toiles déclenchait par erreur la modal de détails.
-       Sur GSM, la fiche est accessible via le bouton 👁 dans le mode Arranger. */
-    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      item.addEventListener('dblclick', () => ouvrirFiche(t.id));
-    }
-    list.appendChild(item);
+    },
+    onDblClick: function(id) { ouvrirFiche(id); }
   });
+
+  /* Badges de sync ⏳ en post-process (toilesEnAttente) */
+  if (toilesEnAttente.size > 0) {
+    list.querySelectorAll('.lo-item').forEach(function(item) {
+      var id = parseInt(item.dataset.id, 10);
+      if (!toilesEnAttente.has(id)) return;
+      var elapsed = Math.floor((Date.now() - toilesEnAttente.get(id)) / 1000);
+      var sb = document.createElement('div');
+      sb.className = 'lo-sync-badge'; sb.dataset.syncId = id;
+      sb.textContent = (elapsed < 60) ? ('⏳ ' + Math.max(0, 60 - elapsed) + 's') : '✓ publié';
+      item.appendChild(sb);
+    });
+  }
 }
 
 function majBoutons() {
