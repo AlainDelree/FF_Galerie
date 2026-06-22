@@ -600,9 +600,9 @@ function ouvrirEditeurImmersif(salle) {
   expSlider.style.cssText = 'flex:1;accent-color:var(--gold);';
   var expVal = document.createElement('span');
   expVal.style.cssText = 'font-size:.65rem;color:var(--muted);width:2rem;text-align:right;font-family:monospace;';
-  expVal.textContent = expSlider.value;
+  expVal.textContent = parseFloat(expSlider.value).toFixed(1);
   expSlider.addEventListener('input', function() {
-    expVal.textContent = expSlider.value;
+    expVal.textContent = parseFloat(expSlider.value).toFixed(1);
     decor.exposure = parseFloat(expSlider.value);
     iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
   });
