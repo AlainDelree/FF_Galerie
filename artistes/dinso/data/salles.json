@@ -46,6 +46,15 @@
       "greffons": {
         "immersive": {
           "actif": true
+        },
+        "descriptive": {
+          "actif": true,
+          "decor": {
+            "pan_a": "#c0eccc",
+            "pan_b": "#e0f0b0",
+            "pan_c": "#b4e4f4",
+            "pan_d": "#f4b0a8"
+          }
         }
       }
     }
