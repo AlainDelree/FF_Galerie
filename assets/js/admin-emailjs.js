@@ -58,7 +58,9 @@ async function uploaderTextureConfirmee() {
   var slug = nomSaisi.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40) || _texData.nom;
   var partager = $('tex-partager').checked;
-  var dossier  = partager ? 'assets/images/textures/' : ADMIN_CFG.repoPath + 'textures/';
+  var dossier  = partager
+    ? 'assets/images/textures/' + ADMIN_CFG.prefix + '/'
+    : ADMIN_CFG.repoPath + 'textures/';
   var chemin   = dossier + slug + '.jpg';
   $('tex-progress').textContent = 'Upload en cours…';
   $('btn-tex-confirmer').disabled = true;
@@ -67,8 +69,6 @@ async function uploaderTextureConfirmee() {
     $('overlay-tex-upload').style.display = 'none';
     // Afficher le swatch immédiatement avec le dataUrl local
     TEXTURES[chemin] = 'url("' + _texData.dataUrl + '")';
-    /* Mémoriser comme texture mienne si partagée */
-    if (partager && typeof addMyOwnedTexture === 'function') addMyOwnedTexture(chemin);
     /* Injecter dans "Mes textures" (popover #pop-texture) — privée ou partagée par moi */
     var contMesTex = $('sw-texture');
     if (contMesTex) {
@@ -90,8 +90,11 @@ async function uploaderTextureConfirmee() {
 var _texturesPartagees = []; // [{ path, download_url }]
 
 async function chargerTexturesGitHub() {
-  /* Privées : toujours dans "Mes textures" du popover #pop-texture */
-  var cheminsOwn = (typeof getMyOwnedTextures === 'function') ? getMyOwnedTextures() : [];
+  /* Architecture : la propriété d'une texture partagée est portée par le SOUS-DOSSIER.
+     assets/images/textures/<prefix>/...  → appartient à <prefix>
+     assets/images/textures/...           → racine (hérité ancien système, = Système pour tous) */
+  var monPrefix = ADMIN_CFG.prefix;
+  var estAdminSite = (monPrefix === 'ff'); // Fred = admin du site, peut tout supprimer
   var contMesTex = $('sw-texture');
 
   /* Retirer d'éventuelles textures GitHub déjà injectées (rerender) */
@@ -109,22 +112,44 @@ async function chargerTexturesGitHub() {
     });
   } catch(e) { /* dossier inexistant : OK */ }
 
-  /* 2) Textures partagées → séparer mes textures vs système */
+  /* 2) Textures partagées : parcourir racine + un niveau de sous-dossiers */
   _texturesPartagees = [];
   try {
-    var partages = await apiGH('/repos/' + REPO + '/contents/assets/images/textures?ref=' + BRANCH);
-    var imgsS    = partages.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
-    var suppressibleSysteme = (ADMIN_CFG.prefix === 'ff'); // Fred peut supprimer même celles des autres
-    imgsS.forEach(function(f) {
-      TEXTURES[f.path] = 'url("' + f.download_url + '")';
-      var estMienne = cheminsOwn.indexOf(f.path) >= 0;
-      if (estMienne) {
-        if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
-      } else {
-        _texturesPartagees.push({ path: f.path, download_url: f.download_url, suppressible: suppressibleSysteme });
+    var entrees = await apiGH('/repos/' + REPO + '/contents/assets/images/textures?ref=' + BRANCH);
+    for (var i = 0; i < entrees.length; i++) {
+      var e = entrees[i];
+      if (e.type === 'file' && /\.(jpg|jpeg|png|webp)$/i.test(e.name)) {
+        /* Fichier en racine = hérité ancien système → Système pour tous */
+        TEXTURES[e.path] = 'url("' + e.download_url + '")';
+        _texturesPartagees.push({
+          path: e.path,
+          download_url: e.download_url,
+          suppressible: estAdminSite
+        });
+      } else if (e.type === 'dir') {
+        /* Sous-dossier <prefix> : lister son contenu */
+        try {
+          var contenu = await apiGH('/repos/' + REPO + '/contents/' + e.path + '?ref=' + BRANCH);
+          var imgs = contenu.filter(function(f){ return /\.(jpg|jpeg|png|webp)$/i.test(f.name); });
+          var auteur = e.name;
+          imgs.forEach(function(f) {
+            TEXTURES[f.path] = 'url("' + f.download_url + '")';
+            if (auteur === monPrefix) {
+              /* C'est ma texture → Mes textures, suppressible */
+              if (contMesTex) contMesTex.appendChild(creerSwatchGH(f.path, f.download_url, true));
+            } else {
+              /* Texture d'un autre artiste → Système */
+              _texturesPartagees.push({
+                path: f.path,
+                download_url: f.download_url,
+                suppressible: estAdminSite
+              });
+            }
+          });
+        } catch(_) { /* sous-dossier vide ou inaccessible : ignorer */ }
       }
-    });
-  } catch(e) { /* dossier inexistant : OK */ }
+    }
+  } catch(e) { /* dossier racine inexistant : OK */ }
 
   /* Rafraîchir le mur si une texture GitHub est active (race avec chargerTout) */
   if (salleActive && typeof appliquerApparence === 'function') appliquerApparence();
@@ -190,7 +215,6 @@ async function supprimerTextureGitHub(chemin) {
       branch: BRANCH
     });
     if (textureActuelle === chemin) { setTexture('none'); }
-    if (typeof removeMyOwnedTexture === 'function') removeMyOwnedTexture(chemin);
     await chargerTexturesGitHub();
     /* Rafraîchir aussi le popover système si ouvert */
     if (typeof afficherTexturesSysteme === 'function') afficherTexturesSysteme();
