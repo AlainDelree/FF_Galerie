@@ -87,7 +87,7 @@ function _renderCloneSalleRow() {
   var sel = document.createElement('select');
   sel.style.cssText = 'font-size:.78rem;padding:.25rem .4rem;border:1px solid var(--brd);border-radius:6px;background:var(--bg3);color:var(--text);';
   var opt0 = document.createElement('option');
-  opt0.value = ''; opt0.textContent = '— choisir —';
+  opt0.value = ''; opt0.textContent = '— Choisir —';
   sel.appendChild(opt0);
   autres.forEach(function(o) {
     var op = document.createElement('option');
@@ -101,7 +101,7 @@ function _renderCloneSalleRow() {
   btn.textContent = '🎨 Cloner';
   btn.addEventListener('click', function() {
     var srcId = parseInt(sel.value);
-    if (!srcId) { toast('Choisis une salle source', 'err'); return; }
+    if (!srcId) { toast('Choisissez une salle source', 'err'); return; }
     if (typeof _clonerEsthetique === 'function') _clonerEsthetique(srcId, salleActive.id);
   });
 
@@ -293,7 +293,7 @@ function afficherMur() {
       cell.addEventListener('mouseleave', () => nettoyerSurvol());
       // Mur en lecture seule → placement uniquement via "Arranger"
       cell.addEventListener('click', () => {
-        if (selectedToile) toast('Utilise "🔧 Arranger" pour placer les toiles', 'err');
+        if (selectedToile) toast('Utilisez "🔧 Arranger" pour placer les ' + (_isSculpt ? 'pièces' : 'toiles'), 'err');
       });
       bg.appendChild(cell);
     }
@@ -497,8 +497,8 @@ function ouvrirArrangerApresConfirm() {
   afficherMurPlacement();
   afficherStripPlacement();
   $('pl-aide').textContent = nbPlacees > 0
-    ? 'Clique un' + (_isSculpt ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
-    : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' en bas';
+    ? 'Cliquez sur un' + (_isSculpt ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
+    : 'Sélectionnez un' + (_isSculpt ? 'e pièce' : 'e toile') + ' en bas';
 }
 
 
@@ -801,7 +801,7 @@ function afficherStripPlacement() {
         selectedToilePl = null; selectedToile = null;
         $('pl-aide').textContent = peintureSurMurSel
           ? `"${t.titre||'—'}" → utilise les flèches ou ✕ pour retirer`
-          : 'Clique un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
+          : 'Cliquez sur un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
       } else {
         // Sélection pour placer — confirmer si la pièce est dans une autre salle
         if (!(selectedToilePl && selectedToilePl.id === id)) {
@@ -815,7 +815,7 @@ function afficherStripPlacement() {
         peintureSurMurSel = null;
         $('pl-aide').textContent = selectedToilePl
           ? `"${t.titre||'—'}" → clique sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
-          : 'Sélectionne un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
+          : 'Sélectionnez un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
       }
       /* Sculpture : ne PAS recréer l'iframe (flash + pièces perdues).
          Peinture : afficherMurPlacement met à jour les cases occupées. */
@@ -841,7 +841,7 @@ function placerToilePl(col, row) {
   selectedToilePl = null; selectedToile = null;
   afficherMurPlacement(); afficherStripPlacement();
   toast('✓ Placée');
-  $('pl-aide').textContent = LBL.Item + ' placée — continue ou clique 💾 Enregistrer';
+  $('pl-aide').textContent = LBL.Item + ' placée — continuez ou cliquez 💾 Enregistrer';
 }
 
 function survolCellule(col, row, bgId) {
