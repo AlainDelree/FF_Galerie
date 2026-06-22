@@ -54,7 +54,7 @@ function afficherOeuvres() {
     salleRef:   null,          /* inventaire global — pas de salle de référence */
     vue:        'pc',
     tri:        'titre',
-    mode:       'lecture',     /* pas de lo-edit-btn par item */
+    mode:       'selection',  /* active les handlers de clic */
     legendes:   ['salle', 'taille'],
     selection:  _oeuvresSelection,
     onSelect: function(id) {
