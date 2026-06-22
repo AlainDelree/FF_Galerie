@@ -401,10 +401,11 @@
   .porte-nav { display: none; }
   /* Éviter le scroll : la salle sculpture tient dans le viewport disponible */
   .salle-sculpture .plancher-sol { min-height: 0 !important; }
-  /* Le scroll mobile vient du cumul 100vh + header. Contraindre les conteneurs
-     des pages sculpture à la hauteur dynamique réelle (barre d'adresse incluse). */
-  body:has(.salle-sculpture) .scene-galerie { min-height: 100dvh !important; height: 100dvh !important; overflow: hidden !important; }
-  body:has(.salle-sculpture) .galerie-principale { min-height: 0 !important; flex: 1 !important; overflow: hidden !important; }
+  /* Pages sculpture : body non-scrollable, la galerie prend l'espace restant
+     après header/bandeau/footer (et non 100vh qui s'ajoute à eux). */
+  body:has(.salle-sculpture), body.page-sculpture { height: 100dvh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+  body:has(.salle-sculpture) .scene-galerie, body.page-sculpture .scene-galerie { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
+  body:has(.salle-sculpture) .galerie-principale, body.page-sculpture .galerie-principale { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
 }
 
 /* ══════════════════════════════════════

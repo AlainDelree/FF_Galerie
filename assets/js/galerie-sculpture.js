@@ -487,6 +487,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   (tData.pieces   || []).forEach(p => { pieces[p.id]     = p; });
 
   salleDiv.classList.add('salle-sculpture');
+  document.body.classList.add('page-sculpture');
 
   const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
   const sils = plancher.querySelector('.silhouettes-sol');
