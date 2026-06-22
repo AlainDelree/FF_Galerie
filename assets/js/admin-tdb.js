@@ -412,16 +412,6 @@ function _creerCarteGreffon(greffon, salle) {
   footer.appendChild(badge);
   footer.appendChild(toggleBtn);
 
-  /* Bouton "Configurer" (immersive uniquement, quand actif) */
-  if (actif && greffon === 'immersive') {
-    var cfgBtn = document.createElement('button');
-    cfgBtn.className = 'ctrl-btn tdb-edit-btn';
-    cfgBtn.textContent = '🎨 Configurer';
-    (function(s) {
-      cfgBtn.addEventListener('click', function() { entrerVue('immersive'); });
-    })(salle);
-    footer.appendChild(cfgBtn);
-  }
 
   card.appendChild(footer);
   return card;
