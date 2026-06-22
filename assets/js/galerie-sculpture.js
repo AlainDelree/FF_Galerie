@@ -954,6 +954,9 @@ if (window._GALERIE_EDIT) {
     /* touchend dédié + stopPropagation au touchstart pour ne pas armer le drag */
     btn.addEventListener('touchstart', function(ev) { ev.stopPropagation(); }, { passive: true });
     btn.addEventListener('touchend', function(ev) { ev.stopPropagation(); _retirer(ev); });
+    /* mousedown : empêcher d'armer le drag du plancher (sinon mouseup désélectionne
+       et retire le bouton avant que le click ne se déclenche) */
+    btn.addEventListener('mousedown', function(ev) { ev.stopPropagation(); });
     btn.addEventListener('click', _retirer);
     wrap.querySelector('.socle').appendChild(btn);
   }

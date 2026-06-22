@@ -1710,7 +1710,7 @@ function majAlertePhotoManquante() {
   }
   var motItem = (typeof LBL !== 'undefined' ? LBL.items : 'objets');
   el.textContent =
-    'Un ou plusieurs de vos ' + motItem + ' n\u0027ont pas de photo valide. ' +
+    'Une ou plusieurs de vos ' + motItem + ' n\u0027ont pas de photo valide. ' +
     'Vous pouvez tenter de régénérer l\u0027image via Pièces > Modifier ou télécharger votre propre image dans Pièces > Modifier. ' +
     'Toute mise sur la galerie lui sera refusée dans cet état.';
   el.style.display = '';
