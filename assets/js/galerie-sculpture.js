@@ -295,7 +295,15 @@ const SUPPORT_RENDERERS = {
     ped.style.setProperty('--socle-bot-1', _teinte(coul, -0.08));
     ped.style.setProperty('--socle-bot-2', _teinte(coul, -0.18));
     if (gCode !== 'sol') {
-      ped.style.height = Math.min(200, Math.round(photoH * 0.7)) + 'px';
+      var hPx;
+      if (support && support.hauteur) {
+        /* Hauteur explicite en cm → px via l'échelle stable */
+        hPx = Math.round(support.hauteur * _getEchelle());
+      } else {
+        /* Auto : 70% de la hauteur de la sculpture, plafonné */
+        hPx = Math.min(200, Math.round(photoH * 0.7));
+      }
+      ped.style.height = Math.max(8, hPx) + 'px';
     }
     return ped;
   },

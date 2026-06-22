@@ -1507,6 +1507,24 @@ function ouvrirPanneauSupport(pieceId) {
     document.getElementById('support-taille').addEventListener('change', function() {
       _supportAppliquer();
     });
+    /* Hauteur */
+    document.getElementById('support-hauteur').addEventListener('input', function() {
+      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      if (!p || !p.support || p.support.type === 'aucun') return;
+      p.support.hauteur = parseInt(this.value);
+      document.getElementById('support-hauteur-val').textContent = this.value + ' cm';
+    });
+    document.getElementById('support-hauteur').addEventListener('change', function() {
+      _supportAppliquer();
+    });
+    /* Bouton Auto → supprime la hauteur explicite (retour calcul auto) */
+    document.getElementById('support-hauteur-auto').addEventListener('click', function() {
+      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      if (!p || !p.support || p.support.type === 'aucun') return;
+      delete p.support.hauteur;
+      _supportSyncUI();
+      _supportAppliquer();
+    });
   }
 }
 
@@ -1544,6 +1562,14 @@ function _supportSyncUI() {
   if (rng) rng.value = s.taille || 40;
   var val = document.getElementById('support-taille-val');
   if (val) val.textContent = (s.taille || 40) + ' cm';
+
+  /* Hauteur — masquée pour l'étagère (plate par nature) */
+  var hGrp = document.getElementById('support-hauteur-grp');
+  if (hGrp) hGrp.style.display = (s.type === 'etagere') ? 'none' : 'block';
+  var hRng = document.getElementById('support-hauteur');
+  var hVal = document.getElementById('support-hauteur-val');
+  if (hRng) hRng.value = s.hauteur || 60;
+  if (hVal) hVal.textContent = s.hauteur ? (s.hauteur + ' cm') : 'auto';
 }
 
 /* Pousse le changement vers l'iframe (re-render de la pièce) + persiste en mémoire */
