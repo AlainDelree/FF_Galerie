@@ -1495,6 +1495,9 @@ function ouvrirPanneauSupport(pieceId) {
 
   _supportSyncUI();
   panel.style.display = 'block';
+  /* Masquer le texte d'aide (recouvert par le panneau) */
+  var aide = document.getElementById('pl-aide');
+  if (aide) aide.style.visibility = 'hidden';
   /* Toujours replié à l'ouverture (ne gêne pas le placement/déplacement) */
   _supportCorpsOuvert(false);
 
@@ -1595,6 +1598,8 @@ function ouvrirPanneauSupport(pieceId) {
 function fermerPanneauSupport() {
   var panel = document.getElementById('support-panel');
   if (panel) panel.style.display = 'none';
+  var aide = document.getElementById('pl-aide');
+  if (aide) aide.style.visibility = '';
   _supportPieceId = null;
 }
 
