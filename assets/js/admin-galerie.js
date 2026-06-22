@@ -1524,6 +1524,7 @@ function ouvrirPanneauSupport(pieceId) {
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.taille = parseInt(this.value);
       document.getElementById('support-taille-val').textContent = this.value + ' cm';
+      _supportRenderApercu(p);
     });
     document.getElementById('support-taille').addEventListener('change', function() {
       _supportAppliquer();
@@ -1534,6 +1535,7 @@ function ouvrirPanneauSupport(pieceId) {
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.hauteur = parseInt(this.value);
       document.getElementById('support-hauteur-val').textContent = this.value + ' cm';
+      _supportRenderApercu(p);
     });
     document.getElementById('support-hauteur').addEventListener('change', function() {
       _supportAppliquer();
@@ -1591,6 +1593,80 @@ function _supportSyncUI() {
   var hVal = document.getElementById('support-hauteur-val');
   if (hRng) hRng.value = s.hauteur || 60;
   if (hVal) hVal.textContent = s.hauteur ? (s.hauteur + ' cm') : 'auto';
+
+  _supportRenderApercu(p);
+}
+
+/* Mini-aperçu de la pièce posée sur son support (HTML/CSS autonome) */
+function _supportRenderApercu(p) {
+  var zone = document.getElementById('support-apercu');
+  if (!zone || !p) return;
+  zone.innerHTML = '';
+
+  var s = p.support || { type: 'aucun' };
+  var assetsBase = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.assetsBase) || '';
+
+  /* Conteneur centré, pièce + support empilés */
+  var col = document.createElement('div');
+  col.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;';
+
+  /* Image de la pièce (thumbnail) */
+  var photoH = 80;
+  if (p.photo) {
+    var img = document.createElement('img');
+    var src = /^https?:\/\//.test(p.photo) ? p.photo : assetsBase + p.photo;
+    img.src = p._preview || src;
+    img.style.cssText = 'height:' + photoH + 'px;width:auto;max-width:120px;object-fit:contain;display:block;position:relative;z-index:5;';
+    img.onerror = function() { this.style.display = 'none'; };
+    col.appendChild(img);
+  }
+
+  /* Support sous la pièce */
+  var coul = s.couleur || '#eae6de';
+  if (s.type === 'socle') {
+    var hPx = s.hauteur ? Math.min(90, Math.round(s.hauteur * 0.8)) : Math.round(photoH * 0.7);
+    var wPx = Math.max(28, Math.min(70, Math.round((s.taille || 40) * 0.9)));
+    var ped = document.createElement('div');
+    ped.style.cssText = 'width:' + wPx + 'px;height:' + hPx + 'px;border-radius:6px;' +
+      'background:linear-gradient(90deg,' + _teinteApercu(coul,-0.15) + ',' + _teinteApercu(coul,0.12) + ',' + _teinteApercu(coul,-0.15) + ');' +
+      'box-shadow:0 4px 10px rgba(0,0,0,.25);';
+    col.appendChild(ped);
+  } else if (s.type === 'presentoir') {
+    var hP = s.hauteur ? Math.min(95, Math.round(s.hauteur * 0.8)) : Math.round(photoH * 0.85);
+    var wP = Math.max(16, Math.min(40, Math.round((s.taille || 40) * 0.5)));
+    var colWrap = document.createElement('div');
+    colWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+    var colonne = document.createElement('div');
+    colonne.style.cssText = 'width:' + wP + 'px;height:' + hP + 'px;border-radius:4px 4px 2px 2px;' +
+      'background:linear-gradient(90deg,' + _teinteApercu(coul,-0.12) + ',' + _teinteApercu(coul,0.1) + ',' + _teinteApercu(coul,-0.12) + ');box-shadow:2px 3px 8px rgba(0,0,0,.2);';
+    var base = document.createElement('div');
+    base.style.cssText = 'width:' + Math.round(wP*1.5) + 'px;height:8px;border-radius:3px;background:' + _teinteApercu(coul,-0.08) + ';box-shadow:0 2px 5px rgba(0,0,0,.2);';
+    colWrap.appendChild(colonne);
+    colWrap.appendChild(base);
+    col.appendChild(colWrap);
+  } else if (s.type === 'etagere') {
+    var hE = Math.max(10, Math.round(photoH * 0.2));
+    var wE = Math.max(60, Math.min(130, Math.round((s.taille || 40) * 1.6)));
+    var et = document.createElement('div');
+    et.style.cssText = 'width:' + wE + 'px;height:' + hE + 'px;border-radius:3px;' +
+      'background:' + coul + ';box-shadow:0 4px 10px rgba(0,0,0,.22),inset 0 2px 0 rgba(255,255,255,.1);';
+    col.appendChild(et);
+  } else {
+    /* aucun — ombre au sol */
+    var ombre = document.createElement('div');
+    ombre.style.cssText = 'width:50px;height:8px;border-radius:50%;background:rgba(0,0,0,.25);filter:blur(3px);';
+    col.appendChild(ombre);
+  }
+
+  zone.appendChild(col);
+}
+
+/* Éclaircit/assombrit une couleur hex (facteur -1..1) — version aperçu */
+function _teinteApercu(hex, f) {
+  if (!hex || hex[0] !== '#' || hex.length < 7) return hex || '#ccc';
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  function adj(c){ return Math.max(0, Math.min(255, Math.round(c + 255*f))); }
+  return 'rgb(' + adj(r) + ',' + adj(g) + ',' + adj(b) + ')';
 }
 
 /* Pousse le changement vers l'iframe (re-render de la pièce) + persiste en mémoire */
