@@ -303,31 +303,26 @@ function entrerVue(facette) {
     }
   }
 
-  /* Ouvrir l'arranger directement — skip écran mur+stock */
+  /* Toutes les œuvres disponibles dans le strip — même logique sculpture et peinture.
+     On charge toutes les œuvres qui ne sont pas dans une AUTRE salle. */
+  if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
+      && typeof salles !== 'undefined' && salleActive) {
+    toilesSelectionnees.clear();
+    var autresIds = new Set();
+    salles.forEach(function(s) {
+      if (s.id === salleActive.id) return;
+      (s.positions        || []).forEach(function(p) { autresIds.add(p.id); });
+      (s.positions_mobile || []).forEach(function(p) { autresIds.add(p.id); });
+    });
+    toiles.forEach(function(t) {
+      if (!autresIds.has(t.id)) toilesSelectionnees.add(t.id);
+    });
+  }
+
+  /* Ouvrir l'arranger directement */
   if (_isSculptType) {
-    /* Sculpture : ajouter toutes les pièces non posées dans toilesSelectionnees
-       pour qu'elles apparaissent dans le strip de l'arranger */
-    if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined') {
-      var posIds = new Set((typeof _getPositions === 'function' ? _getPositions() : (salleActive && salleActive.positions || [])).map(function(p) { return p.id; }));
-      toiles.forEach(function(t) { if (!posIds.has(t.id)) toilesSelectionnees.add(t.id); });
-    }
     if (typeof ouvrirArrangerApresConfirm === 'function') ouvrirArrangerApresConfirm();
   } else {
-    /* Peinture : pré-sélectionner toutes les toiles de cette salle + libres
-       pour qu'elles apparaissent dans le strip de l'arranger */
-    if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
-        && typeof salles !== 'undefined' && salleActive) {
-      toilesSelectionnees.clear();
-      var autresIds = new Set();
-      salles.forEach(function(s) {
-        if (s.id === salleActive.id) return;
-        (s.positions        || []).forEach(function(p) { autresIds.add(p.id); });
-        (s.positions_mobile || []).forEach(function(p) { autresIds.add(p.id); });
-      });
-      toiles.forEach(function(t) {
-        if (!autresIds.has(t.id)) toilesSelectionnees.add(t.id);
-      });
-    }
     if (typeof entrerModePlacement === 'function') entrerModePlacement();
   }
 }
