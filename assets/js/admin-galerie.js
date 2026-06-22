@@ -650,6 +650,17 @@ function afficherStripPlacement() {
      Sculpture et peinture : placées + sélectionnées dans le stock */
   const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
 
+  /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
+  const _rang = function(id) {
+    if (poseeIds.has(id)) return 0;
+    return _salleDOrigine(id) ? 2 : 1;
+  };
+  tousIds.sort(function(a, b) {
+    var ra = _rang(a), rb = _rang(b);
+    if (ra !== rb) return ra - rb;
+    return a - b; /* stable par id à rang égal */
+  });
+
   if (tousIds.length === 0) {
     strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
     return;
