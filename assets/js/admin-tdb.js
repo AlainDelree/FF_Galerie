@@ -80,12 +80,12 @@ function _renderTDB() {
   var tdb = document.getElementById('tdb-contenu');
   if (!tdb) return;
 
-  if (!window.salleActive) {
+  if (!salleActive) {
     tdb.innerHTML = '<div class="tdb-vide">Sélectionne une salle dans le plan ci-dessus.</div>';
     return;
   }
   tdb.innerHTML = '';
-  var s = window.salleActive;
+  var s = salleActive;
 
   var type    = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
   var typeDef = TYPES_SALLE[type] || TYPES_SALLE.peinture;
@@ -167,9 +167,9 @@ function _creerCarteVue(facette, salle, lbl) {
       var injectData = {
         type: 'init-data',
         toiles: _isSculptType
-          ? { next_id: window.nextId, gabarits: window.tailles, pieces: window.toiles }
-          : { next_id: window.nextId, tailles:  window.tailles, toiles: window.toiles },
-        salles: { salles: JSON.parse(JSON.stringify(window.salles || [])) }
+          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+          : { next_id: nextId, tailles:  tailles, toiles: toiles },
+        salles: { salles: JSON.parse(JSON.stringify(salles || [])) }
       };
       function onMsg(e) {
         if (e.source === ifr.contentWindow && e.data && e.data.type === 'iframe-awaiting-data') {
@@ -266,9 +266,9 @@ function _creerCarteGreffon(greffon, salle) {
 
 /* ── Toggle greffon on/off ── */
 function _toggleGreffon(greffon) {
-  if (!window.salleActive) return;
-  if (!window.salleActive.greffons) window.salleActive.greffons = {};
-  var g = window.salleActive.greffons;
+  if (!salleActive) return;
+  if (!salleActive.greffons) salleActive.greffons = {};
+  var g = salleActive.greffons;
   if (!g[greffon]) g[greffon] = { actif: false };
   g[greffon].actif = !g[greffon].actif;
   _renderTDB();
@@ -282,8 +282,8 @@ function entrerVue(facette) {
   var meta = FACETTES_META[facette] || {};
 
   /* Synchroniser _placementVue pour sculpture (PC/GSM) */
-  if (typeof window._placementVue !== 'undefined' && meta.vue) {
-    window._placementVue = meta.vue;
+  if (typeof _placementVue !== 'undefined' && meta.vue) {
+    _placementVue = meta.vue;
     var sw = document.getElementById('btn-switch-vue');
     if (sw) {
       sw.textContent       = (meta.vue === 'gsm') ? '📱 GSM' : '🖥 PC';

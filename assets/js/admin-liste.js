@@ -36,8 +36,8 @@ function listeOeuvres(opts) {
   if (!container) return;
   container.innerHTML = '';
 
-  var toutesOeuvres = Array.isArray(window.toiles) ? window.toiles : [];
-  var toutesSalles  = Array.isArray(window.salles)  ? window.salles  : [];
+  var toutesOeuvres = Array.isArray(toiles) ? toiles : [];
+  var toutesSalles  = Array.isArray(salles)  ? salles  : [];
 
   /* ─── Calcul des sets de placement ─── */
 
@@ -96,7 +96,7 @@ function listeOeuvres(opts) {
       return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
     });
   } else if (tri === 'taille') {
-    var tOrd = (Array.isArray(window.tailles) ? window.tailles : []).map(function(t) { return t.code; });
+    var tOrd = (Array.isArray(tailles) ? tailles : []).map(function(t) { return t.code; });
     items.sort(function(a, b) {
       var ia = tOrd.indexOf(a.taille), ib = tOrd.indexOf(b.taille);
       return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
@@ -229,7 +229,7 @@ function listeOeuvres(opts) {
 
 /* Nom de la salle qui contient l'œuvre (hors salle courante) */
 function _loNomSalle(oeuvreId, salleCourante) {
-  var all = Array.isArray(window.salles) ? window.salles : [];
+  var all = Array.isArray(salles) ? salles : [];
   var idC = salleCourante ? salleCourante.id : -Infinity;
   var s = null;
   for (var i = 0; i < all.length; i++) {
