@@ -501,7 +501,6 @@ async function chargerTout() {
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
       type: s.type || (ADMIN_CFG.type !== 'peinture' ? ADMIN_CFG.type : undefined),
-      theme: s.theme || '',
       couleur_mur: s.couleur_mur || '#2e2e2e',
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
       epaisseur_cadres: s.epaisseur_cadres || 2,
