@@ -768,18 +768,14 @@
         <input class="champ" type="text" id="inp-salle-theme" placeholder="ex : Nature, Cosmos…">
       </div>
       <div class="grp">
-        <label class="lbl">Position</label>
-        <div class="pos-grille" id="pos-grille"></div>
+        <label class="lbl" for="inp-salle-copier">Copier l'apparence de… <span style="color:var(--muted)">(optionnel)</span></label>
+        <select class="champ" id="inp-salle-copier">
+          <option value="">— Nouvelle salle vierge —</option>
+        </select>
       </div>
       <div class="grp">
-        <label class="lbl">Couleur du mur</label>
-        <div class="swatches">
-          <div class="sw sel" style="background:#2e2e2e" data-val="#2e2e2e" onclick="swSelect(this,'salle')"></div>
-          <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c" onclick="swSelect(this,'salle')"></div>
-          <div class="sw" style="background:#2c2535" data-val="#2c2535" onclick="swSelect(this,'salle')"></div>
-          <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc" onclick="swSelect(this,'salle')"></div>
-          <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5" onclick="swSelect(this,'salle')"></div>
-        </div>
+        <label class="lbl">Position</label>
+        <div class="pos-grille" id="pos-grille"></div>
       </div>
     </div>
     <div class="modal-foot">
