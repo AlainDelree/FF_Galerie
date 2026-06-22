@@ -19,6 +19,7 @@
   <script src="../../assets/js/salle-immersive.js?v=20260622i"></script>
   <script>
     var _immCtrl = null;
+    var _pendingDecor = null; /* decor reçu avant que Three.js soit prêt */
 
     window.addEventListener('message', function(e) {
       if (!e.data) return;
@@ -28,11 +29,16 @@
         canvas.width  = window.innerWidth;
         canvas.height = window.innerHeight;
         renderImmersiveApercu(canvas, e.data.piece || {}, e.data.decor || {})
-          .then(function(ctrl) { _immCtrl = ctrl; });
+          .then(function(ctrl) {
+            _immCtrl = ctrl;
+            /* Appliquer les couleurs qui ont changé pendant le chargement */
+            if (_pendingDecor) { _immCtrl.updateDecor(_pendingDecor); _pendingDecor = null; }
+          });
       }
 
-      if (e.data.type === 'immersive-decor-update' && _immCtrl) {
-        _immCtrl.updateDecor(e.data.decor || {});
+      if (e.data.type === 'immersive-decor-update') {
+        if (_immCtrl) _immCtrl.updateDecor(e.data.decor || {});
+        else _pendingDecor = e.data.decor || {}; /* mettre en file d'attente */
       }
     });
 

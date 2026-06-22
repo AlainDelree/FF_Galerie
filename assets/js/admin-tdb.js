@@ -12,7 +12,8 @@ var DECOR_IMMERSIVE_DEFAUT = {
   sol:    '#8a6228',
   mur:    '#2e2a35',
   piquet: '#c8a050',
-  corde:  '#8b0020'
+  corde:  '#8b0020',
+  bandes: '#e8e0cc'
 };
 
 /* ─── Registre des types de salle ─── */
@@ -303,9 +304,10 @@ function _creerCarteGreffon(greffon, salle) {
 
 /* ── Panneau de config décor immersif ── */
 var _DECOR_CHAMPS = [
-  { key: 'fond',   label: 'Fond',   defaut: '#12100c' },
-  { key: 'sol',    label: 'Sol',    defaut: '#8a6228' },
   { key: 'mur',    label: 'Mur',    defaut: '#2e2a35' },
+  { key: 'bandes', label: 'Bandes', defaut: '#e8e0cc' },
+  { key: 'sol',    label: 'Sol',    defaut: '#8a6228' },
+  { key: 'fond',   label: 'Fond',   defaut: '#12100c' },
   { key: 'piquet', label: 'Piquet', defaut: '#c8a050' },
   { key: 'corde',  label: 'Corde',  defaut: '#8b0020' }
 ];
