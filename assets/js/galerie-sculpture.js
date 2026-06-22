@@ -726,15 +726,6 @@ if (window._GALERIE_EDIT) {
       wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
       wrap.style.transform = 'translateX(-50%) scale(' + scale + ')';
       if (!_moved) _toggleSelect(wrap, pos);
-      /* DIAG TEMP — afficher l'état du tap à l'écran */
-      try {
-        var dbg = document.getElementById('_tapdbg') || (function(){
-          var d = document.createElement('div'); d.id = '_tapdbg';
-          d.style.cssText = 'position:fixed;top:4px;left:4px;z-index:99999;background:rgba(0,0,0,.85);color:#0f0;font:11px monospace;padding:4px 6px;border-radius:4px;pointer-events:none;';
-          document.body.appendChild(d); return d;
-        })();
-        dbg.textContent = 'touchend moved=' + _moved + ' pid=' + (wrap.dataset.pieceId||'?') + ' sel=' + (_selected===wrap);
-      } catch(_) {}
       _dragging = null;
     });
 

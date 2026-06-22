@@ -1338,18 +1338,6 @@ function afficherSolPlacement() {
     }
 
     if (e.data.type === 'piece-selected') {
-      try {
-        var d = document.getElementById('_admdbg') || (function(){
-          var x = document.createElement('div'); x.id='_admdbg';
-          x.style.cssText='position:fixed;top:24px;left:4px;z-index:99999;background:rgba(0,0,40,.9);color:#0ff;font:11px monospace;padding:4px 6px;border-radius:4px;';
-          document.body.appendChild(x); return x;
-        })();
-        var pc = toiles.find(function(t){return t.id===e.data.id;});
-        var pnl = document.getElementById('support-panel');
-        d.textContent = 'recv id=' + e.data.id + ' found=' + (!!pc) + ' panel=' + (!!pnl);
-      } catch(err) {
-        var d2=document.getElementById('_admdbg'); if(d2) d2.textContent='ERR '+err.message;
-      }
       ouvrirPanneauSupport(e.data.id);
     }
 
