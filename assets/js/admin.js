@@ -548,14 +548,16 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, …) */
+  var _sansTemp = function(key, val) { return key.charAt(0) === '_' ? undefined : val; };
   try {
     await commitMulti([
       { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
         ADMIN_CFG.type === 'sculpture'
           ? { next_id: nextId, gabarits: tailles, pieces: toiles }
           : { next_id: nextId, tailles, toiles }
-      , null, 2) },
-      { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, null, 2) }
+      , _sansTemp, 2) },
+      { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) }
     ], 'Admin : ' + message);
     syncBadge('ok');
     if (toastMsg) toast(toastMsg);

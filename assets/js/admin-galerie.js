@@ -1665,11 +1665,14 @@ function _supportRenderApercu(p) {
   /* La zone fait 150px : on répartit ~60px photo + ~50px support max, marge incluse */
   var photoH = 64;
 
-  /* Image de la pièce (thumbnail) ou placeholder photo manquante */
-  if (p.photo || p._preview) {
+  /* Image de la pièce (thumbnail) ou placeholder photo manquante.
+     On privilégie p.photo (PNG transparent sur le repo) ; _preview n'est utilisé
+     que s'il est lui-même un PNG (sinon JPEG = fond noir). */
+  var preview = (p._preview && /^data:image\/png/.test(p._preview)) ? p._preview : null;
+  if (p.photo || preview) {
     var img = document.createElement('img');
     var src = /^https?:\/\//.test(p.photo || '') ? p.photo : assetsBase + (p.photo || '');
-    img.src = p._preview || src;
+    img.src = preview || src;
     img.style.cssText = 'height:' + photoH + 'px;width:auto;max-width:110px;object-fit:contain;display:block;position:relative;z-index:5;';
     img.onerror = function() { this.style.display = 'none'; };
     col.appendChild(img);
