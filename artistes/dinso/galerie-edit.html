@@ -30,9 +30,13 @@
     window.GALERIE_SALLES_PATH = "data/salles.json";
     window.GALERIE_ASSETS_BASE = "../../";
     window._GALERIE_EDIT = true;
+    /* Forcer le mode d'affichage selon la vue demandée par l'admin (pc/gsm) */
+    var _vueParam = new URLSearchParams(location.search).get('vue');
+    if (_vueParam === 'gsm') window._GALERIE_FORCE_MOBILE = true;
+    else if (_vueParam === 'pc') window._GALERIE_FORCE_MOBILE = false;
   </script>
   <script src="../../assets/js/galerie-core.js?v=20260622p-1782155301"></script>
-  <script src="../../assets/js/galerie-sculpture.js?v=20260622t-1782158000"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260622u-1782158129"></script>
   <script>
     /* Attendre les données injectées par l'admin parent.
        Si rien ne vient (ouverture directe hors admin), fetch après court délai. */

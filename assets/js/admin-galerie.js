@@ -1335,7 +1335,7 @@ function afficherSolPlacement() {
   const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-edit.html';
   const iframe = document.createElement('iframe');
   iframe.id = 'edit-galerie-iframe';
-  iframe.src = galeriePath + '?v=' + Date.now();
+  iframe.src = galeriePath + '?vue=' + (isGsm ? 'gsm' : 'pc') + '&v=' + Date.now();
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
   iframeWrap.appendChild(iframe);
   container.appendChild(iframeWrap);

@@ -657,7 +657,7 @@ if (window._GALERIE_EDIT) {
     _editSalles = salles;
     _editTData  = tData;
     var salle = salles[0]; /* une seule salle visible */
-    var isMobile = window.innerWidth <= 600;
+    var isMobile = _estMobile();
     if (isMobile) {
       /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC */
       if (!salle.positions_mobile || !salle.positions_mobile.length) {
