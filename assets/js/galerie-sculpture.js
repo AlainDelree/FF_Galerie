@@ -708,6 +708,7 @@ if (window._GALERIE_EDIT) {
 
     plancher.addEventListener('mousedown', function(e) {
       if (Date.now() - _lastTouch < 700) return; /* event souris synthétique après touch → ignorer */
+      if (e.target.closest('.edit-rm-btn')) return; /* clic sur le bouton Retirer → laisser passer */
       var wrap = e.target.closest('.socle-wrapper');
       if (!wrap) return;
       e.preventDefault();
@@ -764,6 +765,7 @@ if (window._GALERIE_EDIT) {
     /* Touch support */
     plancher.addEventListener('touchstart', function(e) {
       _lastTouch = Date.now();
+      if (e.target.closest('.edit-rm-btn')) return; /* clic sur Retirer → laisser passer */
       var wrap = e.target.closest('.socle-wrapper');
       if (!wrap) return;
       var touch = e.touches[0];
@@ -941,10 +943,8 @@ if (window._GALERIE_EDIT) {
     btn.textContent = '✕ Retirer';
     btn.style.cssText = 'position:absolute;top:-30px;left:50%;transform:translateX(-50%);padding:7px 16px;border-radius:12px;border:none;background:#c0392b;color:#fff;font-size:13px;font-weight:700;cursor:pointer;z-index:99999;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.6);';
     var _retirer = function(ev) {
-      console.log('[RETIRER] déclenché', ev.type);
       ev.stopPropagation(); ev.preventDefault();
       var pid = _findPieceId(wrap);
-      console.log('[RETIRER] pid=', pid, 'positions avant=', _editPositions.length);
       var idx = _editPositions.findIndex(function(p) { return p.id === pid; });
       if (idx >= 0) _editPositions.splice(idx, 1);
       wrap.remove();
@@ -952,7 +952,6 @@ if (window._GALERIE_EDIT) {
       _sendPositions();
       parent.postMessage({ type: 'piece-removed', id: pid }, '*');
       parent.postMessage({ type: 'piece-deselected' }, '*');
-      console.log('[RETIRER] terminé, positions après=', _editPositions.length);
     };
     /* touchend dédié + stopPropagation au touchstart pour ne pas armer le drag */
     btn.addEventListener('touchstart', function(ev) { ev.stopPropagation(); }, { passive: true });
