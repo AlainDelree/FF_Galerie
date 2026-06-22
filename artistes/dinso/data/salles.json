@@ -46,12 +46,18 @@
         "immersive": {
           "actif": true,
           "decor": {
-            "mur": "#2a3530",
-            "fond": "#0c1212"
+            "fond": "#12100c",
+            "exposure": 0.8,
+            "sol": "#8a6228",
+            "pan_a": "#7a2525",
+            "pan_b": "#1a3055",
+            "pan_c": "#2a5035",
+            "pan_d": "#a04820",
+            "piquet": "#c8a050",
+            "corde": "#ffee00"
           }
         }
-      },
-      "positions_mobile": []
+      }
     }
   ]
 }
