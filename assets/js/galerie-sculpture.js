@@ -608,11 +608,22 @@ if (window._GALERIE_EDIT) {
     var silh = document.querySelector('.silhouettes-sol');
     if (silh) silh.style.display = 'none';
 
-    /* Désactiver les clics immersifs */
+    /* Désactiver les clics immersifs + associer chaque wrap à son pieceId.
+       On matche par position une seule fois ici; ensuite _findPieceId lit le dataset
+       (robuste, contrairement à la comparaison de coordonnées en continu). */
     document.querySelectorAll('.socle-wrapper').forEach(function(wrap) {
       wrap.style.cursor = 'grab';
-      /* Bloquer les clics vers la salle immersive */
       wrap.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); }, true);
+      /* Trouver l'id par position (une seule fois) */
+      var left = parseFloat(wrap.style.left);
+      var bottom = parseFloat(wrap.style.bottom);
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < _editPositions.length; i++) {
+        var p = _editPositions[i];
+        var d = Math.abs(p.x - left) + Math.abs(p.y - bottom);
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      if (best) wrap.dataset.pieceId = best.id;
     });
 
     /* Variables drag */
@@ -748,7 +759,7 @@ if (window._GALERIE_EDIT) {
               var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
               var gabarit = gabarits[gCode] || gabarits['M'];
               var wrap    = creerSocle(piece, gabarit, np);
-              wrap.style.cursor = 'grab';
+              wrap.style.cursor = "grab"; wrap.dataset.pieceId = piece.id;
               /* Bloquer clics immersifs sur le nouveau socle */
               wrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
               plancher.appendChild(wrap);
@@ -786,7 +797,7 @@ if (window._GALERIE_EDIT) {
         var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
         var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
         var newWrap  = creerSocle(piece, gabarit2, pos);
-        newWrap.style.cursor = 'grab';
+        newWrap.style.cursor = "grab"; newWrap.dataset.pieceId = piece.id;
         newWrap.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); }, true);
         if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
         else { plancher2.appendChild(newWrap); }
@@ -797,7 +808,8 @@ if (window._GALERIE_EDIT) {
   };
 
   function _findPieceId(wrap) {
-    /* Trouver l'ID de la pièce depuis sa position dans le DOM */
+    /* Priorité au dataset (fiable) ; fallback comparaison de position */
+    if (wrap.dataset && wrap.dataset.pieceId) return parseInt(wrap.dataset.pieceId);
     var left = parseFloat(wrap.style.left);
     var bottom = parseFloat(wrap.style.bottom);
     for (var i = 0; i < _editPositions.length; i++) {
