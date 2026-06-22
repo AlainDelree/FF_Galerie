@@ -472,7 +472,12 @@ async function uploaderGLB(id, b64) {
   try { const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH); sha = r.sha; } catch (_) {}
   const corps = { message: 'Admin : GLB ' + prefix.replace('-','') + ' #' + id, content: b64, branch: BRANCH };
   if (sha) corps.sha = sha;
-  await apiGH('/repos/' + REPO + '/contents/' + chemin, 'PUT', corps);
+  const rep = await apiGH('/repos/' + REPO + '/contents/' + chemin, 'PUT', corps);
+  /* Vérifier que le commit a bien créé le fichier (évite les pièces fantômes
+     avec un chemin GLB qui pointe vers un fichier inexistant). */
+  if (!rep || !rep.content || !rep.content.sha) {
+    throw new Error('Upload GLB non confirmé par GitHub');
+  }
   return chemin; /* chemin relatif stocké dans toiles.json */
 }
 

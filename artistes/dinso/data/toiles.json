@@ -174,25 +174,6 @@
       "visible": true,
       "socle": 46,
       "glb": "artistes/dinso/assets/models/piece-007.glb"
-    },
-    {
-      "id": 8,
-      "photo": "artistes/dinso/assets/images/toiles/piece-008.png",
-      "source_photo": "admin",
-      "titre": "Fleche",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 105,
-        "hauteur": 47,
-        "profondeur": 13
-      },
-      "visible": true,
-      "socle": 137,
-      "glb": "artistes/dinso/assets/models/piece-008.glb"
     }
   ]
 }
