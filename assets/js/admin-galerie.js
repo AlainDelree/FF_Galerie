@@ -1422,10 +1422,17 @@ function placerPieceSolViaIframe(x, y) {
 
   /* Rafraîchir l'iframe — passer les positions mises à jour pour éviter re-fetch */
   var iframe = document.getElementById('edit-galerie-iframe');
-  if (iframe) iframe.contentWindow.postMessage({
-    type: 'refresh',
-    injectPositions: [{ id: piece.id, x: x, y: y, gabarit: gab }]
-  }, '*');
+  if (iframe) {
+    iframe.contentWindow.postMessage({
+      type: 'refresh',
+      injectPositions: [{ id: piece.id, x: x, y: y, gabarit: gab }]
+    }, '*');
+    /* Sélectionner automatiquement la pièce posée (socle créé en asynchrone) */
+    var _pid = piece.id;
+    setTimeout(function() {
+      if (iframe.contentWindow) iframe.contentWindow.postMessage({ type: 'selectionner-piece', id: _pid }, '*');
+    }, 80);
+  }
 
   selectedToilePl = null;
   afficherStripPlacement();

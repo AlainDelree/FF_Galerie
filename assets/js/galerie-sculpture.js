@@ -848,6 +848,23 @@ if (window._GALERIE_EDIT) {
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
 
+      if (e.data.type === 'selectionner-piece') {
+        /* SÃ©lection auto aprÃ¨s placement : trouver le wrap et le sÃ©lectionner */
+        var sid = e.data.id;
+        var plancherS = document.querySelector('.plancher-sol');
+        if (plancherS) {
+          var found = null;
+          plancherS.querySelectorAll('.socle-wrapper').forEach(function(w) {
+            if (parseInt(w.dataset.pieceId) === sid) found = w;
+          });
+          if (found && found !== _selected) {
+            var posS = _editPositions.find(function(p) { return p.id === sid; });
+            _toggleSelect(found, posS);
+          }
+        }
+        return;
+      }
+
       if (e.data.type === 'retirer-piece') {
         /* Retrait demandé depuis le panneau Support (bouton 🗑) */
         var rid = e.data.id;
