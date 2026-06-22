@@ -74,8 +74,7 @@ function afficherOeuvres() {
       majBoutonsOeuvres();
     },
     onDblClick: function(id) {
-      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
-      else if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
+      if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
     }
   });
 
