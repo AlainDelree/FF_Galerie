@@ -685,64 +685,68 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
   finally { btnDel.disabled = false; }
 });
-// Contrôles mur
-function fermerPanneauCoul() {
-  $('coul-panel').classList.remove('ouvert');
-  $('coul-overlay').classList.remove('ouvert');
-  $('btn-coul-toggle').classList.remove('on');
-}
-$('btn-coul-toggle').addEventListener('click', () => {
-  const ouvert = $('coul-panel').classList.toggle('ouvert');
-  $('coul-overlay').classList.toggle('ouvert', ouvert);
-  $('btn-coul-toggle').classList.toggle('on', ouvert);
-  if (ouvert) {
-    $('musique-panel').classList.remove('ouvert');
-    $('musique-overlay').classList.remove('ouvert');
-    $('btn-musique-toggle').classList.remove('on');
-    if (!window._texturesGHChargees) chargerTexturesGitHub();
-    if (typeof prendreSnapshotApparence === 'function') prendreSnapshotApparence();
+// ── Système popover (1 popover ouvert max, fermeture clic dehors / Échap) ──
+let _popoverOuvert = null;
+function fermerPopover() {
+  if (_popoverOuvert) {
+    document.getElementById(_popoverOuvert.id)?.classList.remove('ouvert');
+    document.getElementById(_popoverOuvert.btn)?.classList.remove('on');
+    _popoverOuvert = null;
   }
-});
-// Annuler : restaure le snapshot et ferme
-function annulerPanneauCoul() {
-  if (typeof restaurerSnapshotApparence === 'function') restaurerSnapshotApparence();
-  fermerPanneauCoul();
 }
-$('btn-annuler-coul').addEventListener('click', annulerPanneauCoul);
-$('coul-overlay').addEventListener('click', annulerPanneauCoul);
-// Sauvegarder : écrit sur GitHub et ferme
-$('btn-sauver-coul').addEventListener('click', async () => {
-  const btn = $('btn-sauver-coul');
-  btn.textContent = 'En cours…'; btn.disabled = true;
-  try {
-    await sauvegarder('[admin] Couleurs/texture salle', '✓ Apparence sauvegardée');
-    _snapshotApparence = null;
-    fermerPanneauCoul();
-  } catch (_) {}
-  btn.textContent = '💾 Sauvegarder'; btn.disabled = false;
+function ouvrirPopover(popId, btnId) {
+  if (_popoverOuvert && _popoverOuvert.id === popId) { fermerPopover(); return; }
+  fermerPopover();
+  const pop = document.getElementById(popId);
+  const btn = document.getElementById(btnId);
+  if (!pop || !btn) return;
+  // Positionner sous le bouton (aligné à droite si dépassement)
+  const r = btn.getBoundingClientRect();
+  pop.style.visibility = 'hidden';
+  pop.classList.add('ouvert');
+  const popW = pop.offsetWidth;
+  const popH = pop.offsetHeight;
+  const margin = 6;
+  let left = r.left;
+  if (left + popW > window.innerWidth - margin) left = window.innerWidth - popW - margin;
+  if (left < margin) left = margin;
+  let top = r.bottom + 4;
+  if (top + popH > window.innerHeight - margin) top = Math.max(margin, r.top - popH - 4);
+  pop.style.left = left + 'px';
+  pop.style.top  = top + 'px';
+  pop.style.visibility = '';
+  btn.classList.add('on');
+  _popoverOuvert = { id: popId, btn: btnId };
+}
+// Clic en dehors → ferme
+document.addEventListener('click', (e) => {
+  if (!_popoverOuvert) return;
+  const pop = document.getElementById(_popoverOuvert.id);
+  const btn = document.getElementById(_popoverOuvert.btn);
+  if (pop && (pop.contains(e.target) || btn?.contains(e.target))) return;
+  fermerPopover();
 });
+// Échap → ferme
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopover(); });
 
-// ── Panneau Musique ──────────────────────────────────────────────
-$('btn-musique-toggle')?.addEventListener('click', () => {
-  const ouvert = $('musique-panel').classList.toggle('ouvert');
-  $('musique-overlay').classList.toggle('ouvert', ouvert);
-  $('btn-musique-toggle').classList.toggle('on', ouvert);
-  if (ouvert) {
-    $('coul-panel').classList.remove('ouvert');
-    $('coul-overlay').classList.remove('ouvert');
-    $('btn-coul-toggle').classList.remove('on');
-    chargerEtAfficherMusique();
-  }
-});
-$('btn-close-musique')?.addEventListener('click', () => {
-  $('musique-panel').classList.remove('ouvert');
-  $('musique-overlay').classList.remove('ouvert');
-  $('btn-musique-toggle').classList.remove('on');
-});
-$('musique-overlay')?.addEventListener('click', () => {
-  $('musique-panel').classList.remove('ouvert');
-  $('musique-overlay').classList.remove('ouvert');
-  $('btn-musique-toggle').classList.remove('on');
+// Mapping bouton → popover
+[
+  ['btn-pop-mur',       'pop-mur'],
+  ['btn-pop-cadres',    'pop-cadres'],
+  ['btn-pop-epaisseur', 'pop-epaisseur'],
+  ['btn-pop-texture',   'pop-texture'],
+  ['btn-pop-revetement','pop-revetement'],
+  ['btn-pop-musique',   'pop-musique'],
+].forEach(([btnId, popId]) => {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    ouvrirPopover(popId, btnId);
+    // Chargements à la demande
+    if (popId === 'pop-musique') chargerEtAfficherMusique();
+    if (popId === 'pop-texture' && !window._texturesGHChargees) chargerTexturesGitHub();
+  });
 });
 
 // ── Modal Vider salles ───────────────────────────────────────────
