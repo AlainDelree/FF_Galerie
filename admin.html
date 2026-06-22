@@ -85,6 +85,7 @@
 
   <nav class="onglets">
     <button class="onglet actif" data-vue="vue-galerie">Galerie</button>
+    <button class="onglet" data-vue="vue-oeuvres" id="onglet-oeuvres">Œuvres</button>
     <button class="onglet" data-vue="vue-pages">Autres pages</button>
     <button class="onglet" data-vue="vue-artistes" id="onglet-artistes" style="display:none">Artistes invités</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
@@ -282,6 +283,18 @@
 
     </div><!-- /edit-section -->
   </div><!-- /vue-galerie -->
+
+
+  <!-- ── VUE ŒUVRES — inventaire global ── -->
+  <div id="vue-oeuvres" class="vue">
+    <div class="oeuvres-toolbar">
+      <button class="mur-act-btn" id="btn-oeuvres-ajouter">＋ Ajouter</button>
+      <button class="mur-act-btn" id="btn-oeuvres-modifier" disabled>✏️ Modifier</button>
+      <button class="mur-act-btn mur-act-danger" id="btn-oeuvres-supprimer" disabled>🗑 Supprimer</button>
+      <button class="mur-act-btn mur-act-cat" id="btn-oeuvres-catalogue">📄 Catalogue</button>
+    </div>
+    <div id="oeuvres-list" class="oeuvres-list"></div>
+  </div><!-- /vue-oeuvres -->
 
 
   <!-- ── VUE ARTISTES INVITÉS (Fred uniquement) ── -->
@@ -1101,6 +1114,12 @@
       });
       await new Promise(resolve => {
         const s = document.createElement("script");
+        s.src = "assets/js/admin-oeuvres.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
         s.src = "assets/js/admin-catalogue.js?v=" + Date.now();
         s.onload = resolve;
         document.body.appendChild(s);
@@ -1112,6 +1131,7 @@
         document.body.appendChild(s);
       }
       /* Tous les modules sont chargés — inits différées sûres */
+      if (typeof initOeuvresTab        === 'function') initOeuvresTab();
       if (typeof chargerConfigEmailJS  === 'function') chargerConfigEmailJS();
       if (typeof initTailleForm         === 'function') initTailleForm();
       // Si déjà connecté (F5) : chargerTout + initTexturesUI après que tous les modules soient chargés

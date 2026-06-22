@@ -1120,6 +1120,7 @@ async function sauverToile() {
     fermerModalToile();
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
+    if (typeof afficherOeuvres === 'function' && typeof _oeuvresTabActif === 'function' && _oeuvresTabActif()) afficherOeuvres();
     toast("✓ Enregistré — site mis à jour dans ~1 min", "ok", 5000);
   } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); }
   finally { btn.disabled = false; btnAnn.disabled = false; lbl.textContent = 'Enregistrer'; }
@@ -1141,6 +1142,7 @@ async function supprimerToile() {
     await sauvegarder(`[admin] Suppression toile #${idCible}${t?.titre ? ' — ' + t.titre : ''}`, '✓ Supprimé');
     afficherPlan();
     if (salleActive) { buildOccupancy(); afficherMur(); afficherStock(); }
+    if (typeof afficherOeuvres === 'function' && typeof _oeuvresTabActif === 'function' && _oeuvresTabActif()) afficherOeuvres();
   } catch (e) { toast('Erreur : ' + e.message, 'err'); }
 }
 

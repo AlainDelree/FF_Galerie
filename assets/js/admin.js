@@ -644,6 +644,10 @@ document.querySelectorAll('.onglet').forEach(o => {
     if (o.dataset.vue === 'vue-backup') chargerCommits();
     if (o.dataset.vue === 'vue-pages')  chargerInfos();
     if (o.dataset.vue === 'vue-artistes') { chargerVueArtistes(); chargerTemplates(); }
+    if (o.dataset.vue === 'vue-oeuvres') {
+      _oeuvresSelection.clear();
+      if (typeof afficherOeuvres === 'function') afficherOeuvres();
+    }
   });
 });
 
