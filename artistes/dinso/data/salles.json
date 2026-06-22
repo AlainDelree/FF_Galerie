@@ -14,7 +14,7 @@
         1,
         2,
         3,
-        4
+        9
       ],
       "positions": [
         {
@@ -36,10 +36,10 @@
           "gabarit": "L"
         },
         {
-          "id": 4,
-          "x": 50,
-          "y": 77,
-          "gabarit": "S"
+          "id": 9,
+          "x": 67,
+          "y": 52,
+          "gabarit": "M"
         }
       ],
       "positions_mobile": [
@@ -60,12 +60,6 @@
           "x": 88,
           "y": 31,
           "gabarit": "L"
-        },
-        {
-          "id": 4,
-          "x": 77.27272727272728,
-          "y": 85.18858560794045,
-          "gabarit": "S"
         }
       ],
       "greffons": {
@@ -106,18 +100,22 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        9
-      ],
-      "positions": [
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": [
         {
-          "id": 9,
-          "x": 53,
-          "y": 63,
+          "id": 7,
+          "x": 36,
+          "y": 37,
           "gabarit": "M"
+        },
+        {
+          "id": 4,
+          "x": 74,
+          "y": 77,
+          "gabarit": "S"
         }
       ],
-      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
