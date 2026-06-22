@@ -90,6 +90,17 @@
       }
     },
     {
+      "id": 7,
+      "nom": "Salle E",
+      "type": "sculpture",
+      "couleur_mur": "#2a2520",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": []
+    },
+    {
       "id": 6,
       "nom": "Salle F",
       "type": "sculpture",
