@@ -269,34 +269,36 @@ function ouvrirModaleSupprTexture(chemin, url) {
   setTimeout(function() { $('inp-suppr-tex').focus(); }, 100);
 }
 
-/* Bind une fois (au load) les listeners de la modale */
+/* Bind immédiat des listeners de la modale (script chargé en fin de body) */
 (function() {
-  document.addEventListener('DOMContentLoaded', function() {
-    var inp = $('inp-suppr-tex');
-    var btnOk = $('btn-suppr-tex-ok');
-    var btnAnn = $('btn-suppr-tex-ann');
-    var overlay = $('overlay-suppr-tex');
-    if (!inp || !btnOk || !btnAnn || !overlay) return;
+  var inp = $('inp-suppr-tex');
+  var btnOk = $('btn-suppr-tex-ok');
+  var btnAnn = $('btn-suppr-tex-ann');
+  var overlay = $('overlay-suppr-tex');
+  if (!inp || !btnOk || !btnAnn || !overlay) return;
 
-    inp.addEventListener('input', function() {
-      var ok = inp.value.trim().toUpperCase() === 'SUPPRIMER';
-      btnOk.disabled = !ok;
-      btnOk.style.opacity = ok ? '1' : '.4';
-    });
-    btnAnn.addEventListener('click', function() {
-      overlay.style.display = 'none';
-    });
-    /* Clic en dehors du panneau ferme aussi */
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) overlay.style.display = 'none';
-    });
-    btnOk.addEventListener('click', async function() {
-      if (btnOk.disabled) return;
-      var chemin = overlay.dataset.cheminAsuppr;
-      if (!chemin) return;
-      overlay.style.display = 'none';
-      await supprimerTextureGitHub(chemin);
-    });
+  inp.addEventListener('input', function() {
+    var ok = inp.value.trim().toUpperCase() === 'SUPPRIMER';
+    btnOk.disabled = !ok;
+    btnOk.style.opacity = ok ? '1' : '.4';
+  });
+  btnAnn.addEventListener('click', function() {
+    overlay.style.display = 'none';
+  });
+  /* Clic en dehors du panneau ferme aussi */
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.style.display = 'none';
+  });
+  /* Échap ferme aussi */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') overlay.style.display = 'none';
+  });
+  btnOk.addEventListener('click', async function() {
+    if (btnOk.disabled) return;
+    var chemin = overlay.dataset.cheminAsuppr;
+    if (!chemin) return;
+    overlay.style.display = 'none';
+    await supprimerTextureGitHub(chemin);
   });
 })();
 
