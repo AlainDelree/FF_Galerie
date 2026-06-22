@@ -35,10 +35,15 @@ function afficherPlan() {
   const cont = $('chips-salles');
   cont.innerHTML = '';
   salles.forEach(s => {
+    /* Nombre réel de pièces = union des positions PC et GSM */
+    var _ids = new Set();
+    (s.positions        || []).forEach(function(p) { _ids.add(p.id); });
+    (s.positions_mobile || []).forEach(function(p) { _ids.add(p.id); });
+    var _nb = _ids.size;
     const chip = document.createElement('div');
-    chip.className = 'chip' + (s.toiles.length === 0 ? ' vide' : '');
+    chip.className = 'chip' + (_nb === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
-    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${s.toiles.length || 'vide'} ${s.toiles.length > 1 ? LBL.items : LBL.item}</div>`;
+    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
       const restant = Math.max(0, 60 - elapsed);
