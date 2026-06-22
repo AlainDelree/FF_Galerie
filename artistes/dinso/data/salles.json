@@ -132,10 +132,10 @@
     {
       "id": 4,
       "nom": "Salle AD",
-      "couleur_mur": "#e66100",
+      "couleur_mur": "#a07540",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "parquet",
+      "texture": "none",
       "greffons": {
         "immersive": {
           "actif": true,
@@ -165,7 +165,8 @@
       },
       "visible": true,
       "toiles": [],
-      "positions": []
+      "positions": [],
+      "positions_mobile": []
     },
     {
       "id": 2,
