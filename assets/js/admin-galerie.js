@@ -1461,12 +1461,16 @@ function ouvrirPanneauSupport(pieceId) {
         var p = toiles.find(function(t) { return t.id === _supportPieceId; });
         if (!p) return;
         var type = btn.dataset.type;
-        if (type === 'aucun') {
-          p.support = { type: 'aucun' };
-        } else {
-          if (!p.support || p.support.type === 'aucun') p.support = _supportDefaut();
-          p.support.type = type;
+        /* Conserver couleur/texture/taille même en passant par "aucun" :
+           on ne touche qu'au type. Les réglages d'apparence persistent. */
+        if (!p.support) p.support = _supportDefaut();
+        if (p.support.type === 'aucun' && type !== 'aucun') {
+          /* On revient sur un support visible : compléter les champs manquants */
+          if (!p.support.couleur) p.support.couleur = '#eae6de';
+          if (!p.support.texture) p.support.texture = 'marbre';
+          if (!p.support.taille)  p.support.taille = 40;
         }
+        p.support.type = type;
         _supportSyncUI();
         _supportAppliquer();
       });
