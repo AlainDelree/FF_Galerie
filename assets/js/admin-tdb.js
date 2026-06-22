@@ -254,14 +254,45 @@ function _creerCarteGreffon(greffon, salle) {
   var card = document.createElement('div');
   card.className = 'tdb-card tdb-card-greffon';
 
-  /* Zone icône — cliquable si actif */
+  /* Zone aperçu — iframe live si actif, icône sinon */
   var preview = document.createElement('div');
-  preview.className = 'tdb-preview tdb-preview-greffon';
+  preview.className = 'tdb-preview' + (actif ? '' : ' tdb-preview-greffon');
   if (actif) { preview.style.cursor = 'pointer'; preview.title = 'Configurer'; }
-  var ico = document.createElement('span');
-  ico.style.cssText = 'font-size:2.8rem;line-height:1;opacity:.45;';
-  ico.textContent = meta.icon;
-  preview.appendChild(ico);
+
+  if (actif && greffon === 'immersive') {
+    /* Aperçu iframe immersif (non interactif) */
+    var apercuBase = (typeof ADMIN_CFG !== 'undefined')
+      ? ADMIN_CFG.repoPath.replace(/data\/?$/, '') : '';
+    var iframeWrap = document.createElement('div');
+    iframeWrap.style.cssText = 'position:relative;width:100%;aspect-ratio:16/9;max-height:180px;overflow:hidden;background:#111;border-radius:6px 6px 0 0;';
+    var ifr = document.createElement('iframe');
+    ifr.src = apercuBase + 'immersive-apercu.html?v=' + Date.now();
+    ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
+    ifr.tabIndex = -1;
+    (function(iframe) {
+      var decorSalle = (salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor)
+        ? salle.greffons.immersive.decor : {};
+      var piece = (typeof toiles !== 'undefined')
+        ? (toiles.find(function(t) { return t.glb; }) || toiles[0] || {}) : {};
+      function onMsg(e) {
+        if (e.data && e.data.type === 'immersive-awaiting-data') {
+          iframe.contentWindow.postMessage({ type: 'immersive-init', piece: piece, decor: decorSalle }, '*');
+          window.removeEventListener('message', onMsg);
+        }
+      }
+      window.addEventListener('message', onMsg);
+    })(ifr);
+    iframeWrap.appendChild(ifr);
+    preview.appendChild(iframeWrap);
+  } else {
+    /* Placeholder icône */
+    preview.classList.add('tdb-preview-greffon');
+    var ico = document.createElement('span');
+    ico.style.cssText = 'font-size:2.8rem;line-height:1;opacity:.45;';
+    ico.textContent = meta.icon;
+    preview.appendChild(ico);
+  }
+
   if (actif) {
     preview.addEventListener('click', (function(f) {
       return function() { entrerVue(f); };
