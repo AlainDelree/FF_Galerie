@@ -450,3 +450,157 @@ async function ouvrirSalleImmersive(piece, decor) {
   };
   document.addEventListener('keydown', onKey);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   APERÇU IMMERSIF (mode iframe — pour l'admin TDB)
+   Rend la scène dans un canvas fourni, retourne { updateDecor, dispose }
+   ══════════════════════════════════════════════════════════════ */
+async function renderImmersiveApercu(canvas, piece, decor) {
+  await chargerThreeJS();
+
+  var D = Object.assign({}, DECOR_IMMERSIVE_DEFAUT, decor || {});
+
+  var VW = canvas.width  || window.innerWidth;
+  var VH = canvas.height || window.innerHeight;
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setSize(VW, VH);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.8;
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(_hexToInt(D.fond) || 0x12100c);
+  scene.fog = new THREE.Fog(_hexToInt(D.fond) || 0x12100c, 10, 22);
+
+  var camera = new THREE.PerspectiveCamera(50, VW / VH, 0.1, 50);
+  camera.position.set(0, 2.2, 5);
+  camera.lookAt(0, 1, 0);
+
+  /* Éclairage */
+  scene.add(new THREE.AmbientLight(0xfff8f0, 0.7));
+  var spot = new THREE.SpotLight(0xfff0d0, 1.8, 14, Math.PI / 5, 0.5);
+  spot.position.set(0, 6, 0); spot.target.position.set(0, 1.1, 0);
+  spot.castShadow = true; scene.add(spot); scene.add(spot.target);
+  scene.add(Object.assign(new THREE.PointLight(0xfff0d0, 0.6, 12), { position: { x: -3, y: 3, z: 2 } }));
+  var hemi = new THREE.HemisphereLight(0xfff8f0, _hexToInt(D.sol) || 0x8a6228, 0.5);
+  scene.add(hemi);
+
+  /* Sol */
+  var floorMat = new THREE.MeshStandardMaterial({ color: _hexToInt(D.sol) || 0x8a6228, roughness: 0.75, metalness: 0.05 });
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), floorMat);
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+
+  /* Murs */
+  var WALL_R = 6, WALL_H = 5, SEG = 12;
+  var wallMats = [];
+  for (var i = 0; i < SEG; i++) {
+    var wMat = new THREE.MeshStandardMaterial({ color: _hexToInt(D.mur) || 0x2e2a35, side: THREE.BackSide, roughness: 0.85 });
+    wallMats.push(wMat);
+    var wGeo = new THREE.CylinderGeometry(WALL_R, WALL_R, WALL_H, 1, 1, true, i * Math.PI * 2 / SEG, Math.PI * 2 / SEG);
+    var panel = new THREE.Mesh(wGeo, wMat); panel.position.y = WALL_H / 2; scene.add(panel);
+    var a = i * Math.PI * 2 / SEG;
+    var line = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, WALL_H, 4), new THREE.MeshBasicMaterial({ color: 0xe8e0cc }));
+    line.position.set(Math.sin(a) * (WALL_R - 0.01), WALL_H / 2, Math.cos(a) * (WALL_R - 0.01)); scene.add(line);
+  }
+
+  /* Piédestal */
+  var C_SOCLE = (piece && piece.support && piece.support.couleur) ? (_hexToInt(piece.support.couleur) || 0xf0ece4) : 0xf0ece4;
+  var pedMat = new THREE.MeshStandardMaterial({ color: C_SOCLE, roughness: 0.35, metalness: 0.02 });
+  var ped = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 1.1, 24), pedMat);
+  ped.position.y = 0.55; ped.castShadow = true; ped.receiveShadow = true; scene.add(ped);
+
+  /* Piquets + corde */
+  var PIQ_R = 0.03, PIQ_H = 1.0, PIQ_DIST = 1.2, CORDE_H = 0.72;
+  var piqMats = [], cordMats = [], stanchions = [];
+  for (var j = 0; j < 4; j++) {
+    var pA = j * Math.PI / 2, px = Math.sin(pA) * PIQ_DIST, pz = Math.cos(pA) * PIQ_DIST;
+    var cM = new THREE.MeshStandardMaterial({ color: _hexToInt(D.piquet) || 0xc8a050, metalness: 0.7, roughness: 0.3 });
+    piqMats.push(cM);
+    var col = new THREE.Mesh(new THREE.CylinderGeometry(PIQ_R, PIQ_R, PIQ_H, 8), cM);
+    col.position.set(px, PIQ_H / 2, pz); col.castShadow = true; scene.add(col);
+    var capM = new THREE.MeshStandardMaterial({ color: _hexToInt(D.piquet) || 0xc8a050, metalness: 0.8, roughness: 0.2 });
+    piqMats.push(capM);
+    var cap = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8), capM);
+    cap.position.set(px, PIQ_H + 0.03, pz); scene.add(cap);
+    var baseM = new THREE.MeshStandardMaterial({ color: _hexToInt(D.piquet) || 0xc8a050, metalness: 0.6, roughness: 0.4 });
+    piqMats.push(baseM);
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.04, 12), baseM);
+    base.position.set(px, 0.02, pz); scene.add(base);
+    stanchions.push({ x: px, z: pz });
+  }
+  for (var k = 0; k < 4; k++) {
+    var s1 = stanchions[k], s2 = stanchions[(k + 1) % 4];
+    var curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(s1.x, CORDE_H, s1.z),
+      new THREE.Vector3((s1.x + s2.x) / 2, CORDE_H - 0.12, (s1.z + s2.z) / 2),
+      new THREE.Vector3(s2.x, CORDE_H, s2.z)
+    );
+    var cordM = new THREE.MeshStandardMaterial({ color: _hexToInt(D.corde) || 0x8b0020, roughness: 0.8 });
+    cordMats.push(cordM);
+    var tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.018, 6, false), cordM);
+    tube.castShadow = true; scene.add(tube);
+  }
+
+  /* GLB (si disponible) */
+  var glbSrc = piece && piece.glb
+    ? (/^https?:\/\//.test(piece.glb) ? piece.glb : ((window.GALERIE_CFG && window.GALERIE_CFG.assetsBase) || '') + piece.glb)
+    : null;
+  if (glbSrc && window.THREE && THREE.GLTFLoader) {
+    try {
+      var loader = new THREE.GLTFLoader();
+      loader.load(glbSrc, function(gltf) {
+        var obj = gltf.scene;
+        var box = new THREE.Box3().setFromObject(obj);
+        var size = new THREE.Vector3(); box.getSize(size);
+        var cx = new THREE.Vector3(); box.getCenter(cx);
+        var scale = Math.min(1.0 / Math.max(size.x, size.y, size.z), 2.0);
+        obj.scale.setScalar(scale);
+        obj.position.set(-cx.x * scale, (1.1 - box.min.y * scale), -cx.z * scale);
+        scene.add(obj);
+      });
+    } catch(e) {}
+  } else if (glbSrc === null) {
+    /* Placeholder box */
+    var phMat = new THREE.MeshStandardMaterial({ color: 0x7a5028, roughness: 0.6 });
+    var ph = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.4), phMat);
+    ph.position.y = 1.4; ph.castShadow = true; scene.add(ph);
+  }
+
+  /* Boucle */
+  var _raf = null, angle = 0, lastT = performance.now();
+  function animate() {
+    var now = performance.now();
+    angle += 0.2 * (now - lastT) / 1000; lastT = now;
+    camera.position.x = Math.sin(angle) * 5;
+    camera.position.z = Math.cos(angle) * 5;
+    camera.position.y = 2.2;
+    camera.lookAt(0, 1.1, 0);
+    renderer.render(scene, camera);
+    _raf = requestAnimationFrame(animate);
+  }
+  animate();
+
+  /* Resize */
+  window.addEventListener('resize', function() {
+    var w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+
+  return {
+    updateDecor: function(newDecor) {
+      var D2 = Object.assign({}, DECOR_IMMERSIVE_DEFAUT, newDecor || {});
+      floorMat.color.setHex(_hexToInt(D2.sol) || 0x8a6228);
+      hemi.groundColor.setHex(_hexToInt(D2.sol) || 0x8a6228);
+      scene.background = new THREE.Color(_hexToInt(D2.fond) || 0x12100c);
+      scene.fog.color.setHex(_hexToInt(D2.fond) || 0x12100c);
+      wallMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.mur) || 0x2e2a35); });
+      piqMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.piquet) || 0xc8a050); });
+      cordMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.corde) || 0x8b0020); });
+    },
+    dispose: function() { cancelAnimationFrame(_raf); renderer.dispose(); }
+  };
+}

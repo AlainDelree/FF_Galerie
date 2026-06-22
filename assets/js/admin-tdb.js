@@ -239,13 +239,19 @@ function _creerCarteGreffon(greffon, salle) {
   var card = document.createElement('div');
   card.className = 'tdb-card tdb-card-greffon';
 
-  /* Zone icône */
+  /* Zone icône — cliquable si actif */
   var preview = document.createElement('div');
   preview.className = 'tdb-preview tdb-preview-greffon';
+  if (actif) { preview.style.cursor = 'pointer'; preview.title = 'Configurer'; }
   var ico = document.createElement('span');
   ico.style.cssText = 'font-size:2.8rem;line-height:1;opacity:.45;';
   ico.textContent = meta.icon;
   preview.appendChild(ico);
+  if (actif) {
+    preview.addEventListener('click', (function(f) {
+      return function() { entrerVue(f); };
+    })(greffon));
+  }
   card.appendChild(preview);
 
   /* Pied de carte */
@@ -390,6 +396,14 @@ function entrerVue(facette) {
   var meta = FACETTES_META[facette] || {};
   var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
 
+  /* Greffons → éditeur dédié */
+  if (meta.greffon) {
+    if (facette === 'immersive' && typeof ouvrirEditeurImmersif === 'function') {
+      ouvrirEditeurImmersif(salleActive);
+    }
+    return;
+  }
+
   /* Synchroniser _placementVue pour sculpture (PC/GSM) */
   if (typeof _placementVue !== 'undefined' && meta.vue) {
     _placementVue = meta.vue;
@@ -428,4 +442,132 @@ function entrerVue(facette) {
 /* ── Retour au tableau de bord depuis l'éditeur ── */
 function retourTableauBord() {
   afficherTableauBord();
+}
+
+/* ══════════════════════════════════════════════════════
+   ÉDITEUR IMMERSIF — overlay fullscreen avec aperçu live
+   ══════════════════════════════════════════════════════ */
+function ouvrirEditeurImmersif(salle) {
+  if (!salle) return;
+  if (document.getElementById('overlay-imm-edit')) return;
+
+  /* Décor courant (copie pour annulation) */
+  var decor = Object.assign({}, DECOR_IMMERSIVE_DEFAUT,
+    (salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor) || {});
+  var decorOriginal = Object.assign({}, decor);
+
+  /* ── Overlay ── */
+  var overlay = document.createElement('div');
+  overlay.id = 'overlay-imm-edit';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:400;display:flex;background:#111;';
+
+  /* ── Iframe aperçu ── */
+  var apercuPath = '';
+  if (typeof ADMIN_CFG !== 'undefined') {
+    apercuPath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'immersive-apercu.html';
+  }
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'flex:1;border:none;';
+  iframe.tabIndex = -1;
+
+  /* Pièce à afficher : première avec GLB */
+  var piece = (typeof toiles !== 'undefined')
+    ? (toiles.find(function(t) { return t.glb; }) || toiles[0] || {})
+    : {};
+
+  /* Injecter les données quand l'iframe est prête */
+  function onMsg(e) {
+    if (e.data && e.data.type === 'immersive-awaiting-data') {
+      iframe.contentWindow.postMessage({ type: 'immersive-init', piece: piece, decor: decor }, '*');
+    }
+  }
+  window.addEventListener('message', onMsg);
+
+  iframe.src = apercuPath + '?v=' + Date.now();
+
+  /* ── Panneau de contrôle ── */
+  var panel = document.createElement('div');
+  panel.className = 'imm-edit-panel';
+
+  var panTitre = document.createElement('div');
+  panTitre.style.cssText = 'font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;';
+  panTitre.textContent = 'Décor — ' + (salle.nom || 'Salle');
+  panel.appendChild(panTitre);
+
+  /* 5 lignes de couleur */
+  _DECOR_CHAMPS.forEach(function(champ) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;';
+
+    var lbl = document.createElement('span');
+    lbl.style.cssText = 'font-size:.7rem;color:var(--muted);width:2.8rem;flex-shrink:0;';
+    lbl.textContent = champ.label;
+
+    var pastille = document.createElement('div');
+    pastille.className = 'tdb-decor-pastille';
+    pastille.style.background = decor[champ.key] || champ.defaut;
+    pastille.title = decor[champ.key] || champ.defaut;
+
+    (function(k, p) {
+      p.addEventListener('click', function() {
+        if (typeof ouvrirPickerCouleur !== 'function') return;
+        window._supportPickerCouleur   = p.title;
+        window._supportPickerOnConfirm = function(hex) {
+          p.style.background = hex;
+          p.title = hex;
+          decor[k] = hex;
+          /* Mise à jour live de l'iframe */
+          iframe.contentWindow.postMessage({ type: 'immersive-decor-update', decor: decor }, '*');
+        };
+        ouvrirPickerCouleur('support');
+        var titreEl = document.getElementById('picker-titre');
+        if (titreEl) titreEl.textContent = 'Couleur — ' + champ.label;
+      });
+    })(champ.key, pastille);
+
+    row.appendChild(lbl);
+    row.appendChild(pastille);
+    panel.appendChild(row);
+  });
+
+  /* Boutons */
+  var btnSep = document.createElement('div');
+  btnSep.style.cssText = 'height:1px;background:var(--brd);margin:.5rem 0;';
+  panel.appendChild(btnSep);
+
+  var btnSave = document.createElement('button');
+  btnSave.className = 'ctrl-btn';
+  btnSave.style.cssText = 'width:100%;margin-bottom:.3rem;justify-content:center;';
+  btnSave.textContent = '💾 Enregistrer';
+  btnSave.addEventListener('click', function() {
+    btnSave.disabled = true; btnSave.textContent = 'En cours…';
+    if (!salle.greffons) salle.greffons = {};
+    if (!salle.greffons.immersive) salle.greffons.immersive = { actif: true };
+    salle.greffons.immersive.decor = Object.assign({}, decor);
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Décor immersif — ' + (salle.nom || 'salle'), null)
+        .then(function() {
+          btnSave.disabled = false; btnSave.textContent = '✓ Enregistré';
+          setTimeout(function() { btnSave.textContent = '💾 Enregistrer'; }, 2000);
+          _renderTDB(); /* Rafraîchir les pastilles du TDB */
+        })
+        .catch(function() { btnSave.disabled = false; btnSave.textContent = '⚠ Erreur'; });
+    }
+  });
+  panel.appendChild(btnSave);
+
+  var btnBack = document.createElement('button');
+  btnBack.className = 'ctrl-btn';
+  btnBack.style.cssText = 'width:100%;justify-content:center;';
+  btnBack.textContent = '← Retour';
+  btnBack.addEventListener('click', function() {
+    window.removeEventListener('message', onMsg);
+    overlay.remove();
+    afficherTableauBord();
+  });
+  panel.appendChild(btnBack);
+
+  overlay.appendChild(iframe);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
 }

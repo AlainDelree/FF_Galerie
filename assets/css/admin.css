@@ -1054,3 +1054,15 @@ textarea.champ{resize:vertical;min-height:65px;}
   transition: transform .1s;
 }
 .tdb-decor-pastille:hover { transform: scale(1.15); border-color: var(--gold); }
+
+/* ── Éditeur immersif (overlay fullscreen) ── */
+.imm-edit-panel {
+  width: 180px; flex-shrink: 0;
+  background: var(--bg); border-left: 1px solid var(--brd);
+  padding: .7rem .6rem; display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+@media (max-width: 600px) {
+  #overlay-imm-edit { flex-direction: column; }
+  .imm-edit-panel { width: 100%; border-left: none; border-top: 1px solid var(--brd); max-height: 40vh; }
+}
