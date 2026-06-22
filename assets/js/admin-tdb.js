@@ -148,7 +148,7 @@ function _renderTDB() {
   if (!tdb) return;
 
   if (!salleActive) {
-    tdb.innerHTML = '<div class="tdb-vide">Sélectionne une salle dans le plan ci-dessus.</div>';
+    tdb.innerHTML = '<div class="tdb-vide">Sélectionnez une salle dans le plan ci-dessus.</div>';
     return;
   }
   tdb.innerHTML = '';
