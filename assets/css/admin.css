@@ -1075,3 +1075,9 @@ textarea.champ{resize:vertical;min-height:65px;}
   #overlay-imm-edit { flex-direction: column; }
   .imm-edit-panel { width: 100%; border-left: none; border-top: 1px solid var(--brd); max-height: 40vh; }
 }
+
+/* Panneau Support au-dessus du strip (qui fait 96px / 80px en mobile) */
+#support-panel { bottom: 96px; }
+@media (max-width: 600px) {
+  #support-panel { bottom: 80px; }
+}
