@@ -459,8 +459,8 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(titre);
   }
 
-  /* Clic → salle d'observation */
-  if (hasGlb) {
+  /* Clic → salle d'observation (sauf en aperçu read-only ou en édition) */
+  if (hasGlb && !window._GALERIE_READONLY && !window._GALERIE_EDIT) {
     const ouvrir = () => {
       if (typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(piece);
       else ouvrirSalleObservation(piece);
