@@ -42,7 +42,32 @@
           "gabarit": "S"
         }
       ],
-      "positions_mobile": [],
+      "positions_mobile": [
+        {
+          "id": 1,
+          "x": 23.761904761904763,
+          "y": 40.15136476426799,
+          "gabarit": "SOL"
+        },
+        {
+          "id": 2,
+          "x": 22.383827162987348,
+          "y": 5,
+          "gabarit": "S"
+        },
+        {
+          "id": 3,
+          "x": 88,
+          "y": 31,
+          "gabarit": "L"
+        },
+        {
+          "id": 4,
+          "x": 77.27272727272728,
+          "y": 85.18858560794045,
+          "gabarit": "S"
+        }
+      ],
       "greffons": {
         "immersive": {
           "actif": true,
