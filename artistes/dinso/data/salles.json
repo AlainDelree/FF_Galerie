@@ -61,7 +61,7 @@
           }
         },
         "descriptive": {
-          "actif": true,
+          "actif": false,
           "decor": {
             "pan_a": "#0d0d0d",
             "pan_b": "#e0f0b0",
