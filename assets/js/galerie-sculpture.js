@@ -226,6 +226,104 @@ function ouvrirSalleObservation(piece) {
 /* ══════════════════════════════════════════════════════════════
    SOCLE — photo statique + clic → salle d'observation
    ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   SUPPORTS — registre de rendus (socle / étagère / présentoir / aucun)
+   Un support est attaché à une pièce (piece.support). Couleur + texture
+   cumulées comme les murs (gradients superposés sur couleur de fond).
+   ══════════════════════════════════════════════════════════════ */
+
+/* Textures de support — gradients superposables sur une couleur de base */
+const SUPPORT_TEXTURES = {
+  lisse: '',
+  marbre:
+    'linear-gradient(155deg, transparent 20%, rgba(140,150,160,.18) 21%, rgba(140,150,160,.12) 22%, transparent 23%),' +
+    'linear-gradient(168deg, transparent 48%, rgba(120,130,140,.15) 49%, rgba(120,130,140,.10) 50%, transparent 51%),' +
+    'linear-gradient(140deg, transparent 70%, rgba(150,155,165,.12) 71%, rgba(150,155,165,.08) 72%, transparent 73%)',
+  bois:
+    'repeating-linear-gradient(90deg, transparent 0px, transparent 6px, rgba(80,50,20,.10) 6px, rgba(80,50,20,.10) 7px),' +
+    'repeating-linear-gradient(90deg, transparent 0px, transparent 22px, rgba(60,35,12,.08) 22px, rgba(60,35,12,.08) 24px)',
+  pierre:
+    'radial-gradient(circle at 30% 30%, rgba(0,0,0,.08) 0%, transparent 25%),' +
+    'radial-gradient(circle at 70% 60%, rgba(0,0,0,.06) 0%, transparent 22%),' +
+    'radial-gradient(circle at 50% 80%, rgba(255,255,255,.05) 0%, transparent 20%)',
+  metal:
+    'linear-gradient(90deg, rgba(255,255,255,.12) 0%, rgba(0,0,0,.04) 20%, rgba(255,255,255,.10) 40%, rgba(0,0,0,.06) 60%, rgba(255,255,255,.08) 80%, rgba(0,0,0,.05) 100%)'
+};
+
+/* Ombrage cylindrique réutilisé par le socle */
+const SUPPORT_CYL_SHADE =
+  'linear-gradient(to right, rgba(0,0,0,.20) 0%, rgba(0,0,0,.05) 15%, rgba(255,255,255,.08) 45%,' +
+  ' rgba(255,255,255,.12) 55%, rgba(0,0,0,.04) 80%, rgba(0,0,0,.18) 100%)';
+
+/* Construit le background CSS cumulé : texture (gradients) + ombrage + couleur */
+function supportBgCSS(support, withShade) {
+  var coul = (support && support.couleur) || '#eae6de';
+  var tex  = (support && support.texture) || 'marbre';
+  var pat  = SUPPORT_TEXTURES[tex] || '';
+  var layers = [];
+  if (pat) layers.push(pat);
+  if (withShade) layers.push(SUPPORT_CYL_SHADE);
+  return layers.length ? (layers.join(',') + ',' + coul) : coul;
+}
+
+/* Chaque renderer dessine un piédestal et retourne l'élément (ou null pour "aucun").
+   photoH = hauteur de la photo en px (pour proportionner). */
+const SUPPORT_RENDERERS = {
+  aucun: function() { return null; },
+
+  socle: function(support, photoH, gCode) {
+    var ped = document.createElement('div');
+    ped.className = 'socle-piedestal socle-piedestal--' + gCode;
+    ped.style.background = supportBgCSS(support, true);
+    ped.style.backgroundColor = (support && support.couleur) || '#eae6de';
+    if (gCode !== 'sol') {
+      ped.style.height = Math.min(200, Math.round(photoH * 0.7)) + 'px';
+    }
+    return ped;
+  },
+
+  etagere: function(support, photoH, gCode) {
+    /* Plateau large et bas — la pièce repose dessus, plusieurs étagères alignées
+       paraissent continues (pas de fusion, continuité visuelle). */
+    var ped = document.createElement('div');
+    ped.className = 'support-etagere';
+    var h = Math.max(14, Math.round(photoH * 0.22));
+    ped.style.cssText =
+      'position:relative;width:130%;left:-15%;height:' + h + 'px;border-radius:3px;' +
+      'background:' + supportBgCSS(support, false) + ';background-color:' + ((support && support.couleur) || '#cbb89a') + ';' +
+      'box-shadow:0 4px 10px rgba(0,0,0,.22),inset 0 2px 0 rgba(255,255,255,.10);';
+    return ped;
+  },
+
+  presentoir: function(support, photoH, gCode) {
+    /* Colonne fine et élégante avec base et chapiteau */
+    var ped = document.createElement('div');
+    ped.className = 'support-presentoir';
+    var h = Math.min(220, Math.round(photoH * 0.9));
+    ped.style.cssText =
+      'position:relative;width:55%;left:22.5%;height:' + h + 'px;border-radius:4px 4px 2px 2px;' +
+      'background:' + supportBgCSS(support, true) + ';background-color:' + ((support && support.couleur) || '#eae6de') + ';' +
+      'box-shadow:2px 3px 8px rgba(0,0,0,.18);';
+    /* Base élargie */
+    var base = document.createElement('div');
+    base.style.cssText =
+      'position:absolute;bottom:-3px;left:-25%;width:150%;height:10px;border-radius:3px;' +
+      'background:' + ((support && support.couleur) || '#ddd8d0') + ';box-shadow:0 2px 5px rgba(0,0,0,.2);';
+    ped.appendChild(base);
+    return ped;
+  }
+};
+
+function renderSupport(piece, photoH, gCode) {
+  /* Rétro-compat : ancien sans_socle → type "aucun" */
+  var support = piece.support;
+  if (!support) {
+    support = piece.sans_socle ? { type: 'aucun' } : { type: 'socle' };
+  }
+  var fn = SUPPORT_RENDERERS[support.type] || SUPPORT_RENDERERS.socle;
+  return { el: fn(support, photoH, gCode), type: support.type };
+}
+
 function creerSocle(piece, gabarit, pos) {
   const gCode = (gabarit && gabarit.code) ? gabarit.code.toLowerCase() : 'm';
 
@@ -301,28 +399,25 @@ function creerSocle(piece, gabarit, pos) {
     socle.appendChild(badge);
   }
 
-  /* Piédestal + ombre — sauf si la pièce est posée directement au sol (sans_socle).
-     Hauteur proportionnelle à la photo (pas le 200px CSS fixe) sinon ça déborde. */
-  if (piece.sans_socle) {
-    /* Pas de piédestal — juste une ombre au sol sous la pièce */
-    const ombreSeule = document.createElement('div');
+  /* Support (socle / étagère / présentoir / aucun) via le registre */
+  var sup = renderSupport(piece, photoH, gCode);
+  if (sup.el) {
+    if (sup.type === 'socle') {
+      /* Le socle porte l'ombre interne, comme avant */
+      var ombre = document.createElement('div');
+      ombre.className = 'socle-ombre';
+      sup.el.appendChild(ombre);
+    }
+    socle.appendChild(sup.el);
+  }
+  if (!sup.el || sup.type === 'aucun') {
+    /* Pas de support — ombre seule au sol sous la pièce */
+    var ombreSeule = document.createElement('div');
     ombreSeule.className = 'socle-ombre';
     ombreSeule.style.position = 'relative';
     ombreSeule.style.bottom = '0';
     ombreSeule.style.marginTop = '2px';
     socle.appendChild(ombreSeule);
-  } else {
-    const ped = document.createElement('div');
-    ped.className = 'socle-piedestal socle-piedestal--' + gCode;
-    if (gCode !== 'sol') {
-      /* 0.7×photoH, plafonné à 200px (valeur historique plein écran) */
-      var pedH = Math.min(200, Math.round(photoH * 0.7));
-      ped.style.height = pedH + 'px';
-    }
-    const ombre = document.createElement('div');
-    ombre.className = 'socle-ombre';
-    ped.appendChild(ombre);
-    socle.appendChild(ped);
   }
 
   /* Titre */
