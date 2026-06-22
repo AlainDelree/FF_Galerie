@@ -64,9 +64,9 @@ function _basculeVueTDB(montrerTDB) {
   var tdbEl    = document.getElementById('tdb-section');
   var editCorps = document.querySelector('.edit-corps');
   var retour   = document.getElementById('btn-retour-tdb');
-  if (tdbEl)    tdbEl.style.display    = montrerTDB ? 'block' : 'none';
-  if (editCorps) editCorps.style.display = montrerTDB ? 'none'  : '';
-  if (retour)   retour.style.display   = montrerTDB ? 'none'  : '';
+  if (tdbEl)    tdbEl.style.display    = montrerTDB ? 'block'       : 'none';
+  if (editCorps) editCorps.style.display = montrerTDB ? 'none'        : '';
+  if (retour)   retour.style.display   = montrerTDB ? 'none'        : 'inline-flex';
 }
 
 /* ── Afficher le tableau de bord ── */
@@ -152,8 +152,18 @@ function _creerCarteVue(facette, salle, lbl) {
 
     var wrap = document.createElement('div');
     wrap.className = 'tdb-iframe-wrap';
-    wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + meta.ratio
-      + ';background:var(--bg3);border-radius:6px 6px 0 0;overflow:hidden;';
+    var isPortrait = meta.ratio === '9/19';
+    if (isPortrait) {
+      /* GSM portrait : hauteur fixe, largeur proportionnelle centrée */
+      var gsmH = 160;
+      var gsmW = Math.round(gsmH * 9 / 19);
+      wrap.style.cssText = 'position:relative;height:' + gsmH + 'px;width:' + gsmW + 'px;'
+        + 'margin:0 auto;background:var(--bg3);border-radius:6px 6px 0 0;overflow:hidden;';
+    } else {
+      /* PC paysage : pleine largeur, hauteur max fixe */
+      wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + meta.ratio
+        + ';max-height:180px;overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
+    }
 
     var iframe = document.createElement('iframe');
     iframe.src = apercuPath + '?vue=' + meta.vue + '&v=' + Date.now();
