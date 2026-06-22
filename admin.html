@@ -1348,25 +1348,6 @@
           stepper.appendChild(btnDefaut);
           socleGrp.appendChild(stepper);
 
-          /* Case "Poser au sol (sans socle)" */
-          var sansSocleGrp = document.createElement('div');
-          sansSocleGrp.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.6rem;';
-          var cbSansSocle = document.createElement('input');
-          cbSansSocle.type = 'checkbox'; cbSansSocle.id = 'inp-sans-socle';
-          cbSansSocle.style.cssText = 'width:18px;height:18px;cursor:pointer;';
-          var cbLbl = document.createElement('label');
-          cbLbl.htmlFor = 'inp-sans-socle';
-          cbLbl.style.cssText = 'font-size:.85rem;cursor:pointer;color:var(--text);';
-          cbLbl.textContent = '🗿 Poser au sol (sans socle)';
-          cbSansSocle.addEventListener('change', function() {
-            /* Griser le diamètre quand pas de socle */
-            var dis = cbSansSocle.checked;
-            inpDiam.disabled = dis; btnMoins.disabled = dis; btnPlus.disabled = dis;
-            socleGrp.style.opacity = dis ? '.4' : '1';
-          });
-          sansSocleGrp.appendChild(cbSansSocle); sansSocleGrp.appendChild(cbLbl);
-          socleGrp.appendChild(sansSocleGrp);
-
           hdrSocle.after(socleGrp);
 
           /* ── 3. DÉTAILS ── */
