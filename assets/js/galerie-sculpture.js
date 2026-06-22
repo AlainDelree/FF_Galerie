@@ -425,6 +425,8 @@ function creerSocle(piece, gabarit, pos, opts) {
     img.style.width = 'auto';
     img.style.maxWidth = '100%';
     img.style.objectFit = 'contain';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
     img.style.position = 'relative';
     img.style.zIndex = '5';
     const src = /^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
