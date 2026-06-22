@@ -7,7 +7,7 @@
    s'ajoute à eux). Posé via .page-sculpture (JS) — vaut pour toutes les tailles. */
 body.page-sculpture { height: 100dvh !important; min-height: 0 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
 body.page-sculpture .galerie-principale { flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important; }
-body.page-sculpture .pied { flex-shrink: 0 !important; }
+body.page-sculpture .pied { display: none !important; }
 body.page-sculpture .galerie-principale { min-height: 0 !important; overflow: hidden; }
 
 .salle.salle-sculpture {
