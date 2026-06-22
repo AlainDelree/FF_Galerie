@@ -427,8 +427,12 @@ function creerSocle(piece, gabarit, pos, opts) {
     mv.setAttribute('camera-orbit', '25deg 70deg auto');
     mv.setAttribute('field-of-view', '36deg');
     mv.setAttribute('shadow-intensity', '0.6');
+    /* Largeur du viewer = basée sur photoH (cadre assez large pour ne pas couper
+       l'objet), centré au-dessus du socle indépendamment de socleW. */
+    var mvW = Math.round(photoH * 0.95);
     mv.style.cssText =
-      'width:' + socleW + 'px;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
+      'width:' + mvW + 'px;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
+      'margin:0 auto;display:block;' +
       '--poster-color:transparent;background:transparent;';
     socle.appendChild(mv);
   } else if (piece.photo) {
