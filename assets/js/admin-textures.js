@@ -74,16 +74,6 @@ function getTextureName(key) {
   return key || 'Uni';
 }
 
-function confirmerPreset() {
-  const nom = $('inp-preset-nom').value.trim();
-  if (!nom) { toast('Entrez un nom pour le preset', 'err'); return; }
-  const presets = JSON.parse(localStorage.getItem(K.presets) || '{}');
-  presets[nom] = { couleur_mur: couleurMurActuel, couleur_cadres: couleurCadresActuel, epaisseur_cadres: epaisseurCadresActuel, texture: textureActuelle };
-  localStorage.setItem(K.presets, JSON.stringify(presets));
-  $('overlay-preset').classList.remove('ouvert');
-  toast(`✓ Preset "${nom}" sauvegardé`);
-}
-
 /* gererTextureCustom + confirmerTextureNom + _pendingTextureFile supprimés :
    ancien système d'upload texture (vers localStorage) remplacé par
    ouvrirOverlayTexture + uploaderTextureConfirmee (vers GitHub) dans
@@ -220,11 +210,6 @@ function initSwatches() {
     setEpaisseurCadres(parseInt(this.value));
   });
 
-  $('btn-annuler-preset-charger').addEventListener('click', function() { $('overlay-preset-charger').classList.remove('ouvert'); });
-  $('overlay-preset-charger').addEventListener('click', function(e) { if(e.target===$('overlay-preset-charger')) $('overlay-preset-charger').classList.remove('ouvert'); });
-  $('btn-confirmer-preset').addEventListener('click', confirmerPreset);
-  $('inp-preset-nom').addEventListener('keydown', function(e) { if(e.key==='Enter') confirmerPreset(); });
-  $('overlay-preset').addEventListener('click', function(e) { if(e.target===$('overlay-preset')) $('overlay-preset').classList.remove('ouvert'); });
   afficherTexturesCustom();
 }
 
