@@ -5,6 +5,7 @@
 /* Pages sculpture : pas de scroll. Le body remplit le viewport et la galerie
    prend l'espace restant après header/footer (et non une hauteur fixe qui
    s'ajoute à eux). Posé via .page-sculpture (JS) — vaut pour toutes les tailles. */
+html:has(body.page-sculpture), html.html-sculpture { height: 100dvh !important; overflow: hidden !important; }
 body.page-sculpture { height: 100dvh !important; min-height: 0 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
 body.page-sculpture .galerie-principale { flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important; }
 body.page-sculpture .pied { display: none !important; }

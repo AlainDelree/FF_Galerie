@@ -488,6 +488,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
 
   salleDiv.classList.add('salle-sculpture');
   document.body.classList.add('page-sculpture');
+  document.documentElement.classList.add('html-sculpture');
   /* DIAG TEMP — mesure du débordement */
   setTimeout(function() {
     var d = document.getElementById('_hdbg') || (function(){
