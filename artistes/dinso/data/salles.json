@@ -112,19 +112,6 @@
       "positions_mobile": []
     },
     {
-      "id": 6,
-      "nom": "Salle F",
-      "type": "sculpture",
-      "couleur_mur": "#9a7858",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "parquet",
-      "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": []
-    },
-    {
       "id": 2,
       "nom": "Salle B",
       "type": "sculpture",
