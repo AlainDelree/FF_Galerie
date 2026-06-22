@@ -93,6 +93,7 @@ var FACETTES_META = {
         ifr.tabIndex = -1;
         (function(iframe) {
           function onMsg(e) {
+            if (!iframe.contentWindow || e.source !== iframe.contentWindow) return;
             if (e.data && e.data.type === 'descriptive-awaiting-data') {
               iframe.contentWindow.postMessage({ type: 'descriptive-init', piece: piece, decor: decor }, '*');
               window.removeEventListener('message', onMsg);
@@ -360,6 +361,7 @@ function _creerCarteGreffon(greffon, salle) {
       var piece = (typeof toiles !== 'undefined')
         ? (toiles.find(function(t) { return t.glb; }) || toiles[0] || {}) : {};
       function onMsg(e) {
+        if (!iframe.contentWindow || e.source !== iframe.contentWindow) return;
         if (e.data && e.data.type === 'immersive-awaiting-data') {
           iframe.contentWindow.postMessage({ type: 'immersive-init', piece: piece, decor: decorSalle }, '*');
           window.removeEventListener('message', onMsg);
@@ -610,6 +612,7 @@ function ouvrirEditeurImmersif(salle) {
 
   /* Injecter les données quand l'iframe est prête */
   function onMsg(e) {
+    if (!iframe.contentWindow || e.source !== iframe.contentWindow) return;
     if (e.data && e.data.type === 'immersive-awaiting-data') {
       iframe.contentWindow.postMessage({ type: 'immersive-init', piece: piece, decor: decor }, '*');
     }
@@ -839,6 +842,7 @@ function ouvrirEditeurDescriptif(salle) {
 
   (function(ifr) {
     function onMsg(e) {
+      if (!ifr.contentWindow || e.source !== ifr.contentWindow) return;
       if (e.data && e.data.type === 'descriptive-awaiting-data') {
         ifr.contentWindow.postMessage({ type: 'descriptive-init', piece: aperçuPiece || {}, decor: decor }, '*');
         window.removeEventListener('message', onMsg);
