@@ -409,9 +409,13 @@ function _toggleGreffon(greffon) {
   var g = salleActive.greffons;
   if (!g[greffon]) g[greffon] = { actif: false };
   g[greffon].actif = !g[greffon].actif;
+  var etat = g[greffon].actif ? 'activé' : 'désactivé';
   _renderTDB();
-  /* Note : la sauvegarde est déclenchée via le bouton 💾 de l'en-tête salle
-     (à implémenter dans la prochaine itération). */
+  /* Sauvegarder immédiatement */
+  if (typeof sauvegarder === 'function') {
+    sauvegarder('[admin] Greffon ' + greffon + ' ' + etat + ' — ' + (salleActive.nom || 'salle'), null)
+      .catch(function(e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+  }
 }
 
 /* ── Entrer dans l'éditeur d'une vue (ouvre l'arranger directement) ── */
