@@ -415,9 +415,27 @@ function creerSocle(piece, gabarit, pos, opts) {
   socle.style.width = socleW + 'px';
   if (hasGlb) { socle.tabIndex = 0; socle.style.cursor = 'pointer'; }
 
-  /* Aperçu visuel sur le socle */
-  if (hasGlb) {
-    /* Mini model-viewer — rendu 3D statique du GLB */
+  /* Aperçu visuel sur le socle — photo (thumbnail) prioritaire car centrée
+     proprement ; le model-viewer 3D ne sert que si pas de photo. */
+  if (piece.photo) {
+    const img = document.createElement('img');
+    img.className = 'socle-photo';
+    img.alt = piece.titre || ''; img.loading = 'lazy'; img.decoding = 'async';
+    img.style.height = photoH + 'px';
+    img.style.width = 'auto';
+    img.style.maxWidth = '100%';
+    img.style.objectFit = 'contain';
+    img.style.position = 'relative';
+    img.style.zIndex = '5';
+    const src = /^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
+    img.onerror = function() {
+      if (!this._fb) { this._fb = true; this.loading = 'lazy'; this.src = src; }
+      else { this.style.display = 'none'; }
+    };
+    img.src = src;
+    socle.appendChild(img);
+  } else if (hasGlb) {
+    /* Pas de photo → fallback model-viewer 3D */
     chargerModelViewer();
     const mv = document.createElement('model-viewer');
     const mvSrc = /^https?:\/\//.test(piece.glb) ? piece.glb : GALERIE_CFG.assetsBase + piece.glb;
@@ -431,21 +449,6 @@ function creerSocle(piece, gabarit, pos, opts) {
       'width:100%;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
       '--poster-color:transparent;background:transparent;';
     socle.appendChild(mv);
-  } else if (piece.photo) {
-    const img = document.createElement('img');
-    img.className = 'socle-photo';
-    img.alt = piece.titre || ''; img.loading = 'lazy'; img.decoding = 'async';
-    img.style.height = photoH + 'px';
-    img.style.objectFit = 'contain';
-    img.style.position = 'relative';
-    img.style.zIndex = '5';
-    const src = /^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
-    img.onerror = function() {
-      if (!this._fb) { this._fb = true; this.loading = 'lazy'; this.src = src; }
-      else { this.style.display = 'none'; }
-    };
-    img.src = src;
-    socle.appendChild(img);
   } else {
     const ph = document.createElement('div');
     ph.className = 'socle-placeholder';
