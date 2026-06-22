@@ -165,8 +165,11 @@ function creerSwatchGH(chemin, url, suppressible) {
     del.className = 'tex-del-btn';
     del.style.cssText = 'position:absolute;top:1px;right:1px;width:13px;height:13px;'
       + 'border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:8px;'
-      + 'cursor:pointer;line-height:13px;padding:0;z-index:2;display:none;'
-      + 'align-items:center;justify-content:center;';
+      + 'cursor:pointer;line-height:13px;padding:0;z-index:2;opacity:0;'
+      + 'transition:opacity .15s;'
+      + 'display:flex;align-items:center;justify-content:center;';
+    sw.addEventListener('mouseenter', function(){ del.style.opacity = '1'; });
+    sw.addEventListener('mouseleave', function(){ del.style.opacity = '0'; });
     del.title = 'Supprimer';
     del.addEventListener('click', async function(e) {
       e.stopPropagation();
