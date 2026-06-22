@@ -256,6 +256,17 @@ const SUPPORT_CYL_SHADE =
   ' rgba(255,255,255,.12) 55%, rgba(0,0,0,.04) 80%, rgba(0,0,0,.18) 100%)';
 
 /* Construit le background CSS cumulé : texture (gradients) + ombrage + couleur */
+/* Éclaircit (f>0) ou assombrit (f<0) une couleur hex de facteur f ∈ [-1,1] */
+function _teinte(hex, f) {
+  hex = (hex || '#eae6de').replace('#', '');
+  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  var r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+  if (f >= 0) { r += (255-r)*f; g += (255-g)*f; b += (255-b)*f; }
+  else        { r *= (1+f);     g *= (1+f);     b *= (1+f); }
+  var h = function(v){ return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2); };
+  return '#' + h(r) + h(g) + h(b);
+}
+
 function supportBgCSS(support, withShade) {
   var coul = (support && support.couleur) || '#eae6de';
   var tex  = (support && support.texture) || 'marbre';
@@ -275,7 +286,14 @@ const SUPPORT_RENDERERS = {
     var ped = document.createElement('div');
     ped.className = 'socle-piedestal socle-piedestal--' + gCode;
     ped.style.background = supportBgCSS(support, true);
-    ped.style.backgroundColor = (support && support.couleur) || '#eae6de';
+    var coul = (support && support.couleur) || '#eae6de';
+    ped.style.backgroundColor = coul;
+    /* Plateau (plus clair) et base (plus sombre) dérivés de la couleur */
+    ped.style.setProperty('--socle-top-1', _teinte(coul, 0.22));
+    ped.style.setProperty('--socle-top-2', _teinte(coul, 0.10));
+    ped.style.setProperty('--socle-top-3', _teinte(coul, -0.04));
+    ped.style.setProperty('--socle-bot-1', _teinte(coul, -0.08));
+    ped.style.setProperty('--socle-bot-2', _teinte(coul, -0.18));
     if (gCode !== 'sol') {
       ped.style.height = Math.min(200, Math.round(photoH * 0.7)) + 'px';
     }

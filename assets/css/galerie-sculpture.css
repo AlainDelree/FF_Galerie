@@ -108,7 +108,7 @@
   content: '';
   position: absolute;
   top: -6px; left: -8%; width: 116%; height: 12px;
-  background: radial-gradient(ellipse at 42% 40%, #f8f6f2 0%, #ece8e0 55%, #d8d2c8 100%);
+  background: radial-gradient(ellipse at 42% 40%, var(--socle-top-1, #f8f6f2) 0%, var(--socle-top-2, #ece8e0) 55%, var(--socle-top-3, #d8d2c8) 100%);
   border-radius: 50%;
   box-shadow: 0 1px 4px rgba(0,0,0,.12);
   z-index: 2;
@@ -119,7 +119,7 @@
   content: '';
   position: absolute;
   bottom: -4px; left: -6%; width: 112%; height: 8px;
-  background: radial-gradient(ellipse at 42% 30%, #ddd8d0 0%, #c8c2b8 100%);
+  background: radial-gradient(ellipse at 42% 30%, var(--socle-bot-1, #ddd8d0) 0%, var(--socle-bot-2, #c8c2b8) 100%);
   border-radius: 50%;
   clip-path: polygon(0% 40%, 100% 40%, 100% 100%, 0% 100%);
   z-index: 2;
