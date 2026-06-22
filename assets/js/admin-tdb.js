@@ -265,7 +265,6 @@ function _creerCarteVue(facette, salle, lbl) {
     }
 
     var iframe = document.createElement('iframe');
-    iframe.src = apercuPath + '?vue=' + meta.vue + '&v=' + Date.now();
     iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
     iframe.tabIndex = -1;
     iframe.setAttribute('loading', 'lazy');
@@ -282,15 +281,26 @@ function _creerCarteVue(facette, salle, lbl) {
           : { next_id: nextId, tailles:  tailles, toiles: toiles },
         salles: { salles: [salleSeule] }
       };
+      function envoyer() {
+        if (ifr.contentWindow) {
+          try { ifr.contentWindow.postMessage(injectData, '*'); } catch(e) {}
+        }
+      }
       function onMsg(e) {
-        if (e.source === ifr.contentWindow && e.data && e.data.type === 'iframe-awaiting-data') {
-          ifr.contentWindow.postMessage(injectData, '*');
+        if (!ifr.contentWindow || e.source !== ifr.contentWindow) return;
+        if (e.data && e.data.type === 'iframe-awaiting-data') {
+          envoyer();
           window.removeEventListener('message', onMsg);
         }
       }
       window.addEventListener('message', onMsg);
+      /* Filet de sécurité : si le awaiting-data est arrivé avant l'attache du listener
+         (course condition), l'onload re-envoie les données. L'aperçu accepte init-data
+         tant qu'il n'a pas démarré, et son timer 800ms sera annulé par notre message. */
+      ifr.addEventListener('load', envoyer);
     })(iframe);
 
+    iframe.src = apercuPath + '?vue=' + meta.vue + '&v=' + Date.now();
     wrap.appendChild(iframe);
     preview.appendChild(wrap);
   }
