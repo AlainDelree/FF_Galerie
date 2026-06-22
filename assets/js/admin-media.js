@@ -210,11 +210,14 @@ function genererThumbnailGLB(blobUrl) {
     loadModelViewerAdmin().then(() => {
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', blobUrl);
-      mv.setAttribute('auto-rotate', '');
       mv.setAttribute('camera-controls', '');
       mv.setAttribute('interaction-prompt', 'none');
-      /* Visible mais transparent — le navigateur skip le WebGL off-screen */
-      mv.style.cssText = 'width:512px;height:512px;position:fixed;left:0;top:0;opacity:0.01;pointer-events:none;z-index:-1;';
+      /* Même cadrage que la galerie pour un thumbnail cohérent */
+      mv.setAttribute('camera-orbit', '25deg 70deg auto');
+      mv.setAttribute('field-of-view', '36deg');
+      mv.setAttribute('shadow-intensity', '0');
+      /* Fond transparent (PNG) */
+      mv.style.cssText = 'width:512px;height:512px;position:fixed;left:0;top:0;opacity:0.01;pointer-events:none;z-index:-1;--poster-color:transparent;background:transparent;';
       document.body.appendChild(mv);
 
       const timeout = setTimeout(() => {
@@ -229,7 +232,7 @@ function genererThumbnailGLB(blobUrl) {
         /* Petit délai pour laisser le rendu se stabiliser */
         setTimeout(async () => {
           try {
-            const blob = await mv.toBlob({ mimeType: 'image/jpeg', qualityArgument: 0.85 });
+            const blob = await mv.toBlob({ mimeType: 'image/png' });
             clearTimeout(timeout);
             document.body.removeChild(mv);
             /* Convertir en base64 */
@@ -298,7 +301,8 @@ function genererThumbnailGLB(blobUrl) {
     try {
       var result = await genererThumbnailGLB(blobUrl);
       photoB64 = result.b64;
-      $('photo-prev').src = 'data:image/jpeg;base64,' + result.b64;
+      window.photoEstPng = true; /* thumbnail GLB = PNG transparent */
+      $('photo-prev').src = 'data:image/png;base64,' + result.b64;
       $('photo-prev').style.display = 'block';
       $('photo-ph').style.display = 'none';
       $('btn-recadrer-photo').classList.add('visible');
@@ -351,6 +355,7 @@ function genererThumbnailGLB(blobUrl) {
       var btnChg = document.getElementById('btn-change-photo-sculpt');
       if (btnChg) btnChg.style.display = 'none';
       photoB64 = null;
+      window.photoEstPng = false;
     });
   }
 

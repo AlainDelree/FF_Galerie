@@ -443,19 +443,16 @@ async function _commitMultiImpl(fichiers, message) {
   }
 }
 
-async function uploaderPhoto(id, b64) {
+async function uploaderPhoto(id, b64, ext) {
   /* Dossier propre à chaque artiste, relatif à la racine du repo.
      Frédérique : assets/images/toiles/
      Alain      : artistes/alaindelree/assets/images/toiles/
-     Le chemin stocké dans toiles.json est TOUJOURS assets/images/toiles/toile-NNN.jpg
-     (relatif à la galerie.html de l'artiste) */
-  /* chemin GitHub (upload) = chemin stocké dans toiles.json
-     = chemin visible depuis la racine du repo
-     Fred  : assets/images/toiles/toile-NNN.jpg
-     Alain : artistes/alaindelree/assets/images/toiles/toile-NNN.jpg */
+     Le chemin stocké dans toiles.json est relatif à la galerie.html de l'artiste.
+     ext optionnel ('png' pour thumbnails 3D transparents, défaut 'jpg'). */
+  ext = ext || 'jpg';
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
   const prefix = (ADMIN_CFG.type === 'sculpture') ? 'piece' : 'toile';
-  const chemin = base + `${prefix}-${String(id).padStart(3, '0')}.jpg`;
+  const chemin = base + `${prefix}-${String(id).padStart(3, '0')}.${ext}`;
   const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
   try { const r = await apiGH(`/repos/${REPO}/contents/${chemin}?ref=${BRANCH}`); sha = r.sha; } catch (_) {}

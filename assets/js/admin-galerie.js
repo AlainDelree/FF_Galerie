@@ -789,7 +789,7 @@ function initTailleForm() {
 }
 
 function ouvrirFormulaireNouvel() {
-  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null;
+  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   $('modal-toile-tit').textContent = _isSculpt ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
@@ -816,7 +816,7 @@ function construirePillsSalle(salleSelId) {
 function ouvrirFormulaireEdition(id) {
   const t = toiles.find(x => x.id === id);
   if (!t) return;
-  toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null;
+  toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
@@ -1064,12 +1064,14 @@ async function sauverToile() {
   try {
     if (toileEnEdition === null) {
       const id = prochainId();
+      var _ext = window.photoEstPng ? 'png' : 'jpg';
+      var _mime = window.photoEstPng ? 'image/png' : 'image/jpeg';
       let photo = '';
-      if (photoB64) photo = await uploaderPhoto(id, photoB64);
+      if (photoB64) photo = await uploaderPhoto(id, photoB64, _ext);
       let glb = donnees.glb || '';
       if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
       const t = { id, photo, source_photo: 'admin', ...donnees, glb };
-      if (photoB64) t._preview = 'data:image/jpeg;base64,' + photoB64; // aperçu immédiat avant propagation CDN
+      if (photoB64) t._preview = 'data:' + _mime + ';base64,' + photoB64; // aperçu immédiat avant propagation CDN
       toiles.push(t);
       if (salleCibleToile) {
         const s = salles.find(x => x.id === salleCibleToile);
@@ -1079,8 +1081,9 @@ async function sauverToile() {
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
+      var _extE = window.photoEstPng ? 'png' : 'jpg';
       let photo = toiles[idx].photo;
-      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64);
+      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE);
       let glb = donnees.glb || toiles[idx].glb || '';
       if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64); }
       // Protection dimensions : si les cases changent, retirer du mur
