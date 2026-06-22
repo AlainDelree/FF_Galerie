@@ -114,107 +114,70 @@
       <div class="mur-ctrl">
         <button id="btn-retour-tdb" onclick="retourTableauBord()">← Salles</button>
         <span class="salle-badge" id="badge-salle">—</span>
-        <button class="ctrl-btn" id="btn-coul-toggle">🎨 Couleurs/Textures</button>
-        <button class="ctrl-btn" id="btn-musique-toggle">🎵 Musique</button>
-        <button class="ctrl-btn ctrl-btn-danger" id="btn-vider-salles" title="Retirer les toiles d'une ou plusieurs salles">🧹 Vider</button>
+        <div class="apparence-bar" id="apparence-bar">
+          <button class="ico-btn" id="btn-pop-mur" title="Couleur du mur" type="button">🎨</button>
+          <button class="ico-btn peinture-only" id="btn-pop-cadres" title="Couleur des cadres" type="button">🖼</button>
+          <button class="ico-btn peinture-only" id="btn-pop-epaisseur" title="Épaisseur des cadres" type="button">📏</button>
+          <button class="ico-btn peinture-only" id="btn-pop-texture" title="Texture du mur" type="button">🧵</button>
+          <button class="ico-btn sculpture-only" id="btn-pop-revetement" title="Revêtement du sol" type="button">🪨</button>
+          <button class="ico-btn" id="btn-pop-musique" title="Musique de la galerie" type="button">🎵</button>
+          <button class="ico-btn ico-btn-danger" id="btn-vider-salles" title="Vider une ou plusieurs salles" type="button">🧹</button>
+        </div>
         <div class="rename-wrap">
           <input class="rename-inp" type="text" id="inp-rename" placeholder="Nouveau nom…">
           <button class="ok-btn" id="btn-rename">OK</button>
         </div>
       </div>
 
-      <!-- Panneau couleurs (caché par défaut) -->
-      <div class="coul-overlay" id="coul-overlay"></div>
-<div class="coul-panel" id="coul-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
-          <span class="coul-titre">Apparence de la salle</span>
-
-        </div>
-        <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .3rem;flex-shrink:0;"></div>
-        <div class="coul-row">
-          <span class="coul-lbl" id="lbl-couleur-surface">Mur</span>
-          <div class="swatches" id="sw-mur">
-            <div class="sw sel" style="background:#2e2e2e" data-val="#2e2e2e"></div>
-            <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
-            <div class="sw" style="background:#2a2420" data-val="#2a2420"></div>
-            <div class="sw" style="background:#2c2535" data-val="#2c2535"></div>
-            <div class="sw" style="background:#1e3a2a" data-val="#1e3a2a"></div>
-            <div class="sw" style="background:#3a2a1e" data-val="#3a2a1e"></div>
-            <div class="sw" style="background:#e8e4dc" data-val="#e8e4dc"></div>
-            <div class="sw" style="background:#f5f5f5" data-val="#f5f5f5"></div>
-            <div class="sw" style="background:#8a6228" data-val="#8a6228"></div>
-            <button class="sw-plus" type="button" id="btn-picker-mur" title="Plus de couleurs…">+</button>
-          </div>
-        </div>
-        <div class="coul-row peinture-only">
-          <span class="coul-lbl">Cadres</span>
-          <div class="swatches" id="sw-cadres">
-            <div class="sw sel" style="background:#3a3a3a" data-val="#3a3a3a"></div>
-            <div class="sw" style="background:#c8a050" data-val="#c8a050"></div>
-            <div class="sw" style="background:#f0f0f0" data-val="#f0f0f0"></div>
-            <div class="sw" style="background:#1c1c1c" data-val="#1c1c1c"></div>
-            <div class="sw" style="background:#5c3d2e" data-val="#5c3d2e"></div>
-            <button class="sw-plus" type="button" id="btn-picker-cad" title="Plus de couleurs…">+</button>
-          </div>
-        </div>
-        <div class="coul-row peinture-only">
-          <span class="coul-lbl">Épaisseur</span>
-          <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
-            <input type="range" id="ep-cadres" min="2" max="20" step="2" value="2" style="flex:1;accent-color:var(--gold);">
-            <span id="ep-cadres-val" style="font-size:.75rem;color:var(--muted);min-width:2.2rem;text-align:right;">2px</span>
-          </div>
-        </div>
-        <div class="coul-row peinture-only">
-          <span class="coul-lbl">Texture</span>
-          <div class="swatches" id="sw-texture">
-            <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
-            <div class="sw" style="background:repeating-linear-gradient(#555 0,#555 1px,#444 0,#444 3px);" data-val="bois" title="Bois clair"></div>
-            <div class="sw" style="background:repeating-linear-gradient(90deg,#4a3828 0,#4a3828 2px,#3a2818 0,#3a2818 8px);" data-val="parquet" title="Parquet"></div>
-            <div class="sw" style="background:repeating-linear-gradient(135deg,#555 0,#555 1px,#444 0,#444 6px);" data-val="pierre" title="Pierre"></div>
-            <div class="sw" style="background:repeating-conic-gradient(#555 0% 25%,#444 0% 50%) 0 0/6px 6px;" data-val="damier" title="Damier"></div>
-            <div class="sw" style="background:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%23444%22/%3E%3Crect x=%220%22 y=%220%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3Crect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3C/svg%3E') 0 0/8px 8px;" data-val="brique" title="Béton/Brique"></div>
-            <label class="sw-plus" for="inp-texture-custom" title="Uploader une texture" style="cursor:pointer;">
-              <input type="file" id="inp-texture-custom" accept="image/*" style="display:none;">
-              <span style="pointer-events:none;font-size:13px;">+</span>
-            </label>
-          </div>
-          <div id="textures-custom" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;"></div>
-          <div id="tex-gh-prive-wrap" style="display:none;margin-top:4px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;"><span style="font-size:.62rem;color:var(--muted);letter-spacing:.08em;">MES TEXTURES</span><button id="btn-tex-del-toggle" onclick="toggleModeSupprTexture()" title="Mode suppression" style="background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);padding:0;line-height:1;">🗑</button></div>
-            <div id="textures-gh-prive" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
-          </div>
-          <div id="tex-gh-partage-wrap" style="display:none;margin-top:4px;">
-            <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;letter-spacing:.08em;">PARTAGÉES</div>
-            <div id="textures-gh-partage" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
-          </div>
-        </div>
-        <!-- Revêtement sol (sculpture uniquement) -->
-        <div class="coul-row sculpture-only" style="display:none;">
-          <span class="coul-lbl">Revêtement</span>
-          <div class="swatches" id="sw-revetement">
-            <div class="sw sel" style="background:repeating-linear-gradient(#8a6228 0,#8a6228 8px,#7a5520 8px,#7a5520 9px);" data-val="parquet" title="Parquet"></div>
-            <div class="sw" style="background:repeating-conic-gradient(#8a8a8a 0% 25%,#9a9a9a 0% 50%) 0 0/12px 12px;" data-val="carrelage" title="Carrelage"></div>
-            <div class="sw" style="background:#8a6228;" data-val="none" title="Uni"></div>
-          </div>
-        </div>
-        <div class="coul-actions">
-          <button class="ctrl-btn" id="btn-preset-sauver" style="font-size:11px;">⊙ Sauver preset</button>
-          <button class="ctrl-btn" id="btn-preset-charger" style="font-size:11px;">▾ Preset…</button>
-        </div>
-        <div style="display:flex;gap:.5rem;margin-top:.4rem;padding-top:.5rem;border-top:1px solid var(--brd);flex-shrink:0;">
-          <button class="btn btn-outline btn-sm" id="btn-annuler-coul" style="flex:1;">Annuler</button>
-          <button class="btn btn-or btn-sm" id="btn-sauver-coul" style="flex:2;">💾 Sauvegarder</button>
+      <!-- Popovers apparence -->
+      <div class="popover" id="pop-mur">
+        <div class="pop-titre">Couleur du mur</div>
+        <div class="swatches" id="sw-mur">
+          <button class="sw-plus" type="button" id="btn-picker-mur" title="Plus de couleurs…">+</button>
         </div>
       </div>
 
-      <!-- Panneau musique (caché par défaut) -->
-      <div class="coul-overlay" id="musique-overlay"></div>
-      <div class="coul-panel" id="musique-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
-          <span class="coul-titre">Musique de la galerie</span>
-          <button id="btn-close-musique" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+      <div class="popover" id="pop-cadres">
+        <div class="pop-titre">Couleur des cadres</div>
+        <div class="swatches" id="sw-cadres">
+          <button class="sw-plus" type="button" id="btn-picker-cad" title="Plus de couleurs…">+</button>
         </div>
-        <div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:-0.5rem auto .5rem;flex-shrink:0;"></div>
+      </div>
+
+      <div class="popover" id="pop-epaisseur">
+        <div class="pop-titre">Épaisseur des cadres</div>
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.2rem 0;">
+          <input type="range" id="ep-cadres" min="2" max="20" step="2" value="2" style="flex:1;accent-color:var(--gold);">
+          <span id="ep-cadres-val" style="font-size:.75rem;color:var(--muted);min-width:2.4rem;text-align:right;">2px</span>
+        </div>
+      </div>
+
+      <div class="popover" id="pop-texture">
+        <div class="pop-titre">Texture du mur</div>
+        <div class="swatches" id="sw-texture">
+          <div class="sw" style="background:#2e2e2e;" data-val="none" title="Uni"></div>
+          <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
+          <div class="sw" style="background:repeating-linear-gradient(#555 0,#555 1px,#444 0,#444 3px);" data-val="bois" title="Bois clair"></div>
+          <div class="sw" style="background:repeating-linear-gradient(90deg,#4a3828 0,#4a3828 2px,#3a2818 0,#3a2818 8px);" data-val="parquet" title="Parquet"></div>
+          <div class="sw" style="background:repeating-linear-gradient(135deg,#555 0,#555 1px,#444 0,#444 6px);" data-val="pierre" title="Pierre"></div>
+          <div class="sw" style="background:repeating-conic-gradient(#555 0% 25%,#444 0% 50%) 0 0/6px 6px;" data-val="damier" title="Damier"></div>
+          <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="velours" title="Velours"></div>
+          <div class="sw" style="background:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%23444%22/%3E%3Crect x=%220%22 y=%220%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3Crect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23484848%22/%3E%3C/svg%3E') 0 0/8px 8px;" data-val="brique" title="Béton/Brique"></div>
+        </div>
+      </div>
+
+      <div class="popover" id="pop-revetement">
+        <div class="pop-titre">Revêtement du sol</div>
+        <div class="swatches" id="sw-revetement">
+          <div class="sw sel" style="background:repeating-linear-gradient(#8a6228 0,#8a6228 8px,#7a5520 8px,#7a5520 9px);" data-val="parquet" title="Parquet"></div>
+          <div class="sw" style="background:repeating-conic-gradient(#8a8a8a 0% 25%,#9a9a9a 0% 50%) 0 0/12px 12px;" data-val="carrelage" title="Carrelage"></div>
+          <div class="sw" style="background:#8a6228;" data-val="none" title="Uni"></div>
+        </div>
+      </div>
+
+      <!-- Popover musique -->
+      <div class="popover" id="pop-musique">
+        <div class="pop-titre">Musique de la galerie</div>
         <div class="coul-row">
           <span class="coul-lbl">Fichier</span>
           <span id="musique-nom" style="font-size:.72rem;color:var(--text-doux);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="">Aucune</span>
