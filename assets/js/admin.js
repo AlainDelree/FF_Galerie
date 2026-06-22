@@ -66,7 +66,6 @@ const K = {
   pw:       ADMIN_CFG.prefix + '_pw_hash',
   auth:     ADMIN_CFG.prefix + '_auth',
   token:    'ff_gh_token',          /* token partagé — même repo */
-  presets:  ADMIN_CFG.prefix + '_presets',
   textures: ADMIN_CFG.prefix + '_textures_custom',
   mur_hist: ADMIN_CFG.prefix + '_mur_hist',
   cad_hist: ADMIN_CFG.prefix + '_cad_hist'
