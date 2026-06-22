@@ -13,7 +13,8 @@
       "toiles": [
         1,
         2,
-        3
+        3,
+        4
       ],
       "positions": [
         {
@@ -33,6 +34,12 @@
           "x": 88,
           "y": 31,
           "gabarit": "L"
+        },
+        {
+          "id": 4,
+          "x": 50,
+          "y": 77,
+          "gabarit": "S"
         }
       ],
       "positions_mobile": [],
