@@ -419,6 +419,12 @@ function ouvrirArrangerApresConfirm() {
   /* _placementVue est déjà positionné par entrerVue() selon la carte cliquée
      (pc ou gsm). Ne pas l'écraser ici. Défaut pc si non défini. */
   if (typeof _placementVue === 'undefined' || !_placementVue) _placementVue = 'pc';
+  /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC
+     (cohérent avec l'iframe) pour que le strip marque bien "sur le sol". */
+  if (_placementVue === 'gsm' && salleActive
+      && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
+    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+  }
   var _vueGsm = (_placementVue === 'gsm');
   var btnSw = document.getElementById('btn-switch-vue');
   if (btnSw) {
