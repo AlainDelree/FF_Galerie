@@ -1,5 +1,5 @@
 {
-  "next_id": 9,
+  "next_id": 10,
   "gabarits": [
     {
       "code": "S",
@@ -174,6 +174,25 @@
       "visible": true,
       "socle": 46,
       "glb": "artistes/dinso/assets/models/piece-007.glb"
+    },
+    {
+      "id": 9,
+      "photo": "artistes/dinso/assets/images/toiles/piece-009.png",
+      "source_photo": "admin",
+      "titre": "Fleche",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 105,
+        "hauteur": 47,
+        "profondeur": 13
+      },
+      "visible": true,
+      "socle": 137,
+      "glb": "artistes/dinso/assets/models/piece-009.glb"
     }
   ]
 }
