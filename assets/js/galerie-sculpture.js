@@ -108,7 +108,7 @@ function _appliquerBandesObservation(chambre, decor) {
   }
 }
 
-function ouvrirSalleObservation(piece, decor, avecPorteImmersive) {
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   /* Éviter les doublons */
   if (document.querySelector('.obs-overlay')) return;
 
@@ -197,7 +197,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive) {
       document.body.appendChild(ecran);
       fermer();
       setTimeout(() => {
-        ouvrirSalleImmersive(piece, _immDecor);
+        ouvrirSalleImmersive(piece, immDecor, decor);
         setTimeout(() => ecran.remove(), 150);
       }, 350);
     });
@@ -223,7 +223,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive) {
       ecran.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
       document.body.appendChild(ecran);
       fermer();
-      setTimeout(() => { ouvrirSalleImmersive(piece, _immDecor); setTimeout(() => ecran.remove(), 150); }, 350);
+      setTimeout(() => { ouvrirSalleImmersive(piece, immDecor, decor); setTimeout(() => ecran.remove(), 150); }, 350);
     });
     overlay.appendChild(plaqueG);
   }
@@ -502,9 +502,9 @@ function creerSocle(piece, gabarit, pos, opts) {
       && (_immActif || _descActif)) {
     const ouvrir = () => {
       if (_immActif && typeof ouvrirSalleImmersive === 'function') {
-        ouvrirSalleImmersive(piece, _immDecor);
+        ouvrirSalleImmersive(piece, _immDecor, _descDecor);
       } else if (_descActif && typeof ouvrirSalleObservation === 'function') {
-        ouvrirSalleObservation(piece, _descDecor, _immActif);
+        ouvrirSalleObservation(piece, _descDecor, _immActif, _immDecor);
       }
     };
     socle.style.cursor = 'pointer';

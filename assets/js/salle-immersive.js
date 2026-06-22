@@ -53,7 +53,7 @@ var DECOR_IMMERSIVE_DEFAUT = {
   corde:  '#8b0020'
 };
 
-async function ouvrirSalleImmersive(piece, decor) {
+async function ouvrirSalleImmersive(piece, decor, descDecor) {
   if (document.querySelector('.imm-overlay')) return;
   await chargerThreeJS();
 
@@ -134,7 +134,7 @@ async function ouvrirSalleImmersive(piece, decor) {
     document.body.appendChild(ecran);
     fermer();
     setTimeout(() => {
-      if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece);
+      if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece, descDecor, true);
       setTimeout(() => ecran.remove(), 150);
     }, 350);
   });
@@ -156,7 +156,7 @@ async function ouvrirSalleImmersive(piece, decor) {
     document.body.appendChild(ecran);
     fermer();
     setTimeout(() => {
-      if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece);
+      if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(piece, descDecor, true);
       setTimeout(() => ecran.remove(), 150);
     }, 350);
   });
