@@ -1283,21 +1283,26 @@ function afficherSolPlacement() {
 
   const isGsm = _placementVue === 'gsm';
 
-  /* Remplir tout l'espace disponible, en respectant le ratio cible.
-     L'aspect-ratio + max-width/max-height laisse le navigateur choisir la
-     dimension limitante (largeur ou hauteur) pour ne jamais déformer. */
+  /* Dimensions calculées en JS pour garantir le ratio (PC 16:9, GSM 9:19).
+     On part de l'espace dispo et on choisit la dimension limitante. */
   var zoneRect = container.parentElement.getBoundingClientRect();
-  var availH = zoneRect.height - 30; /* marge pour pl-aide */
-  container.style.cssText =
-    'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;';
+  var availH = Math.max(200, zoneRect.height - 30);
+  var availW = Math.max(200, zoneRect.width - 10);
+  var ratio = isGsm ? (9 / 19) : (16 / 9); /* largeur / hauteur */
+  /* Essayer de remplir la hauteur, sinon limiter par la largeur */
+  var wrapH = availH;
+  var wrapW = wrapH * ratio;
+  if (wrapW > availW) { wrapW = availW; wrapH = wrapW / ratio; }
 
-  /* Wrapper iframe — ratio fixe (PC 16:9, GSM 9:19), contenu dans la zone.
-     width/height 100% donne la dimension de base ; max-* + aspect-ratio
-     contraignent l'autre dimension sans déformer. */
+  container.style.cssText =
+    'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;width:100%;';
+
+  /* Wrapper iframe — dimensions fixes calculées */
   const iframeWrap = document.createElement('div');
-  iframeWrap.style.cssText = isGsm
-    ? 'height:100%;width:auto;aspect-ratio:9/19;max-width:100%;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
-    : 'width:100%;height:auto;aspect-ratio:16/9;max-height:100%;border-radius:6px;overflow:hidden;position:relative;';
+  iframeWrap.style.cssText =
+    'width:' + Math.round(wrapW) + 'px;height:' + Math.round(wrapH) + 'px;' +
+    'border-radius:' + (isGsm ? '12px' : '6px') + ';overflow:hidden;position:relative;' +
+    (isGsm ? 'border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);' : '');
 
   /* Label mode */
   if (isGsm) {
