@@ -95,7 +95,7 @@
     },
     {
       "id": 4,
-      "photo": "",
+      "photo": "artistes/dinso/assets/images/toiles/piece-004.png",
       "source_photo": "admin",
       "titre": "Rose",
       "date": "",
@@ -108,7 +108,7 @@
         "hauteur": 15,
         "profondeur": 8
       },
-      "visible": false,
+      "visible": true,
       "socle": 15,
       "glb": "artistes/dinso/assets/models/piece-004.glb",
       "support": {
