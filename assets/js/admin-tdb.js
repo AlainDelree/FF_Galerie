@@ -324,7 +324,7 @@ function _creerConfigDecor(salle) {
     (function(k, p, lbl) {
       pastille.addEventListener('click', function() {
         if (typeof ouvrirPickerCouleur !== 'function') return;
-        window._supportPickerCouleur    = p.style.background || p.title;
+        window._supportPickerCouleur    = p.title || p.style.background;
         window._supportPickerOnConfirm  = function(hex) {
           p.style.background = hex;
           p.title = hex;
