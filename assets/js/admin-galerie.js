@@ -1291,11 +1291,13 @@ function afficherSolPlacement() {
   container.style.cssText =
     'display:flex;align-items:center;justify-content:center;height:' + availH + 'px;';
 
-  /* Wrapper iframe — ratio fixe (PC 16:9, GSM 9:19), contenu dans la zone */
+  /* Wrapper iframe — ratio fixe (PC 16:9, GSM 9:19), contenu dans la zone.
+     width/height 100% donne la dimension de base ; max-* + aspect-ratio
+     contraignent l'autre dimension sans déformer. */
   const iframeWrap = document.createElement('div');
   iframeWrap.style.cssText = isGsm
-    ? 'aspect-ratio:9/19;max-height:100%;max-width:100%;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
-    : 'aspect-ratio:16/9;max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;position:relative;';
+    ? 'height:100%;width:auto;aspect-ratio:9/19;max-width:100%;border-radius:12px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);position:relative;'
+    : 'width:100%;height:auto;aspect-ratio:16/9;max-height:100%;border-radius:6px;overflow:hidden;position:relative;';
 
   /* Label mode */
   if (isGsm) {
