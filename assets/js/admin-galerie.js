@@ -1367,7 +1367,7 @@ function afficherSolPlacement() {
           toiles: ADMIN_CFG.type === 'sculpture'
             ? { next_id: nextId, gabarits: tailles, pieces: toiles }
             : { next_id: nextId, tailles: tailles, toiles: toiles },
-          salles: { salles: JSON.parse(JSON.stringify(salles)) }
+          salles: { salles: [JSON.parse(JSON.stringify(salleActive))] }
         }, '*');
       }
     }
@@ -1377,8 +1377,8 @@ function afficherSolPlacement() {
     }
 
     if (e.data.type === 'positions-updated') {
-      /* Mettre à jour les positions dans les données admin */
-      if (isGsm) {
+      /* Mettre à jour les positions dans les données admin (vue courante) */
+      if (_placementVue === 'gsm') {
         salleActive.positions_mobile = e.data.positions;
       } else {
         salleActive.positions = e.data.positions;
