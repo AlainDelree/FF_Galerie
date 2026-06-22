@@ -512,7 +512,7 @@ function ouvrirEditeurImmersif(salle) {
 
   var panTitre = document.createElement('div');
   panTitre.style.cssText = 'font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;';
-  panTitre.textContent = 'Décor — ' + (salle.nom || 'Salle');
+  panTitre.textContent = (salle.nom || 'Salle') + ' — Salle Immersive';
   panel.appendChild(panTitre);
 
   /* 5 lignes de couleur */
