@@ -145,10 +145,10 @@
             "sol": "#040404",
             "socle_couleur": "#f0ece4",
             "socle_use_piece": false,
-            "pan_a": "#7a2525",
-            "pan_b": "#1a3055",
-            "pan_c": "#2a5035",
-            "pan_d": "#a04820",
+            "pan_a": "#f0ece4",
+            "pan_b": "#f0ece4",
+            "pan_c": "#f0ece4",
+            "pan_d": "#f0ece4",
             "piquet": "#c8a050",
             "corde": "#8b0020"
           }
