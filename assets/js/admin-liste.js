@@ -165,7 +165,12 @@ function listeOeuvres(opts) {
     } else {
       var ph = document.createElement('span');
       ph.className = 'lo-thumb-ph';
-      ph.textContent = t.glb ? '3D' : '?';
+      ph.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+      ph.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.6;">' +
+        '<path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" stroke="#999" stroke-width="1.5" fill="none"/>' +
+        '<circle cx="12" cy="12.5" r="3.2" stroke="#999" stroke-width="1.5" fill="none"/>' +
+        '<line x1="3" y1="3" x2="21" y2="21" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/></svg>';
+      ph.title = 'Photo manquante';
       thumb.appendChild(ph);
     }
     item.appendChild(thumb);

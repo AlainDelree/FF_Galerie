@@ -51,6 +51,18 @@ function solBgCSS(texture, couleur) {
   return pat ? (pat + ',' + c) : c;
 }
 
+/* ── SVG "photo manquante" (appareil photo barré rouge) ── */
+function _svgPhotoManquante(size) {
+  size = size || 48;
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
+    'xmlns="http://www.w3.org/2000/svg" style="opacity:.55;">' +
+    '<path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" ' +
+      'stroke="#888" stroke-width="1.5" fill="rgba(0,0,0,.04)"/>' +
+    '<circle cx="12" cy="12.5" r="3.2" stroke="#888" stroke-width="1.5" fill="none"/>' +
+    '<line x1="3" y1="3" x2="21" y2="21" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>' +
+    '</svg>';
+}
+
 /* ── Chargement model-viewer (une seule fois, à la demande) ── */
 function chargerModelViewer() {
   const id = 'script-model-viewer';
@@ -436,25 +448,14 @@ function creerSocle(piece, gabarit, pos, opts) {
     };
     img.src = src;
     socle.appendChild(img);
-  } else if (hasGlb) {
-    /* Pas de photo → fallback model-viewer 3D */
-    chargerModelViewer();
-    const mv = document.createElement('model-viewer');
-    const mvSrc = /^https?:\/\//.test(piece.glb) ? piece.glb : GALERIE_CFG.assetsBase + piece.glb;
-    mv.setAttribute('src', mvSrc);
-    mv.setAttribute('alt', piece.titre || '');
-    mv.setAttribute('interaction-prompt', 'none');
-    mv.setAttribute('camera-orbit', '25deg 70deg auto');
-    mv.setAttribute('field-of-view', '36deg');
-    mv.setAttribute('shadow-intensity', '0.6');
-    mv.style.cssText =
-      'width:100%;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
-      '--poster-color:transparent;background:transparent;';
-    socle.appendChild(mv);
   } else {
+    /* Pas de photo (thumbnail manquant / génération échouée) → placeholder
+       "appareil photo barré". On n'utilise pas le model-viewer 3D ici car son
+       cadrage est décalé ; l'admin peut uploader une photo perso. */
     const ph = document.createElement('div');
-    ph.className = 'socle-placeholder';
-    ph.style.height = photoH + 'px';
+    ph.className = 'socle-placeholder socle-photo-manquante';
+    ph.style.cssText = 'height:' + photoH + 'px;width:' + Math.round(photoH * 0.8) + 'px;display:flex;align-items:center;justify-content:center;position:relative;z-index:5;';
+    ph.innerHTML = _svgPhotoManquante(Math.round(photoH * 0.5));
     socle.appendChild(ph);
   }
 

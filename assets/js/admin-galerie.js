@@ -1059,6 +1059,24 @@ function lireFormToile() {
 
 async function sauverToile() {
   const donnees = lireFormToile();
+
+  /* Alerte : pièce visible aux visiteurs mais sans photo/thumbnail.
+     photoExistante = thumbnail déjà uploadé (édition) OU nouvelle photo en attente. */
+  var photoExistante = !!photoB64;
+  if (toileEnEdition !== null) {
+    var tEdit = toiles.find(function(x) { return x.id === toileEnEdition; });
+    if (tEdit && tEdit.photo) photoExistante = true;
+  }
+  if (donnees.visible && !photoExistante) {
+    var ok = confirm(
+      'Cette ' + LBL.item + ' n\u0027a pas de photo (l\u0027aperçu sera un appareil photo barré).\n\n' +
+      'Elle sera visible par les visiteurs du site dans cet état.\n\n' +
+      'Conseil : générez le thumbnail depuis le 3D, ou ajoutez une photo perso.\n\n' +
+      'Enregistrer quand même ?'
+    );
+    if (!ok) { return; }
+  }
+
   const lbl = $('sauver-lbl'), btn = $('btn-sauver-toile'), btnAnn = $('btn-annuler-toile');
   btn.disabled = true; btnAnn.disabled = true; lbl.textContent = 'En cours…';
   try {
@@ -1610,15 +1628,23 @@ function _supportRenderApercu(p) {
   var col = document.createElement('div');
   col.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;';
 
-  /* Image de la pièce (thumbnail) */
+  /* Image de la pièce (thumbnail) ou placeholder photo manquante */
   var photoH = 80;
-  if (p.photo) {
+  if (p.photo || p._preview) {
     var img = document.createElement('img');
-    var src = /^https?:\/\//.test(p.photo) ? p.photo : assetsBase + p.photo;
+    var src = /^https?:\/\//.test(p.photo || '') ? p.photo : assetsBase + (p.photo || '');
     img.src = p._preview || src;
     img.style.cssText = 'height:' + photoH + 'px;width:auto;max-width:120px;object-fit:contain;display:block;position:relative;z-index:5;';
     img.onerror = function() { this.style.display = 'none'; };
     col.appendChild(img);
+  } else {
+    var phm = document.createElement('div');
+    phm.style.cssText = 'height:' + photoH + 'px;display:flex;align-items:center;justify-content:center;position:relative;z-index:5;';
+    phm.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.6;">' +
+      '<path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" stroke="#888" stroke-width="1.5" fill="rgba(255,255,255,.3)"/>' +
+      '<circle cx="12" cy="12.5" r="3.2" stroke="#888" stroke-width="1.5" fill="none"/>' +
+      '<line x1="3" y1="3" x2="21" y2="21" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/></svg>';
+    col.appendChild(phm);
   }
 
   /* Support sous la pièce */
