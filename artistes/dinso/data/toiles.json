@@ -154,7 +154,13 @@
       },
       "visible": true,
       "socle": 24,
-      "glb": "artistes/dinso/assets/models/piece-006.glb"
+      "glb": "artistes/dinso/assets/models/piece-006.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 7,
