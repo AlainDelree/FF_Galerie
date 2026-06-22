@@ -401,7 +401,7 @@ function creerSocle(piece, gabarit, pos) {
     mv.setAttribute('field-of-view', '36deg');
     mv.setAttribute('shadow-intensity', '0.6');
     mv.style.cssText =
-      'width:100%;height:' + photoH + 'px;pointer-events:none;' +
+      'width:100%;height:' + photoH + 'px;pointer-events:none;position:relative;z-index:5;' +
       '--poster-color:transparent;background:transparent;';
     socle.appendChild(mv);
   } else if (piece.photo) {
@@ -410,6 +410,8 @@ function creerSocle(piece, gabarit, pos) {
     img.alt = piece.titre || ''; img.loading = 'lazy'; img.decoding = 'async';
     img.style.height = photoH + 'px';
     img.style.objectFit = 'contain';
+    img.style.position = 'relative';
+    img.style.zIndex = '5';
     const src = /^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
     img.onerror = function() {
       if (!this._fb) { this._fb = true; this.loading = 'lazy'; this.src = src; }
