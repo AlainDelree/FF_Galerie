@@ -131,7 +131,7 @@
 
       <!-- Popovers apparence -->
       <div class="popover" id="pop-mur">
-        <div class="pop-titre">Couleur du mur</div>
+        <div class="pop-titre" id="pop-mur-titre">Couleur du mur</div>
         <div class="swatches" id="sw-mur">
           <button class="sw-plus" type="button" id="btn-picker-mur" title="Plus de couleurs…">+</button>
         </div>
@@ -1065,6 +1065,11 @@
         if (mt && mt.textContent === 'Nouvelle toile') mt.textContent = 'Nouvelle pièce';
         const lbl = document.getElementById('lbl-couleur-surface');
         if (lbl) lbl.textContent = 'Sol';
+        /* Bouton/popover Mur → Sol pour la sculpture */
+        const btnMur = document.getElementById('btn-pop-mur');
+        if (btnMur) btnMur.title = 'Couleur du sol';
+        const popMurT = document.getElementById('pop-mur-titre');
+        if (popMurT) popMurT.textContent = 'Couleur du sol';
 
         /* Renommer les boutons */
         const btnArr = document.getElementById('btn-arranger-mur');
