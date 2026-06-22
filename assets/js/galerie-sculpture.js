@@ -629,8 +629,10 @@ if (window._GALERIE_EDIT) {
     /* Variables drag */
     var _dragging = null; /* { el, pos, startX, startY } */
     var _moved = false;
+    var _lastTouch = 0; /* timestamp dernier touch — pour ignorer les mouse events synthétiques */
 
     plancher.addEventListener('mousedown', function(e) {
+      if (Date.now() - _lastTouch < 700) return; /* event souris synthétique après touch → ignorer */
       var wrap = e.target.closest('.socle-wrapper');
       if (!wrap) return;
       e.preventDefault();
@@ -686,6 +688,7 @@ if (window._GALERIE_EDIT) {
 
     /* Touch support */
     plancher.addEventListener('touchstart', function(e) {
+      _lastTouch = Date.now();
       var wrap = e.target.closest('.socle-wrapper');
       if (!wrap) return;
       var touch = e.touches[0];
@@ -730,7 +733,21 @@ if (window._GALERIE_EDIT) {
     });
 
     /* Clic sol → placer une pièce (si parent demande) */
+    /* Tap sur sol vide (mobile) → placer une pièce. Le click synthétique étant
+       ignoré, on émet sol-click ici si le tap n'a pas touché de pièce. */
+    plancher.addEventListener('touchend', function(e) {
+      if (_dragging) return; /* un drag/tap sur pièce est géré par l'autre touchend */
+      var t = e.changedTouches[0];
+      var el = document.elementFromPoint(t.clientX, t.clientY);
+      if (el && el.closest('.socle-wrapper')) return; /* tap sur pièce, pas sur sol */
+      var rect = plancher.getBoundingClientRect();
+      var x = Math.round(((t.clientX - rect.left) / rect.width) * 100);
+      var y = Math.round((1 - (t.clientY - rect.top) / rect.height) * 100);
+      parent.postMessage({ type: 'sol-click', x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) }, '*');
+    });
+
     plancher.addEventListener('click', function(e) {
+      if (Date.now() - _lastTouch < 700) return; /* click synthétique après touch → ignorer */
       if (e.target.closest('.socle-wrapper')) return;
       var rect = plancher.getBoundingClientRect();
       var x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
