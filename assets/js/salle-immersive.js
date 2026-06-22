@@ -40,12 +40,14 @@ function _hexToInt(hex) {
 
 /* Décor par défaut (valeurs originales) */
 var DECOR_IMMERSIVE_DEFAUT = {
-  fond:   '#12100c',
+  fond:   '#12100c',        /* atmosphère/fog (non exposé en config) */
   sol:    '#8a6228',
-  mur:    '#2e2a35',
+  pan_a:  '#7a2525',        /* palette des 12 panneaux du mur */
+  pan_b:  '#1a3055',
+  pan_c:  '#2a5035',
+  pan_d:  '#a04820',
   piquet: '#c8a050',
-  corde:  '#8b0020',
-  bandes: '#e8e0cc'
+  corde:  '#8b0020'
 };
 
 async function ouvrirSalleImmersive(piece, decor) {
@@ -56,7 +58,6 @@ async function ouvrirSalleImmersive(piece, decor) {
   var D = Object.assign({}, DECOR_IMMERSIVE_DEFAUT, decor || {});
   var C_FOND   = _hexToInt(D.fond)   || 0x12100c;
   var C_SOL    = _hexToInt(D.sol)    || 0x8a6228;
-  var C_MUR    = _hexToInt(D.mur)    || 0x2e2a35;
   var C_PIQUET = _hexToInt(D.piquet) || 0xc8a050;
   var C_CORDE  = _hexToInt(D.corde)  || 0x8b0020;
   /* Socle : couleur du support de la pièce si disponible */
@@ -221,13 +222,19 @@ async function ouvrirSalleImmersive(piece, decor) {
   const WALL_R  = 6;
   const WALL_H  = 5;
   const SEGMENTS = 12;
+  const _PALETTE = [
+    _hexToInt(D.pan_a) || 0x7a2525,
+    _hexToInt(D.pan_b) || 0x1a3055,
+    _hexToInt(D.pan_c) || 0x2a5035,
+    _hexToInt(D.pan_d) || 0xa04820
+  ];
   for (let i = 0; i < SEGMENTS; i++) {
     const geo = new THREE.CylinderGeometry(
       WALL_R, WALL_R, WALL_H, 1, 1, true,
       i * Math.PI * 2 / SEGMENTS, Math.PI * 2 / SEGMENTS
     );
     const mat = new THREE.MeshStandardMaterial({
-      color: C_MUR, side: THREE.BackSide, roughness: 0.85
+      color: _PALETTE[i % _PALETTE.length], side: THREE.BackSide, roughness: 0.85
     });
     const panel = new THREE.Mesh(geo, mat);
     panel.position.y = WALL_H / 2;
@@ -501,16 +508,20 @@ async function renderImmersiveApercu(canvas, piece, decor) {
 
   /* Murs */
   var WALL_R = 6, WALL_H = 5, SEG = 12;
-  var wallMats = [], bandeMats = [];
+  var wallMats = [];
+  var _pal = [
+    _hexToInt(D.pan_a) || 0x7a2525,
+    _hexToInt(D.pan_b) || 0x1a3055,
+    _hexToInt(D.pan_c) || 0x2a5035,
+    _hexToInt(D.pan_d) || 0xa04820
+  ];
   for (var i = 0; i < SEG; i++) {
-    var wMat = new THREE.MeshStandardMaterial({ color: _hexToInt(D.mur) || 0x2e2a35, side: THREE.BackSide, roughness: 0.85 });
+    var wMat = new THREE.MeshStandardMaterial({ color: _pal[i % _pal.length], side: THREE.BackSide, roughness: 0.85 });
     wallMats.push(wMat);
     var wGeo = new THREE.CylinderGeometry(WALL_R, WALL_R, WALL_H, 1, 1, true, i * Math.PI * 2 / SEG, Math.PI * 2 / SEG);
     var panel = new THREE.Mesh(wGeo, wMat); panel.position.y = WALL_H / 2; scene.add(panel);
     var a = i * Math.PI * 2 / SEG;
-    var bMat = new THREE.MeshBasicMaterial({ color: _hexToInt(D.bandes) || 0xe8e0cc });
-    bandeMats.push(bMat);
-    var line = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, WALL_H, 4), bMat);
+    var line = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, WALL_H, 4), new THREE.MeshBasicMaterial({ color: 0xe8e0cc }));
     line.position.set(Math.sin(a) * (WALL_R - 0.01), WALL_H / 2, Math.cos(a) * (WALL_R - 0.01)); scene.add(line);
   }
 
@@ -605,10 +616,15 @@ async function renderImmersiveApercu(canvas, piece, decor) {
       hemi.groundColor.setHex(_hexToInt(D2.sol) || 0x8a6228);
       scene.background = new THREE.Color(_hexToInt(D2.fond) || 0x12100c);
       scene.fog.color.setHex(_hexToInt(D2.fond) || 0x12100c);
-      wallMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.mur)    || 0x2e2a35); });
-      bandeMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.bandes) || 0xe8e0cc); });
-      piqMats.forEach(function(m)   { m.color.setHex(_hexToInt(D2.piquet) || 0xc8a050); });
-      cordMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.corde)  || 0x8b0020); });
+      var _pal2 = [
+        _hexToInt(D2.pan_a) || 0x7a2525,
+        _hexToInt(D2.pan_b) || 0x1a3055,
+        _hexToInt(D2.pan_c) || 0x2a5035,
+        _hexToInt(D2.pan_d) || 0xa04820
+      ];
+      wallMats.forEach(function(m, idx) { m.color.setHex(_pal2[idx % _pal2.length]); });
+      piqMats.forEach(function(m)  { m.color.setHex(_hexToInt(D2.piquet) || 0xc8a050); });
+      cordMats.forEach(function(m) { m.color.setHex(_hexToInt(D2.corde)  || 0x8b0020); });
     },
     dispose: function() { cancelAnimationFrame(_raf); renderer.dispose(); }
   };

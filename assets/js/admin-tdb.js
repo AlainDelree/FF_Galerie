@@ -10,10 +10,12 @@
 var DECOR_IMMERSIVE_DEFAUT = {
   fond:   '#12100c',
   sol:    '#8a6228',
-  mur:    '#2e2a35',
+  pan_a:  '#7a2525',
+  pan_b:  '#1a3055',
+  pan_c:  '#2a5035',
+  pan_d:  '#a04820',
   piquet: '#c8a050',
-  corde:  '#8b0020',
-  bandes: '#e8e0cc'
+  corde:  '#8b0020'
 };
 
 /* ─── Registre des types de salle ─── */
@@ -304,12 +306,13 @@ function _creerCarteGreffon(greffon, salle) {
 
 /* ── Panneau de config décor immersif ── */
 var _DECOR_CHAMPS = [
-  { key: 'mur',    label: 'Mur',    defaut: '#2e2a35' },
-  { key: 'bandes', label: 'Bandes', defaut: '#e8e0cc' },
-  { key: 'sol',    label: 'Sol',    defaut: '#8a6228' },
-  { key: 'fond',   label: 'Fond',   defaut: '#12100c' },
-  { key: 'piquet', label: 'Piquet', defaut: '#c8a050' },
-  { key: 'corde',  label: 'Corde',  defaut: '#8b0020' }
+  { key: 'pan_a',  label: 'Panneau A', defaut: '#7a2525' },
+  { key: 'pan_b',  label: 'Panneau B', defaut: '#1a3055' },
+  { key: 'pan_c',  label: 'Panneau C', defaut: '#2a5035' },
+  { key: 'pan_d',  label: 'Panneau D', defaut: '#a04820' },
+  { key: 'sol',    label: 'Sol',       defaut: '#8a6228' },
+  { key: 'piquet', label: 'Piquet',    defaut: '#c8a050' },
+  { key: 'corde',  label: 'Corde',     defaut: '#8b0020' }
 ];
 
 function _creerConfigDecor(salle) {
