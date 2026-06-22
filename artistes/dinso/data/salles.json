@@ -45,7 +45,7 @@
       "positions_mobile": [],
       "greffons": {
         "immersive": {
-          "actif": false,
+          "actif": true,
           "decor": {
             "fond": "#12100c",
             "exposure": 1,
