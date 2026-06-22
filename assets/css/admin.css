@@ -902,3 +902,128 @@ textarea.champ{resize:vertical;min-height:65px;}
 .support-type-btn.sel, .support-tex-btn.sel {
   background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600;
 }
+
+/* ══════════════════════════════════════════════════════
+   COMPOSANT LISTE (admin-liste.js)
+   ══════════════════════════════════════════════════════ */
+.lo-sep {
+  font-size: 8px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); padding: 5px 4px 2px;
+  border-top: .5px solid var(--brd); margin-top: 2px;
+  flex-shrink: 0;
+}
+.lo-item {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 5px 4px 3px; border-radius: 4px; cursor: pointer;
+  position: relative; min-height: 2.6rem;
+}
+.lo-item:hover { background: rgba(0,0,0,.05); }
+.lo-item.sel   { background: rgba(200,160,80,.15); }
+.lo-bord {
+  width: 3px; align-self: stretch; border-radius: 2px; flex-shrink: 0;
+  min-height: 2rem; background: var(--brd2);
+}
+.lo-thumb {
+  width: 2.4rem; height: 2.4rem; flex-shrink: 0;
+  background: var(--bg3); border-radius: 3px;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.lo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lo-thumb-ph { font-size: .9rem; color: var(--muted); }
+.lo-infos { flex: 1; min-width: 0; }
+.lo-titre { font-size: .73rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.lo-meta  { font-size: .6rem; color: var(--muted); line-height: 1.3; }
+.lo-salle-lbl { font-style: italic; }
+.lo-edit-btn {
+  background: none; border: none; cursor: pointer; font-size: .8rem;
+  padding: 2px 3px; color: var(--muted); flex-shrink: 0; line-height: 1;
+}
+.lo-edit-btn:hover { color: var(--gold); }
+
+/* ══════════════════════════════════════════════════════
+   TABLEAU DE BORD DES SALLES (admin-tdb.js)
+   ══════════════════════════════════════════════════════ */
+#tdb-section {
+  flex: 1; overflow-y: auto; padding: .5rem .6rem .8rem;
+  display: none; /* géré par _basculeVueTDB() */
+}
+#tdb-contenu { display: flex; flex-direction: column; gap: .6rem; }
+
+.tdb-vide {
+  color: var(--muted); text-align: center; padding: 2rem .5rem;
+  font-size: .82rem;
+}
+
+/* En-tête salle */
+.tdb-hdr {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .3rem 0 .2rem;
+}
+.tdb-nom {
+  font-size: .95rem; font-weight: 600; color: var(--text);
+  letter-spacing: .03em;
+}
+
+/* Label de section */
+.tdb-section-lbl {
+  font-size: 8px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); padding: .15rem 0 0;
+  border-top: .5px solid var(--brd); margin-top: .15rem;
+}
+
+/* Grille 2×2 de cartes */
+.tdb-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .55rem;
+}
+
+/* Carte */
+.tdb-card {
+  border: 1px solid var(--brd); border-radius: 8px; overflow: hidden;
+  background: var(--bg2); display: flex; flex-direction: column;
+  transition: box-shadow .15s, border-color .15s;
+}
+.tdb-card:hover { border-color: var(--gold2); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+
+/* Zone aperçu */
+.tdb-preview {
+  background: var(--bg3); flex-shrink: 0;
+  border-radius: 7px 7px 0 0; overflow: hidden;
+}
+.tdb-preview-greffon {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 4.5rem;
+}
+
+/* Pied de carte */
+.tdb-card-footer {
+  padding: .45rem .55rem .5rem;
+  display: flex; flex-direction: column; gap: .25rem;
+  flex: 1;
+}
+.tdb-card-label {
+  font-size: .72rem; font-weight: 600; color: var(--text);
+  letter-spacing: .01em;
+}
+.tdb-card-badge {
+  font-size: .62rem; color: var(--muted);
+}
+.tdb-badge-on {
+  color: var(--success); font-weight: 600;
+}
+.tdb-edit-btn {
+  margin-top: .2rem; align-self: flex-start; font-size: 10px;
+}
+
+/* Carte greffon */
+.tdb-card-greffon .tdb-card-footer {
+  border-top: .5px solid var(--brd);
+}
+
+/* Bouton retour dans mur-ctrl */
+#btn-retour-tdb {
+  display: none; /* montré par entrerVue() */
+  font-size: 10px; padding: .28rem .6rem; border-radius: 6px;
+  border: 1px solid var(--brd); background: none; color: var(--text);
+  cursor: pointer; flex-shrink: 0; font-weight: 600;
+}
+#btn-retour-tdb:hover { border-color: var(--gold); color: var(--gold); }

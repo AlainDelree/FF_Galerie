@@ -109,6 +109,7 @@
     <!-- Barre contrôle mur -->
     <div class="edit-section">
       <div class="mur-ctrl">
+        <button id="btn-retour-tdb" onclick="retourTableauBord()">← Salles</button>
         <span class="salle-badge" id="badge-salle">—</span>
         <button class="ctrl-btn" id="btn-coul-toggle">🎨 Couleurs/Textures</button>
         <button class="ctrl-btn" id="btn-musique-toggle">🎵 Musique</button>
@@ -236,7 +237,12 @@
         </div>
       </div>
 
-      <!-- Corps : stock + mur -->
+      <!-- Tableau de bord des salles (navigation étoile) -->
+      <div id="tdb-section">
+        <div id="tdb-contenu"></div>
+      </div>
+
+      <!-- Corps : stock + mur (éditeur de vue) -->
       <div class="edit-corps">
 
         <!-- Stock -->
@@ -1078,6 +1084,18 @@
       await new Promise(resolve => {
         const s = document.createElement("script");
         s.src = "assets/js/admin-galerie.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-liste.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-tdb.js?v=" + Date.now();
         s.onload = resolve;
         document.body.appendChild(s);
       });

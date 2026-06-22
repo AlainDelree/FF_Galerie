@@ -72,12 +72,17 @@ function selectSalle(id) {
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
   if (typeof appliquerApparence === 'function') appliquerApparence();
-  // Affiche mur + stock
-  buildOccupancy();
-  afficherMur();
-  afficherStock();
   selectedToile = null;
   selectedToilePl = null;
+  // Tableau de bord (navigation étoile)
+  if (typeof afficherTableauBord === 'function') {
+    afficherTableauBord();
+  } else {
+    // Fallback si admin-tdb.js pas encore chargé
+    buildOccupancy();
+    afficherMur();
+    afficherStock();
+  }
 }
 
 // ═══════════════════════════════════════════════

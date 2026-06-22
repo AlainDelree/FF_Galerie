@@ -1,0 +1,242 @@
+/* admin-liste.js — Composant liste unique des œuvres
+ * ─────────────────────────────────────────────────
+ * listeOeuvres(opts) — rend une liste scrollable dans un container.
+ *
+ * Légendes « disponibilite » (par VUE, pas par salle) :
+ *   VERT  = œuvre présente dans la vue courante (positions[] ou positions_mobile[])
+ *   ROUGE = œuvre dans une AUTRE salle (toute vue)
+ *   GRIS  = libre (pas dans une autre salle — peut être dans une autre vue de cette salle)
+ *
+ * opts = {
+ *   container  : HTMLElement            — où rendre (obligatoire)
+ *   filtre     : 'toutes'|'salle'|'disponibles'|'placees'   (défaut 'toutes')
+ *   salleRef   : Object|null            — salle active (pour filtrage + légende)
+ *   vue        : 'pc'|'gsm'            — vue courante pour légende VERT/GRIS (défaut 'pc')
+ *   tri        : 'statut'|'titre'|'taille'|'ordre'          (défaut 'statut')
+ *   mode       : 'lecture'|'selection'|'edition'            (défaut 'lecture')
+ *   legendes   : ['disponibilite','taille','salle']          (défaut [])
+ *   selection  : Set<id>               — ids actuellement sélectionnés (défaut Set vide)
+ *   onSelect   : function(id)          — callback clic (mode selection)
+ *   onDblClick : function(id)          — callback dblclick PC (facultatif)
+ * }
+ */
+
+function listeOeuvres(opts) {
+  var container  = opts.container;
+  var filtre     = opts.filtre     || 'toutes';
+  var salleRef   = opts.salleRef   || null;
+  var vue        = opts.vue        || 'pc';
+  var tri        = opts.tri        || 'statut';
+  var mode       = opts.mode       || 'lecture';
+  var legendes   = opts.legendes   || [];
+  var selection  = opts.selection  || new Set();
+  var onSelect   = opts.onSelect   || null;
+  var onDblClick = opts.onDblClick || null;
+
+  if (!container) return;
+  container.innerHTML = '';
+
+  var toutesOeuvres = Array.isArray(window.toiles) ? window.toiles : [];
+  var toutesSalles  = Array.isArray(window.salles)  ? window.salles  : [];
+
+  /* ─── Calcul des sets de placement ─── */
+
+  function _posVueCourante(salle) {
+    if (!salle) return new Set();
+    var arr = (vue === 'gsm')
+      ? (salle.positions_mobile && salle.positions_mobile.length ? salle.positions_mobile : salle.positions || [])
+      : (salle.positions || []);
+    return new Set(arr.map(function(p) { return p.id; }));
+  }
+
+  function _posAutresSalles(salleCourante) {
+    var idCourant = salleCourante ? salleCourante.id : -Infinity;
+    var ids = new Set();
+    toutesSalles.forEach(function(s) {
+      if (s.id === idCourant) return;
+      (s.positions        || []).forEach(function(p) { ids.add(p.id); });
+      (s.positions_mobile || []).forEach(function(p) { ids.add(p.id); });
+    });
+    return ids;
+  }
+
+  var posVue    = _posVueCourante(salleRef);
+  var posAutres = _posAutresSalles(salleRef);
+
+  function _legende(id) {
+    if (posVue.has(id))    return 'vert';
+    if (posAutres.has(id)) return 'rouge';
+    return 'gris';
+  }
+
+  /* ─── Filtrage ─── */
+  var items = toutesOeuvres.slice();
+
+  if (filtre === 'salle' && salleRef) {
+    var posSalle = new Set();
+    (salleRef.positions        || []).forEach(function(p) { posSalle.add(p.id); });
+    (salleRef.positions_mobile || []).forEach(function(p) { posSalle.add(p.id); });
+    items = items.filter(function(t) { return posSalle.has(t.id); });
+  } else if (filtre === 'disponibles') {
+    items = items.filter(function(t) { return _legende(t.id) === 'gris'; });
+  } else if (filtre === 'placees') {
+    items = items.filter(function(t) { return posVue.has(t.id); });
+  }
+  /* filtre === 'toutes' → pas de filtrage */
+
+  /* ─── Tri ─── */
+  if (tri === 'statut') {
+    function _grpOf(t) {
+      var l = _legende(t.id);
+      return l === 'vert' ? 0 : l === 'gris' ? 1 : 2;
+    }
+    items.sort(function(a, b) { return _grpOf(a) - _grpOf(b); });
+  } else if (tri === 'titre') {
+    items.sort(function(a, b) {
+      return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
+    });
+  } else if (tri === 'taille') {
+    var tOrd = (Array.isArray(window.tailles) ? window.tailles : []).map(function(t) { return t.code; });
+    items.sort(function(a, b) {
+      var ia = tOrd.indexOf(a.taille), ib = tOrd.indexOf(b.taille);
+      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    });
+  }
+  /* tri === 'ordre' → ordre JSON original conservé */
+
+  /* ─── Render ─── */
+  if (items.length === 0) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'font-size:.75rem;color:var(--muted);padding:.8rem;text-align:center;';
+    var _isSculpt = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+    empty.textContent = 'Aucune ' + (_isSculpt ? 'pièce' : 'toile');
+    container.appendChild(empty);
+    return;
+  }
+
+  var showLegende = legendes.indexOf('disponibilite') >= 0;
+  var showTaille  = legendes.indexOf('taille')        >= 0;
+  var showSalle   = legendes.indexOf('salle')         >= 0;
+  var assetsBase  = (typeof window.ADMIN_CFG !== 'undefined' && window.ADMIN_CFG.assetsBase) || '';
+
+  /* Séparateurs de groupe (uniquement si tri statut + légende disponibilite) */
+  var labGrp = ['Sur cette vue', 'Disponibles', 'Autre salle'];
+  var dernierGrp = -1;
+
+  items.forEach(function(t) {
+    var leg = _legende(t.id);
+    var grp = leg === 'vert' ? 0 : leg === 'gris' ? 1 : 2;
+
+    if (tri === 'statut' && showLegende && grp !== dernierGrp) {
+      var sep = document.createElement('div');
+      sep.className = 'lo-sep';
+      if (dernierGrp === -1) sep.style.borderTop = 'none';
+      sep.textContent = labGrp[grp];
+      container.appendChild(sep);
+      dernierGrp = grp;
+    }
+
+    var item = document.createElement('div');
+    item.className = 'lo-item' + (selection.has(t.id) ? ' sel' : '');
+    item.dataset.id = String(t.id);
+
+    /* Bord gauche coloré (indicateur légende) */
+    var bord = document.createElement('div');
+    bord.className = 'lo-bord';
+    if (showLegende) {
+      if (leg === 'vert')  bord.style.background = 'var(--success)';
+      else if (leg === 'rouge') bord.style.background = 'var(--danger)';
+      else                 bord.style.background = 'var(--brd2)';
+    }
+    item.appendChild(bord);
+
+    /* Thumbnail */
+    var thumb = document.createElement('div');
+    thumb.className = 'lo-thumb';
+    var photo = t.photo
+      ? (t.photo.startsWith('http') ? t.photo : assetsBase + t.photo)
+      : '';
+    if (photo) {
+      var img = document.createElement('img');
+      img.alt = ''; img.loading = 'lazy'; img.draggable = false;
+      img.onerror = function() { this.onerror = null; this.style.display = 'none'; };
+      img.src = t._preview || photo;
+      thumb.appendChild(img);
+    } else {
+      var ph = document.createElement('span');
+      ph.className = 'lo-thumb-ph';
+      ph.textContent = t.glb ? '3D' : '?';
+      thumb.appendChild(ph);
+    }
+    item.appendChild(thumb);
+
+    /* Infos texte */
+    var infos = document.createElement('div');
+    infos.className = 'lo-infos';
+
+    var titreEl = document.createElement('div');
+    titreEl.className = 'lo-titre';
+    titreEl.textContent = t.titre || '—';
+    infos.appendChild(titreEl);
+
+    if (showTaille && t.taille) {
+      var tailleEl = document.createElement('div');
+      tailleEl.className = 'lo-meta';
+      tailleEl.textContent = t.taille;
+      infos.appendChild(tailleEl);
+    }
+
+    if (showSalle) {
+      var nomS = _loNomSalle(t.id, salleRef);
+      if (nomS) {
+        var salleEl = document.createElement('div');
+        salleEl.className = 'lo-meta lo-salle-lbl';
+        salleEl.textContent = nomS;
+        infos.appendChild(salleEl);
+      }
+    }
+    item.appendChild(infos);
+
+    /* Bouton édition (mode edition) */
+    if (mode === 'edition') {
+      var editBtn = document.createElement('button');
+      editBtn.className = 'lo-edit-btn';
+      editBtn.title = 'Modifier';
+      editBtn.textContent = '✏️';
+      editBtn.dataset.editId = String(t.id);
+      item.appendChild(editBtn);
+    }
+
+    /* Interactions */
+    if (mode === 'selection' && onSelect) {
+      item.addEventListener('click', (function(id) {
+        return function(e) {
+          if (e.target.classList && e.target.classList.contains('lo-edit-btn')) return;
+          onSelect(id);
+        };
+      })(t.id));
+    }
+
+    if (onDblClick && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      item.addEventListener('dblclick', (function(id) {
+        return function() { onDblClick(id); };
+      })(t.id));
+    }
+
+    container.appendChild(item);
+  });
+}
+
+/* Nom de la salle qui contient l'œuvre (hors salle courante) */
+function _loNomSalle(oeuvreId, salleCourante) {
+  var all = Array.isArray(window.salles) ? window.salles : [];
+  var idC = salleCourante ? salleCourante.id : -Infinity;
+  var s = null;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id === idC) continue;
+    var inPos  = (all[i].positions        || []).some(function(p) { return p.id === oeuvreId; });
+    var inMob  = (all[i].positions_mobile || []).some(function(p) { return p.id === oeuvreId; });
+    if (inPos || inMob) { s = all[i]; break; }
+  }
+  return s ? (s.nom || '') : '';
+}
