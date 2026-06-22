@@ -163,6 +163,20 @@ button{cursor:pointer;}
 /* Le popover musique est plus grand */
 #pop-musique{min-width:280px;max-width:min(420px,calc(100vw - 1.2rem));max-height:80vh;overflow-y:auto;}
 
+/* Popovers Texture : un peu plus larges pour accueillir +8 swatches */
+#pop-texture, #pop-tex-systeme{min-width:240px;max-width:min(360px,calc(100vw - 1.2rem));}
+/* Bouton + dans le popover Texture (sous les swatches) */
+.pop-plus{margin-top:.5rem;width:100%;padding:.3rem .5rem;border-radius:6px;
+  border:0.5px dashed var(--brd);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;
+  transition:border-color .15s,color .15s;}
+.pop-plus:hover{border-color:var(--gold);color:var(--gold);border-style:solid;}
+/* Action de menu dans un popover (Système / Télécharger) */
+.pop-action{display:block;width:100%;text-align:left;padding:.45rem .55rem;border-radius:6px;
+  border:0.5px solid var(--brd);background:transparent;color:var(--text);font-size:.82rem;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;margin-bottom:.3rem;}
+.pop-action:last-child{margin-bottom:0;}
+.pop-action:hover{border-color:var(--gold);color:var(--gold);background:rgba(200,160,80,.06);}
+
 /* Modal vider salles */
 .vider-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .2rem;
   border-bottom:1px solid var(--brd);cursor:pointer;font-size:.88rem;}
