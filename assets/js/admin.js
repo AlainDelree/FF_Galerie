@@ -799,7 +799,8 @@ $('btn-sauver-placement').addEventListener('click', async () => {
     salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
     await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'), null);
     toast('✓ Placement enregistré');
-    quitterModePlacement();
+    /* Rester dans l'Arranger : le flux est souvent organiser PC → sauver →
+       basculer GSM → organiser → sauver. La sortie se fait via ← Retour. */
   } catch (e) {
     toast('Erreur : ' + e.message, 'err');
   }
