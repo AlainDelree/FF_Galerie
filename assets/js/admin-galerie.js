@@ -416,9 +416,16 @@ function ouvrirArrangerApresConfirm() {
     })
   };
   const nbPlacees = (salleActive.positions||[]).length;
-  _placementVue = 'pc'; /* Toujours démarrer en mode PC */
+  /* _placementVue est déjà positionné par entrerVue() selon la carte cliquée
+     (pc ou gsm). Ne pas l'écraser ici. Défaut pc si non défini. */
+  if (typeof _placementVue === 'undefined' || !_placementVue) _placementVue = 'pc';
+  var _vueGsm = (_placementVue === 'gsm');
   var btnSw = document.getElementById('btn-switch-vue');
-  if (btnSw) { btnSw.textContent = '🖥 PC'; btnSw.style.background = ''; btnSw.style.color = ''; }
+  if (btnSw) {
+    btnSw.textContent      = _vueGsm ? '📱 GSM' : '🖥 PC';
+    btnSw.style.background = _vueGsm ? 'var(--gold)' : '';
+    btnSw.style.color      = _vueGsm ? '#fff' : '';
+  }
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
   history.pushState({ ff: 'arrangement' }, '');
