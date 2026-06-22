@@ -403,6 +403,7 @@
   .salle-sculpture .plancher-sol { min-height: 0 !important; }
   /* Pages sculpture : body non-scrollable, la galerie prend l'espace restant
      après header/bandeau/footer (et non 100vh qui s'ajoute à eux). */
+  body.page-sculpture { outline: 4px solid red !important; outline-offset: -4px; }
   body:has(.salle-sculpture), body.page-sculpture { height: 100dvh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
   body:has(.salle-sculpture) .scene-galerie, body.page-sculpture .scene-galerie { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
   body:has(.salle-sculpture) .galerie-principale, body.page-sculpture .galerie-principale { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
