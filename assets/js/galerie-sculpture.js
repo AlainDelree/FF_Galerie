@@ -429,7 +429,7 @@ function creerSocle(piece, gabarit, pos, opts) {
 
   /* Aperçu visuel sur le socle — photo (thumbnail) prioritaire car centrée
      proprement ; le model-viewer 3D ne sert que si pas de photo. */
-  if (piece.photo) {
+  if (piece.photo || piece._preview) {
     const img = document.createElement('img');
     img.className = 'socle-photo';
     img.alt = piece.titre || ''; img.loading = 'lazy'; img.decoding = 'async';
@@ -441,12 +441,15 @@ function creerSocle(piece, gabarit, pos, opts) {
     img.style.margin = '0 auto';
     img.style.position = 'relative';
     img.style.zIndex = '5';
-    const src = /^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo;
+    const src = piece.photo
+      ? (/^https?:\/\//.test(piece.photo) ? piece.photo : GALERIE_CFG.assetsBase + piece.photo)
+      : '';
+    /* _preview = base64 frais (juste régénéré, pas encore propagé au CDN) → priorité */
     img.onerror = function() {
-      if (!this._fb) { this._fb = true; this.loading = 'lazy'; this.src = src; }
+      if (!this._fb && src) { this._fb = true; this.loading = 'lazy'; this.src = src; }
       else { this.style.display = 'none'; }
     };
-    img.src = src;
+    img.src = piece._preview || src;
     socle.appendChild(img);
   } else {
     /* Pas de photo (thumbnail manquant / génération échouée) → placeholder
