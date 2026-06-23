@@ -57,9 +57,8 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-rows: repeat(8, minmax(0, 1fr));
     gap: 1px;
-    width: 100%; height: 100%;
-    aspect-ratio: 12/8;
-    max-width: 100%; max-height: 100%;
+    /* Dimensions calculées en JS (ajusterMur) : width et height fixes en px
+       garantissent le ratio 12/8 quelle que soit la taille du mur-piece. */
   }
   .carte .mur .c { border: .5px solid rgba(255,255,255,.18); }
   .carte .zb { display: flex; flex-direction: column; flex: 0 0 var(--zb-h-pct, 18%); }
@@ -173,6 +172,25 @@
   const carte2 = document.getElementById('carte2');
   const meta = document.getElementById('meta');
 
+  /* Ajuste un .mur (grille 12×8) dans son .mur-piece :
+     mesure la zone intérieure du mur-piece (après padding), calcule la
+     plus grande boîte 12/8 qui tient dedans, applique width/height en px. */
+  function ajusterMur(carte) {
+    const murPiece = carte.querySelector('.mur-piece');
+    const mur = carte.querySelector('.mur');
+    if (!murPiece || !mur) return;
+    const cs = getComputedStyle(murPiece);
+    const w = murPiece.clientWidth
+            - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const h = murPiece.clientHeight
+            - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if (w <= 0 || h <= 0) return;
+    let murH = h, murW = h * 1.5;
+    if (murW > w) { murW = w; murH = w / 1.5; }
+    mur.style.width = Math.round(murW) + 'px';
+    mur.style.height = Math.round(murH) + 'px';
+  }
+
   function recompute() {
     const ratio = document.getElementById('ratio').value;
     const h = parseFloat(document.getElementById('hauteur').value);
@@ -186,6 +204,11 @@
     document.documentElement.style.setProperty('--marge-lat-pct', marge + '%');
     document.documentElement.style.setProperty('--marge-haut-pct', margeHaut + '%');
     document.documentElement.style.setProperty('--zb-h-pct', zb + '%');
+    /* Layout posé → mesurer et ajuster les murs */
+    requestAnimationFrame(() => {
+      ajusterMur(carte);
+      ajusterMur(carte2);
+    });
     const w = Math.round(h * eval(ratio.replace('/', '/')));
     meta.innerHTML =
       'Ratio&nbsp;: <b>' + ratio + '</b>' +
@@ -193,6 +216,11 @@
       ' &nbsp;·&nbsp; Marges&nbsp;: <b>' + marge + '%</b> côtés, <b>' + margeHaut + '%</b> haut' +
       ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + zb + '%</b> (' + Math.round(h * zb / 100) + 'px)';
   }
+
+  window.addEventListener('resize', () => {
+    ajusterMur(carte);
+    ajusterMur(carte2);
+  });
 
   function bind(id, vId, suffix) {
     const el = document.getElementById(id);
