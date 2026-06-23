@@ -280,8 +280,12 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       var typeSalle = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
       var ratioCarte = (typeSalle === 'peinture') ? '3/2' : meta.ratio;
       var maxH = opts.solo ? '260px' : '180px';
-      wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + ratioCarte
-        + ';max-height:' + maxH + ';overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
+      /* Height-driven : hauteur fixe + aspect-ratio → largeur calculée correctement.
+         Avec width:100% + max-height, le navigateur ignorait l'aspect-ratio
+         (carte étirée à 1820×260 au lieu de 390×260). max-width:100% évite le
+         débordement horizontal sur écran étroit ; margin:0 auto centre. */
+      wrap.style.cssText = 'position:relative;height:' + maxH + ';aspect-ratio:' + ratioCarte
+        + ';max-width:100%;margin:0 auto;overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
     }
 
     var iframe = document.createElement('iframe');
