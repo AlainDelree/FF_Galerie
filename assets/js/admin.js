@@ -818,14 +818,20 @@ $('btn-apercu-placement').addEventListener('click', () => {
   quitterModePlacement();
 });
 
-/* Switch vue PC / GSM pour sculpture */
+/* Switch vue PC / GSM — dispatch sol/mur selon le type de la salle active */
 $('btn-switch-vue')?.addEventListener('click', function() {
   _placementVue = _placementVue === 'pc' ? 'gsm' : 'pc';
   this.textContent = _placementVue === 'pc' ? '🖥 PC' : '📱 GSM';
   this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
   this.style.color = _placementVue === 'gsm' ? '#fff' : '';
   peintureSurMurSel = null;
-  afficherSolPlacement();
+  /* En GSM peinture : si pas encore de positions mobiles, partir d'une
+     copie des positions PC (cohérent avec ouvrirArrangerApresConfirm) */
+  if (_placementVue === 'gsm' && salleActive
+      && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
+    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+  }
+  afficherMurPlacement(); /* dispatch interne vers afficherSolPlacement si sculpture */
   afficherStripPlacement();
 });
 $('btn-sauver-placement').addEventListener('click', async () => {
