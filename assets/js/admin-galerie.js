@@ -1301,22 +1301,33 @@ function ouvrirModalSalle() {
   const fin = document.createElement('div');
   fin.className = 'pos-opt sel'; fin.textContent = 'En dernier'; fin.dataset.pos = salles.length;
   pg.appendChild(fin);
-  // Peupler le select "Copier l'apparence de…"
-  const selCopier = $('inp-salle-copier');
-  if (selCopier) {
+  // Helper : (re)peupler le select "Copier l'apparence de…" selon le type
+  function _peuplerSelCopier(typeFiltre) {
+    const selCopier = $('inp-salle-copier');
+    if (!selCopier) return;
+    const valActuelle = selCopier.value;
     selCopier.innerHTML = '<option value="">— Nouvelle salle vierge —</option>';
-    salles.forEach(function(s) {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.nom || ('Salle ' + s.id);
-      selCopier.appendChild(opt);
-    });
+    salles
+      .filter(function(s) { return (s.type || 'peinture') === typeFiltre; })
+      .forEach(function(s) {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.nom || ('Salle ' + s.id);
+        selCopier.appendChild(opt);
+      });
+    // Préserver la sélection si toujours valide, sinon retomber sur vierge
+    if ([...selCopier.options].some(o => o.value === valActuelle)) selCopier.value = valActuelle;
+    else selCopier.value = '';
   }
   // Type par défaut : type de l'admin courant
   const selType = $('inp-salle-type');
+  const typeDef = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
   if (selType) {
-    selType.value = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
+    selType.value = typeDef;
+    // Rafraîchir la liste à chaque changement de type (évite clonage cross-type)
+    selType.onchange = function() { _peuplerSelCopier(selType.value); };
   }
+  _peuplerSelCopier(typeDef);
   $('overlay-salle').classList.add('ouvert');
 }
 
