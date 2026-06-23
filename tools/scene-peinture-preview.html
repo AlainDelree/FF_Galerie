@@ -34,6 +34,14 @@
     outline: 2px dashed rgba(200,160,80,.4); /* debug : on voit où la scène est */
   }
 
+  /* Mur de la pièce : s'étend au-delà du mur d'expo (gauche + droite) */
+  .mur-piece {
+    background: var(--mur-piece-col, #1a1a1a);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 var(--marge-lat, 80px);
+    border-radius: 4px 4px 0 0;
+  }
+
   /* Mur d'expo — grille 12×8 */
   .mur {
     background: var(--mur-col, #2e2e2e);
@@ -41,7 +49,6 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-rows: repeat(8, minmax(0, 1fr));
     gap: 2px;
-    border-radius: 4px 4px 0 0;
     position: relative;
   }
   .mur .cell { border: .5px solid rgba(255,255,255,.06); }
@@ -89,12 +96,20 @@
 
 <div class="ctrl">
   <label>
-    <span>Couleur du mur</span>
+    <span>Couleur du mur (pièce)</span>
+    <input type="color" id="murPieceCol" value="#1a1a1a">
+  </label>
+  <label>
+    <span>Couleur du mur d'expo</span>
     <input type="color" id="murCol" value="#2e2e2e">
   </label>
   <label>
+    <span>Marge latérale mur expo (px) <span class="v" id="vMargeLat">80</span></span>
+    <input type="range" id="margeLat" min="0" max="400" value="80">
+  </label>
+  <label>
     <span>Hauteur mur-inférieur (px) <span class="v" id="vMurinf">32</span></span>
-    <input type="range" id="murinfH" min="20" max="60" value="32">
+    <input type="range" id="murinfH" min="20" max="80" value="32">
   </label>
   <label>
     <span>Largeur porte (px) <span class="v" id="vPorte">34</span></span>
@@ -102,7 +117,7 @@
   </label>
   <label>
     <span>Hauteur plancher (px) <span class="v" id="vPlancher">28</span></span>
-    <input type="range" id="plancherH" min="16" max="60" value="28">
+    <input type="range" id="plancherH" min="16" max="80" value="28">
   </label>
   <label>
     <span>Lignes parquet (px) <span class="v" id="vPlancherPl">60</span></span>
@@ -126,7 +141,10 @@
 
 <div class="stage" id="stage">
   <div class="scene" id="scene">
-    <div class="mur grille" id="mur"></div>
+    <!-- mur de la pièce qui s'étend au-delà du mur d'expo -->
+    <div class="mur-piece" id="murPiece">
+      <div class="mur grille" id="mur"></div>
+    </div>
     <div class="zb">
       <div class="mur-inf">
         <div class="porte"></div>
@@ -161,23 +179,29 @@
     const dispoW = Math.max(200, stageRect.width - padding);
     const murinfH = parseFloat(document.getElementById('murinfH').value);
     const plancherH = parseFloat(document.getElementById('plancherH').value);
+    const margeLat = parseFloat(document.getElementById('margeLat').value);
     const zbH = murinfH + plancherH;
-    /* Mur : on prend l'espace dispo moins la zone-basse moins 20px de marge.
-       Au lieu de tout prendre, on laisse 70% max pour que le décor reste très
-       visible dans le preview (ratio identique à ce que l'arrangeur fera). */
+    /* Mur d'expo : on prend l'espace dispo moins zone-basse moins marge, plafond 78%
+       pour garder du décor visible. Largeur = hauteur × 1.5 (ratio 12/8). */
     let murH = Math.min(dispoH - zbH - 20, dispoH * 0.78);
     if (murH < 120) murH = 120;
-    let murW = murH * 1.5; /* ratio 12/8 */
-    if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
+    let murW = murH * 1.5;
+    /* Le mur de la pièce = mur d'expo + 2 × marge latérale. Doit tenir dans dispoW. */
+    const sceneWMax = dispoW;
+    if (murW + 2 * margeLat > sceneWMax) {
+      murW = sceneWMax - 2 * margeLat;
+      if (murW < 200) murW = 200;
+      murH = murW / 1.5;
+    }
+    const sceneW = murW + 2 * margeLat;
     mur.style.width = murW + 'px';
     mur.style.height = murH + 'px';
-    /* Aligner zone-basse à la largeur du mur via scene wrapper width fixe */
-    scene.style.width = murW + 'px';
+    scene.style.width = sceneW + 'px';
     meta.innerHTML =
       'Zone dispo&nbsp;: <b>' + Math.round(dispoW) + '×' + Math.round(dispoH) + '</b>' +
-      ' &nbsp;·&nbsp; Mur&nbsp;: <b>' + Math.round(murW) + '×' + Math.round(murH) + '</b> (ratio 12/8)' +
-      ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + (murinfH + plancherH) + 'px</b> (mur-inf ' + murinfH + 'px + plancher ' + plancherH + 'px)' +
-      ' &nbsp;·&nbsp; Total scène&nbsp;: <b>' + Math.round(murH + zbH) + 'px</b>';
+      ' &nbsp;·&nbsp; Mur d\'expo&nbsp;: <b>' + Math.round(murW) + '×' + Math.round(murH) + '</b>' +
+      ' &nbsp;·&nbsp; Scène totale&nbsp;: <b>' + Math.round(sceneW) + '×' + Math.round(murH + zbH) + '</b>' +
+      ' &nbsp;·&nbsp; Marge latérale&nbsp;: <b>' + margeLat + 'px</b> de chaque côté';
   }
 
   function bindRange(id, varName, suffix, vId) {
@@ -195,9 +219,13 @@
   bindRange('porteW',     '--porte-w',     'px', 'vPorte');
   bindRange('plancherH',  '--plancher-h',  'px', 'vPlancher');
   bindRange('plancherPl', '--plancher-pl', 'px', 'vPlancherPl');
+  bindRange('margeLat',   '--marge-lat',   'px', 'vMargeLat');
 
   document.getElementById('murCol').addEventListener('input', e => {
     document.documentElement.style.setProperty('--mur-col', e.target.value);
+  });
+  document.getElementById('murPieceCol').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--mur-piece-col', e.target.value);
   });
   document.getElementById('plancherHaut').addEventListener('input', e => {
     document.documentElement.style.setProperty('--plancher-haut', e.target.value);
@@ -210,6 +238,7 @@
   });
   /* Init valeurs CSS */
   document.documentElement.style.setProperty('--mur-col', '#2e2e2e');
+  document.documentElement.style.setProperty('--mur-piece-col', '#1a1a1a');
   document.documentElement.style.setProperty('--plancher-haut', '#5a3a22');
   document.documentElement.style.setProperty('--plancher-bas', '#3a2515');
 
