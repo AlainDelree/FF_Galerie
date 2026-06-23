@@ -558,7 +558,11 @@ function _toggleGreffon(greffon) {
 function entrerVue(facette) {
   _tdbFacetteActive = facette;
   var meta = FACETTES_META[facette] || {};
-  var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+  /* Type de la salle active (pas type de l'admin) — pour cohabitation peinture+sculpture */
+  var typeSalle = (salleActive && salleActive.type)
+    ? salleActive.type
+    : (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+  var _isSculptType = (typeSalle === 'sculpture');
 
   /* Greffons → éditeur dédié */
   if (meta.greffon) {
