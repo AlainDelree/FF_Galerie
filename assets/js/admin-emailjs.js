@@ -294,8 +294,12 @@ function ouvrirModaleSupprTexture(chemin, url) {
     overlay.style.display = 'none';
     await supprimerTextureGitHub(chemin);
   });
+})();
 
-  /* Boutons crayon : bascule mode édition des popovers texture */
+/* IIFE séparé : bind des crayons des popovers texture
+   Indépendant du bind de la modale pour éviter qu'une erreur en cascade
+   empêche les crayons de réagir. */
+(function() {
   function _bindCrayon(btnId, popId) {
     var btn = document.getElementById(btnId);
     var pop = document.getElementById(popId);
