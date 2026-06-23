@@ -180,52 +180,28 @@ function creerSwatchGH(chemin, url, suppressible, estSysteme) {
   sw.dataset.val = chemin;
   sw.title = chemin.split('/').pop().replace(/_[a-z0-9]+\.jpg$/i, '');
   sw.addEventListener('click', function() {
-    document.querySelectorAll('.sw').forEach(function(s){ s.classList.remove('sel'); });
-    sw.classList.add('sel');
-    setTexture(chemin);
-  });
-  if (suppressible) {
-    /* Suppression via clic long (mobile) ou clic droit (PC) — pas de bouton ✕ visible */
-    sw.title = sw.title + ' — clic long ou clic droit pour supprimer';
-    var demarrerSuppression = function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (estSysteme) {
+    /* En mode édition de son popover parent ET suppressible → suppression */
+    var pop = sw.closest('.popover');
+    if (pop && pop.classList.contains('mode-edit') && sw.dataset.suppressible === '1') {
+      var estSys = sw.dataset.estSysteme === '1';
+      if (estSys) {
         ouvrirModaleSupprTexture(chemin, url);
       } else {
         if (confirm('Supprimer cette texture ?')) {
           supprimerTextureGitHub(chemin);
         }
       }
-    };
-    /* Clic droit (PC) */
-    sw.addEventListener('contextmenu', demarrerSuppression);
-    /* Clic long (mobile + PC) : 600ms */
-    var _longTimer = null;
-    var _longFired = false;
-    var _annulerLong = function() {
-      if (_longTimer) { clearTimeout(_longTimer); _longTimer = null; }
-      sw.style.transform = '';
-    };
-    sw.addEventListener('touchstart', function(e) {
-      _longFired = false;
-      sw.style.transition = 'transform .6s ease-out';
-      sw.style.transform = 'scale(.85)'; /* feedback visuel : la texture se contracte */
-      _longTimer = setTimeout(function() {
-        _longFired = true;
-        sw.style.transform = '';
-        if (navigator.vibrate) try { navigator.vibrate(40); } catch(_) {}
-        demarrerSuppression(e);
-      }, 600);
-    }, { passive: true });
-    sw.addEventListener('touchend', function(e) {
-      sw.style.transition = '';
-      _annulerLong();
-      /* Si clic long déclenché, bloquer le click natif qui suit pour éviter setTexture */
-      if (_longFired) { e.preventDefault(); _longFired = false; }
-    });
-    sw.addEventListener('touchmove', _annulerLong);
-    sw.addEventListener('touchcancel', _annulerLong);
+      return;
+    }
+    /* Sinon : sélection normale */
+    document.querySelectorAll('.sw').forEach(function(s){ s.classList.remove('sel'); });
+    sw.classList.add('sel');
+    setTexture(chemin);
+  });
+  if (suppressible) {
+    sw.classList.add('suppressible');
+    sw.dataset.suppressible = '1';
+    sw.dataset.estSysteme = estSysteme ? '1' : '0';
   }
   return sw;
 }
@@ -318,6 +294,22 @@ function ouvrirModaleSupprTexture(chemin, url) {
     overlay.style.display = 'none';
     await supprimerTextureGitHub(chemin);
   });
+
+  /* Boutons crayon : bascule mode édition des popovers texture */
+  function _bindCrayon(btnId, popId) {
+    var btn = document.getElementById(btnId);
+    var pop = document.getElementById(popId);
+    if (!btn || !pop) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var actif = pop.classList.toggle('mode-edit');
+      btn.classList.toggle('on', actif);
+      btn.textContent = actif ? '✓' : '✎';
+      btn.title = actif ? 'Terminer' : 'Gérer (supprimer)';
+    });
+  }
+  _bindCrayon('btn-edit-mes-tex',    'pop-texture');
+  _bindCrayon('btn-edit-tex-systeme', 'pop-tex-systeme');
 })();
 
 async function supprimerTextureGitHub(chemin) {
