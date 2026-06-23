@@ -121,8 +121,7 @@
       "texture": "parquet",
       "visible": true,
       "toiles": [
-        7,
-        6
+        7
       ],
       "positions": [
         {
@@ -130,12 +129,6 @@
           "x": 32,
           "y": 62,
           "gabarit": "M"
-        },
-        {
-          "id": 6,
-          "x": 69,
-          "y": 58,
-          "gabarit": "L"
         }
       ],
       "positions_mobile": [
@@ -178,7 +171,7 @@
       "id": 8,
       "nom": "Salle Peinture",
       "type": "peinture",
-      "couleur_mur": "#053b3f",
+      "couleur_mur": "#99c1f1",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
