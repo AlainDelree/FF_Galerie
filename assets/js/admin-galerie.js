@@ -668,6 +668,34 @@ function majCtrlPanel() {
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
 
+/* Calcule width/height du mur peinture selon l'espace dispo : prend toute
+   la hauteur dispo, largeur = hauteur × 1.5 (ratio 12/8). Si la largeur
+   dépasse, on inverse (largeur max, hauteur dérivée). Comme afficherSolPlacement
+   pour la sculpture, mais en plus simple. */
+function _ajusterMurPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var zone = mur.closest('.placement-mur-zone');
+  if (!zone) return;
+  var rect = zone.getBoundingClientRect();
+  var aide = document.getElementById('pl-aide');
+  var aideH = aide ? aide.offsetHeight : 0;
+  var dispoH = Math.max(200, rect.height - aideH - 16);
+  var dispoW = Math.max(200, rect.width - 16);
+  var murH = dispoH, murW = murH * 1.5;
+  if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
+  mur.style.width  = Math.round(murW) + 'px';
+  mur.style.height = Math.round(murH) + 'px';
+}
+
+/* Recalcul au resize quand on est en arrangeur peinture */
+window.addEventListener('resize', function() {
+  var ov = document.getElementById('overlay-placement');
+  if (ov && ov.classList.contains('ouvert') && !_estSculptSalleActive()) {
+    _ajusterMurPeinture();
+  }
+});
+
 function afficherMurPlacement() {
   if (_estSculptSalleActive()) return afficherSolPlacement();
   const bg = $('mur-placement');
@@ -677,6 +705,8 @@ function afficherMurPlacement() {
   bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
+  /* Dimensions calculées en JS, comme la sculpture */
+  _ajusterMurPeinture();
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
