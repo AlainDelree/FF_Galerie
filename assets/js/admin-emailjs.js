@@ -185,29 +185,47 @@ function creerSwatchGH(chemin, url, suppressible, estSysteme) {
     setTexture(chemin);
   });
   if (suppressible) {
-    var del = document.createElement('button');
-    del.textContent = '✕';
-    del.className = 'tex-del-btn';
-    del.style.cssText = 'position:absolute;top:1px;right:1px;width:13px;height:13px;'
-      + 'border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:8px;'
-      + 'cursor:pointer;line-height:13px;padding:0;z-index:2;opacity:0;'
-      + 'transition:opacity .15s;'
-      + 'display:flex;align-items:center;justify-content:center;';
-    sw.addEventListener('mouseenter', function(){ del.style.opacity = '1'; });
-    sw.addEventListener('mouseleave', function(){ del.style.opacity = '0'; });
-    del.title = 'Supprimer';
-    del.addEventListener('click', async function(e) {
+    /* Suppression via clic long (mobile) ou clic droit (PC) — pas de bouton ✕ visible */
+    sw.title = sw.title + ' — clic long ou clic droit pour supprimer';
+    var demarrerSuppression = function(e) {
+      e.preventDefault();
       e.stopPropagation();
       if (estSysteme) {
-        /* Texture système (= autre auteur ou héritée) : modale renforcée */
         ouvrirModaleSupprTexture(chemin, url);
       } else {
-        /* Texture mienne : confirm() natif suffit */
-        if (!confirm('Supprimer cette texture ?')) return;
-        await supprimerTextureGitHub(chemin);
+        if (confirm('Supprimer cette texture ?')) {
+          supprimerTextureGitHub(chemin);
+        }
       }
+    };
+    /* Clic droit (PC) */
+    sw.addEventListener('contextmenu', demarrerSuppression);
+    /* Clic long (mobile + PC) : 600ms */
+    var _longTimer = null;
+    var _longFired = false;
+    var _annulerLong = function() {
+      if (_longTimer) { clearTimeout(_longTimer); _longTimer = null; }
+      sw.style.transform = '';
+    };
+    sw.addEventListener('touchstart', function(e) {
+      _longFired = false;
+      sw.style.transition = 'transform .6s ease-out';
+      sw.style.transform = 'scale(.85)'; /* feedback visuel : la texture se contracte */
+      _longTimer = setTimeout(function() {
+        _longFired = true;
+        sw.style.transform = '';
+        if (navigator.vibrate) try { navigator.vibrate(40); } catch(_) {}
+        demarrerSuppression(e);
+      }, 600);
+    }, { passive: true });
+    sw.addEventListener('touchend', function(e) {
+      sw.style.transition = '';
+      _annulerLong();
+      /* Si clic long déclenché, bloquer le click natif qui suit pour éviter setTexture */
+      if (_longFired) { e.preventDefault(); _longFired = false; }
     });
-    sw.appendChild(del);
+    sw.addEventListener('touchmove', _annulerLong);
+    sw.addEventListener('touchcancel', _annulerLong);
   }
   return sw;
 }
