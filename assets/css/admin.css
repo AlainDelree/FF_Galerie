@@ -360,18 +360,12 @@ button{cursor:pointer;}
 
 /* ══ SCÈNE PEINTURE (décor autour du mur dans l'Arranger) ══
    Wrapper créé dynamiquement par _activerSceneDecorPeinture() uniquement
-   pour les salles peinture. Sculpture n'est jamais wrappée — son DOM
-   reste identique au HTML statique d'origine. */
+   pour les salles peinture. Les dimensions du mur sont calculées en JS
+   par _ajusterTailleMurPeinture (comme afficherSolPlacement le fait pour
+   la sculpture) — pas de magie CSS aspect-ratio capricieuse. */
 .scene-peinture{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;flex:1;min-height:0;}
-.scene-block{display:flex;flex-direction:column;align-items:stretch;width:fit-content;max-width:100%;max-height:100%;}
-/* Mur : hauteur déterminée par max-height (= zone moins zone-basse), aspect-ratio dicte la largeur */
-.scene-peinture .placement-mur-bg{
-  width:auto!important;max-width:100%!important;
-  height:auto!important;max-height:calc(100% - 60px)!important;
-  flex:0 1 auto!important;min-width:0!important;
-  aspect-ratio:12/8!important;
-}
-.scene-zone-basse{display:flex;flex-direction:column;width:100%;flex:0 0 auto;}
+.scene-block{display:flex;flex-direction:column;align-items:stretch;}
+.scene-zone-basse{display:flex;flex-direction:column;flex-shrink:0;}
 .scene-mur-inferieur{width:100%;height:32px;background:#111;display:flex;align-items:flex-end;justify-content:space-between;position:relative;padding:0 1.2rem;}
 .scene-porte-mur{width:34px;height:26px;background:#0c0a07;border-top-left-radius:34px 38px;border-top-right-radius:34px 38px;box-shadow:inset 0 0 10px rgba(0,0,0,.7);position:relative;}
 .scene-porte-mur::after{content:'';position:absolute;left:50%;top:30%;transform:translateX(-50%);width:14px;height:60%;background:linear-gradient(to bottom,rgba(255,255,255,.04),transparent);border-radius:14px 14px 0 0;}
@@ -385,7 +379,6 @@ button{cursor:pointer;}
   .scene-mur-inferieur{height:22px;padding:0 .6rem;}
   .scene-porte-mur{width:22px;height:18px;}
   .scene-plancher-sol{height:20px;}
-  .scene-peinture .placement-mur-bg{max-height:calc(100% - 42px)!important;}
 }
 .grille-ov{position:absolute;inset:0;pointer-events:none;z-index:3;
   background-image:

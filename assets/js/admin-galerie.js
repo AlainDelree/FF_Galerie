@@ -675,15 +675,20 @@ function majCtrlPanel() {
    on bascule vers une salle sculpture, on dé-wrappe pour rendre le mur
    directement enfant de .placement-mur-zone comme à l'origine.
    → Aucune interférence entre les deux modes. */
+var _ZONE_BASSE_H = 60; /* px — hauteur de la zone-basse peinture (mur-inf + plancher) */
+
 function _activerSceneDecorPeinture() {
   var mur = $('mur-placement');
   if (!mur) return;
-  /* Déjà wrappé ? Rien à faire. */
-  if (mur.parentElement && mur.parentElement.classList.contains('scene-block')) return;
+  /* Déjà wrappé ? Rien à faire (mais on recalcule les dimensions). */
+  if (mur.parentElement && mur.parentElement.classList.contains('scene-block')) {
+    _ajusterTailleMurPeinture();
+    return;
+  }
   /* Construire le wrapper et l'insérer à la place du mur */
   var zone = mur.parentElement; // .placement-mur-zone
   var scene = document.createElement('div');
-  scene.className = 'scene-peinture decor-on';
+  scene.className = 'scene-peinture';
   var block = document.createElement('div');
   block.className = 'scene-block';
   scene.appendChild(block);
@@ -701,6 +706,34 @@ function _activerSceneDecorPeinture() {
     '</div>' +
     '<div class="scene-plancher-sol"></div>';
   block.appendChild(zb);
+  _ajusterTailleMurPeinture();
+}
+
+function _ajusterTailleMurPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var block = mur.parentElement;
+  if (!block || !block.classList.contains('scene-block')) return;
+  var zone = block.closest('.placement-mur-zone');
+  if (!zone) return;
+  var zoneRect = zone.getBoundingClientRect();
+  var aide = document.getElementById('pl-aide');
+  var aideH = aide ? aide.offsetHeight : 0;
+  /* Espace dispo pour la scène (zone moins aide + petites marges) */
+  var dispoH = Math.max(120, zoneRect.height - aideH - 16);
+  var dispoW = Math.max(200, zoneRect.width - 16);
+  /* Mur : ratio 12/8 (1.5). Hauteur dispo = total - zone-basse */
+  var murH = dispoH - _ZONE_BASSE_H;
+  if (murH < 100) murH = 100;
+  var murW = murH * 1.5;
+  if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
+  mur.style.width  = Math.round(murW) + 'px';
+  mur.style.height = Math.round(murH) + 'px';
+  mur.style.maxWidth = mur.style.maxHeight = '';
+  mur.style.aspectRatio = '';
+  /* Zone-basse même largeur que mur (block est en width:fit-content) */
+  var zb = block.querySelector('.scene-zone-basse');
+  if (zb) zb.style.width = Math.round(murW) + 'px';
 }
 
 function _desactiverSceneDecorPeinture() {
@@ -710,10 +743,21 @@ function _desactiverSceneDecorPeinture() {
   if (!block || !block.classList.contains('scene-block')) return;
   var scene = block.parentElement;          // .scene-peinture
   var zone  = scene.parentElement;          // .placement-mur-zone
+  /* Nettoyer les styles inline laissés par _ajusterTailleMurPeinture */
+  mur.style.width = '';
+  mur.style.height = '';
   /* Remonter le mur juste avant la scène, puis supprimer la scène */
   zone.insertBefore(mur, scene);
   scene.remove();
 }
+
+/* Recalcul au resize quand on est en arrangeur peinture */
+window.addEventListener('resize', function() {
+  if (document.getElementById('overlay-placement')
+      && document.getElementById('overlay-placement').classList.contains('ouvert')) {
+    _ajusterTailleMurPeinture();
+  }
+});
 
 function afficherMurPlacement() {
   if (_estSculptSalleActive()) {
