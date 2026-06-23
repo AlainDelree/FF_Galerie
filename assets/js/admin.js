@@ -688,7 +688,20 @@ $('btn-supprimer-salle').addEventListener('click', async () => {
 let _popoverOuvert = null;
 function fermerPopover() {
   if (_popoverOuvert) {
-    document.getElementById(_popoverOuvert.id)?.classList.remove('ouvert');
+    var pop = document.getElementById(_popoverOuvert.id);
+    if (pop) {
+      pop.classList.remove('ouvert');
+      /* Sortir du mode édition si actif */
+      if (pop.classList.contains('mode-edit')) {
+        pop.classList.remove('mode-edit');
+        var crayon = pop.querySelector('.pop-edit-btn');
+        if (crayon) {
+          crayon.classList.remove('on');
+          crayon.textContent = '✎';
+          crayon.title = 'Gérer (supprimer)';
+        }
+      }
+    }
     document.getElementById(_popoverOuvert.btn)?.classList.remove('on');
     _popoverOuvert = null;
   }
