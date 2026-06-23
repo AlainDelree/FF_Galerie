@@ -1522,8 +1522,11 @@ function afficherSolPlacement() {
   const isGsm = _placementVue === 'gsm';
 
   /* Dimensions calculées en JS pour garantir le ratio (PC 16:9, GSM 9:19).
-     On part de l'espace dispo et on choisit la dimension limitante. */
-  var zoneRect = container.parentElement.getBoundingClientRect();
+     On part de l'espace dispo et on choisit la dimension limitante.
+     NB: parentElement direct est .scene-peinture qui est display:contents
+     (transparent au layout) → on remonte à .placement-mur-zone. */
+  var zoneEl = container.closest('.placement-mur-zone') || container.parentElement;
+  var zoneRect = zoneEl.getBoundingClientRect();
   var availH = Math.max(200, zoneRect.height - 30);
   var availW = Math.max(200, zoneRect.width - 10);
   var ratio = isGsm ? (9 / 19) : (16 / 9); /* largeur / hauteur */
