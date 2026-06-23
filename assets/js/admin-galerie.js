@@ -636,6 +636,10 @@ function majCtrlPanel() {
 function afficherMurPlacement() {
   if (_estSculptSalleActive()) return afficherSolPlacement();
   const bg = $('mur-placement');
+  /* Reset des styles inline laissés par afficherSolPlacement (sculpture)
+     qui forcent display:flex + dimensions portrait/paysage calculées en JS.
+     Sans reset, la grille 12×8 hérite de ces styles et s'étire. */
+  bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
