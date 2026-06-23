@@ -28,10 +28,10 @@
   .ctrl .v { color: var(--gold); font-variant-numeric: tabular-nums; }
 
   /* Zone de preview : ressemble à l'arrangeur admin */
-  .stage { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+  .stage { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 0; }
   .scene {
     display: flex; flex-direction: column; align-items: stretch;
-    /* width déterminé par le bloc enfant */
+    outline: 2px dashed rgba(200,160,80,.4); /* debug : on voit où la scène est */
   }
 
   /* Mur d'expo — grille 12×8 */
@@ -156,24 +156,28 @@
 
   function recompute() {
     const stageRect = stage.getBoundingClientRect();
-    const padding = 32; /* padding zone (16px de chaque côté) */
-    const dispoH = Math.max(120, stageRect.height - padding);
+    const padding = 64; /* marge confortable autour de la scène */
+    const dispoH = Math.max(150, stageRect.height - padding);
     const dispoW = Math.max(200, stageRect.width - padding);
     const murinfH = parseFloat(document.getElementById('murinfH').value);
     const plancherH = parseFloat(document.getElementById('plancherH').value);
     const zbH = murinfH + plancherH;
-    let murH = dispoH - zbH;
-    if (murH < 100) murH = 100;
+    /* Mur : on prend l'espace dispo moins la zone-basse moins 20px de marge.
+       Au lieu de tout prendre, on laisse 70% max pour que le décor reste très
+       visible dans le preview (ratio identique à ce que l'arrangeur fera). */
+    let murH = Math.min(dispoH - zbH - 20, dispoH * 0.78);
+    if (murH < 120) murH = 120;
     let murW = murH * 1.5; /* ratio 12/8 */
     if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
     mur.style.width = murW + 'px';
     mur.style.height = murH + 'px';
-    /* Aligner zone-basse à la largeur du mur via scene wrapper width auto */
+    /* Aligner zone-basse à la largeur du mur via scene wrapper width fixe */
     scene.style.width = murW + 'px';
     meta.innerHTML =
       'Zone dispo&nbsp;: <b>' + Math.round(dispoW) + '×' + Math.round(dispoH) + '</b>' +
       ' &nbsp;·&nbsp; Mur&nbsp;: <b>' + Math.round(murW) + '×' + Math.round(murH) + '</b> (ratio 12/8)' +
-      ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + (murinfH + plancherH) + 'px</b> (mur-inf ' + murinfH + 'px + plancher ' + plancherH + 'px)';
+      ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + (murinfH + plancherH) + 'px</b> (mur-inf ' + murinfH + 'px + plancher ' + plancherH + 'px)' +
+      ' &nbsp;·&nbsp; Total scène&nbsp;: <b>' + Math.round(murH + zbH) + 'px</b>';
   }
 
   function bindRange(id, varName, suffix, vId) {
