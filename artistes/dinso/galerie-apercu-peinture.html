@@ -9,12 +9,37 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; }
-    body { overflow: hidden; background: #1c1c1c; user-select: none; -webkit-user-select: none; pointer-events: none; }
-    .conteneur-salles { width: 100% !important; transform: none !important; }
+    body { overflow: hidden; background: #1a1a1a; user-select: none; -webkit-user-select: none; pointer-events: none; }
+    .conteneur-salles { width: 100% !important; transform: none !important; height: 100vh !important; }
+    /* La salle simule une scène : mur de la pièce (background #1a1a1a) avec
+       marges latérales 13% / haut 5%, et zone-basse 31%. Le mur d'expo (avec
+       les toiles) prend la place qui reste, naturellement centré. Valeurs
+       validées sur tools/carte-apercu-peinture-preview.html. */
     .salle {
       width: 100% !important; height: 100vh !important;
       display: flex !important; flex-direction: column !important;
+      padding: 5% 13% 0 13% !important;
+      background: #1a1a1a !important;
     }
+    /* Mur d'expo : flex-grow pour prendre la place dispo en haut */
+    .mur, .mur.mur-grille {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      aspect-ratio: auto !important; /* annule le 12/8 contraignant */
+      min-height: 0 !important;
+      padding: 0 !important;
+      align-self: center !important;
+    }
+    /* Zone-basse : 31% de la hauteur de la salle, alignée à la largeur totale
+       (déborde sur les marges latérales pour faire le sol complet). */
+    .zone-basse, .salle-grille .zone-basse {
+      flex: 0 0 auto !important;
+      width: calc(100% + 30%) !important;  /* 13%*2 = 26% mais on prend large */
+      margin: 0 -13% !important;
+      height: 31% !important;
+    }
+    .mur-inferieur { flex: 0 0 38% !important; min-height: 12px !important; }
+    .plancher-sol { flex: 1 1 auto !important; min-height: 0 !important; }
     /* Cacher tout ce qui n'est pas la salle */
     .bandeau-invite, .entete, .nav-pages, .controles, .btn-musique,
     .barre-navigation, .nav-mobile, .dots, .nav-retour, .retour-plan,
