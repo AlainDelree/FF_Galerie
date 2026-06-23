@@ -10,11 +10,28 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; }
     body { overflow: hidden; background: #1c1c1c; user-select: none; -webkit-user-select: none; pointer-events: none; }
-    .conteneur-salles { width: 100% !important; transform: none !important; }
+    .conteneur-salles { width: 100% !important; transform: none !important; height: 100vh !important; }
     .salle {
       width: 100% !important; height: 100vh !important;
       display: flex !important; flex-direction: column !important;
+      padding: 0 !important; /* override padding latéral .salle-grille pour remplir la carte */
     }
+    /* Mur prend tout l'espace dispo en haut (ratio défini par largeur), zone-basse compacte en bas */
+    .mur, .mur.mur-grille {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      aspect-ratio: auto !important; /* annule le 12/8 contraignant pour remplir le flex */
+      min-height: 0 !important;
+      padding: 0 !important;
+    }
+    .zone-basse, .salle-grille .zone-basse {
+      flex: 0 0 auto !important;
+      width: 100% !important;
+      margin: 0 !important;
+      height: 22% !important; max-height: 80px !important;
+    }
+    .mur-inferieur { flex: 0 0 35% !important; min-height: 18px !important; }
+    .plancher-sol { flex: 1 1 auto !important; min-height: 0 !important; }
     /* Cacher tout ce qui n'est pas la salle */
     .bandeau-invite, .entete, .nav-pages, .controles, .btn-musique,
     .barre-navigation, .nav-mobile, .dots, .nav-retour, .retour-plan,
