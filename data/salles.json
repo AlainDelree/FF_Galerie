@@ -6,7 +6,7 @@
       "couleur_mur": "#dbd7cf",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 10,
-      "texture": "bois",
+      "texture": "velours",
       "visible": false,
       "toiles": [
         8,
