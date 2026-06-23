@@ -308,7 +308,7 @@ function ouvrirModaleSupprTexture(chemin, url) {
       e.stopPropagation();
       var actif = pop.classList.toggle('mode-edit');
       btn.classList.toggle('on', actif);
-      btn.textContent = actif ? '✓' : '✎';
+      btn.textContent = actif ? '✕' : '✎';
       btn.title = actif ? 'Terminer' : 'Gérer (supprimer)';
     });
   }
