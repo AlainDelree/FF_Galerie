@@ -668,6 +668,46 @@ function majCtrlPanel() {
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
 
+/* Configure l'iframe de fond de l'arrangeur peinture : charge l'aperçu
+   galerie peinture avec la salle active mais VIDE (pas de positions ni
+   de toiles), pour ne rendre que le décor (mur + parquet + portes).
+   Réutilise galerie-apercu-peinture.html (chez Dinso : artistes/dinso/, …). */
+function _configurerSceneFond() {
+  var ifr = document.getElementById('scene-fond-iframe');
+  if (!ifr || !salleActive) return;
+  /* Base du chemin selon l'admin courant */
+  var apercuBase = '';
+  if (typeof ADMIN_CFG !== 'undefined') {
+    apercuBase = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
+  }
+  var src = apercuBase + 'galerie-apercu-peinture.html?vue=pc&v=' + Date.now();
+  /* Cloner la salle active sans positions/toiles → décor pur */
+  var salleVide = JSON.parse(JSON.stringify(salleActive));
+  salleVide.positions = [];
+  salleVide.positions_mobile = [];
+  salleVide.toiles = [];
+  var injectData = {
+    type: 'init-data',
+    toiles: { next_id: 1, tailles: [], toiles: [] },
+    salles: { salles: [salleVide] }
+  };
+  /* Listener postMessage : (re)envoyer les données quand l'iframe le demande */
+  function onMsg(e) {
+    if (!ifr.contentWindow || e.source !== ifr.contentWindow) return;
+    if (e.data && e.data.type === 'iframe-awaiting-data') {
+      try { ifr.contentWindow.postMessage(injectData, '*'); } catch(_) {}
+      window.removeEventListener('message', onMsg);
+    }
+  }
+  window.addEventListener('message', onMsg);
+  ifr.addEventListener('load', function _l() {
+    try { ifr.contentWindow.postMessage(injectData, '*'); } catch(_) {}
+    ifr.removeEventListener('load', _l);
+  });
+  /* Recharger l'iframe pour appliquer la nouvelle salle (couleur, etc.) */
+  ifr.src = src;
+}
+
 function afficherMurPlacement() {
   if (_estSculptSalleActive()) {
     /* Bascule vers sculpture : retirer le décor peinture de la scène */
@@ -682,9 +722,13 @@ function afficherMurPlacement() {
   bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
-  /* Activer le décor (parquet + arches) pour les salles peinture */
+  /* Activer le décor (iframe en arrière-plan) pour les salles peinture */
   var sceneEl = document.getElementById('scene-peinture');
   if (sceneEl) sceneEl.classList.add('decor-on');
+  /* Configurer l'iframe de fond : aperçu salle VIDE (pas de toiles, juste
+     le mur + plancher + portes) — la grille admin par-dessus gère le clic
+     et l'affichage des toiles posées. */
+  _configurerSceneFond();
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {

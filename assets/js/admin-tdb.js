@@ -269,10 +269,11 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       wrap.style.cssText = 'position:relative;height:' + gsmH + 'px;width:' + gsmW + 'px;'
         + 'margin:0 auto;background:var(--bg3);border-radius:6px 6px 0 0;overflow:hidden;';
     } else {
-      /* PC paysage : pleine largeur. Carte seule → hauteur libre (aspect-ratio
-         16/9 dicte la hauteur), carte côte à côte → max-height 180px pour
-         tenir avec la carte GSM voisine. */
-      var maxH = opts.solo ? 'none' : '180px';
+      /* PC paysage : pleine largeur. Carte seule → hauteur libre dans une
+         limite raisonnable pour ne pas saturer l'écran (l'aspect-ratio 16/9
+         dicte la hauteur naturelle, mais on plafonne à 260px), carte côte
+         à côte → max-height 180px pour tenir avec la carte GSM voisine. */
+      var maxH = opts.solo ? '260px' : '180px';
       wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + meta.ratio
         + ';max-height:' + maxH + ';overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
     }
