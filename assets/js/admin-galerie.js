@@ -669,7 +669,12 @@ function majCtrlPanel() {
 }
 
 function afficherMurPlacement() {
-  if (_estSculptSalleActive()) return afficherSolPlacement();
+  if (_estSculptSalleActive()) {
+    /* Bascule vers sculpture : retirer le décor peinture de la scène */
+    var scene = document.getElementById('scene-peinture');
+    if (scene) scene.classList.remove('decor-on');
+    return afficherSolPlacement();
+  }
   const bg = $('mur-placement');
   /* Reset des styles inline laissés par afficherSolPlacement (sculpture)
      qui forcent display:flex + dimensions portrait/paysage calculées en JS.
@@ -677,6 +682,9 @@ function afficherMurPlacement() {
   bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
+  /* Activer le décor (parquet + arches) pour les salles peinture */
+  var sceneEl = document.getElementById('scene-peinture');
+  if (sceneEl) sceneEl.classList.add('decor-on');
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {

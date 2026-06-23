@@ -179,9 +179,10 @@ function _renderTDB() {
     tdb.appendChild(titreVues);
 
     var grid = document.createElement('div');
-    grid.className = 'tdb-grid';
+    var solo = (typeDef.vues.length === 1);
+    grid.className = 'tdb-grid' + (solo ? ' tdb-grid-solo' : '');
     typeDef.vues.forEach(function(facette) {
-      grid.appendChild(_creerCarteVue(facette, s, lbl));
+      grid.appendChild(_creerCarteVue(facette, s, lbl, { solo: solo }));
     });
     tdb.appendChild(grid);
   }
@@ -233,8 +234,11 @@ function _clonerEsthetique(srcId, cibleId) {
   }
 }
 
-/* ── Carte d'une vue arrangeable (PC / GSM) ── */
-function _creerCarteVue(facette, salle, lbl) {
+/* ── Carte d'une vue arrangeable (PC / GSM) ──
+   opts.solo : true si la carte est seule dans la grille (pas de GSM) →
+   on relâche la max-height pour donner plus de place à l'aperçu. */
+function _creerCarteVue(facette, salle, lbl, opts) {
+  opts = opts || {};
   var meta = FACETTES_META[facette];
   if (!meta) return document.createElement('div');
 
@@ -265,9 +269,12 @@ function _creerCarteVue(facette, salle, lbl) {
       wrap.style.cssText = 'position:relative;height:' + gsmH + 'px;width:' + gsmW + 'px;'
         + 'margin:0 auto;background:var(--bg3);border-radius:6px 6px 0 0;overflow:hidden;';
     } else {
-      /* PC paysage : pleine largeur, hauteur max fixe */
+      /* PC paysage : pleine largeur. Carte seule → hauteur libre (aspect-ratio
+         16/9 dicte la hauteur), carte côte à côte → max-height 180px pour
+         tenir avec la carte GSM voisine. */
+      var maxH = opts.solo ? 'none' : '180px';
       wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + meta.ratio
-        + ';max-height:180px;overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
+        + ';max-height:' + maxH + ';overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
     }
 
     var iframe = document.createElement('iframe');

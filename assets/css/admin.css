@@ -354,9 +354,37 @@ button{cursor:pointer;}
 .placement-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--brd);flex-shrink:0;padding-top:max(.55rem,env(safe-area-inset-top));}
 .pl-titre{font-size:12px;color:var(--muted);}
 .pl-titre strong{color:var(--text);}
-.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;}
-.placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;}
+.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;align-items:center;}
+.placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;z-index:1;}
 .placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.35)!important;border-width:1px!important;}
+
+/* ══ SCÈNE PEINTURE (décor autour du mur dans l'Arranger) ══
+   Wrapper qui contient le mur + parquet en dessous + arches sur les côtés.
+   Visible pour les salles peinture uniquement (toggle JS via .decor-on).
+   Mur reste à sa place — décor ajouté en absolu autour. */
+.scene-peinture{position:relative;width:100%;max-width:min(900px,calc((100dvh - 215px)*1.5));display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;}
+.scene-peinture .scene-arche,.scene-peinture .scene-parquet{display:none;}
+.scene-peinture.decor-on .scene-arche,.scene-peinture.decor-on .scene-parquet{display:block;}
+.scene-parquet{height:34px;flex-shrink:0;border-radius:0 0 6px 6px;margin-top:-1px;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0,rgba(0,0,0,.18) 1px,transparent 1px,transparent 60px),
+    repeating-linear-gradient(to bottom,transparent 0,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),
+    linear-gradient(to bottom,#5a3a22,#3a2515);
+  box-shadow:inset 0 6px 8px rgba(0,0,0,.35);}
+.scene-arche{position:absolute;width:44px;top:0;bottom:34px;background:#0c0a07;
+  border-top-left-radius:44px 60px;border-top-right-radius:44px 60px;pointer-events:none;
+  box-shadow:inset 0 0 12px rgba(0,0,0,.6);}
+.scene-arche::after{content:'';position:absolute;left:50%;top:35%;transform:translateX(-50%);
+  width:18px;height:60%;background:linear-gradient(to bottom,rgba(255,255,255,.04),transparent);
+  border-radius:18px 18px 0 0;}
+.scene-arche-g{left:-44px;}
+.scene-arche-d{right:-44px;}
+@media (max-width:700px){
+  .scene-arche{width:24px;}
+  .scene-arche-g{left:-24px;}
+  .scene-arche-d{right:-24px;}
+  .scene-parquet{height:24px;}
+}
 .grille-ov{position:absolute;inset:0;pointer-events:none;z-index:3;
   background-image:
     repeating-linear-gradient(rgba(200,160,80,.55) 0,rgba(200,160,80,.55) 1.5px,transparent 1.5px,transparent calc(100%/8)),
@@ -1050,6 +1078,8 @@ textarea.champ{resize:vertical;min-height:65px;}
 .tdb-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: .55rem;
 }
+/* Quand une seule carte (peinture : pas de GSM) → carte pleine largeur */
+.tdb-grid-solo { grid-template-columns: 1fr; }
 
 /* Carte */
 .tdb-card {
