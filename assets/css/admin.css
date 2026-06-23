@@ -367,6 +367,7 @@ button{cursor:pointer;}
    tools/scene-peinture-preview.html : marge latérale 265px (adaptative
    en dessous de 1100px de large), mur-inf 32px, plancher 51px. */
 .scene-peinture{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;flex:1;min-height:0;}
+.scene-block{display:flex;flex-direction:column;align-items:stretch;width:fit-content;max-width:100%;}
 .scene-mur-piece{background:#1a1a1a;display:flex;align-items:center;justify-content:center;padding:0 var(--scene-marge-lat,265px);border-radius:4px 4px 0 0;flex-shrink:0;}
 .scene-zb{display:flex;flex-direction:column;flex-shrink:0;}
 .scene-mur-inf{background:#111;height:32px;padding:0 1.2rem;display:flex;align-items:flex-end;justify-content:space-between;position:relative;}

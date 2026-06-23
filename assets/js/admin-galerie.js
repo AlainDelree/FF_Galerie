@@ -687,9 +687,12 @@ function _activerSceneDecorPeinture() {
   var zone = mur.parentElement;
   var scene = document.createElement('div');
   scene.className = 'scene-peinture';
+  var block = document.createElement('div');
+  block.className = 'scene-block';
+  scene.appendChild(block);
   var piece = document.createElement('div');
   piece.className = 'scene-mur-piece';
-  scene.appendChild(piece);
+  block.appendChild(piece);
   zone.insertBefore(scene, mur);
   piece.appendChild(mur);
   var zb = document.createElement('div');
@@ -701,7 +704,7 @@ function _activerSceneDecorPeinture() {
       '<div class="scene-porte scene-porte-d"></div>' +
     '</div>' +
     '<div class="scene-plancher"></div>';
-  scene.appendChild(zb);
+  block.appendChild(zb);
 }
 
 function _desactiverSceneDecorPeinture() {
@@ -709,7 +712,8 @@ function _desactiverSceneDecorPeinture() {
   if (!mur) return;
   var piece = mur.parentElement;
   if (!piece || !piece.classList.contains('scene-mur-piece')) return;
-  var scene = piece.parentElement;          // .scene-peinture
+  var block = piece.parentElement;          // .scene-block
+  var scene = block.parentElement;          // .scene-peinture
   var zone  = scene.parentElement;          // .placement-mur-zone
   mur.style.width = '';
   mur.style.height = '';
