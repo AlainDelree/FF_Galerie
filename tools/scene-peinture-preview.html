@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview — Scène peinture admin</title>
+<style>
+  :root {
+    --gold: #c8a050;
+    --bg-page: #f5f0e8;
+    --text: #2a2520;
+    --muted: #8a7e6e;
+    --brd: rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg-page); color: var(--text); font: 14px/1.4 system-ui, sans-serif; display: flex; flex-direction: column; }
+
+  /* Barre du haut : sliders */
+  .ctrl {
+    flex: 0 0 auto; padding: .8rem 1.2rem; background: #fff; border-bottom: 1px solid var(--brd);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .8rem 1.5rem;
+  }
+  .ctrl label { display: flex; flex-direction: column; gap: .2rem; font-size: 12px; color: var(--muted); }
+  .ctrl label > span:first-child { font-weight: 600; color: var(--text); }
+  .ctrl input[type=range] { width: 100%; }
+  .ctrl input[type=color] { width: 100%; height: 28px; border: 1px solid var(--brd); border-radius: 4px; cursor: pointer; }
+  .ctrl .v { color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  /* Zone de preview : ressemble à l'arrangeur admin */
+  .stage { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+  .scene {
+    display: flex; flex-direction: column; align-items: stretch;
+    /* width déterminé par le bloc enfant */
+  }
+
+  /* Mur d'expo — grille 12×8 */
+  .mur {
+    background: var(--mur-col, #2e2e2e);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(8, minmax(0, 1fr));
+    gap: 2px;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+  }
+  .mur .cell { border: .5px solid rgba(255,255,255,.06); }
+  .mur.grille .cell { border-color: rgba(255,255,255,.35); border-width: 1px; }
+
+  /* Zone basse : mur-inférieur (avec portes) + plancher */
+  .zb { display: flex; flex-direction: column; }
+  .mur-inf {
+    background: #111;
+    height: var(--murinf-h, 32px);
+    padding: 0 1.2rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    position: relative;
+  }
+  .porte {
+    width: var(--porte-w, 34px);
+    height: calc(var(--murinf-h, 32px) * .8);
+    background: #0c0a07;
+    border-top-left-radius: var(--porte-w, 34px) calc(var(--murinf-h, 32px) * 1.2);
+    border-top-right-radius: var(--porte-w, 34px) calc(var(--murinf-h, 32px) * 1.2);
+    box-shadow: inset 0 0 10px rgba(0,0,0,.7);
+    position: relative;
+  }
+  .porte::after {
+    content: ''; position: absolute; left: 50%; top: 30%; transform: translateX(-50%);
+    width: calc(var(--porte-w, 34px) * .4); height: 60%;
+    background: linear-gradient(to bottom, rgba(255,255,255,.04), transparent);
+    border-radius: var(--porte-w, 34px) var(--porte-w, 34px) 0 0;
+  }
+  .plancher {
+    height: var(--plancher-h, 28px);
+    border-radius: 0 0 4px 4px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0, rgba(0,0,0,.22) 1px, transparent 1px, transparent var(--plancher-pl, 60px)),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 14px, rgba(0,0,0,.15) 14px, rgba(0,0,0,.15) 16px),
+      linear-gradient(to bottom, var(--plancher-haut, #5a3a22), var(--plancher-bas, #3a2515));
+    box-shadow: inset 0 8px 10px rgba(0,0,0,.4);
+  }
+
+  .meta { padding: .4rem 1.2rem; background: rgba(0,0,0,.04); font-size: 11px; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+  .meta b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <label>
+    <span>Couleur du mur</span>
+    <input type="color" id="murCol" value="#2e2e2e">
+  </label>
+  <label>
+    <span>Hauteur mur-inférieur (px) <span class="v" id="vMurinf">32</span></span>
+    <input type="range" id="murinfH" min="20" max="60" value="32">
+  </label>
+  <label>
+    <span>Largeur porte (px) <span class="v" id="vPorte">34</span></span>
+    <input type="range" id="porteW" min="20" max="60" value="34">
+  </label>
+  <label>
+    <span>Hauteur plancher (px) <span class="v" id="vPlancher">28</span></span>
+    <input type="range" id="plancherH" min="16" max="60" value="28">
+  </label>
+  <label>
+    <span>Lignes parquet (px) <span class="v" id="vPlancherPl">60</span></span>
+    <input type="range" id="plancherPl" min="40" max="120" value="60">
+  </label>
+  <label>
+    <span>Couleur parquet haut</span>
+    <input type="color" id="plancherHaut" value="#5a3a22">
+  </label>
+  <label>
+    <span>Couleur parquet bas</span>
+    <input type="color" id="plancherBas" value="#3a2515">
+  </label>
+  <label>
+    <span>Afficher la grille</span>
+    <input type="checkbox" id="grille" checked>
+  </label>
+</div>
+
+<div class="meta" id="meta">…</div>
+
+<div class="stage" id="stage">
+  <div class="scene" id="scene">
+    <div class="mur grille" id="mur"></div>
+    <div class="zb">
+      <div class="mur-inf">
+        <div class="porte"></div>
+        <div class="porte"></div>
+      </div>
+      <div class="plancher"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Génère les cellules de la grille 12×8 */
+  const mur = document.getElementById('mur');
+  for (let i = 0; i < 12 * 8; i++) {
+    const c = document.createElement('div'); c.className = 'cell'; mur.appendChild(c);
+  }
+
+  /* Calcule la taille du mur : prend toute la place dispo (zone moins zone-basse). */
+  const stage = document.getElementById('stage');
+  const scene = document.getElementById('scene');
+  const meta  = document.getElementById('meta');
+
+  function getCSSPxVar(name) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return parseFloat(v) || 0;
+  }
+
+  function recompute() {
+    const stageRect = stage.getBoundingClientRect();
+    const padding = 32; /* padding zone (16px de chaque côté) */
+    const dispoH = Math.max(120, stageRect.height - padding);
+    const dispoW = Math.max(200, stageRect.width - padding);
+    const murinfH = parseFloat(document.getElementById('murinfH').value);
+    const plancherH = parseFloat(document.getElementById('plancherH').value);
+    const zbH = murinfH + plancherH;
+    let murH = dispoH - zbH;
+    if (murH < 100) murH = 100;
+    let murW = murH * 1.5; /* ratio 12/8 */
+    if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
+    mur.style.width = murW + 'px';
+    mur.style.height = murH + 'px';
+    /* Aligner zone-basse à la largeur du mur via scene wrapper width auto */
+    scene.style.width = murW + 'px';
+    meta.innerHTML =
+      'Zone dispo&nbsp;: <b>' + Math.round(dispoW) + '×' + Math.round(dispoH) + '</b>' +
+      ' &nbsp;·&nbsp; Mur&nbsp;: <b>' + Math.round(murW) + '×' + Math.round(murH) + '</b> (ratio 12/8)' +
+      ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + (murinfH + plancherH) + 'px</b> (mur-inf ' + murinfH + 'px + plancher ' + plancherH + 'px)';
+  }
+
+  function bindRange(id, varName, suffix, vId) {
+    const el = document.getElementById(id);
+    const v = vId ? document.getElementById(vId) : null;
+    el.addEventListener('input', () => {
+      document.documentElement.style.setProperty(varName, el.value + (suffix||''));
+      if (v) v.textContent = el.value;
+      recompute();
+    });
+    /* init */
+    document.documentElement.style.setProperty(varName, el.value + (suffix||''));
+  }
+  bindRange('murinfH',    '--murinf-h',    'px', 'vMurinf');
+  bindRange('porteW',     '--porte-w',     'px', 'vPorte');
+  bindRange('plancherH',  '--plancher-h',  'px', 'vPlancher');
+  bindRange('plancherPl', '--plancher-pl', 'px', 'vPlancherPl');
+
+  document.getElementById('murCol').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--mur-col', e.target.value);
+  });
+  document.getElementById('plancherHaut').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--plancher-haut', e.target.value);
+  });
+  document.getElementById('plancherBas').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--plancher-bas', e.target.value);
+  });
+  document.getElementById('grille').addEventListener('change', e => {
+    mur.classList.toggle('grille', e.target.checked);
+  });
+  /* Init valeurs CSS */
+  document.documentElement.style.setProperty('--mur-col', '#2e2e2e');
+  document.documentElement.style.setProperty('--plancher-haut', '#5a3a22');
+  document.documentElement.style.setProperty('--plancher-bas', '#3a2515');
+
+  window.addEventListener('resize', recompute);
+  recompute();
+</script>
+
+</body>
+</html>
