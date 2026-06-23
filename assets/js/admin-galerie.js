@@ -668,24 +668,87 @@ function majCtrlPanel() {
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
 
-/* Calcule width/height du mur peinture selon l'espace dispo : prend toute
-   la hauteur dispo, largeur = hauteur × 1.5 (ratio 12/8). Si la largeur
-   dépasse, on inverse (largeur max, hauteur dérivée). Comme afficherSolPlacement
-   pour la sculpture, mais en plus simple. */
+/* ─── Scène peinture (décor autour du mur d'expo dans l'Arrangeur) ───
+   HTML statique : #mur-placement seul dans .placement-mur-zone.
+   Pour les salles peinture, on enveloppe dynamiquement le mur dans :
+     .scene-peinture > .scene-mur-piece (marge latérale) > #mur-placement
+                     + .scene-zb > .scene-mur-inf (avec 2 portes) + .scene-plancher
+   Pour les salles sculpture, on dé-wrappe pour rendre le mur directement
+   enfant de .placement-mur-zone comme à l'origine. → Aucune interférence. */
+var _SCENE_MARGE_LAT_PC = 265; /* px sur PC large (validé via preview) */
+var _SCENE_MARGE_LAT_SM = 80;  /* px sur écran étroit */
+var _SCENE_ZB_H_PC = 83;       /* mur-inf 32 + plancher 51 */
+var _SCENE_ZB_H_SM = 56;       /* mur-inf 24 + plancher 32 (cf. media query 1100px) */
+
+function _activerSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  if (mur.parentElement && mur.parentElement.classList.contains('scene-mur-piece')) return;
+  var zone = mur.parentElement;
+  var scene = document.createElement('div');
+  scene.className = 'scene-peinture';
+  var piece = document.createElement('div');
+  piece.className = 'scene-mur-piece';
+  scene.appendChild(piece);
+  zone.insertBefore(scene, mur);
+  piece.appendChild(mur);
+  var zb = document.createElement('div');
+  zb.className = 'scene-zb';
+  zb.setAttribute('aria-hidden', 'true');
+  zb.innerHTML =
+    '<div class="scene-mur-inf">' +
+      '<div class="scene-porte scene-porte-g"></div>' +
+      '<div class="scene-porte scene-porte-d"></div>' +
+    '</div>' +
+    '<div class="scene-plancher"></div>';
+  scene.appendChild(zb);
+}
+
+function _desactiverSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var piece = mur.parentElement;
+  if (!piece || !piece.classList.contains('scene-mur-piece')) return;
+  var scene = piece.parentElement;          // .scene-peinture
+  var zone  = scene.parentElement;          // .placement-mur-zone
+  mur.style.width = '';
+  mur.style.height = '';
+  zone.insertBefore(mur, scene);
+  scene.remove();
+}
+
+/* Calcule width/height du mur d'expo selon l'espace dispo, EN TENANT COMPTE
+   de la marge latérale (mur-piece padding) et de la zone-basse. */
 function _ajusterMurPeinture() {
   var mur = $('mur-placement');
   if (!mur) return;
   var zone = mur.closest('.placement-mur-zone');
   if (!zone) return;
   var rect = zone.getBoundingClientRect();
-  var aide = document.getElementById('pl-aide');
-  var aideH = aide ? aide.offsetHeight : 0;
-  var dispoH = Math.max(200, rect.height - aideH - 16);
-  var dispoW = Math.max(200, rect.width - 16);
-  var murH = dispoH, murW = murH * 1.5;
-  if (murW > dispoW) { murW = dispoW; murH = murW / 1.5; }
+  /* Largeur écran < 1100px → marges réduites + zone-basse réduite (cf. media query) */
+  var ecranEtroit = window.innerWidth < 1100;
+  var margeLat = ecranEtroit ? _SCENE_MARGE_LAT_SM : _SCENE_MARGE_LAT_PC;
+  var zbH      = ecranEtroit ? _SCENE_ZB_H_SM      : _SCENE_ZB_H_PC;
+  var dispoH = Math.max(200, rect.height - 16);
+  var dispoW = Math.max(300, rect.width - 16);
+  /* Mur d'expo : prend la place dispo moins zone-basse, ratio 12/8. */
+  var murH = dispoH - zbH;
+  if (murH < 120) murH = 120;
+  var murW = murH * 1.5;
+  /* Si mur + 2×marge dépasse la largeur dispo, on réduit en gardant le ratio. */
+  if (murW + 2 * margeLat > dispoW) {
+    murW = dispoW - 2 * margeLat;
+    if (murW < 200) {
+      /* Écran très étroit : on réduit la marge à l'extrême */
+      margeLat = Math.max(20, (dispoW - 200) / 2);
+      murW = dispoW - 2 * margeLat;
+    }
+    murH = murW / 1.5;
+  }
   mur.style.width  = Math.round(murW) + 'px';
   mur.style.height = Math.round(murH) + 'px';
+  /* Appliquer la marge effective (utile si on a dû réduire) */
+  document.documentElement.style.setProperty('--scene-marge-lat', margeLat + 'px');
 }
 
 /* Recalcul au resize quand on est en arrangeur peinture */
@@ -697,20 +760,21 @@ window.addEventListener('resize', function() {
 });
 
 function afficherMurPlacement() {
-  if (_estSculptSalleActive()) return afficherSolPlacement();
+  if (_estSculptSalleActive()) {
+    /* Bascule vers sculpture : dé-wrapper la scène pour repartir d'un
+       DOM identique au HTML statique (compat. afficherSolPlacement). */
+    _desactiverSceneDecorPeinture();
+    return afficherSolPlacement();
+  }
   const bg = $('mur-placement');
-  /* Reset des styles inline laissés par afficherSolPlacement (sculpture)
-     qui forcent display:flex + dimensions portrait/paysage calculées en JS.
-     Sans reset, la grille 12×8 hérite de ces styles et s'étire. */
+  /* Reset des styles inline laissés par afficherSolPlacement (sculpture). */
   bg.removeAttribute('style');
-  bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
+  bg.className = 'placement-mur-bg';
   bg.innerHTML = '';
-  /* Dimensions calculées en JS, comme la sculpture. requestAnimationFrame
-     pour que .placement-overlay.ouvert ait posé son layout avant qu'on
-     mesure (sinon getBoundingClientRect retourne 0 et on tombe sur le
-     min). Appel synchrone aussi pour avoir un rendu initial sans flash. */
+  /* Activer la scène (mur-piece + zone-basse) et dimensionner */
+  _activerSceneDecorPeinture();
   _ajusterMurPeinture();
-  requestAnimationFrame(_ajusterMurPeinture);
+  requestAnimationFrame(_ajusterMurPeinture); /* après que le layout soit posé */
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
