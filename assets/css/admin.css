@@ -164,7 +164,7 @@ button{cursor:pointer;}
 #pop-musique{min-width:280px;max-width:min(420px,calc(100vw - 1.2rem));max-height:80vh;overflow-y:auto;}
 
 /* Popovers Texture : un peu plus larges pour accueillir +8 swatches */
-#pop-texture, #pop-tex-systeme{min-width:240px;max-width:min(360px,calc(100vw - 1.2rem));}
+#pop-texture, #pop-tex-systeme{width:max-content;max-width:min(360px,calc(100vw - 1.2rem));}
 /* Bouton + dans le popover Texture (sous les swatches) */
 .pop-plus{margin-top:.5rem;width:100%;padding:.3rem .5rem;border-radius:6px;
   border:0.5px dashed var(--brd);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;
@@ -177,11 +177,11 @@ button{cursor:pointer;}
 .pop-action:last-child{margin-bottom:0;}
 .pop-action:hover{border-color:var(--gold);color:var(--gold);background:rgba(200,160,80,.06);}
 
-/* Header popover : titre + bouton crayon */
-.pop-hdr{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.45rem;}
-.pop-hdr .pop-titre{margin-bottom:0;}
+/* Header popover : titre + bouton crayon (largeur naturelle, alignée avec swatches) */
+.pop-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;}
+.pop-hdr .pop-titre{margin-bottom:0;flex:1;}
 .pop-edit-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.95rem;line-height:1;
-  padding:.15rem .3rem;border-radius:4px;transition:color .15s,background .15s;}
+  padding:.15rem .35rem;border-radius:4px;transition:color .15s,background .15s;flex-shrink:0;}
 .pop-edit-btn:hover{color:var(--gold);background:rgba(200,160,80,.1);}
 .pop-edit-btn.on{color:#c0392b;background:rgba(192,57,43,.12);}
 
