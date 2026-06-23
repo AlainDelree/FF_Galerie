@@ -153,7 +153,10 @@
       </div>
 
       <div class="popover" id="pop-texture">
-        <div class="pop-titre">Mes textures</div>
+        <div class="pop-hdr">
+          <span class="pop-titre">Mes textures</span>
+          <button type="button" class="pop-edit-btn" id="btn-edit-mes-tex" title="Gérer (supprimer)">✎</button>
+        </div>
         <div class="swatches" id="sw-texture">
           <div class="sw" style="background:#2e2e2e;" data-val="none" title="Uni"></div>
           <div class="sw" style="background:repeating-linear-gradient(45deg,#555 0,#555 1px,#444 0,#444 4px);" data-val="tissu" title="Tissu"></div>
@@ -180,7 +183,10 @@
 
       <!-- Popover textures système (partagées non miennes) -->
       <div class="popover" id="pop-tex-systeme">
-        <div class="pop-titre">Textures système</div>
+        <div class="pop-hdr">
+          <span class="pop-titre">Textures système</span>
+          <button type="button" class="pop-edit-btn" id="btn-edit-tex-systeme" title="Gérer (supprimer)">✎</button>
+        </div>
         <div class="swatches" id="sw-tex-systeme">
           <div class="pop-vide" id="tex-systeme-vide" style="display:none;font-size:.72rem;color:var(--muted);padding:.3rem 0;">Aucune texture système disponible.</div>
         </div>
