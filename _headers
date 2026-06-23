@@ -3,3 +3,9 @@
 
 /admin.html
   Cache-Control: no-cache, no-store, must-revalidate
+
+/artistes/*/galerie-apercu*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/tools/*
+  Cache-Control: no-cache, no-store, must-revalidate
