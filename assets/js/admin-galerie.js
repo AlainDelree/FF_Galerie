@@ -668,11 +668,58 @@ function majCtrlPanel() {
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
 
+/* ─── Helpers scène peinture (décor autour du mur dans l'Arranger) ───
+   Le HTML statique ne contient QUE #mur-placement. Quand on ouvre une
+   salle peinture, on enveloppe dynamiquement le mur dans un wrapper
+   .scene-peinture > .scene-block avec une zone-basse en dessous. Quand
+   on bascule vers une salle sculpture, on dé-wrappe pour rendre le mur
+   directement enfant de .placement-mur-zone comme à l'origine.
+   → Aucune interférence entre les deux modes. */
+function _activerSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  /* Déjà wrappé ? Rien à faire. */
+  if (mur.parentElement && mur.parentElement.classList.contains('scene-block')) return;
+  /* Construire le wrapper et l'insérer à la place du mur */
+  var zone = mur.parentElement; // .placement-mur-zone
+  var scene = document.createElement('div');
+  scene.className = 'scene-peinture decor-on';
+  var block = document.createElement('div');
+  block.className = 'scene-block';
+  scene.appendChild(block);
+  /* Insérer la scène à la position du mur, puis déplacer le mur dedans */
+  zone.insertBefore(scene, mur);
+  block.appendChild(mur);
+  /* Zone-basse (mur-inférieur + portes + plancher) sous le mur */
+  var zb = document.createElement('div');
+  zb.className = 'scene-zone-basse';
+  zb.setAttribute('aria-hidden', 'true');
+  zb.innerHTML =
+    '<div class="scene-mur-inferieur">' +
+      '<div class="scene-porte-mur scene-porte-g"></div>' +
+      '<div class="scene-porte-mur scene-porte-d"></div>' +
+    '</div>' +
+    '<div class="scene-plancher-sol"></div>';
+  block.appendChild(zb);
+}
+
+function _desactiverSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var block = mur.parentElement;
+  if (!block || !block.classList.contains('scene-block')) return;
+  var scene = block.parentElement;          // .scene-peinture
+  var zone  = scene.parentElement;          // .placement-mur-zone
+  /* Remonter le mur juste avant la scène, puis supprimer la scène */
+  zone.insertBefore(mur, scene);
+  scene.remove();
+}
+
 function afficherMurPlacement() {
   if (_estSculptSalleActive()) {
-    /* Bascule vers sculpture : retirer le décor peinture de la scène */
-    var scene = document.getElementById('scene-peinture');
-    if (scene) scene.classList.remove('decor-on');
+    /* Bascule vers sculpture : retirer tout décor peinture pour repartir
+       d'une structure DOM identique à l'origine (compat. afficherSolPlacement). */
+    _desactiverSceneDecorPeinture();
     return afficherSolPlacement();
   }
   const bg = $('mur-placement');
@@ -682,9 +729,8 @@ function afficherMurPlacement() {
   bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
-  /* Activer le décor (mur-inférieur + portes + plancher) pour la peinture */
-  var sceneEl = document.getElementById('scene-peinture');
-  if (sceneEl) sceneEl.classList.add('decor-on');
+  /* Activer le décor pour les salles peinture */
+  _activerSceneDecorPeinture();
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
@@ -1523,10 +1569,10 @@ function afficherSolPlacement() {
 
   /* Dimensions calculées en JS pour garantir le ratio (PC 16:9, GSM 9:19).
      On part de l'espace dispo et on choisit la dimension limitante.
-     NB: parentElement direct est .scene-peinture qui est display:contents
-     (transparent au layout) → on remonte à .placement-mur-zone. */
-  var zoneEl = container.closest('.placement-mur-zone') || container.parentElement;
-  var zoneRect = zoneEl.getBoundingClientRect();
+     #mur-placement est enfant direct de .placement-mur-zone — la scène
+     peinture (.scene-peinture) est créée/détruite dynamiquement par
+     afficherMurPlacement et a déjà été retirée si on arrive ici. */
+  var zoneRect = container.parentElement.getBoundingClientRect();
   var availH = Math.max(200, zoneRect.height - 30);
   var availW = Math.max(200, zoneRect.width - 10);
   var ratio = isGsm ? (9 / 19) : (16 / 9); /* largeur / hauteur */
