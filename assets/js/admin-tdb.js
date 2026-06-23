@@ -247,7 +247,10 @@ function _creerCarteVue(facette, salle, lbl) {
     if (typeof ADMIN_CFG !== 'undefined') {
       apercuBase = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
     }
-    var apercuPath = apercuBase + 'galerie-apercu.html';
+    /* Type de la salle (et non type de l'admin) — détermine le bon aperçu */
+    var typeSalle = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    var apercuFile = (typeSalle === 'sculpture') ? 'galerie-apercu.html' : 'galerie-apercu-peinture.html';
+    var apercuPath = apercuBase + apercuFile;
 
     var wrap = document.createElement('div');
     wrap.className = 'tdb-iframe-wrap';
@@ -271,14 +274,26 @@ function _creerCarteVue(facette, salle, lbl) {
 
     /* Injection des données dans l'iframe */
     (function(ifr) {
-      var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+      /* Format des données : selon le type de la SALLE (pas de l'admin).
+         Cohabitation peinture+sculpture : si le stock courant ne contient
+         pas le bon type, on injecte un stock vide (aperçu salle vide OK). */
+      var _isSculptType = (typeSalle === 'sculpture');
+      var _adminEstSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
       /* N'injecter QUE la salle de cette carte (sinon l'aperçu montre la 1re salle) */
       var salleSeule = JSON.parse(JSON.stringify(salle));
+      var stockData;
+      if (_isSculptType) {
+        stockData = _adminEstSculpt
+          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
+          : { next_id: 1, gabarits: [], pieces: [] };
+      } else {
+        stockData = !_adminEstSculpt
+          ? { next_id: nextId, tailles: tailles, toiles: toiles }
+          : { next_id: 1, tailles: [], toiles: [] };
+      }
       var injectData = {
         type: 'init-data',
-        toiles: _isSculptType
-          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-          : { next_id: nextId, tailles:  tailles, toiles: toiles },
+        toiles: stockData,
         salles: { salles: [salleSeule] }
       };
       function envoyer() {
