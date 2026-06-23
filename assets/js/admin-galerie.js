@@ -1312,6 +1312,11 @@ function ouvrirModalSalle() {
       selCopier.appendChild(opt);
     });
   }
+  // Type par défaut : type de l'admin courant
+  const selType = $('inp-salle-type');
+  if (selType) {
+    selType.value = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
+  }
   $('overlay-salle').classList.add('ouvert');
 }
 
@@ -1393,14 +1398,16 @@ async function creerSalle() {
   const srcId = parseInt(($('inp-salle-copier') || {}).value) || null;
   const src   = srcId ? salles.find(function(s) { return s.id === srcId; }) : null;
 
-  const estSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
+  // Type lu depuis le sélecteur (peinture par défaut)
+  const typeSalle = ($('inp-salle-type') || {}).value || 'peinture';
+  const estSculpt = (typeSalle === 'sculpture');
   const couleurMurDefaut    = estSculpt ? '#2a2520' : '#2e2e2e';
   const couleurCadresDefaut = estSculpt ? undefined : '#3a3a3a';
   const textureDefaut       = estSculpt ? 'none'    : 'none';
 
   const salle = {
     id: newId, nom,
-    type:             estSculpt ? 'sculpture' : undefined,
+    type:             typeSalle,
     couleur_mur:      src ? src.couleur_mur      : couleurMurDefaut,
     couleur_cadres:   src ? src.couleur_cadres   : couleurCadresDefaut,
     epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
