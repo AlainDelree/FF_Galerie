@@ -668,7 +668,7 @@ document.querySelectorAll('.sous-nav-btn').forEach(btn => {
 });
 
 // Plan salles
-$('btn-ajouter-salle').addEventListener('click', () => ouvrirModalSalle());
+$('btn-ajouter-salle')?.addEventListener('click', () => ouvrirModalSalle()); /* défensif : élément retiré du DOM, chip "＋ Salle" prend le relais */
 $('btn-supprimer-salle').addEventListener('click', async () => {
   if (!salleActive) return;
   if (!confirm(`Supprimer "${salleActive.nom}" et toutes ses positions ? Réversible via le backup.`)) return;

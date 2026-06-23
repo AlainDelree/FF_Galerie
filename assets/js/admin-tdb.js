@@ -31,7 +31,10 @@ var DECOR_DESCRIPTIVE_DEFAUT = {
 
 /* ─── Registre des types de salle ─── */
 var TYPES_SALLE = {
-  peinture:  { vues: ['galerie-pc', 'galerie-gsm'], greffons: [] },
+  /* Peinture : pas de carte GSM — galerie-peinture.js ne lit pas
+     positions_mobile (sur mobile le rendu bascule en mode flux), mur
+     PC/GSM identiques (aspect-ratio 12/8). Une seule vue suffit. */
+  peinture:  { vues: ['galerie-pc'], greffons: [] },
   sculpture: { vues: ['galerie-pc', 'galerie-gsm'], greffons: ['immersive', 'descriptive'] }
 };
 

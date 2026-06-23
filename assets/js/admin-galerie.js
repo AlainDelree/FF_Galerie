@@ -50,8 +50,10 @@ function afficherPlan() {
     (s.positions        || []).forEach(function(p) { _ids.add(p.id); });
     (s.positions_mobile || []).forEach(function(p) { _ids.add(p.id); });
     var _nb = _ids.size;
+    /* Type de la salle pour bordure colorée (peinture/sculpture) */
+    var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
     const chip = document.createElement('div');
-    chip.className = 'chip' + (_nb === 0 ? ' vide' : '');
+    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
@@ -120,6 +122,27 @@ function _renderCloneSalleRow() {
   row.appendChild(btn);
 }
 
+/* Ajuste la barre d'apparence (cadres/épaisseur/texture vs revêtement)
+   et le libellé "Couleur du mur/sol" selon le type de la salle active.
+   Permet la cohabitation peinture/sculpture dans un même admin. */
+function _majApparenceSelonSalle() {
+  if (!salleActive) return;
+  var estSculpt = (salleActive.type === 'sculpture');
+  /* Boutons spécifiques peinture (cadres + épaisseur + texture du mur) */
+  ['btn-pop-cadres', 'btn-pop-epaisseur', 'btn-pop-texture'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = estSculpt ? 'none' : '';
+  });
+  /* Boutons spécifiques sculpture (revêtement du sol) */
+  var btnRev = document.getElementById('btn-pop-revetement');
+  if (btnRev) btnRev.style.display = estSculpt ? '' : 'none';
+  /* Libellé du bouton mur (et son popover) : Couleur du mur ↔ Couleur du sol */
+  var btnMur = document.getElementById('btn-pop-mur');
+  if (btnMur) btnMur.title = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+  var popMurT = document.getElementById('pop-mur-titre');
+  if (popMurT) popMurT.textContent = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+}
+
 function selectSalle(id) {
   salleActive = salles.find(s => s.id === id);
   if (!salleActive) return;
@@ -129,6 +152,10 @@ function selectSalle(id) {
   const chips = $('chips-salles').querySelectorAll('.chip');
   chips.forEach((c, i) => { if (salles[i]?.id === id) c.classList.add('sel'); });
   if (typeof _renderCloneSalleRow === 'function') _renderCloneSalleRow();
+  /* Ajuste la barre Apparence + le label couleur mur/sol selon le type
+     de la SALLE (pas de l'admin). Permet à un admin sculpture d'éditer
+     une salle peinture (et inversement). */
+  _majApparenceSelonSalle();
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurCadresActuel = salleActive.couleur_cadres;
@@ -491,9 +518,17 @@ function ouvrirArrangerApresConfirm() {
   var _vueGsm = (_placementVue === 'gsm');
   var btnSw = document.getElementById('btn-switch-vue');
   if (btnSw) {
-    btnSw.textContent      = _vueGsm ? '📱 GSM' : '🖥 PC';
-    btnSw.style.background = _vueGsm ? 'var(--gold)' : '';
-    btnSw.style.color      = _vueGsm ? '#fff' : '';
+    /* Bouton PC/GSM utile uniquement pour les salles sculpture (positions_mobile
+       activement utilisé). En peinture, mur PC=GSM (12/8) et positions_mobile
+       n'est pas lu par le renderer → bouton inutile, on le masque. */
+    if (_estSculptSalleActive()) {
+      btnSw.style.display    = '';
+      btnSw.textContent      = _vueGsm ? '📱 GSM' : '🖥 PC';
+      btnSw.style.background = _vueGsm ? 'var(--gold)' : '';
+      btnSw.style.color      = _vueGsm ? '#fff' : '';
+    } else {
+      btnSw.style.display = 'none';
+    }
   }
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
