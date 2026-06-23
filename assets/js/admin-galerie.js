@@ -705,8 +705,12 @@ function afficherMurPlacement() {
   bg.removeAttribute('style');
   bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
   bg.innerHTML = '';
-  /* Dimensions calculées en JS, comme la sculpture */
+  /* Dimensions calculées en JS, comme la sculpture. requestAnimationFrame
+     pour que .placement-overlay.ouvert ait posé son layout avant qu'on
+     mesure (sinon getBoundingClientRect retourne 0 et on tombe sur le
+     min). Appel synchrone aussi pour avoir un rendu initial sans flash. */
   _ajusterMurPeinture();
+  requestAnimationFrame(_ajusterMurPeinture);
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
