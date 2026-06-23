@@ -273,10 +273,12 @@ function _creerCarteVue(facette, salle, lbl, opts) {
          limite raisonnable pour ne pas saturer l'écran (l'aspect-ratio 16/9
          dicte la hauteur naturelle, mais on plafonne à 260px), carte côte
          à côte → max-height 180px pour tenir avec la carte GSM voisine.
-         Peinture : ratio 4/3 (mur 12/8 + zone-basse compacte) au lieu de
-         16/9 — la salle peinture est plus haute que large/16:9. */
+         Peinture : ratio 3/2 (= 12/8 du mur d'expo) — le mur remplit la
+         carte sans letterbox noir gauche/droite. La zone-basse (parquet
+         + portes) n'apparaît pas dans la carte, mais ce qui compte pour
+         l'aperçu c'est de voir où se placent les toiles. */
       var typeSalle = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
-      var ratioCarte = (typeSalle === 'peinture') ? '4/3' : meta.ratio;
+      var ratioCarte = (typeSalle === 'peinture') ? '3/2' : meta.ratio;
       var maxH = opts.solo ? '260px' : '180px';
       wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + ratioCarte
         + ';max-height:' + maxH + ';overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
