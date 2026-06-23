@@ -354,19 +354,34 @@ button{cursor:pointer;}
 .placement-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--brd);flex-shrink:0;padding-top:max(.55rem,env(safe-area-inset-top));}
 .pl-titre{font-size:12px;color:var(--muted);}
 .pl-titre strong{color:var(--text);}
-.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;align-items:center;}
+.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;}
 .placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;width:100%;aspect-ratio:12/8;min-width:320px;flex-shrink:0;z-index:1;}
 .placement-mur-bg.grille-on .cellule{border-color:rgba(255,255,255,.35)!important;border-width:1px!important;}
 
 /* ══ SCÈNE PEINTURE (décor autour du mur dans l'Arranger) ══
-   Iframe en arrière-plan affichant le mur+parquet+portes de la salle (vide
-   visuellement), et la grille de placement par-dessus en transparent.
-   Permet à l'éditeur de baigner dans le contexte visuel réel de la salle.
-   .decor-on activé pour les salles peinture uniquement. */
-.scene-peinture{position:relative;width:100%;display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;}
-.scene-fond{display:none;position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;border-radius:6px;z-index:0;background:transparent;}
-.scene-peinture.decor-on .scene-fond{display:block;}
-.scene-peinture.decor-on .placement-mur-bg{background:transparent!important;position:relative;z-index:1;}
+   Par défaut, le wrapper est transparent au layout (display:contents) :
+   l'arrangeur sculpture continue de fonctionner sans perturbation.
+   Activé via .decor-on pour les salles peinture uniquement → flex column
+   avec mur en haut + zone-basse (mur-inférieur + plancher) en dessous,
+   reproduisant l'aspect de la galerie publique en mode salle vide. */
+.scene-peinture{display:contents;}
+.scene-peinture.decor-on{display:flex;flex-direction:column;align-items:stretch;width:100%;flex-shrink:0;position:relative;}
+.scene-peinture .scene-zone-basse{display:none;}
+.scene-peinture.decor-on .scene-zone-basse{display:flex;flex-direction:column;width:100%;flex-shrink:0;}
+.scene-mur-inferieur{width:100%;height:46px;background:#111;display:flex;align-items:flex-end;justify-content:space-between;position:relative;padding:0 1.2rem;}
+.scene-porte-mur{width:34px;height:38px;background:#0c0a07;border-top-left-radius:34px 50px;border-top-right-radius:34px 50px;box-shadow:inset 0 0 10px rgba(0,0,0,.7);position:relative;}
+.scene-porte-mur::after{content:'';position:absolute;left:50%;top:30%;transform:translateX(-50%);width:14px;height:60%;background:linear-gradient(to bottom,rgba(255,255,255,.04),transparent);border-radius:14px 14px 0 0;}
+.scene-plancher-sol{width:100%;height:48px;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 60px),
+    repeating-linear-gradient(to bottom,transparent 0,transparent 14px,rgba(0,0,0,.15) 14px,rgba(0,0,0,.15) 16px),
+    linear-gradient(to bottom,#5a3a22,#3a2515);
+  box-shadow:inset 0 8px 10px rgba(0,0,0,.4);border-radius:0 0 6px 6px;}
+@media (max-width:700px){
+  .scene-mur-inferieur{height:30px;padding:0 .6rem;}
+  .scene-porte-mur{width:22px;height:24px;}
+  .scene-plancher-sol{height:30px;}
+}
 .grille-ov{position:absolute;inset:0;pointer-events:none;z-index:3;
   background-image:
     repeating-linear-gradient(rgba(200,160,80,.55) 0,rgba(200,160,80,.55) 1.5px,transparent 1.5px,transparent calc(100%/8)),
