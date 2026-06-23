@@ -47,7 +47,7 @@
   .carte .mur-piece {
     background: var(--mur-piece-col, #1a1a1a);
     display: flex; align-items: center; justify-content: center;
-    padding: 0 var(--marge-lat-pct, 12%);
+    padding: var(--marge-haut-pct, 8%) var(--marge-lat-pct, 12%) 0;
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -99,6 +99,10 @@
   <label>
     <span>Marge latérale mur expo (% largeur) <span class="v" id="vMarge">12</span></span>
     <input type="range" id="marge" min="0" max="40" value="12">
+  </label>
+  <label>
+    <span>Marge haut mur expo (% hauteur) <span class="v" id="vMargeHaut">8</span></span>
+    <input type="range" id="margeHaut" min="0" max="40" value="8">
   </label>
   <label>
     <span>Hauteur zone-basse (% hauteur) <span class="v" id="vZb">18</span></span>
@@ -173,22 +177,20 @@
     const ratio = document.getElementById('ratio').value;
     const h = parseFloat(document.getElementById('hauteur').value);
     const marge = parseFloat(document.getElementById('marge').value);
+    const margeHaut = parseFloat(document.getElementById('margeHaut').value);
     const zb = parseFloat(document.getElementById('zb').value);
-    /* Carte solo : height variable, width via aspect-ratio */
     carte.style.height = h + 'px';
     carte.style.aspectRatio = ratio;
-    /* Carte côte à côte : 180px */
     carte2.style.height = '180px';
     carte2.style.aspectRatio = ratio;
-    /* Vars CSS */
     document.documentElement.style.setProperty('--marge-lat-pct', marge + '%');
+    document.documentElement.style.setProperty('--marge-haut-pct', margeHaut + '%');
     document.documentElement.style.setProperty('--zb-h-pct', zb + '%');
-    /* Meta */
     const w = Math.round(h * eval(ratio.replace('/', '/')));
     meta.innerHTML =
       'Ratio&nbsp;: <b>' + ratio + '</b>' +
       ' &nbsp;·&nbsp; Carte solo&nbsp;: <b>' + w + '×' + h + 'px</b>' +
-      ' &nbsp;·&nbsp; Marge latérale&nbsp;: <b>' + marge + '%</b> (' + Math.round(w * marge / 100) + 'px par côté)' +
+      ' &nbsp;·&nbsp; Marges&nbsp;: <b>' + marge + '%</b> côtés, <b>' + margeHaut + '%</b> haut' +
       ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + zb + '%</b> (' + Math.round(h * zb / 100) + 'px)';
   }
 
@@ -200,10 +202,11 @@
       recompute();
     });
   }
-  bind('ratio',   'vRatio');
-  bind('hauteur', 'vHauteur');
-  bind('marge',   'vMarge');
-  bind('zb',      'vZb');
+  bind('ratio',     'vRatio');
+  bind('hauteur',   'vHauteur');
+  bind('marge',     'vMarge');
+  bind('margeHaut', 'vMargeHaut');
+  bind('zb',        'vZb');
 
   document.getElementById('murCol').addEventListener('input', e => {
     document.documentElement.style.setProperty('--mur-col', e.target.value);
