@@ -88,8 +88,8 @@
           }
         }
       },
-      "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#f0f0f0"
+      "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#c8a050"
     },
     {
       "id": 2,
