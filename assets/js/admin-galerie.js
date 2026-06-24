@@ -549,6 +549,10 @@ function ouvrirArrangerApresConfirm() {
      marquées occupées de la salle précédente (bug visible : 2e salle
      peinture montre les positions de la 1re). */
   buildOccupancy();
+  /* Adapter le panneau de contrôle (D-pad complet vs ✕ Retirer seul)
+     au type de la salle active. Indispensable en multi-types pour qu'une
+     salle peinture chez Dinso (admin sculpture) ait le D-pad utilisable. */
+  _majPanelCtrlSelonSalle();
   /* Snapshot — restauré si retour sans sauvegarder.
      Supports identifiés par couple (id, _type) en multi-types. */
   _arrangerSnapshot = {
@@ -715,6 +719,24 @@ function quitterModePlacement() {
 }
 
 /* Met à jour le panneau de contrôle fixe selon la toile sélectionnée sur le mur */
+/* Adapte le panneau de contrôle (#pl-ctrl-cross) au type de salle active :
+   - PEINTURE : D-pad complet ↑↓←→ + ✕ + 👁 (déplacement par flèches utile)
+   - SCULPTURE : ✕ Retirer seul (les pièces sont déplacées par drag sur le sol)
+   On bascule en CSS classes pour préserver les boutons et leurs listeners
+   (attachés au chargement dans admin.js → pas besoin de re-bind). */
+function _majPanelCtrlSelonSalle() {
+  var cross = document.querySelector('.pl-ctrl-cross');
+  if (!cross) return;
+  var estSculpt = _estSculptSalleActive();
+  cross.classList.toggle('mode-sculpture', estSculpt);
+  cross.classList.toggle('mode-peinture', !estSculpt);
+  /* Texte du bouton ✕ adapté au mode pour clarté.
+     En sculpture, le bouton est seul donc on l'étiquette ; en peinture
+     il fait partie du D-pad et reste minimaliste. */
+  var rm = document.getElementById('pl-btn-rm');
+  if (rm) rm.textContent = estSculpt ? '✕ Retirer' : '✕';
+}
+
 function majCtrlPanel() {
   var panel = $("pl-ctrl-panel");
   var nomEl = $("pl-ctrl-nom");

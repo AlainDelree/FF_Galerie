@@ -1001,7 +1001,11 @@ $('btn-grille-pl').addEventListener('click', function() {
 (function() {
   function mvSel(dc, dr) {
     if (peintureSurMurSel === null) return;
-    if (ADMIN_CFG.type === 'sculpture') {
+    /* Comportement basé sur le type de la SALLE active, pas de l'admin —
+       chez Dinso, une salle peinture doit utiliser deplacerPeinture même
+       si ADMIN_CFG.type vaut 'sculpture'. */
+    var _typeSalleSel = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    if (_typeSalleSel === 'sculpture') {
       deplacerPieceSol(dc * 2, dr * 2);
     } else {
       deplacerPeinture(peintureSurMurSel, dc, dr);
@@ -1021,7 +1025,7 @@ $('btn-grille-pl').addEventListener('click', function() {
     if (peintureSurMurSel === null) return;
     var _typeRm = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
     var titre = (_trouverOeuvre(peintureSurMurSel, _typeRm) || {}).titre || "—";
-    if (ADMIN_CFG.type === 'sculpture') {
+    if (_typeRm === 'sculpture') {
       var pos = _getPositions();
       var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
       if (idx >= 0) pos.splice(idx, 1);
@@ -1033,8 +1037,78 @@ $('btn-grille-pl').addEventListener('click', function() {
     toilesSelectionnees.add(peintureSurMurSel);
     peintureSurMurSel = null; selectedToilePl = null;
     buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
-    $("pl-aide").textContent = "\"" + titre + "\" retirée — cliquez sur " + (ADMIN_CFG && ADMIN_CFG.type === 'sculpture' ? 'le sol' : 'le mur') + " pour la replacer";
+    $("pl-aide").textContent = "\"" + titre + "\" retirée — cliquez sur " + (_typeRm === 'sculpture' ? 'le sol' : 'le mur') + " pour la replacer";
   });
+
+  /* ── Drag-and-drop du panneau de contrôle ──
+     L'utilisateur peut déplacer librement le panneau pour ne pas masquer
+     une toile du strip. Seuil de 6px avant d'activer le drag pour que les
+     clics sur les boutons ↑↓←→ ✕ 👁 restent fiables. Position préservée
+     pendant toute la session (jusqu'à reload). */
+  (function _initDragPanelCtrl() {
+    var panel = document.getElementById('pl-ctrl-panel');
+    if (!panel) return;
+    panel.style.cursor = 'grab';
+    panel.style.touchAction = 'none';
+    var _personalise = false; /* devient true dès qu'un drag aboutit */
+    function _onDown(e) {
+      /* Ne pas démarrer si le clic est sur un bouton interactif */
+      if (e.target.closest('button')) return;
+      var pt = e.touches ? e.touches[0] : e;
+      var rect = panel.getBoundingClientRect();
+      var startX = pt.clientX, startY = pt.clientY;
+      var startLeft = rect.left, startTop = rect.top;
+      var seuil = 6, dragActif = false;
+      function _onMove(ev) {
+        var p = ev.touches ? ev.touches[0] : ev;
+        var dx = p.clientX - startX, dy = p.clientY - startY;
+        if (!dragActif && (Math.abs(dx) + Math.abs(dy)) > seuil) {
+          dragActif = true;
+          panel.style.cursor = 'grabbing';
+          /* Désactiver le centrage CSS pour pouvoir bouger en absolute pur */
+          panel.style.transform = 'none';
+          panel.style.bottom    = 'auto';
+          panel.style.left      = startLeft + 'px';
+          panel.style.top       = startTop  + 'px';
+          _personalise = true;
+        }
+        if (dragActif) {
+          if (ev.cancelable) ev.preventDefault();
+          var w = panel.offsetWidth, h = panel.offsetHeight;
+          var nl = Math.max(4, Math.min(window.innerWidth  - w - 4, startLeft + dx));
+          var nt = Math.max(4, Math.min(window.innerHeight - h - 4, startTop  + dy));
+          panel.style.left = nl + 'px';
+          panel.style.top  = nt + 'px';
+        }
+      }
+      function _onUp() {
+        panel.style.cursor = 'grab';
+        document.removeEventListener('mousemove', _onMove);
+        document.removeEventListener('mouseup',   _onUp);
+        document.removeEventListener('touchmove', _onMove);
+        document.removeEventListener('touchend',  _onUp);
+        document.removeEventListener('touchcancel', _onUp);
+      }
+      document.addEventListener('mousemove', _onMove);
+      document.addEventListener('mouseup',   _onUp);
+      document.addEventListener('touchmove', _onMove, { passive: false });
+      document.addEventListener('touchend',  _onUp);
+      document.addEventListener('touchcancel', _onUp);
+    }
+    panel.addEventListener('mousedown',  _onDown);
+    panel.addEventListener('touchstart', _onDown, { passive: true });
+    /* Si la fenêtre rétrécit, recadrer la position personnalisée pour
+       qu'elle reste visible (sinon perdue hors viewport). */
+    window.addEventListener('resize', function() {
+      if (!_personalise) return;
+      var rect = panel.getBoundingClientRect();
+      var w = panel.offsetWidth, h = panel.offsetHeight;
+      var nl = Math.max(4, Math.min(window.innerWidth  - w - 4, rect.left));
+      var nt = Math.max(4, Math.min(window.innerHeight - h - 4, rect.top));
+      panel.style.left = nl + 'px';
+      panel.style.top  = nt + 'px';
+    });
+  })();
 })();
 
 // Intercepte le bouton retour Android quand le mode arrangement est ouvert

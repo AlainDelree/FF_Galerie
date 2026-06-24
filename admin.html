@@ -1143,30 +1143,11 @@
         }
         const btnSwitch = document.getElementById('btn-switch-vue');
         if (btnSwitch) btnSwitch.style.display = '';
-        /* Masquer les flèches du D-pad, garder ✕ et nom */
-        var cross = document.querySelector('.pl-ctrl-cross');
-        if (cross) {
-          cross.style.display = 'flex';
-          cross.style.gap = '6px';
-          cross.style.alignItems = 'center';
-          cross.innerHTML = '';
-          var rmBtn = document.createElement('button');
-          rmBtn.className = 'pl-btn-arr pl-btn-suppr';
-          rmBtn.id = 'pl-btn-rm';
-          rmBtn.textContent = '✕ Retirer';
-          rmBtn.style.cssText = 'padding:.4rem .8rem;border-radius:6px;font-size:11px;';
-          rmBtn.addEventListener('click', function() {
-            if (peintureSurMurSel === null) return;
-            var pos = _getPositions();
-            var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
-            if (idx >= 0) pos.splice(idx, 1);
-            var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || '—';
-            peintureSurMurSel = null; selectedToilePl = null;
-            afficherSolPlacement(); afficherStripPlacement();
-            toast('"' + titre + '" retirée de cette vue');
-          });
-          cross.appendChild(rmBtn);
-        }
+        /* La restructuration du panel ctrl (D-pad vs ✕ seul) est désormais
+           DYNAMIQUE selon le type de la salle active — gérée dans
+           admin-galerie.js → _majPanelCtrlSelonSalle(). Indispensable
+           pour Dinso qui a maintenant des salles peinture (D-pad utile)
+           ET des salles sculpture (✕ seul, drag-and-drop). */
 
         /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
         (function() {
