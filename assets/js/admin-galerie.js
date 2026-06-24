@@ -312,9 +312,10 @@ function afficherMur() {
     return;
   }
 
-  // Toiles posées
+  // Toiles posées — recherche par type de salle (multi-types)
+  var _typeMurAff = salleActive.type || ADMIN_CFG.type || 'peinture';
   (salleActive.positions || []).forEach(p => {
-    const t = toiles.find(x => x.id === p.id);
+    const t = _trouverOeuvre(p.id, _typeMurAff);
     if (!t) return;
     const el = document.createElement('div');
     el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '');
@@ -543,14 +544,24 @@ function entrerModePlacement() {
 
 function ouvrirArrangerApresConfirm() {
   if (!salleActive) return;
-  /* Snapshot — restauré si retour sans sauvegarder */
+  /* Rebuild occupancy à partir de salleActive.positions — sinon en passant
+     d'une salle à une autre dans l'arrangeur, occupancy garde les cases
+     marquées occupées de la salle précédente (bug visible : 2e salle
+     peinture montre les positions de la 1re). */
+  buildOccupancy();
+  /* Snapshot — restauré si retour sans sauvegarder.
+     Supports identifiés par couple (id, _type) en multi-types. */
   _arrangerSnapshot = {
     positions:        JSON.parse(JSON.stringify(salleActive.positions        || [])),
     positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
     toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || [])),
-    /* Supports des pièces (vivent dans toiles[], hors salle) */
     supports:         toiles.map(function(t) {
-      return { id: t.id, support: t.support ? JSON.parse(JSON.stringify(t.support)) : null, sans_socle: t.sans_socle || false };
+      return {
+        id:         t.id,
+        _type:      typeDeLOeuvre(t),
+        support:    t.support ? JSON.parse(JSON.stringify(t.support)) : null,
+        sans_socle: t.sans_socle || false
+      };
     })
   };
   const nbPlacees = (salleActive.positions||[]).length;
@@ -843,9 +854,10 @@ function afficherMurPlacement() {
   }
   bg.classList.toggle('grille-on', grilleVisiblePl);
 
-  // Toiles déjà posées
+  // Toiles déjà posées — recherche par couple (id, type de salle) en multi-types
+  var _typePlMur = salleActive.type || ADMIN_CFG.type || 'peinture';
   (salleActive.positions || []).forEach(p => {
-    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const t = _trouverOeuvre(p.id, _typePlMur); if (!t) return;
     const estSel = peintureSurMurSel === p.id;
     const el = document.createElement('div');
     el.className = 'toile-posee' + (estSel ? ' sel-mur' : '');
@@ -1046,8 +1058,11 @@ function placerToilePl(col, row) {
   if (!selectedToilePl || !salleActive) return;
   const {w,h} = calcCases(selectedToilePl.dimensions);
   if (!canPlace(col,row,w,h,null)) { toast('Emplacement occupé','err'); return; }
-  // Retire de TOUTES les salles avant de placer
+  /* Retire de toutes les salles du MÊME type (pas des autres types — sinon
+     placer une peinture id=4 retirerait la sculpture id=4 de Salle E). */
+  var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
   salles.forEach(s => {
+    if (s.type && s.type !== _typeSalleAct) return;
     s.toiles = s.toiles.filter(id => id !== selectedToilePl.id);
     s.positions = (s.positions || []).filter(p => p.id !== selectedToilePl.id);
   });
