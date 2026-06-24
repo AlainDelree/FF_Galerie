@@ -823,7 +823,7 @@ function ouvrirEditeurImmersif(salle) {
   var cbLbl = document.createElement('label');
   cbLbl.htmlFor = 'cb-socle-piece';
   cbLbl.style.cssText = 'font-size:.65rem;color:var(--muted);cursor:pointer;line-height:1.3;';
-  cbLbl.textContent = "Socle = support de l\u0027\u0153uvre (GSM)";
+  cbLbl.textContent = "Reprendre la couleur du support de l\u0027\u0153uvre";
   cb.addEventListener('change', function() {
     decor.socle_use_piece = cb.checked;
     /* Griser le picker socle si case cochée */
