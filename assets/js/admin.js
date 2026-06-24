@@ -499,6 +499,19 @@ function typeDeLOeuvre(t) {
   return (t && t._type) || ADMIN_CFG.type || 'peinture';
 }
 
+/* Construit le payload "stockData" d'un type donné, à envoyer à une
+   iframe (galerie-apercu ou galerie-edit). En multi-types, c'est
+   indispensable de filtrer toiles[] par type AVANT d'envoyer : sinon
+   les peintures et sculptures de même id se collisionnent. */
+function _stockParType(type) {
+  var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
+  var codes = (typeof _taillesParType !== 'undefined' && _taillesParType[type]) ? _taillesParType[type] : [];
+  var nid   = (typeof _nextIdParType  !== 'undefined' && _nextIdParType[type])  ? _nextIdParType[type]  : 1;
+  return (type === 'sculpture')
+    ? { next_id: nid, gabarits: codes, pieces: items }
+    : { next_id: nid, tailles:  codes, toiles: items };
+}
+
 /* Dictionnaires par type peuplés au chargement (étape 3b-2 cohabitation).
    - _taillesParType : {peinture: [codes tailles], sculpture: [gabarits]}
    - _nextIdParType  : {peinture: N, sculpture: M}

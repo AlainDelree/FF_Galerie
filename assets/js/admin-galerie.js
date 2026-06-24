@@ -249,12 +249,12 @@ function afficherMur() {
 
     var apercuPath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-apercu.html';
 
-    /* Données admin en mémoire à injecter dans les iframes */
+    /* Données admin en mémoire à injecter dans les iframes.
+       Filtrer par type de la salle pour éviter collisions d'ID (multi-types). */
+    var typeSalleApercu = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
     var injectData = {
       type: 'init-data',
-      toiles: ADMIN_CFG.type === 'sculpture'
-        ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-        : { next_id: nextId, tailles: tailles, toiles: toiles },
+      toiles: _stockParType(typeSalleApercu),
       salles: { salles: JSON.parse(JSON.stringify(salles)) }
     };
     function brancherApercu(iframe) {
@@ -406,25 +406,34 @@ function deplacerPeinture(toileId, dCol, dRow) {
 function afficherStock() {
   var list = $('stock-list');
   if (!list) return;
-  var hdrSpan = $('stock-hdr') && $('stock-hdr').querySelector('span');
-  if (hdrSpan) hdrSpan.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
   if (!salleActive) { list.innerHTML = ''; return; }
+  /* Type de la salle active — détermine quelles œuvres on liste */
+  var typeSalleStock = salleActive.type || ADMIN_CFG.type || 'peinture';
+  /* Compteur : nombre d'œuvres du bon type (pas du total fusionné) */
+  var nbStock = toiles.filter(function(t) { return typeDeLOeuvre(t) === typeSalleStock; }).length;
+  var lblItems = (typeSalleStock === 'sculpture') ? 'pièces' : 'toiles';
+  var hdrSpan = $('stock-hdr') && $('stock-hdr').querySelector('span');
+  if (hdrSpan) hdrSpan.textContent = 'Stock (' + nbStock + ' ' + lblItems + ')';
 
   listeOeuvres({
     container:  list,
     filtre:     'toutes',
+    typeFiltre: typeSalleStock,
     salleRef:   salleActive,
     vue:        _placementVue,
     tri:        'statut',
     mode:       'selection',
-    legendes:   _isSculpt ? ['disponibilite'] : ['disponibilite', 'taille'],
+    legendes:   (typeSalleStock === 'sculpture') ? ['disponibilite'] : ['disponibilite', 'taille'],
     selection:  toilesSelectionnees,
     onSelect: function(id) {
       /* Toggle sans rebuild pour que le double-clic fonctionne */
       if (toilesSelectionnees.has(id)) toilesSelectionnees.delete(id);
       else toilesSelectionnees.add(id);
       selectedToile = toilesSelectionnees.size === 1
-        ? toiles.find(function(x) { return x.id === [...toilesSelectionnees][0]; }) : null;
+        ? toiles.find(function(x) {
+            return x.id === [...toilesSelectionnees][0]
+              && typeDeLOeuvre(x) === typeSalleStock;
+          }) : null;
       var el = list.querySelector('[data-id="' + id + '"]');
       if (el) el.classList.toggle('sel', toilesSelectionnees.has(id));
       majBoutons();
@@ -879,11 +888,17 @@ function _salleDOrigine(id) {
 function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
   const _sculptSalle = _estSculptSalleActive();
+  const typeSalleStrip = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+  /* Sous-ensemble des œuvres du type de la salle active — évite la
+     collision d'IDs entre peinture et sculpture en multi-types. */
+  const toilesType = toiles.filter(function(t) { return typeDeLOeuvre(t) === typeSalleStrip; });
+  const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
   const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
   /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
      Sculpture et peinture : placées + sélectionnées dans le stock */
-  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
+  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
+    .filter(function(id) { return idsValides.has(id); });
 
   /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
   const _rang = function(id) {
@@ -902,7 +917,7 @@ function afficherStripPlacement() {
   }
 
   tousIds.forEach(id => {
-    const t = toiles.find(x=>x.id===id); if(!t) return;
+    const t = toilesType.find(x=>x.id===id); if(!t) return;
     const estPlace = poseeIds.has(id);
     const estSelMur = peintureSurMurSel === id;
     const estSelPlace = selectedToilePl?.id === id;
@@ -1711,14 +1726,14 @@ function afficherSolPlacement() {
 
     if (e.data.type === 'iframe-awaiting-data') {
       /* L'iframe attend les données — envoyer l'état admin en mémoire (toujours frais).
-         Évite que l'iframe lise un salles.json périmé via le CDN. */
+         Évite que l'iframe lise un salles.json périmé via le CDN.
+         Stock filtré selon le type de la salle (multi-types : éviter collisions). */
       var iframe = document.getElementById('edit-galerie-iframe');
       if (iframe && iframe.contentWindow) {
+        var typeSalleArr = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
         iframe.contentWindow.postMessage({
           type: 'init-data',
-          toiles: ADMIN_CFG.type === 'sculpture'
-            ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-            : { next_id: nextId, tailles: tailles, toiles: toiles },
+          toiles: _stockParType(typeSalleArr),
           salles: { salles: [JSON.parse(JSON.stringify(salleActive))] }
         }, '*');
       }

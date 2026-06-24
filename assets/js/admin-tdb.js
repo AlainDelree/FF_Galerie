@@ -339,22 +339,10 @@ function _creerCarteVue(facette, salle, lbl, opts) {
     /* Injection des données dans l'iframe */
     (function(ifr) {
       /* Format des données : selon le type de la SALLE (pas de l'admin).
-         Cohabitation peinture+sculpture : si le stock courant ne contient
-         pas le bon type, on injecte un stock vide (aperçu salle vide OK). */
-      var _isSculptType = (typeSalle === 'sculpture');
-      var _adminEstSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
-      /* N'injecter QUE la salle de cette carte (sinon l'aperçu montre la 1re salle) */
+         _stockParType filtre toiles[] par type → indispensable en multi-types
+         pour éviter la collision d'ID entre peinture et sculpture. */
       var salleSeule = JSON.parse(JSON.stringify(salle));
-      var stockData;
-      if (_isSculptType) {
-        stockData = _adminEstSculpt
-          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-          : { next_id: 1, gabarits: [], pieces: [] };
-      } else {
-        stockData = !_adminEstSculpt
-          ? { next_id: nextId, tailles: tailles, toiles: toiles }
-          : { next_id: 1, tailles: [], toiles: [] };
-      }
+      var stockData = _stockParType(typeSalle);
       var injectData = {
         type: 'init-data',
         toiles: stockData,
