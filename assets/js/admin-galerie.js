@@ -895,9 +895,10 @@ function afficherStripPlacement() {
   const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
   const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
-  /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
-     Sculpture et peinture : placées + sélectionnées dans le stock */
-  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
+  /* Le strip liste TOUTES les œuvres du type de la salle (peinture ou sculpture),
+     pas seulement les placées ou sélectionnées : ça donne une vue d'ensemble du
+     stock pour pouvoir glisser/placer librement, comme dans l'arrangeur sculpture. */
+  const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
     .filter(function(id) { return idsValides.has(id); });
 
   /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
