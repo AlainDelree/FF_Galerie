@@ -114,11 +114,22 @@ function listeOeuvres(opts) {
       return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
     });
   } else if (tri === 'taille') {
-    var tOrd = (Array.isArray(tailles) ? tailles : []).map(function(t) { return t.code; });
-    items.sort(function(a, b) {
-      var ia = tOrd.indexOf(a.taille), ib = tOrd.indexOf(b.taille);
-      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
-    });
+    /* Peinture : tri par code de taille (XXS→E). Sculpture : tri par
+       hauteur en cm croissante (champ dimensions.hauteur, pas de code). */
+    var estSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
+    if (estSculpt) {
+      items.sort(function(a, b) {
+        var ha = (a.dimensions && a.dimensions.hauteur) || 0;
+        var hb = (b.dimensions && b.dimensions.hauteur) || 0;
+        return ha - hb;
+      });
+    } else {
+      var tOrd = (Array.isArray(tailles) ? tailles : []).map(function(t) { return t.code; });
+      items.sort(function(a, b) {
+        var ia = tOrd.indexOf(a.taille), ib = tOrd.indexOf(b.taille);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+      });
+    }
   } else if (tri === 'ajout') {
     /* ID croissant = ordre chronologique d'ajout via l'admin (prochainId monotone).
        On affiche en décroissant : œuvre la plus récemment ajoutée en tête. */
@@ -231,11 +242,20 @@ function listeOeuvres(opts) {
     titreEl.textContent = t.titre || '—';
     infos.appendChild(titreEl);
 
-    if (showTaille && t.taille) {
-      var tailleEl = document.createElement('div');
-      tailleEl.className = 'lo-meta';
-      tailleEl.textContent = t.taille;
-      infos.appendChild(tailleEl);
+    if (showTaille) {
+      var lblTaille = '';
+      var estSculptItem = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
+      if (estSculptItem && t.dimensions && t.dimensions.hauteur) {
+        lblTaille = t.dimensions.hauteur + ' cm';
+      } else if (!estSculptItem && t.taille) {
+        lblTaille = t.taille;
+      }
+      if (lblTaille) {
+        var tailleEl = document.createElement('div');
+        tailleEl.className = 'lo-meta';
+        tailleEl.textContent = lblTaille;
+        infos.appendChild(tailleEl);
+      }
     }
 
     if (showSalle) {
