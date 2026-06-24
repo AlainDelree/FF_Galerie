@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260624a">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260624b">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -281,6 +281,21 @@
       <button class="mur-act-btn" id="btn-oeuvres-ajouter">＋ Ajouter</button>
       <button class="mur-act-btn mur-act-danger" id="btn-oeuvres-supprimer" disabled>🗑 Supprimer</button>
       <button class="mur-act-btn mur-act-cat" id="btn-oeuvres-catalogue">📄 Catalogue</button>
+    </div>
+    <div class="oeuvres-filtres">
+      <input type="text" id="oeuvres-recherche" placeholder="🔍 Rechercher par titre…" autocomplete="off">
+      <select id="oeuvres-tri" title="Trier par…">
+        <option value="titre">Titre (A→Z)</option>
+        <option value="ajout">Date d'ajout (récent)</option>
+        <option value="date">Date de l'œuvre (récent)</option>
+        <option value="statut">Statut</option>
+        <option value="taille">Taille</option>
+      </select>
+      <div class="oeuvres-chips" role="group" aria-label="Filtrer par statut">
+        <button type="button" class="oeuvres-chip actif" data-filtre="toutes">Toutes</button>
+        <button type="button" class="oeuvres-chip" data-filtre="placees">Placées</button>
+        <button type="button" class="oeuvres-chip" data-filtre="disponibles">Non placées</button>
+      </div>
     </div>
     <div id="oeuvres-list" class="oeuvres-list"></div>
   </div><!-- /vue-oeuvres -->

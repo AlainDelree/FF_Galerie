@@ -4,6 +4,9 @@
  */
 
 var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
+var _oeuvresRecherche = '';
+var _oeuvresTri       = 'titre';
+var _oeuvresFiltre    = 'toutes';
 
 /* ── Initialisation (appelée après chargement de tous les modules) ── */
 function initOeuvresTab() {
@@ -36,6 +39,31 @@ function initOeuvresTab() {
   if (btnCat) btnCat.addEventListener('click', function() {
     if (typeof ouvrirCatalogue === 'function') ouvrirCatalogue();
   });
+
+  /* Recherche par titre — re-render à chaque frappe */
+  var inpRech = document.getElementById('oeuvres-recherche');
+  if (inpRech) inpRech.addEventListener('input', function() {
+    _oeuvresRecherche = inpRech.value;
+    afficherOeuvres();
+  });
+
+  /* Tri (select) */
+  var selTri = document.getElementById('oeuvres-tri');
+  if (selTri) selTri.addEventListener('change', function() {
+    _oeuvresTri = selTri.value;
+    afficherOeuvres();
+  });
+
+  /* Chips de filtre par statut */
+  var chips = document.querySelectorAll('.oeuvres-chip');
+  chips.forEach(function(c) {
+    c.addEventListener('click', function() {
+      chips.forEach(function(x) { x.classList.remove('actif'); });
+      c.classList.add('actif');
+      _oeuvresFiltre = c.dataset.filtre || 'toutes';
+      afficherOeuvres();
+    });
+  });
 }
 
 /* ── Affichage de la liste ── */
@@ -45,10 +73,11 @@ function afficherOeuvres() {
 
   listeOeuvres({
     container:  container,
-    filtre:     'toutes',
+    filtre:     _oeuvresFiltre,
     salleRef:   null,          /* inventaire global — pas de salle de référence */
     vue:        'pc',
-    tri:        'titre',
+    tri:        _oeuvresTri,
+    recherche:  _oeuvresRecherche,
     mode:       'selection',  /* active les handlers de clic */
     legendes:   ['salle', 'taille'],
     selection:  _oeuvresSelection,

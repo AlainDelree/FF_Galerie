@@ -32,6 +32,7 @@ function listeOeuvres(opts) {
   var selection  = opts.selection  || new Set();
   var onSelect   = opts.onSelect   || null;
   var onDblClick = opts.onDblClick || null;
+  var recherche  = (opts.recherche || '').trim().toLowerCase();
 
   if (!container) return;
   container.innerHTML = '';
@@ -78,11 +79,28 @@ function listeOeuvres(opts) {
     (salleRef.positions_mobile || []).forEach(function(p) { posSalle.add(p.id); });
     items = items.filter(function(t) { return posSalle.has(t.id); });
   } else if (filtre === 'disponibles') {
-    items = items.filter(function(t) { return _legende(t.id) === 'gris'; });
+    /* Sans salleRef → "disponible" = pas placée dans aucune salle (ni vue) */
+    if (!salleRef) {
+      items = items.filter(function(t) { return !posAutres.has(t.id); });
+    } else {
+      items = items.filter(function(t) { return _legende(t.id) === 'gris'; });
+    }
   } else if (filtre === 'placees') {
-    items = items.filter(function(t) { return posVue.has(t.id); });
+    /* Sans salleRef → "placée" = présente dans au moins une salle */
+    if (!salleRef) {
+      items = items.filter(function(t) { return posAutres.has(t.id); });
+    } else {
+      items = items.filter(function(t) { return posVue.has(t.id); });
+    }
   }
-  /* filtre === 'toutes' → pas de filtrage */
+  /* filtre === 'toutes' → pas de filtrage par placement */
+
+  /* Recherche par titre (sous-chaîne, insensible à la casse) */
+  if (recherche) {
+    items = items.filter(function(t) {
+      return (t.titre || '').toLowerCase().indexOf(recherche) >= 0;
+    });
+  }
 
   /* ─── Tri ─── */
   if (tri === 'statut') {
@@ -101,8 +119,22 @@ function listeOeuvres(opts) {
       var ia = tOrd.indexOf(a.taille), ib = tOrd.indexOf(b.taille);
       return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
     });
+  } else if (tri === 'ajout') {
+    /* ID croissant = ordre chronologique d'ajout via l'admin (prochainId monotone).
+       On affiche en décroissant : œuvre la plus récemment ajoutée en tête. */
+    items.sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
+  } else if (tri === 'date') {
+    /* Date de l'œuvre (champ t.date, peut être '2023', '2023-05', etc.).
+       Tri décroissant : œuvre la plus récente d'abord. Œuvres sans date à la fin. */
+    items.sort(function(a, b) {
+      var da = a.date || '', db = b.date || '';
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return db.localeCompare(da); /* desc */
+    });
   }
-  /* tri === 'ordre' → ordre JSON original conservé */
+  /* tri === 'ordre' → ordre JSON original conservé (cas spécial pour rétrocompat) */
 
   /* ─── Render ─── */
   if (items.length === 0) {
@@ -119,8 +151,12 @@ function listeOeuvres(opts) {
   var showSalle   = legendes.indexOf('salle')         >= 0;
   var assetsBase  = (typeof window.ADMIN_CFG !== 'undefined' && window.ADMIN_CFG.assetsBase) || '';
 
-  /* Séparateurs de groupe (uniquement si tri statut + légende disponibilite) */
-  var labGrp = ['Sur cette vue', 'Disponibles', 'Autre salle'];
+  /* Séparateurs de groupe (uniquement si tri statut + légende disponibilite).
+     Labels adaptés selon contexte : avec salleRef (vue d'une salle) on parle de
+     "Sur cette vue", sans salleRef (inventaire global) c'est "Placées"/"Non placées". */
+  var labGrp = salleRef
+    ? ['Sur cette vue', 'Disponibles', 'Autre salle']
+    : ['',              'Non placées', 'Placées'];
   var dernierGrp = -1;
 
   items.forEach(function(t) {
