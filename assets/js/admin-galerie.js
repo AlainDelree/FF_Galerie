@@ -639,11 +639,11 @@ function _arrangerADesModifs() {
   if (j(salleActive.positions)        !== j(_arrangerSnapshot.positions))        return true;
   if (j(salleActive.positions_mobile) !== j(_arrangerSnapshot.positions_mobile)) return true;
   if (j(salleActive.toiles)           !== j(_arrangerSnapshot.toiles))           return true;
-  /* Supports */
+  /* Supports — disambigué par couple (id, _type) en multi-types */
   if (_arrangerSnapshot.supports) {
     for (var i = 0; i < _arrangerSnapshot.supports.length; i++) {
       var snap = _arrangerSnapshot.supports[i];
-      var t = toiles.find(function(x) { return x.id === snap.id; });
+      var t = _trouverOeuvre(snap.id, snap._type);
       if (!t) continue;
       if (JSON.stringify(t.support || null) !== JSON.stringify(snap.support)) return true;
       if ((t.sans_socle || false) !== snap.sans_socle) return true;
@@ -663,6 +663,7 @@ function _refreshArrangerSnapshot() {
     supports: toiles.map(function(t) {
       return {
         id:         t.id,
+        _type:      typeDeLOeuvre(t),
         support:    t.support    ? JSON.parse(JSON.stringify(t.support)) : null,
         sans_socle: t.sans_socle || false
       };
@@ -677,10 +678,10 @@ function quitterModePlacement() {
     salleActive.positions        = _arrangerSnapshot.positions;
     salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
     salleActive.toiles           = _arrangerSnapshot.toiles;
-    /* Restaurer les supports des pièces */
+    /* Restaurer les supports des pièces — par couple (id, _type) */
     if (_arrangerSnapshot.supports) {
       _arrangerSnapshot.supports.forEach(function(snap) {
-        var t = toiles.find(function(x) { return x.id === snap.id; });
+        var t = _trouverOeuvre(snap.id, snap._type);
         if (!t) return;
         if (snap.support) t.support = snap.support; else delete t.support;
         if (snap.sans_socle) t.sans_socle = true; else delete t.sans_socle;

@@ -692,7 +692,12 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
         positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
         toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || [])),
         supports:         toiles.map(function(t) {
-          return { id: t.id, support: t.support ? JSON.parse(JSON.stringify(t.support)) : null, sans_socle: t.sans_socle || false };
+          return {
+            id:         t.id,
+            _type:      typeDeLOeuvre(t),
+            support:    t.support ? JSON.parse(JSON.stringify(t.support)) : null,
+            sans_socle: t.sans_socle || false
+          };
         })
       };
     }
