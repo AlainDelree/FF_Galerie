@@ -644,24 +644,13 @@ function entrerVue(facette) {
     }
   }
 
-  /* Toutes les œuvres COMPATIBLES (même type que la salle) dans le strip.
-     Celles déjà dans une AUTRE salle sont incluses aussi (marquées dans le
-     strip) — déplaçables avec confirmation.
-     Filtrage par type : évite d'inclure les sculptures pour une salle
-     peinture (et inversement). En attendant la séparation complète des
-     stocks (étape 3), on compare contre le type de l'admin courant. */
-  if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
-      && typeof salles !== 'undefined' && salleActive) {
+  /* L'arrangeur (afficherStripPlacement) liste désormais TOUTES les œuvres
+     du type de la salle via idsValides. Le pré-cochage automatique de
+     toilesSelectionnees n'est plus nécessaire et déclenchait un faux warning
+     'ces toiles sont dans une autre salle' pour chaque œuvre déjà placée
+     ailleurs (cas visible chez Fred : 30+ toiles listées au clic Modifier). */
+  if (typeof toilesSelectionnees !== 'undefined') {
     toilesSelectionnees.clear();
-    var typeAdmin = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
-    var stockCompatible = (typeSalle === typeAdmin);
-    if (stockCompatible) {
-      toiles.forEach(function(t) {
-        toilesSelectionnees.add(t.id);
-      });
-    }
-    /* Sinon : strip vide, c'est cohérent avec une salle qui n'a pas
-       encore son propre stock (à régler en étape 3). */
   }
 
   /* Ouvrir l'arranger directement */
