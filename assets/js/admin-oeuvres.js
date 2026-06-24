@@ -162,10 +162,10 @@ function afficherOeuvres() {
       btnPlus.addEventListener('click', function() {
         _oeuvresSelection.clear();
         majBoutonsOeuvres();
-        /* TODO 3b-2-4b : passer le type au formulaire pour qu'il s'adapte.
-           Pour l'instant, le formulaire reste basé sur ADMIN_CFG.type. */
         if (typeof construirePillsSalle === 'function') construirePillsSalle(null);
-        if (typeof ouvrirFormulaireNouvel === 'function') ouvrirFormulaireNouvel();
+        /* On passe le type de la colonne au formulaire : il s'adapte
+           pour afficher les bons champs (peinture vs sculpture). */
+        if (typeof ouvrirFormulaireNouvel === 'function') ouvrirFormulaireNouvel(type);
       });
       hdr.appendChild(btnPlus);
       col.appendChild(hdr);

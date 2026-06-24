@@ -9,6 +9,33 @@ const LBL = _isSculpt
   ? { item:'pièce', items:'pièces', Item:'Pièce', Items:'Pièces', placee:'placée', retiree:'retirée' }
   : { item:'toile', items:'toiles', Item:'Toile', Items:'Toiles', placee:'placée', retiree:'retirée du mur' };
 
+/* Type de l'œuvre en cours d'édition dans le formulaire modal (3b-2-4b).
+   Par défaut, c'est le type principal de l'admin. Mis à jour à chaque
+   ouvrirFormulaireEdition / ouvrirFormulaireNouvel selon le contexte
+   (œuvre cliquée ou bouton "+" d'une colonne dédiée). */
+var _typeEdition = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+
+function _estSculptEdition() {
+  return _typeEdition === 'sculpture';
+}
+
+/* Bascule l'affichage des champs .peinture-only / .sculpture-only DANS
+   le formulaire modal seulement (le reste de l'UI suit ADMIN_CFG.type ou
+   le type de la salle active). */
+function _appliquerTypeFormulaire(type) {
+  _typeEdition = type || ADMIN_CFG.type || 'peinture';
+  var estSculpt = (_typeEdition === 'sculpture');
+  var form = document.getElementById('overlay-toile');
+  if (form) {
+    form.querySelectorAll('.peinture-only').forEach(function(el) {
+      el.style.display = estSculpt ? 'none' : '';
+    });
+    form.querySelectorAll('.sculpture-only').forEach(function(el) {
+      el.style.display = estSculpt ? '' : 'none';
+    });
+  }
+}
+
 /* Helper : type de la salle active (peinture/sculpture).
    Permet à l'arrangeur de se comporter selon le type de la salle, pas de l'admin.
    Fallback sur ADMIN_CFG.type si la salle n'a pas de type défini. */
@@ -1054,9 +1081,10 @@ function initTailleForm() {
   $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
 }
 
-function ouvrirFormulaireNouvel() {
+function ouvrirFormulaireNouvel(typeOpt) {
+  _appliquerTypeFormulaire(typeOpt || ADMIN_CFG.type || 'peinture');
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
-  $('modal-toile-tit').textContent = _isSculpt ? 'Nouvelle pièce' : 'Nouvelle toile';
+  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
@@ -1082,11 +1110,14 @@ function construirePillsSalle(salleSelId) {
 function ouvrirFormulaireEdition(id) {
   const t = toiles.find(x => x.id === id);
   if (!t) return;
+  /* Type de l'œuvre éditée (multi-types). Fallback sur ADMIN_CFG.type
+     pour la rétrocompat avec les anciennes œuvres sans _type. */
+  _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
-  $('modal-toile-tit').textContent = ADMIN_CFG.type === 'sculpture' ? 'Modifier la pièce' : 'Modifier la toile';
+  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
@@ -1346,7 +1377,7 @@ async function sauverToile() {
   btn.disabled = true; btnAnn.disabled = true; lbl.textContent = 'En cours…';
   try {
     if (toileEnEdition === null) {
-      const id = prochainId();
+      const id = prochainId(_typeEdition);
       var _ext = window.photoEstPng ? 'png' : 'jpg';
       var _mime = window.photoEstPng ? 'image/png' : 'image/jpeg';
       let photo = '';
@@ -1354,13 +1385,18 @@ async function sauverToile() {
       let glb = donnees.glb || '';
       if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
       const t = { id, photo, source_photo: 'admin', ...donnees, glb };
+      /* _type est essentiel : il détermine dans quel fichier
+         data/oeuvres/<type>.json l'œuvre sera écrite. Sans ça, une
+         peinture créée chez un admin sculpture (cas Dinso) atterrirait
+         dans sculpture.json. */
+      t._type = _typeEdition || ADMIN_CFG.type || 'peinture';
       if (photoB64) t._preview = 'data:' + _mime + ';base64,' + photoB64; // aperçu immédiat avant propagation CDN
       toiles.push(t);
       if (salleCibleToile) {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
       const idx = toiles.findIndex(x => x.id === toileEnEdition);
@@ -1395,7 +1431,7 @@ async function sauverToile() {
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
-      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
     const idSauve = toileEnEdition === null
