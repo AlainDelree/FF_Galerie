@@ -396,7 +396,15 @@ function _creerCarteVue(facette, salle, lbl, opts) {
 
   var labelEl = document.createElement('div');
   labelEl.className = 'tdb-card-label';
-  labelEl.textContent = meta.icon + ' ' + meta.label;
+  /* Pour les salles peinture, PC = GSM (galerie-peinture.js ne lit pas
+     positions_mobile), donc le suffixe "PC" est trompeur. On affiche
+     juste "Galerie". Pour sculpture, "Galerie PC" reste car la vue
+     mobile a un layout distinct. */
+  var typeSalleVue = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+  var labelTxt = (facette === 'galerie-pc' && typeSalleVue === 'peinture')
+    ? 'Galerie'
+    : meta.label;
+  labelEl.textContent = meta.icon + ' ' + labelTxt;
 
   var badge = document.createElement('div');
   badge.className = 'tdb-card-badge';
