@@ -499,6 +499,22 @@ function typeDeLOeuvre(t) {
   return (t && t._type) || ADMIN_CFG.type || 'peinture';
 }
 
+/* Helpers de recherche d'œuvre en multi-types. En mono-type ces helpers
+   sont équivalents aux toiles.find(...) historiques ; en multi-types,
+   ils évitent les collisions d'ID entre peinture et sculpture (id=1 partagé). */
+function _trouverOeuvre(id, typeOpt) {
+  if (typeOpt) return toiles.find(function(t) {
+    return t.id === id && typeDeLOeuvre(t) === typeOpt;
+  });
+  return toiles.find(function(t) { return t.id === id; });
+}
+function _salleContenantOeuvre(id, typeOpt) {
+  return salles.find(function(s) {
+    if (typeOpt && s.type && s.type !== typeOpt) return false;
+    return (s.toiles || []).indexOf(id) >= 0;
+  });
+}
+
 /* Construit le payload "stockData" d'un type donné, à envoyer à une
    iframe (galerie-apercu ou galerie-edit). En multi-types, c'est
    indispensable de filtrer toiles[] par type AVANT d'envoyer : sinon
@@ -993,11 +1009,13 @@ $('btn-grille-pl').addEventListener('click', function() {
   $("pl-btn-right")?.addEventListener("click", function(){ mvSel( 1, 0); });
   $("pl-btn-details")?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
-    if (typeof ouvrirFiche === 'function') ouvrirFiche(peintureSurMurSel);
+    var _typeAct = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    if (typeof ouvrirFiche === 'function') ouvrirFiche(peintureSurMurSel, _typeAct);
   });
   $("pl-btn-rm")   ?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
-    var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || "—";
+    var _typeRm = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    var titre = (_trouverOeuvre(peintureSurMurSel, _typeRm) || {}).titre || "—";
     if (ADMIN_CFG.type === 'sculpture') {
       var pos = _getPositions();
       var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });

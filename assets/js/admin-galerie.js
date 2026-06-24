@@ -438,7 +438,7 @@ function afficherStock() {
       if (el) el.classList.toggle('sel', toilesSelectionnees.has(id));
       majBoutons();
     },
-    onDblClick: function(id) { ouvrirFiche(id); }
+    onDblClick: function(id) { ouvrirFiche(id, typeSalleStock); }
   });
 
   /* Badges de sync ⏳ en post-process (toilesEnAttente) */
@@ -489,15 +489,27 @@ function _getPositions() {
 
 function entrerModePlacement() {
   if (!salleActive) return;
-  // Vérifier si des toiles sélectionnées viennent d'une autre salle
+  /* Vérifier si des toiles sélectionnées viennent d'une autre salle DU MÊME TYPE.
+     Sans le filtre par type : une peinture id=5 cochée signalait à tort qu'elle
+     était dans une "autre salle" simplement parce qu'une sculpture id=5 existe
+     dans une salle sculpture. */
+  var typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
   const autresSelectionnees = [...toilesSelectionnees].filter(id => {
-    const salle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+    const salle = salles.find(s =>
+      s.id !== salleActive.id
+      && (!s.type || s.type === typeSalleAct)
+      && s.toiles.includes(id)
+    );
     return !!salle;
   });
   if (autresSelectionnees.length > 0) {
     const noms = autresSelectionnees.map(id => {
-      const t = toiles.find(x => x.id === id);
-      const s = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+      const t = _trouverOeuvre(id, typeSalleAct);
+      const s = salles.find(s =>
+        s.id !== salleActive.id
+        && (!s.type || s.type === typeSalleAct)
+        && s.toiles.includes(id)
+      );
       return `"${t?.titre || 'Sans titre'}" (${s?.nom || 'autre salle'})`;
     }).join(', ');
     const div = document.createElement('div');
@@ -1140,7 +1152,7 @@ function ouvrirFormulaireEdition(id, typeOpt) {
      pour la rétrocompat avec les anciennes œuvres sans _type. */
   _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
-  const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
+  const salleDeLaToile = _salleContenantOeuvre(id, _typeEdition)?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
@@ -1155,8 +1167,8 @@ function fermerModalToile() { $('overlay-toile').classList.remove('ouvert'); }
 
 let ficheToileId = null;
 
-function ouvrirFiche(id) {
-  const t = toiles.find(x => x.id === id);
+function ouvrirFiche(id, typeOpt) {
+  const t = _trouverOeuvre(id, typeOpt);
   if (!t) return;
   ficheToileId = id;
 
@@ -1202,7 +1214,7 @@ function ouvrirFiche(id) {
     lignes.push(['Format', tObj ? `${t.taille} — ${tObj.label}` : t.taille]);
   }
   if (t.materiaux?.length) lignes.push(['Matériaux', t.materiaux.join(', ')]);
-  const salle = salles.find(s => s.toiles.includes(id));
+  const salle = _salleContenantOeuvre(id, typeDeLOeuvre(t));
   if (salle) lignes.push(['Salle', salle.nom]);
   if (t.prix) lignes.push(['Prix', `${t.prix} €`]);
   if (t.description) lignes.push(['Notes', t.description]);
@@ -1317,7 +1329,7 @@ function remplirFormToile(t) {
     if (btnChgPhoto) btnChgPhoto.style.display = 'none';
     var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   }
-  salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
+  salleCibleToile = _salleContenantOeuvre(t.id, typeDeLOeuvre(t))?.id || null;
   /* Champs sculpture */
   if ($('inp-glb')) $('inp-glb').value = t.glb || '';
   if ($('inp-prof') && t.dimensions?.profondeur) $('inp-prof').value = t.dimensions.profondeur;
@@ -1387,7 +1399,7 @@ async function sauverToile() {
      photoExistante = thumbnail déjà uploadé (édition) OU nouvelle photo en attente. */
   var photoExistante = !!photoB64;
   if (toileEnEdition !== null) {
-    var tEdit = toiles.find(function(x) { return x.id === toileEnEdition; });
+    var tEdit = _trouverOeuvre(toileEnEdition, _typeEdition);
     if (tEdit && tEdit.photo) photoExistante = true;
   }
   if (donnees.visible && !photoExistante) {
@@ -1425,7 +1437,9 @@ async function sauverToile() {
       const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
-      const idx = toiles.findIndex(x => x.id === toileEnEdition);
+      /* Recherche par couple (id, type) — sinon en multi-types une édition
+         de peinture id=4 toucherait par erreur la sculpture id=4. */
+      const idx = toiles.findIndex(x => x.id === toileEnEdition && typeDeLOeuvre(x) === _typeEdition);
       var _extE = window.photoEstPng ? 'png' : 'jpg';
       let photo = toiles[idx].photo;
       if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE);
@@ -1439,7 +1453,9 @@ async function sauverToile() {
         const apres = calcCases(nouvelDim);
         if (avant.w !== apres.w || avant.h !== apres.h) {
           let retiree = false;
+          /* Retirer seulement des salles du MÊME type que la toile éditée. */
           salles.forEach(s => {
+            if (s.type && s.type !== _typeEdition) return;
             if ((s.positions||[]).some(p => p.id === toileEnEdition)) {
               s.positions = s.positions.filter(p => p.id !== toileEnEdition);
               retiree = true;
@@ -1448,9 +1464,12 @@ async function sauverToile() {
           if (retiree) toast("Dimensions modifiées — toile retirée du mur, à replacer via Arranger", "ok", 5000);
         }
       }
-      // Déplace de salle si besoin
+      // Déplace de salle si besoin — uniquement les salles du même type
       if (salleCibleToile) {
-        salles.forEach(s => { s.toiles = s.toiles.filter(id => id !== toileEnEdition); });
+        salles.forEach(s => {
+          if (s.type && s.type !== _typeEdition) return;
+          s.toiles = s.toiles.filter(id => id !== toileEnEdition);
+        });
         const s = salles.find(x => x.id === salleCibleToile);
         if (s) s.toiles.push(toileEnEdition);
       }
@@ -1478,12 +1497,21 @@ async function sauverToile() {
 async function supprimerToile() {
   const idCible = toileEnEdition || selectedToile?.id;
   if (!idCible) return;
-  const t = toiles.find(x => x.id === idCible);
+  /* Type : si on supprime depuis le formulaire en édition, _typeEdition est défini.
+     Si c'est depuis l'onglet Œuvres ou stock, selectedToile contient l'objet. */
+  var _typeCible = toileEnEdition
+    ? _typeEdition
+    : (selectedToile ? typeDeLOeuvre(selectedToile) : (ADMIN_CFG.type || 'peinture'));
+  const t = _trouverOeuvre(idCible, _typeCible);
   if (!confirm(`Supprimer "${t?.titre || ('cette ' + LBL.item)}" ? Réversible via le backup.`)) return;
-  toiles = toiles.filter(x => x.id !== idCible);
+  /* Filtre par couple — ne pas supprimer la sculpture id=X quand on supprime la peinture id=X. */
+  toiles = toiles.filter(x => !(x.id === idCible && typeDeLOeuvre(x) === _typeCible));
+  /* Et ne retirer l'ID que des salles du bon type. */
   salles.forEach(s => {
+    if (s.type && s.type !== _typeCible) return;
     s.toiles = s.toiles.filter(id => id !== idCible);
     s.positions = (s.positions || []).filter(p => p.id !== idCible);
+    s.positions_mobile = (s.positions_mobile || []).filter(p => p.id !== idCible);
   });
   if (toileEnEdition) fermerModalToile();
   toilesSelectionnees.clear(); selectedToile = null; majBoutons();
