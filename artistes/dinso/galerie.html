@@ -80,7 +80,13 @@
   </div>
   <footer class="pied"><span class="mention">&copy; Dinso</span></footer>
   <script>
-    window.GALERIE_TOILES_PATH  = "data/oeuvres/sculpture.json";
+    /* Multi-types : Dinso a peinture ET sculpture (étape 3b-2-5).
+       galerie-core.js charge les deux fichiers et passe à chaque salle
+       les données de son type via salle.type. */
+    window.GALERIE_OEUVRES_PATHS = [
+      "data/oeuvres/peinture.json",
+      "data/oeuvres/sculpture.json"
+    ];
     window.GALERIE_SALLES_PATH  = "data/salles.json";
     window.GALERIE_ASSETS_BASE  = "../../";
     window.PLAN_TOILES_PATH     = "data/oeuvres/sculpture.json";
@@ -89,8 +95,9 @@
     window.GALERIE_CONTACT_PATH = "contact.html";
   </script>
   <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/galerie-core.js?v=20260622f"></script>
-  <script src="../../assets/js/galerie-sculpture.js?v=20260622v-1782162564"></script>
+  <script src="../../assets/js/galerie-core.js?v=20260624a"></script>
+  <script src="../../assets/js/galerie-peinture.js?v=20260624a"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260624a"></script>
   <script src="../../assets/js/salle-immersive.js?v=20260622v-1782162564"></script>
   <script>initGalerie();</script>
   <script src="../../assets/js/artiste-info.js"></script>

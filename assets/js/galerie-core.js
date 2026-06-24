@@ -2,19 +2,49 @@
    FF_Galerie — galerie-core.js
    Noyau partagé entre tous les types de galerie (peinture, sculpture…)
    Config (surcharger avant ce script) :
-     window.GALERIE_TOILES_PATH  (défaut: 'data/toiles.json')
-     window.GALERIE_SALLES_PATH  (défaut: 'data/salles.json')
-     window.GALERIE_HOME         (défaut: 'index.html')
+     window.GALERIE_TOILES_PATH    (défaut: 'data/toiles.json') — mono-type
+     window.GALERIE_OEUVRES_PATHS  (tableau, multi-types) — prioritaire
+                                    ex: ['data/oeuvres/peinture.json',
+                                         'data/oeuvres/sculpture.json']
+     window.GALERIE_SALLES_PATH    (défaut: 'data/salles.json')
+     window.GALERIE_HOME           (défaut: 'index.html')
    ============================================================= */
 
 const GALERIE_CFG = {
   toiles:     window.GALERIE_TOILES_PATH  || 'data/toiles.json',
+  oeuvresPaths: window.GALERIE_OEUVRES_PATHS || null, /* tableau ou null */
   salles:     window.GALERIE_SALLES_PATH  || 'data/salles.json',
   home:       window.GALERIE_HOME         || 'index.html',
   infos:      window.GALERIE_INFOS_PATH   || 'infos.html',
   contact:    window.GALERIE_CONTACT_PATH || 'contact.html',
   assetsBase: window.GALERIE_ASSETS_BASE  || '' /* '' pour Fred, '../../' pour artistes */
 };
+
+/* Charge les œuvres et retourne toujours un dict { peinture: {tailles,toiles},
+   sculpture: {gabarits,pieces} } quel que soit le format source. */
+function _chargerOeuvres() {
+  if (GALERIE_CFG.oeuvresPaths && Array.isArray(GALERIE_CFG.oeuvresPaths)) {
+    /* Multi-fichiers : déduit le type depuis le nom de fichier oeuvres/<type>.json */
+    return Promise.all(GALERIE_CFG.oeuvresPaths.map(function(path) {
+      var m = path.match(/oeuvres\/([^/]+)\.json/);
+      var type = m ? m[1] : 'peinture';
+      return fetch(path + '?v=' + Date.now())
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(data) { return { type: type, data: data }; });
+    })).then(function(arr) {
+      var dict = {};
+      arr.forEach(function(x) { dict[x.type] = x.data; });
+      return dict;
+    });
+  }
+  /* Mono-fichier (ancien) : déduit le type depuis la structure du JSON */
+  return fetch(GALERIE_CFG.toiles + '?v=' + Date.now())
+    .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(data) {
+      var type = (data && data.pieces) ? 'sculpture' : 'peinture';
+      var dict = {}; dict[type] = data; return dict;
+    });
+}
 
     let salleCourante = 1;
     let TOTAL_SALLES = 0; // défini dynamiquement après chargement JSON
@@ -529,19 +559,24 @@ function initGalerie() {
   }
 
   /* Si l'admin a injecté les données (window._GALERIE_INJECTED), les utiliser
-     directement au lieu de fetch — évite le cache CDN périmé après sauvegarde. */
+     directement au lieu de fetch — évite le cache CDN périmé après sauvegarde.
+     Format historique : { toiles: <data mono-type>, salles: {...} }
+     Adapté en dict {type: data} pour rester compat avec le nouveau code. */
   var _dataPromise;
   if (window._GALERIE_INJECTED && window._GALERIE_INJECTED.toiles && window._GALERIE_INJECTED.salles) {
-    _dataPromise = Promise.resolve([window._GALERIE_INJECTED.toiles, window._GALERIE_INJECTED.salles]);
+    var inj = window._GALERIE_INJECTED.toiles;
+    var injType = (inj && inj.pieces) ? 'sculpture' : 'peinture';
+    var injDict = {}; injDict[injType] = inj;
+    _dataPromise = Promise.resolve([injDict, window._GALERIE_INJECTED.salles]);
   } else {
     _dataPromise = Promise.all([
-      fetch(GALERIE_CFG.toiles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      _chargerOeuvres(),
       fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     ]);
   }
 
   _dataPromise
-  .then(([tData, sData]) => {
+  .then(([oeuvresParType, sData]) => {
     const salles = sData.salles || [];
     TOTAL_SALLES = salles.length;
     const _hm = window.location.hash.match(/^#salle-(\d+)$/);
@@ -554,6 +589,13 @@ function initGalerie() {
         console.warn('Pas de renderer pour le type:', type);
         return;
       }
+      /* Données du type de la salle. En multi-types, on filtre AVANT
+         de passer au renderer pour éviter toute collision d'id entre
+         peinture et sculpture. Si le type n'a pas été chargé, la salle
+         reste sans œuvres mais le décor est rendu. */
+      const tData = oeuvresParType[type] || (type === 'sculpture'
+        ? { gabarits: [], pieces: [] }
+        : { tailles: [], toiles: [] });
 
       const salleDiv = document.createElement('div');
       salleDiv.className = 'salle';
@@ -582,9 +624,13 @@ function initGalerie() {
       conteneur.getBoundingClientRect();
       requestAnimationFrame(() => requestAnimationFrame(() => { conteneur.style.transition = ''; }));
     }
-    /* Mode édition — activer le drag sur les socles */
+    /* Mode édition — activer le drag sur les socles.
+       Le renderer édition (galerie-edit.html) est mono-type, on lui passe
+       le tData du type de la salle active. */
     if (window._GALERIE_EDIT && typeof window._initEditDrag === 'function') {
-      requestAnimationFrame(function() { window._initEditDrag(salles, tData); });
+      var typeActif = (salles[0] && salles[0].type) || 'peinture';
+      var tDataActif = oeuvresParType[typeActif] || { tailles: [], toiles: [] };
+      requestAnimationFrame(function() { window._initEditDrag(salles, tDataActif); });
     }
   })
   .catch(err => {
