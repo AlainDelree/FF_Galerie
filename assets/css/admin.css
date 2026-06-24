@@ -332,8 +332,21 @@ button{cursor:pointer;}
 
 /* ── Flèches déplacement (grandes) ── */
 /* ── Panneau de contrôle fixe (déplacement toile sélectionnée) ── */
+/* Panneau de contrôle d'une toile placée — flottant en overlay au-dessus
+   du strip pour ne plus réduire la hauteur du mur quand on sélectionne une
+   toile. Fond semi-transparent + flou pour rester discret tout en étant
+   lisible quel que soit le contenu du strip dessous. */
 .pl-ctrl-panel{display:none;align-items:center;justify-content:center;gap:.8rem;
-  padding:.4rem .6rem;border-top:1px solid var(--brd);flex-shrink:0;background:var(--bg2);}
+  padding:.5rem .8rem;border-radius:10px;flex-shrink:0;
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(96px + .6rem); /* juste au-dessus du strip PC */
+  background:rgba(28,28,28,.78);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 6px 20px rgba(0,0,0,.45);
+  z-index:320;
+  pointer-events:auto;
+}
 .pl-ctrl-panel.active{display:flex;}
 .pl-ctrl-cross{display:grid;grid-template-columns:repeat(3,42px);
   grid-template-rows:repeat(3,42px);gap:3px;}
@@ -765,6 +778,10 @@ textarea.champ{resize:vertical;min-height:65px;}
   .placement-strip { height: 80px; }
   .pl-item { width: 56px; }
   .pl-item .simg { height: 44px; }
+  /* Panneau flottant : ajuster la position au-dessus du strip mobile (80px) */
+  .pl-ctrl-panel { bottom: calc(80px + .5rem); padding: .4rem .55rem; gap: .5rem; }
+  .pl-ctrl-cross { grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(3, 36px); }
+  .pl-ctrl-nom   { font-size: .68rem; max-width: 100px; }
   .placement-strip { height: 80px; }
   .pl-item { width: 56px; }
   .pl-item .simg { height: 44px; }
