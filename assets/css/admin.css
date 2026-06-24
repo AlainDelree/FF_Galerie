@@ -1043,6 +1043,11 @@ textarea.champ{resize:vertical;min-height:65px;}
   width: 3px; align-self: stretch; border-radius: 2px; flex-shrink: 0;
   min-height: 2rem; background: var(--brd2);
 }
+.lo-id {
+  font-size: .62rem; font-weight: 600; color: var(--muted);
+  min-width: 1.6rem; text-align: right; flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
 .lo-thumb {
   width: 2.4rem; height: 2.4rem; flex-shrink: 0;
   border-radius: 3px;

@@ -149,6 +149,7 @@ function listeOeuvres(opts) {
   var showLegende = legendes.indexOf('disponibilite') >= 0;
   var showTaille  = legendes.indexOf('taille')        >= 0;
   var showSalle   = legendes.indexOf('salle')         >= 0;
+  var showId      = legendes.indexOf('id')            >= 0;
   var assetsBase  = (typeof window.ADMIN_CFG !== 'undefined' && window.ADMIN_CFG.assetsBase) || '';
 
   /* Séparateurs de groupe (uniquement si tri statut + légende disponibilite).
@@ -185,6 +186,16 @@ function listeOeuvres(opts) {
       else                 bord.style.background = 'var(--brd2)';
     }
     item.appendChild(bord);
+
+    /* Numéro d'ordre (ID) — affiché à gauche de la miniature en mode
+       inventaire global (jeu franc : c'est l'ID monotone qui sert aussi
+       de tri "Date d'ajout"). */
+    if (showId) {
+      var idEl = document.createElement('div');
+      idEl.className = 'lo-id';
+      idEl.textContent = '#' + t.id;
+      item.appendChild(idEl);
+    }
 
     /* Thumbnail */
     var thumb = document.createElement('div');

@@ -79,7 +79,7 @@ function afficherOeuvres() {
     tri:        _oeuvresTri,
     recherche:  _oeuvresRecherche,
     mode:       'selection',  /* active les handlers de clic */
-    legendes:   ['salle', 'taille'],
+    legendes:   ['disponibilite', 'id', 'salle', 'taille'],
     selection:  _oeuvresSelection,
     onSelect: function(id) {
       /* Sélection visuelle (indique l'œuvre en cours d'édition) */
