@@ -1,12 +1,30 @@
 {
   "next_id": 6,
   "tailles": [
-    { "code": "XXS", "label": "Très petite" },
-    { "code": "XS",  "label": "Petite" },
-    { "code": "M",   "label": "Moyenne" },
-    { "code": "XL",  "label": "Grande" },
-    { "code": "XXL", "label": "Très grande" },
-    { "code": "E",   "label": "Étirée" }
+    {
+      "code": "XXS",
+      "label": "Très petite"
+    },
+    {
+      "code": "XS",
+      "label": "Petite"
+    },
+    {
+      "code": "M",
+      "label": "Moyenne"
+    },
+    {
+      "code": "XL",
+      "label": "Grande"
+    },
+    {
+      "code": "XXL",
+      "label": "Très grande"
+    },
+    {
+      "code": "E",
+      "label": "Étirée"
+    }
   ],
   "toiles": [
     {
@@ -16,7 +34,10 @@
       "titre": "Rivière de montagne",
       "date": "2024",
       "style": "Paysage",
-      "materiaux": ["Huile", "Toile"],
+      "materiaux": [
+        "Huile",
+        "Toile"
+      ],
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "M",
@@ -29,7 +50,9 @@
       "titre": "Lac sauvage",
       "date": "2023",
       "style": "Paysage",
-      "materiaux": ["Acrylique"],
+      "materiaux": [
+        "Acrylique"
+      ],
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "XL",
@@ -42,7 +65,9 @@
       "titre": "Portrait canin",
       "date": "2024",
       "style": "Portrait",
-      "materiaux": ["Huile"],
+      "materiaux": [
+        "Huile"
+      ],
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "XS",
@@ -55,7 +80,9 @@
       "titre": "Sentier dans la forêt",
       "date": "2022",
       "style": "Paysage",
-      "materiaux": ["Aquarelle"],
+      "materiaux": [
+        "Aquarelle"
+      ],
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "M",
@@ -68,7 +95,9 @@
       "titre": "Côte rocheuse",
       "date": "2023",
       "style": "Marine",
-      "materiaux": ["Acrylique"],
+      "materiaux": [
+        "Acrylique"
+      ],
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "XL",
