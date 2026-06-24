@@ -186,7 +186,9 @@ function selectSalle(id) {
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurMurPieceActuel = salleActive.couleur_mur_piece || '#1a1a1a';
+  couleurMurBasActuel   = salleActive.couleur_mur_bas   || '#111111';
   document.documentElement.style.setProperty('--mur-piece-col', couleurMurPieceActuel);
+  document.documentElement.style.setProperty('--mur-bas-col',   couleurMurBasActuel);
   couleurCadresActuel = salleActive.couleur_cadres;
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
@@ -1711,6 +1713,7 @@ async function creerSalle() {
     type:               typeSalle,
     couleur_mur:        src ? src.couleur_mur        : couleurMurDefaut,
     couleur_mur_piece:  src ? src.couleur_mur_piece  : '#1a1a1a',
+    couleur_mur_bas:    src ? src.couleur_mur_bas    : '#111111',
     couleur_cadres:     src ? src.couleur_cadres     : couleurCadresDefaut,
     epaisseur_cadres:   src ? src.epaisseur_cadres   : undefined,
     texture:            src ? src.texture            : textureDefaut,

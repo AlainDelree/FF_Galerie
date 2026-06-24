@@ -256,6 +256,7 @@ function demarrerTimerAttente() {
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
 let couleurMurPieceActuel = '#1a1a1a';   /* fond/décor de la pièce autour du mur d'expo */
+let couleurMurBasActuel   = '#111111';   /* mur du bas (plinthe + portes) */
 let couleurCadresActuel = '#3a3a3a';
 let epaisseurCadresActuel = 2;
 let textureActuelle = 'none';
@@ -883,6 +884,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopo
 [
   ['btn-pop-mur',       'pop-mur'],
   ['btn-pop-mur-piece', 'pop-mur-piece'],
+  ['btn-pop-mur-bas',   'pop-mur-bas'],
   ['btn-pop-cadres',    'pop-cadres'],
   ['btn-pop-epaisseur', 'pop-epaisseur'],
   ['btn-pop-texture',   'pop-texture'],

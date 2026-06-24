@@ -218,6 +218,7 @@ function _clonerEsthetique(srcId, cibleId) {
   /* Apparence de salle */
   cible.couleur_mur       = src.couleur_mur;
   cible.couleur_mur_piece = src.couleur_mur_piece;
+  cible.couleur_mur_bas   = src.couleur_mur_bas;
   cible.couleur_cadres    = src.couleur_cadres;
   cible.epaisseur_cadres  = src.epaisseur_cadres;
   cible.texture           = src.texture;
@@ -317,8 +318,9 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       /* Zone-basse (déborde latéralement pour faire le sol pleine largeur) */
       var zb = document.createElement('div');
       zb.style.cssText = 'flex:0 0 31%;display:flex;flex-direction:column;width:calc(100% + 30%);margin:0 -15%;';
+      var _murBasCol = salle.couleur_mur_bas || '#111';
       var murInf = document.createElement('div');
-      murInf.style.cssText = 'flex:0 0 38%;background:#111;padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
+      murInf.style.cssText = 'flex:0 0 38%;background:' + _murBasCol + ';padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
       var porteG = document.createElement('div');
       porteG.style.cssText = 'width:7%;height:78%;background:#0c0a07;border-top-left-radius:100% 90%;border-top-right-radius:100% 90%;box-shadow:inset 0 0 6px rgba(0,0,0,.7);';
       var porteD = porteG.cloneNode(false);

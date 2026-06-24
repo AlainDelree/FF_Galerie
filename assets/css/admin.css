@@ -394,7 +394,7 @@ button{cursor:pointer;}
 .scene-block{display:flex;flex-direction:column;align-items:stretch;width:fit-content;max-width:100%;}
 .scene-mur-piece{background:var(--mur-piece-col,#1a1a1a);display:flex;align-items:center;justify-content:center;padding:var(--scene-marge-haut,40px) var(--scene-marge-lat,265px) 0;border-radius:4px 4px 0 0;flex-shrink:0;}
 .scene-zb{display:flex;flex-direction:column;flex-shrink:0;}
-.scene-mur-inf{background:#111;height:32px;padding:0 1.2rem;display:flex;align-items:flex-end;justify-content:space-between;position:relative;}
+.scene-mur-inf{background:var(--mur-bas-col,#111);height:32px;padding:0 1.2rem;display:flex;align-items:flex-end;justify-content:space-between;position:relative;}
 .scene-porte{width:34px;height:25.6px;background:#0c0a07;border-top-left-radius:34px 38.4px;border-top-right-radius:34px 38.4px;box-shadow:inset 0 0 10px rgba(0,0,0,.7);position:relative;}
 .scene-porte::after{content:'';position:absolute;left:50%;top:30%;transform:translateX(-50%);width:13.6px;height:60%;background:linear-gradient(to bottom,rgba(255,255,255,.04),transparent);border-radius:34px 34px 0 0;}
 .scene-plancher{height:51px;border-radius:0 0 4px 4px;

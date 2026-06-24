@@ -84,6 +84,9 @@ GALERIE_RENDERERS['peinture'] = function(salleDiv, salle, si, salles, tData) {
   const toileMap = {};
   (tData.toiles || []).forEach(t => { toileMap[t.id] = t; });
 
+  /* Couleur du mur de la pièce (décor autour du mur d'expo) — par salle */
+  if (salle.couleur_mur_piece) salleDiv.style.backgroundColor = salle.couleur_mur_piece;
+
   /* Mur (grille de tableaux) */
   const mur = document.createElement('div');
   mur.className = 'mur';
@@ -120,7 +123,7 @@ GALERIE_RENDERERS['peinture'] = function(salleDiv, salle, si, salles, tData) {
   if (!toilesSalle.length && !positions.length) {
     mur.classList.add('mur-grille');
     salleDiv.classList.add('salle-grille');
-    const plancher = creerPlancher(salleIdx, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
+    const plancher = creerPlancher(salleIdx, salles.length, salles, NOMS_ROMAINS, salle);
     salleDiv.appendChild(plancher);
     return;
   }
@@ -207,7 +210,7 @@ GALERIE_RENDERERS['peinture'] = function(salleDiv, salle, si, salles, tData) {
       mur.appendChild(art);
     });
 
-    const plancher = creerPlancher(salleIdx, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
+    const plancher = creerPlancher(salleIdx, salles.length, salles, NOMS_ROMAINS, salle);
     salleDiv.appendChild(plancher);
 
   } else {

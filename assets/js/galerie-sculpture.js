@@ -535,10 +535,12 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   (tData.pieces   || []).forEach(p => { pieces[p.id]     = p; });
 
   salleDiv.classList.add('salle-sculpture');
+  /* Couleur du mur de la pièce — par salle */
+  if (salle.couleur_mur_piece) salleDiv.style.backgroundColor = salle.couleur_mur_piece;
   document.body.classList.add('page-sculpture');
   document.documentElement.classList.add('html-sculpture');
 
-  const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle.couleur_mur);
+  const plancher = creerPlancher(si + 1, salles.length, salles, NOMS_ROMAINS, salle);
   const sils = plancher.querySelector('.silhouettes-sol');
   if (sils) sils.remove();
 

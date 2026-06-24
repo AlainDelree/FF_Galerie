@@ -93,6 +93,7 @@ function renderColorSwatches(type) {
   var containerId, current;
   if      (type === 'mur')       { containerId = 'sw-mur';       current = couleurMurActuel; }
   else if (type === 'mur-piece') { containerId = 'sw-mur-piece'; current = couleurMurPieceActuel; }
+  else if (type === 'mur-bas')   { containerId = 'sw-mur-bas';   current = couleurMurBasActuel; }
   else                           { containerId = 'sw-cadres';    current = couleurCadresActuel; }
   var container   = $(containerId);
   if (!container) return;
@@ -107,6 +108,7 @@ function renderColorSwatches(type) {
       pushColorHist(type, col);
       if      (type === 'mur')       setCouleurMur(col);
       else if (type === 'mur-piece') setCouleurMurPiece(col);
+      else if (type === 'mur-bas')   setCouleurMurBas(col);
       else                           setCouleurCadres(col);
     });
     container.appendChild(sw);
@@ -117,6 +119,7 @@ function renderColorSwatches(type) {
 function initSwatches() {
   renderColorSwatches('mur');
   renderColorSwatches('mur-piece');
+  renderColorSwatches('mur-bas');
   renderColorSwatches('cadres');
 
   document.querySelectorAll('#sw-texture .sw').forEach(function(sw) {
@@ -145,6 +148,13 @@ function initSwatches() {
     btnPickerMurPiece.addEventListener('click', function(e) {
       e.stopPropagation();
       ouvrirPickerCouleur('mur-piece');
+    });
+  }
+  var btnPickerMurBas = document.getElementById('btn-picker-mur-bas');
+  if (btnPickerMurBas) {
+    btnPickerMurBas.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('mur-bas');
     });
   }
   var btnPickerCad = document.getElementById('btn-picker-cad');
@@ -197,6 +207,17 @@ function setCouleurMurPiece(col) {
   couleurMurPieceActuel = col;
   if (salleActive) { salleActive.couleur_mur_piece = col; }
   document.documentElement.style.setProperty('--mur-piece-col', col);
+  _rafraichirApercusTDB();
+  _autoSaveApparence();
+}
+
+/* Couleur du mur du bas (plinthe avec portes) — analogue à mur-piece.
+   Propage via var CSS --mur-bas-col, lue par .scene-mur-inf (admin) et
+   appliquée dynamiquement côté public via creerPlancher(). */
+function setCouleurMurBas(col) {
+  couleurMurBasActuel = col;
+  if (salleActive) { salleActive.couleur_mur_bas = col; }
+  document.documentElement.style.setProperty('--mur-bas-col', col);
   _rafraichirApercusTDB();
   _autoSaveApparence();
 }
@@ -902,6 +923,7 @@ function ouvrirPickerCouleur(type) {
   if (titre) titre.textContent =
     (type === 'mur')        ? 'Couleur du mur'
   : (type === 'mur-piece')  ? 'Couleur de la pièce'
+  : (type === 'mur-bas')    ? 'Couleur du mur du bas'
   : (type === 'support')    ? 'Couleur du support'
                             : 'Couleur des cadres';
 
@@ -909,6 +931,7 @@ function ouvrirPickerCouleur(type) {
   var hex =
     (type === 'mur')        ? couleurMurActuel
   : (type === 'mur-piece')  ? couleurMurPieceActuel
+  : (type === 'mur-bas')    ? couleurMurBasActuel
   : (type === 'support')    ? (window._supportPickerCouleur || '#eae6de')
                             : couleurCadresActuel;
   var hsv = _hexToHsv(hex);
@@ -945,6 +968,7 @@ function _confirmerPickerCouleur() {
   if (inp && /^#[0-9a-fA-F]{6}$/.test(inp.value)) hex = inp.value.toLowerCase();
   if (_pickerCouleurType === 'mur') { pushColorHist('mur', hex); setCouleurMur(hex); }
   else if (_pickerCouleurType === 'mur-piece') { pushColorHist('mur-piece', hex); setCouleurMurPiece(hex); }
+  else if (_pickerCouleurType === 'mur-bas') { pushColorHist('mur-bas', hex); setCouleurMurBas(hex); }
   else if (_pickerCouleurType === 'support') { if (typeof window._supportPickerOnConfirm === 'function') window._supportPickerOnConfirm(hex); }
   else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
   fermerPickerCouleur();
