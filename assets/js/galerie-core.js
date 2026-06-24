@@ -66,6 +66,11 @@ function _chargerOeuvres() {
       if (mobG) mobG.disabled = salleCourante === 1;
       if (mobD) mobD.disabled = salleCourante === TOTAL_SALLES;
       if (mobInfo) mobInfo.textContent = NOMS_ROMAINS[salleCourante-1] + ' / ' + NOMS_ROMAINS[TOTAL_SALLES-1];
+      /* Flèches latérales fixes (PC) — cachées en bord de galerie */
+      var _flG = document.querySelector('.nav-cote-g');
+      var _flD = document.querySelector('.nav-cote-d');
+      if (_flG) _flG.classList.toggle('hidden', salleCourante <= 1);
+      if (_flD) _flD.classList.toggle('hidden', salleCourante >= TOTAL_SALLES);
       /* Flèches mode A */
 
       /* Pastille */
@@ -116,6 +121,25 @@ function _chargerOeuvres() {
 
     if (btnPrev) btnPrev.addEventListener('click', () => allerSalle(salleCourante - 1));
     if (btnNext) btnNext.addEventListener('click', () => allerSalle(salleCourante + 1));
+
+    /* ── Flèches latérales fixes (PC) ──
+       Présentes en permanence à gauche/droite, complément des portes
+       (qui peuvent avoir des positions/tailles différentes selon le type
+       de salle, rendant la transition moins évidente). Cachées sur mobile
+       (la nav-mobile en bas suffit). Visibilité gérée dans mettreAJourNav. */
+    function _creerFlecheLaterale(cote, label) {
+      var b = document.createElement('button');
+      b.className = 'nav-cote nav-cote-' + cote;
+      b.setAttribute('aria-label', label);
+      b.innerHTML = cote === 'g' ? '&#8249;' : '&#8250;';
+      b.addEventListener('click', function() {
+        allerSalle(salleCourante + (cote === 'g' ? -1 : 1));
+      });
+      document.body.appendChild(b);
+      return b;
+    }
+    if (!document.querySelector('.nav-cote-g')) _creerFlecheLaterale('g', 'Salle précédente');
+    if (!document.querySelector('.nav-cote-d')) _creerFlecheLaterale('d', 'Salle suivante');
 
     /* ── Swipe horizontal pour changer de salle (mobile) ── */
     let swipeGalX = null, swipeGalY = null;
