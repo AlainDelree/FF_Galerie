@@ -289,9 +289,52 @@ function _creerCarteVue(facette, salle, lbl, opts) {
     }
 
     var iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
     iframe.tabIndex = -1;
     iframe.setAttribute('loading', 'lazy');
+
+    /* Pour la peinture : on construit le décor (mur de la pièce + zone-basse
+       + plancher) en CSS pur autour de l'iframe, et l'iframe ne contient
+       QUE le mur d'expo (avec ses toiles). Valeurs validées sur
+       tools/carte-apercu-peinture-preview.html :
+         - marge latérale  : 13% de la largeur
+         - marge haut      : 5% de la hauteur
+         - zone-basse      : 31% de la hauteur (mur-inf 38% + plancher 62%)
+         - couleur mur     : #1a1a1a (mur de la pièce)
+       Le mur d'expo a aspect-ratio 12/8 garanti par contain:layout sur l'iframe. */
+    var typeSalleApercu = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    if (typeSalleApercu === 'peinture' && !isPortrait) {
+      /* Décor mur de la pièce */
+      var decor = document.createElement('div');
+      decor.style.cssText = 'position:absolute;inset:0;background:#1a1a1a;display:flex;flex-direction:column;padding:5% 13% 0 13%;box-sizing:border-box;';
+      /* Conteneur du mur d'expo (place dispo restante) */
+      var murZone = document.createElement('div');
+      murZone.style.cssText = 'flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;';
+      iframe.style.cssText = 'width:100%;height:100%;max-width:100%;max-height:100%;aspect-ratio:12/8;border:none;pointer-events:none;background:#2e2e2e;';
+      murZone.appendChild(iframe);
+      decor.appendChild(murZone);
+      /* Zone-basse (déborde latéralement pour faire le sol pleine largeur) */
+      var zb = document.createElement('div');
+      zb.style.cssText = 'flex:0 0 31%;display:flex;flex-direction:column;width:calc(100% + 30%);margin:0 -15%;';
+      var murInf = document.createElement('div');
+      murInf.style.cssText = 'flex:0 0 38%;background:#111;padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
+      var porteG = document.createElement('div');
+      porteG.style.cssText = 'width:7%;height:78%;background:#0c0a07;border-top-left-radius:100% 90%;border-top-right-radius:100% 90%;box-shadow:inset 0 0 6px rgba(0,0,0,.7);';
+      var porteD = porteG.cloneNode(false);
+      murInf.appendChild(porteG); murInf.appendChild(porteD);
+      var plancher = document.createElement('div');
+      plancher.style.cssText = 'flex:1 1 auto;background:'
+        + 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 8%),'
+        + 'repeating-linear-gradient(to bottom,transparent 0,transparent 5px,rgba(0,0,0,.15) 5px,rgba(0,0,0,.15) 6px),'
+        + 'linear-gradient(to bottom,#5a3a22,#3a2515);'
+        + 'box-shadow:inset 0 4px 6px rgba(0,0,0,.4);';
+      zb.appendChild(murInf); zb.appendChild(plancher);
+      decor.appendChild(zb);
+      wrap.appendChild(decor);
+    } else {
+      /* Sculpture (et GSM portrait) : iframe pleine carte comme avant */
+      iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
+      wrap.appendChild(iframe);
+    }
 
     /* Injection des données dans l'iframe */
     (function(ifr) {
@@ -337,7 +380,6 @@ function _creerCarteVue(facette, salle, lbl, opts) {
     })(iframe);
 
     iframe.src = apercuPath + '?vue=' + meta.vue + '&v=' + Date.now();
-    wrap.appendChild(iframe);
     preview.appendChild(wrap);
   }
 
