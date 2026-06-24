@@ -1,5 +1,5 @@
 {
-  "next_id": 5,
+  "next_id": 10,
   "gabarits": [
     {
       "code": "S",
@@ -116,6 +116,100 @@
         "couleur": "#d4ae60",
         "texture": "metal",
         "taille": 30
+      }
+    },
+    {
+      "id": 5,
+      "photo": "artistes/dinso/assets/images/toiles/piece-005.png",
+      "source_photo": "admin",
+      "titre": "Cacahouette",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 33,
+        "hauteur": 16,
+        "profondeur": 8
+      },
+      "visible": true,
+      "socle": 43,
+      "glb": "artistes/dinso/assets/models/piece-005.glb"
+    },
+    {
+      "id": 6,
+      "photo": "artistes/dinso/assets/images/toiles/piece-006.png",
+      "source_photo": "admin",
+      "titre": "Escargot pointu",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 18,
+        "hauteur": 69,
+        "profondeur": 17
+      },
+      "visible": true,
+      "socle": 24,
+      "glb": "artistes/dinso/assets/models/piece-006.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
+    },
+    {
+      "id": 7,
+      "photo": "artistes/dinso/assets/images/toiles/piece-007.png",
+      "source_photo": "admin",
+      "titre": "Ammonite",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 35,
+        "hauteur": 30,
+        "profondeur": 16
+      },
+      "visible": true,
+      "socle": 46,
+      "glb": "artistes/dinso/assets/models/piece-007.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
+    },
+    {
+      "id": 9,
+      "photo": "artistes/dinso/assets/images/toiles/piece-009.png",
+      "source_photo": "admin",
+      "titre": "Pointe de fleche",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 105,
+        "hauteur": 47,
+        "profondeur": 13
+      },
+      "visible": true,
+      "socle": 137,
+      "glb": "artistes/dinso/assets/models/piece-009.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
       }
     }
   ]
