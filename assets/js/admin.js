@@ -491,32 +491,83 @@ function _oeuvresPath() {
   return ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json';
 }
 
-async function _lireOeuvres() {
+/* Helper d'introspection — retourne le type d'une œuvre quel que soit
+   son contexte. Utilisé par tout le code qui doit s'adapter selon
+   peinture/sculpture sans dépendre d'ADMIN_CFG.type (qui n'est que le
+   type principal de l'artiste, pas celui de l'œuvre individuelle). */
+function typeDeLOeuvre(t) {
+  return (t && t._type) || ADMIN_CFG.type || 'peinture';
+}
+
+/* Dictionnaires par type peuplés au chargement (étape 3b-2 cohabitation).
+   - _taillesParType : {peinture: [codes tailles], sculpture: [gabarits]}
+   - _nextIdParType  : {peinture: N, sculpture: M}
+   Permettent à sauvegarder() (étape suivante) de dispatcher correctement. */
+var _taillesParType = {};
+var _nextIdParType  = {};
+
+/* Lit tous les fichiers data/oeuvres/<type>.json présents pour cet artiste
+   et retourne un dict {type: contenu}. Fallback transparent vers l'ancien
+   data/toiles.json si le répertoire oeuvres/ n'existe pas. */
+async function _lireToutesOeuvres() {
+  var dirPath = ADMIN_CFG.repoPath + 'oeuvres';
+  var listing;
   try {
-    return await lireRaw(_oeuvresPath());
+    listing = await apiGH('/repos/' + REPO + '/contents/' + dirPath + '?ref=' + BRANCH);
   } catch (e) {
-    var msg = (e && e.message) || '';
-    if (msg.match(/404|Not Found/i)) {
-      console.log('[oeuvres] ' + _oeuvresPath() + ' absent → fallback data/toiles.json');
-      return await lireRaw(ADMIN_CFG.repoPath + 'toiles.json');
+    if ((e.message || '').match(/404|Not Found/i)) {
+      /* Pas encore migré : fallback ancien data/toiles.json sous le type principal */
+      console.log('[oeuvres] répertoire ' + dirPath + ' absent → fallback data/toiles.json');
+      var legacy = await lireRaw(ADMIN_CFG.repoPath + 'toiles.json');
+      var t = ADMIN_CFG.type || 'peinture';
+      var r = {}; r[t] = legacy; return r;
     }
     throw e;
   }
+  /* Filtre fichiers JSON (ignore les sous-répertoires éventuels) */
+  var files = (Array.isArray(listing) ? listing : []).filter(function(f) {
+    return f.type === 'file' && /\.json$/i.test(f.name);
+  });
+  var result = {};
+  await Promise.all(files.map(async function(f) {
+    var type = f.name.replace(/\.json$/i, '');
+    result[type] = await lireRaw(dirPath + '/' + f.name);
+  }));
+  return result;
 }
 
 async function chargerTout() {
   const _ov = document.getElementById('overlay-chargement');
   if (_ov) _ov.classList.add('visible');
   try {
-    const [tData, sData] = await Promise.all([
-      _lireOeuvres(),
+    const [oeuvresParType, sData] = await Promise.all([
+      _lireToutesOeuvres(),
       lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
-    toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
-    tailles = ADMIN_CFG.type === 'sculpture' ? (tData.gabarits  || []) : (tData.tailles || []);
-    /* next_id : ID plancher qui ne redescend jamais (évite recyclage d'ID après suppression) */
-    const maxExistant = toiles.length ? Math.max(...toiles.map(t => t.id)) : 0;
-    nextId = Math.max(tData.next_id || 0, maxExistant + 1);
+
+    /* Construit le stock fusionné en mémoire : chaque œuvre porte _type pour
+       qu'on puisse plus tard la sauver dans le bon fichier. */
+    toiles = [];
+    _taillesParType = {};
+    _nextIdParType  = {};
+    Object.keys(oeuvresParType).forEach(function(type) {
+      var data  = oeuvresParType[type];
+      var items = (type === 'sculpture') ? (data.pieces   || []) : (data.toiles  || []);
+      var codes = (type === 'sculpture') ? (data.gabarits || []) : (data.tailles || []);
+      items.forEach(function(it) { it._type = type; toiles.push(it); });
+      _taillesParType[type] = codes;
+      var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
+      _nextIdParType[type] = Math.max(data.next_id || 0, maxId + 1);
+    });
+
+    /* Compat : variables globales basées sur le type principal de l'admin.
+       Tant qu'aucun artiste n'a plusieurs types, ces variables sont les
+       seules pertinentes. Le jour où on en aura, le code qui doit
+       différencier doit appeler typeDeLOeuvre(t) au lieu de regarder
+       ADMIN_CFG.type. */
+    var typePrincipal = ADMIN_CFG.type || 'peinture';
+    tailles = _taillesParType[typePrincipal] || [];
+    nextId  = _nextIdParType[typePrincipal]  || 1;
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
