@@ -198,8 +198,18 @@
       "epaisseur_cadres": 2,
       "texture": "carrelage",
       "visible": true,
-      "toiles": [],
-      "positions": [],
+      "toiles": [
+        3
+      ],
+      "positions": [
+        {
+          "id": 3,
+          "col": 7,
+          "row": 3,
+          "w": 2,
+          "h": 2
+        }
+      ],
       "positions_mobile": [],
       "greffons": {
         "immersive": {
