@@ -54,9 +54,17 @@ function listeOeuvres(opts) {
 
   function _posAutresSalles(salleCourante) {
     var idCourant = salleCourante ? salleCourante.id : -Infinity;
+    /* En multi-types, ne considérer comme "autres salles" que celles du même
+       type que la salle courante (ou du type filtré). Sinon une peinture id=5
+       est marquée "en salle" parce qu'une sculpture id=5 est posée ailleurs. */
+    var typeRef = (salleCourante && salleCourante.type)
+      || typeFiltre
+      || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : null)
+      || null;
     var ids = new Set();
     toutesSalles.forEach(function(s) {
       if (s.id === idCourant) return;
+      if (typeRef && s.type && s.type !== typeRef) return;
       (s.positions        || []).forEach(function(p) { ids.add(p.id); });
       (s.positions_mobile || []).forEach(function(p) { ids.add(p.id); });
     });

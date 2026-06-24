@@ -887,9 +887,14 @@ function afficherMurPlacement() {
 /* Retourne la salle (autre que salleActive) où la pièce est placée, ou null. */
 function _salleDOrigine(id) {
   if (!salleActive) return null;
+  /* En multi-types, ne regarder que les salles du MÊME type que salleActive
+     (sinon la peinture id=5 est faussement détectée comme "origine = Salle E
+     sculpture" qui contient la sculpture id=5). */
+  var typeRef = salleActive.type || ADMIN_CFG.type || null;
   for (var i = 0; i < salles.length; i++) {
     var s = salles[i];
     if (s.id === salleActive.id) continue;
+    if (typeRef && s.type && s.type !== typeRef) continue;
     var dansPos = (s.positions || []).some(function(p) { return p.id === id; });
     var dansMob = (s.positions_mobile || []).some(function(p) { return p.id === id; });
     if (dansPos || dansMob) return s;
