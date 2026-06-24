@@ -215,13 +215,17 @@ function _clonerEsthetique(srcId, cibleId) {
     'Apparence (couleur, texture, thème) + présentations immersive/descriptive (activation et décors).\n' +
     'Le placement des pièces n\u0027est pas affecté.')) return;
 
-  /* Apparence de salle */
+  /* Apparence de salle — copier UNIQUEMENT les champs définis sur la source.
+     Sinon, un src.couleur_mur_piece undefined écrase la cible à undefined,
+     et la sauvegarde retire la clé du JSON → bug historique : cloner sur
+     une salle qui avait des couleurs personnalisées les faisait disparaître
+     silencieusement (commits 5aa8286, 7770199 dans l'historique dev). */
   cible.couleur_mur       = src.couleur_mur;
-  cible.couleur_mur_piece = src.couleur_mur_piece;
-  cible.couleur_mur_bas   = src.couleur_mur_bas;
-  cible.couleur_cadres    = src.couleur_cadres;
-  cible.epaisseur_cadres  = src.epaisseur_cadres;
-  cible.texture           = src.texture;
+  if (src.couleur_mur_piece !== undefined) cible.couleur_mur_piece = src.couleur_mur_piece;
+  if (src.couleur_mur_bas   !== undefined) cible.couleur_mur_bas   = src.couleur_mur_bas;
+  if (src.couleur_cadres    !== undefined) cible.couleur_cadres    = src.couleur_cadres;
+  if (src.epaisseur_cadres  !== undefined) cible.epaisseur_cadres  = src.epaisseur_cadres;
+  if (src.texture           !== undefined) cible.texture           = src.texture;
 
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
