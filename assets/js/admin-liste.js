@@ -24,6 +24,7 @@
 function listeOeuvres(opts) {
   var container  = opts.container;
   var filtre     = opts.filtre     || 'toutes';
+  var typeFiltre = opts.typeFiltre || null;  /* 'peinture' / 'sculpture' / null = pas de filtre par type */
   var salleRef   = opts.salleRef   || null;
   var vue        = opts.vue        || 'pc';
   var tri        = opts.tri        || 'statut';
@@ -74,6 +75,13 @@ function listeOeuvres(opts) {
   /* ─── Filtrage ─── */
   var items = toutesOeuvres.slice();
 
+  /* Filtre par type d'œuvre (3b-2 cohabitation multi-types) */
+  if (typeFiltre) {
+    items = items.filter(function(t) {
+      return ((t._type) || ADMIN_CFG.type || 'peinture') === typeFiltre;
+    });
+  }
+
   if (filtre === 'salle' && salleRef) {
     var posSalle = new Set();
     (salleRef.positions        || []).forEach(function(p) { posSalle.add(p.id); });
@@ -116,9 +124,11 @@ function listeOeuvres(opts) {
     });
   } else if (tri === 'taille') {
     /* Peinture : tri par code de taille (XXS→E). Sculpture : tri par
-       hauteur en cm croissante (champ dimensions.hauteur, pas de code). */
-    var estSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
-    if (estSculpt) {
+       hauteur en cm croissante (champ dimensions.hauteur, pas de code).
+       Détection via typeFiltre si présent (colonne dédiée), sinon
+       ADMIN_CFG.type (admin mono-type). */
+    var typePourTri = typeFiltre || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : '');
+    if (typePourTri === 'sculpture') {
       items.sort(function(a, b) {
         var ha = (a.dimensions && a.dimensions.hauteur) || 0;
         var hb = (b.dimensions && b.dimensions.hauteur) || 0;
@@ -250,10 +260,12 @@ function listeOeuvres(opts) {
 
     if (showTaille) {
       var lblTaille = '';
-      var estSculptItem = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
-      if (estSculptItem && t.dimensions && t.dimensions.hauteur) {
+      /* Le type vient de l'œuvre elle-même (multi-types) ou retombe sur
+         ADMIN_CFG.type pour les admins mono-type historiques. */
+      var typeItem = (t._type) || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+      if (typeItem === 'sculpture' && t.dimensions && t.dimensions.hauteur) {
         lblTaille = t.dimensions.hauteur + ' cm';
-      } else if (!estSculptItem && t.taille) {
+      } else if (typeItem !== 'sculpture' && t.taille) {
         lblTaille = t.taille;
       }
       if (lblTaille) {
