@@ -201,8 +201,11 @@ function listeOeuvres(opts) {
     }
 
     var item = document.createElement('div');
+    var itemType = (t._type) || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
     item.className = 'lo-item' + (selection.has(t.id) ? ' sel' : '');
     item.dataset.id = String(t.id);
+    item.dataset.type = itemType;  /* Indispensable en multi-types : Tiki sculpture id=1
+                                       et Rivière peinture id=1 doivent être différenciés. */
 
     /* Bord gauche coloré (indicateur légende) */
     var bord = document.createElement('div');
@@ -299,18 +302,18 @@ function listeOeuvres(opts) {
 
     /* Interactions */
     if (mode === 'selection' && onSelect) {
-      item.addEventListener('click', (function(id) {
+      item.addEventListener('click', (function(id, type) {
         return function(e) {
           if (e.target.classList && e.target.classList.contains('lo-edit-btn')) return;
-          onSelect(id);
+          onSelect(id, type);
         };
-      })(t.id));
+      })(t.id, itemType));
     }
 
     if (onDblClick && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      item.addEventListener('dblclick', (function(id) {
-        return function() { onDblClick(id); };
-      })(t.id));
+      item.addEventListener('dblclick', (function(id, type) {
+        return function() { onDblClick(id, type); };
+      })(t.id, itemType));
     }
 
     container.appendChild(item);

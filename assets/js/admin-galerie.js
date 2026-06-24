@@ -1107,8 +1107,18 @@ function construirePillsSalle(salleSelId) {
   });
 }
 
-function ouvrirFormulaireEdition(id) {
-  const t = toiles.find(x => x.id === id);
+function ouvrirFormulaireEdition(id, typeOpt) {
+  /* En multi-types, l'id n'est pas unique entre peinture et sculpture
+     (les compteurs next_id sont séparés). On disambigue via typeOpt
+     fourni par la liste. Mono-type : typeOpt absent, comportement legacy. */
+  var t;
+  if (typeOpt) {
+    t = toiles.find(function(x) {
+      return x.id === id && ((x._type) || ADMIN_CFG.type) === typeOpt;
+    });
+  } else {
+    t = toiles.find(function(x) { return x.id === id; });
+  }
   if (!t) return;
   /* Type de l'œuvre éditée (multi-types). Fallback sur ADMIN_CFG.type
      pour la rétrocompat avec les anciennes œuvres sans _type. */
