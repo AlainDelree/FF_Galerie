@@ -642,6 +642,9 @@ $('btn-changer-token')?.addEventListener('click', () => { token = ''; afficherEc
 // Onglets
 document.querySelectorAll('.onglet').forEach(o => {
   o.addEventListener('click', () => {
+    /* Changer d'onglet ferme le panneau d'édition d'œuvre s'il est ouvert
+       (sinon il reste flottant à droite alors qu'on a quitté la vue Œuvres). */
+    if (typeof fermerModalToile === 'function') fermerModalToile();
     document.querySelectorAll('.onglet').forEach(x => x.classList.remove('actif'));
     document.querySelectorAll('.vue').forEach(x => x.classList.remove('active'));
     o.classList.add('actif');

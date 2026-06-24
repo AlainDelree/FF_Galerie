@@ -7,9 +7,10 @@ var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
 
 /* ── Initialisation (appelée après chargement de tous les modules) ── */
 function initOeuvresTab() {
-  /* Label adaptatif "Toiles" / "Pièces" sur l'onglet */
+  /* Label de l'onglet : 'Œuvres' fixe (terme générique couvrant toiles
+     ET pièces, cohérent avec la cohabitation peinture+sculpture). */
   var ongletEl = document.getElementById('onglet-oeuvres');
-  if (ongletEl && typeof LBL !== 'undefined') ongletEl.textContent = LBL.Items;
+  if (ongletEl) ongletEl.textContent = 'Œuvres';
 
   /* Boutons toolbar */
   var btnAjt = document.getElementById('btn-oeuvres-ajouter');
