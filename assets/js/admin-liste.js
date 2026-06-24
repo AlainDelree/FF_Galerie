@@ -27,6 +27,7 @@ function listeOeuvres(opts) {
   var salleRef   = opts.salleRef   || null;
   var vue        = opts.vue        || 'pc';
   var tri        = opts.tri        || 'statut';
+  var triInverse = !!opts.triInverse;
   var mode       = opts.mode       || 'lecture';
   var legendes   = opts.legendes   || [];
   var selection  = opts.selection  || new Set();
@@ -146,6 +147,11 @@ function listeOeuvres(opts) {
     });
   }
   /* tri === 'ordre' → ordre JSON original conservé (cas spécial pour rétrocompat) */
+
+  /* Inversion de l'ordre si l'utilisateur a basculé le bouton ↑/↓.
+     Le tri par défaut est dans le sens "naturel" (alpha A→Z, taille petit→grand,
+     date récent→ancien, etc.) ; reverse() bascule simplement. */
+  if (triInverse) items.reverse();
 
   /* ─── Render ─── */
   if (items.length === 0) {

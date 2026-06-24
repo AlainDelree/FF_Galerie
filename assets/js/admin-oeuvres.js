@@ -6,6 +6,7 @@
 var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
 var _oeuvresRecherche = '';
 var _oeuvresTri       = 'titre';
+var _oeuvresTriDesc   = false; /* false = ordre naturel, true = inversé */
 var _oeuvresFiltre    = 'toutes';
 
 /* ── Initialisation (appelée après chargement de tous les modules) ── */
@@ -54,6 +55,21 @@ function initOeuvresTab() {
     afficherOeuvres();
   });
 
+  /* Bouton d'inversion du sens du tri (↓ par défaut = ordre naturel) */
+  var btnDir = document.getElementById('btn-oeuvres-tri-dir');
+  if (btnDir) {
+    var _majBtnDir = function() {
+      btnDir.textContent = _oeuvresTriDesc ? '↑' : '↓';
+      btnDir.title = _oeuvresTriDesc ? 'Ordre inverse — cliquer pour ordre naturel' : 'Ordre naturel — cliquer pour inverser';
+    };
+    _majBtnDir();
+    btnDir.addEventListener('click', function() {
+      _oeuvresTriDesc = !_oeuvresTriDesc;
+      _majBtnDir();
+      afficherOeuvres();
+    });
+  }
+
   /* Chips de filtre par statut */
   var chips = document.querySelectorAll('.oeuvres-chip');
   chips.forEach(function(c) {
@@ -77,6 +93,7 @@ function afficherOeuvres() {
     salleRef:   null,          /* inventaire global — pas de salle de référence */
     vue:        'pc',
     tri:        _oeuvresTri,
+    triInverse: _oeuvresTriDesc,
     recherche:  _oeuvresRecherche,
     mode:       'selection',  /* active les handlers de clic */
     legendes:   ['disponibilite', 'id', 'salle', 'taille'],
