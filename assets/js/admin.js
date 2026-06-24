@@ -623,17 +623,37 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
-  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, …) */
+  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, _type…) */
   var _sansTemp = function(key, val) { return key.charAt(0) === '_' ? undefined : val; };
   try {
-    await commitMulti([
-      { chemin: _oeuvresPath(), contenu: JSON.stringify(
-        ADMIN_CFG.type === 'sculpture'
-          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-          : { next_id: nextId, tailles, toiles }
-      , _sansTemp, 2) },
-      { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) }
-    ], 'Admin : ' + message);
+    /* Dispatch des œuvres par _type → un fichier data/oeuvres/<type>.json par type.
+       Tous les types présents dans _taillesParType OU dans le toiles[] mémoire sont
+       inclus (même vides), pour ne JAMAIS perdre un type qui aurait été chargé. */
+    var typesPresents = {};
+    Object.keys(_taillesParType).forEach(function(t) { typesPresents[t] = true; });
+    toiles.forEach(function(t) { typesPresents[typeDeLOeuvre(t)] = true; });
+
+    var fichiers = [];
+    Object.keys(typesPresents).forEach(function(type) {
+      var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
+      var codes = _taillesParType[type] || [];
+      var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
+      var nid   = Math.max(_nextIdParType[type] || 0, maxId + 1);
+      _nextIdParType[type] = nid;
+      var payload = (type === 'sculpture')
+        ? { next_id: nid, gabarits: codes, pieces: items }
+        : { next_id: nid, tailles:  codes, toiles: items };
+      fichiers.push({
+        chemin:  ADMIN_CFG.repoPath + 'oeuvres/' + type + '.json',
+        contenu: JSON.stringify(payload, _sansTemp, 2)
+      });
+    });
+    /* Sync nextId compat avec le type principal */
+    var typePrincipal = ADMIN_CFG.type || 'peinture';
+    if (_nextIdParType[typePrincipal]) nextId = _nextIdParType[typePrincipal];
+
+    fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) });
+    await commitMulti(fichiers, 'Admin : ' + message);
     syncBadge('ok');
     if (toastMsg) toast(toastMsg);
     /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
@@ -659,9 +679,17 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
    Toutes les sauvegardes passent par des boutons intégrés (Enregistrer
    du mode Arranger, bottom-sheets Couleurs/Textures, modales toile, etc.) */
 
-function prochainId() {
-  const id = nextId;
-  nextId++;
+function prochainId(typeOpt) {
+  /* Avec l'arrivée de la cohabitation peinture+sculpture, chaque type a
+     son propre compteur (next_id séparé dans data/oeuvres/<type>.json).
+     Le param optionnel permet de générer un ID dans le type souhaité ;
+     par défaut, c'est le type principal de l'admin. */
+  var type = typeOpt || ADMIN_CFG.type || 'peinture';
+  if (!_nextIdParType[type]) _nextIdParType[type] = 1;
+  var id = _nextIdParType[type];
+  _nextIdParType[type]++;
+  /* Sync la variable globale nextId pour le code legacy qui la lit */
+  if (type === (ADMIN_CFG.type || 'peinture')) nextId = _nextIdParType[type];
   return id;
 }
 
