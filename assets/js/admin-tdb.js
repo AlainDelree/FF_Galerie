@@ -31,7 +31,10 @@ var DECOR_DESCRIPTIVE_DEFAUT = {
 
 /* ─── Registre des types de salle ─── */
 var TYPES_SALLE = {
-  peinture:  { vues: ['galerie-pc', 'galerie-gsm'], greffons: [] },
+  /* Peinture : pas de carte GSM — galerie-peinture.js ne lit pas
+     positions_mobile (sur mobile le rendu bascule en mode flux), mur
+     PC/GSM identiques (aspect-ratio 12/8). Une seule vue suffit. */
+  peinture:  { vues: ['galerie-pc'], greffons: [] },
   sculpture: { vues: ['galerie-pc', 'galerie-gsm'], greffons: ['immersive', 'descriptive'] }
 };
 
@@ -176,9 +179,10 @@ function _renderTDB() {
     tdb.appendChild(titreVues);
 
     var grid = document.createElement('div');
-    grid.className = 'tdb-grid';
+    var solo = (typeDef.vues.length === 1);
+    grid.className = 'tdb-grid' + (solo ? ' tdb-grid-solo' : '');
     typeDef.vues.forEach(function(facette) {
-      grid.appendChild(_creerCarteVue(facette, s, lbl));
+      grid.appendChild(_creerCarteVue(facette, s, lbl, { solo: solo }));
     });
     tdb.appendChild(grid);
   }
@@ -230,8 +234,11 @@ function _clonerEsthetique(srcId, cibleId) {
   }
 }
 
-/* ── Carte d'une vue arrangeable (PC / GSM) ── */
-function _creerCarteVue(facette, salle, lbl) {
+/* ── Carte d'une vue arrangeable (PC / GSM) ──
+   opts.solo : true si la carte est seule dans la grille (pas de GSM) →
+   on relâche la max-height pour donner plus de place à l'aperçu. */
+function _creerCarteVue(facette, salle, lbl, opts) {
+  opts = opts || {};
   var meta = FACETTES_META[facette];
   if (!meta) return document.createElement('div');
 
@@ -247,7 +254,10 @@ function _creerCarteVue(facette, salle, lbl) {
     if (typeof ADMIN_CFG !== 'undefined') {
       apercuBase = ADMIN_CFG.repoPath.replace(/data\/?$/, '');
     }
-    var apercuPath = apercuBase + 'galerie-apercu.html';
+    /* Type de la salle (et non type de l'admin) — détermine le bon aperçu */
+    var typeSalle = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    var apercuFile = (typeSalle === 'sculpture') ? 'galerie-apercu.html' : 'galerie-apercu-peinture.html';
+    var apercuPath = apercuBase + apercuFile;
 
     var wrap = document.createElement('div');
     wrap.className = 'tdb-iframe-wrap';
@@ -259,26 +269,83 @@ function _creerCarteVue(facette, salle, lbl) {
       wrap.style.cssText = 'position:relative;height:' + gsmH + 'px;width:' + gsmW + 'px;'
         + 'margin:0 auto;background:var(--bg3);border-radius:6px 6px 0 0;overflow:hidden;';
     } else {
-      /* PC paysage : pleine largeur, hauteur max fixe */
-      wrap.style.cssText = 'position:relative;width:100%;aspect-ratio:' + meta.ratio
-        + ';max-height:180px;overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
+      /* PC paysage : pleine largeur. Carte seule → hauteur libre dans une
+         limite raisonnable pour ne pas saturer l'écran (l'aspect-ratio 16/9
+         dicte la hauteur naturelle, mais on plafonne à 260px), carte côte
+         à côte → max-height 180px pour tenir avec la carte GSM voisine.
+         Peinture : ratio 3/2 (= 12/8 du mur d'expo) — le mur remplit la
+         carte sans letterbox noir gauche/droite. La zone-basse (parquet
+         + portes) n'apparaît pas dans la carte, mais ce qui compte pour
+         l'aperçu c'est de voir où se placent les toiles. */
+      var typeSalle = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+      var ratioCarte = (typeSalle === 'peinture') ? '3/2' : meta.ratio;
+      var maxH = opts.solo ? '260px' : '180px';
+      /* Height-driven : hauteur fixe + aspect-ratio → largeur calculée correctement.
+         Avec width:100% + max-height, le navigateur ignorait l'aspect-ratio
+         (carte étirée à 1820×260 au lieu de 390×260). max-width:100% évite le
+         débordement horizontal sur écran étroit ; margin:0 auto centre. */
+      wrap.style.cssText = 'position:relative;height:' + maxH + ';aspect-ratio:' + ratioCarte
+        + ';max-width:100%;margin:0 auto;overflow:hidden;background:var(--bg3);border-radius:6px 6px 0 0;';
     }
 
     var iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
     iframe.tabIndex = -1;
     iframe.setAttribute('loading', 'lazy');
 
+    /* Pour la peinture : on construit le décor (mur de la pièce + zone-basse
+       + plancher) en CSS pur autour de l'iframe, et l'iframe ne contient
+       QUE le mur d'expo (avec ses toiles). Valeurs validées sur
+       tools/carte-apercu-peinture-preview.html :
+         - marge latérale  : 13% de la largeur
+         - marge haut      : 5% de la hauteur
+         - zone-basse      : 31% de la hauteur (mur-inf 38% + plancher 62%)
+         - couleur mur     : #1a1a1a (mur de la pièce)
+       Le mur d'expo a aspect-ratio 12/8 garanti par contain:layout sur l'iframe. */
+    var typeSalleApercu = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    if (typeSalleApercu === 'peinture' && !isPortrait) {
+      /* Décor mur de la pièce */
+      var decor = document.createElement('div');
+      decor.style.cssText = 'position:absolute;inset:0;background:#1a1a1a;display:flex;flex-direction:column;padding:5% 13% 0 13%;box-sizing:border-box;';
+      /* Conteneur du mur d'expo (place dispo restante) */
+      var murZone = document.createElement('div');
+      murZone.style.cssText = 'flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;';
+      iframe.style.cssText = 'width:100%;height:100%;max-width:100%;max-height:100%;aspect-ratio:12/8;border:none;pointer-events:none;background:#2e2e2e;';
+      murZone.appendChild(iframe);
+      decor.appendChild(murZone);
+      /* Zone-basse (déborde latéralement pour faire le sol pleine largeur) */
+      var zb = document.createElement('div');
+      zb.style.cssText = 'flex:0 0 31%;display:flex;flex-direction:column;width:calc(100% + 30%);margin:0 -15%;';
+      var murInf = document.createElement('div');
+      murInf.style.cssText = 'flex:0 0 38%;background:#111;padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
+      var porteG = document.createElement('div');
+      porteG.style.cssText = 'width:7%;height:78%;background:#0c0a07;border-top-left-radius:100% 90%;border-top-right-radius:100% 90%;box-shadow:inset 0 0 6px rgba(0,0,0,.7);';
+      var porteD = porteG.cloneNode(false);
+      murInf.appendChild(porteG); murInf.appendChild(porteD);
+      var plancher = document.createElement('div');
+      plancher.style.cssText = 'flex:1 1 auto;background:'
+        + 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 8%),'
+        + 'repeating-linear-gradient(to bottom,transparent 0,transparent 5px,rgba(0,0,0,.15) 5px,rgba(0,0,0,.15) 6px),'
+        + 'linear-gradient(to bottom,#5a3a22,#3a2515);'
+        + 'box-shadow:inset 0 4px 6px rgba(0,0,0,.4);';
+      zb.appendChild(murInf); zb.appendChild(plancher);
+      decor.appendChild(zb);
+      wrap.appendChild(decor);
+    } else {
+      /* Sculpture (et GSM portrait) : iframe pleine carte comme avant */
+      iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
+      wrap.appendChild(iframe);
+    }
+
     /* Injection des données dans l'iframe */
     (function(ifr) {
-      var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
-      /* N'injecter QUE la salle de cette carte (sinon l'aperçu montre la 1re salle) */
+      /* Format des données : selon le type de la SALLE (pas de l'admin).
+         _stockParType filtre toiles[] par type → indispensable en multi-types
+         pour éviter la collision d'ID entre peinture et sculpture. */
       var salleSeule = JSON.parse(JSON.stringify(salle));
+      var stockData = _stockParType(typeSalle);
       var injectData = {
         type: 'init-data',
-        toiles: _isSculptType
-          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-          : { next_id: nextId, tailles:  tailles, toiles: toiles },
+        toiles: stockData,
         salles: { salles: [salleSeule] }
       };
       function envoyer() {
@@ -301,7 +368,6 @@ function _creerCarteVue(facette, salle, lbl) {
     })(iframe);
 
     iframe.src = apercuPath + '?vue=' + meta.vue + '&v=' + Date.now();
-    wrap.appendChild(iframe);
     preview.appendChild(wrap);
   }
 
@@ -318,7 +384,15 @@ function _creerCarteVue(facette, salle, lbl) {
 
   var labelEl = document.createElement('div');
   labelEl.className = 'tdb-card-label';
-  labelEl.textContent = meta.icon + ' ' + meta.label;
+  /* Pour les salles peinture, PC = GSM (galerie-peinture.js ne lit pas
+     positions_mobile), donc le suffixe "PC" est trompeur. On affiche
+     juste "Galerie". Pour sculpture, "Galerie PC" reste car la vue
+     mobile a un layout distinct. */
+  var typeSalleVue = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+  var labelTxt = (facette === 'galerie-pc' && typeSalleVue === 'peinture')
+    ? 'Galerie'
+    : meta.label;
+  labelEl.textContent = meta.icon + ' ' + labelTxt;
 
   var badge = document.createElement('div');
   badge.className = 'tdb-card-badge';
@@ -543,7 +617,11 @@ function _toggleGreffon(greffon) {
 function entrerVue(facette) {
   _tdbFacetteActive = facette;
   var meta = FACETTES_META[facette] || {};
-  var _isSculptType = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+  /* Type de la salle active (pas type de l'admin) — pour cohabitation peinture+sculpture */
+  var typeSalle = (salleActive && salleActive.type)
+    ? salleActive.type
+    : (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+  var _isSculptType = (typeSalle === 'sculpture');
 
   /* Greffons → éditeur dédié */
   if (meta.greffon) {
@@ -566,14 +644,13 @@ function entrerVue(facette) {
     }
   }
 
-  /* Toutes les œuvres dans le strip. Celles déjà dans une AUTRE salle sont
-     incluses aussi (marquées dans le strip) — déplaçables avec confirmation. */
-  if (typeof toilesSelectionnees !== 'undefined' && typeof toiles !== 'undefined'
-      && typeof salles !== 'undefined' && salleActive) {
+  /* L'arrangeur (afficherStripPlacement) liste désormais TOUTES les œuvres
+     du type de la salle via idsValides. Le pré-cochage automatique de
+     toilesSelectionnees n'est plus nécessaire et déclenchait un faux warning
+     'ces toiles sont dans une autre salle' pour chaque œuvre déjà placée
+     ailleurs (cas visible chez Fred : 30+ toiles listées au clic Modifier). */
+  if (typeof toilesSelectionnees !== 'undefined') {
     toilesSelectionnees.clear();
-    toiles.forEach(function(t) {
-      toilesSelectionnees.add(t.id);
-    });
   }
 
   /* Ouvrir l'arranger directement */
@@ -731,7 +808,7 @@ function ouvrirEditeurImmersif(salle) {
   var cbLbl = document.createElement('label');
   cbLbl.htmlFor = 'cb-socle-piece';
   cbLbl.style.cssText = 'font-size:.65rem;color:var(--muted);cursor:pointer;line-height:1.3;';
-  cbLbl.textContent = "Socle = support de l\u0027\u0153uvre (GSM)";
+  cbLbl.textContent = "Reprendre la couleur du support de l\u0027\u0153uvre";
   cb.addEventListener('change', function() {
     decor.socle_use_piece = cb.checked;
     /* Griser le picker socle si case cochée */

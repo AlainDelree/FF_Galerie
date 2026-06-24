@@ -717,3 +717,26 @@
       .modal-titre      { font-size:1rem; }
       .modal-fermer     { width:2rem; height:2rem; font-size:1rem; }
     }
+
+/* ── Flèches latérales fixes (PC) ────────────────────────────────
+   Navigation permanente entre salles, en complément des portes.
+   Cachées sur mobile (nav-mobile en bas suffit). */
+.nav-cote {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  width: 2.6rem; height: 4rem; padding: 0;
+  background: rgba(20,20,20,.5);
+  color: rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 4px;
+  font-size: 1.6rem; line-height: 1;
+  cursor: pointer; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .25s, color .25s, opacity .25s;
+}
+.nav-cote:hover { background: rgba(40,40,40,.85); color: #fff; border-color: var(--accent); }
+.nav-cote.hidden { opacity: 0; pointer-events: none; }
+.nav-cote-g { left: .8rem; }
+.nav-cote-d { right: .8rem; }
+@media (max-width: 768px) {
+  .nav-cote { display: none; }
+}

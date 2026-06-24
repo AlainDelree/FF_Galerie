@@ -90,28 +90,6 @@
       }
     },
     {
-      "id": 7,
-      "nom": "Salle E",
-      "type": "sculpture",
-      "couleur_mur": "#8a6228",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "parquet",
-      "visible": true,
-      "toiles": [
-        4
-      ],
-      "positions": [
-        {
-          "id": 4,
-          "x": 39,
-          "y": 52,
-          "gabarit": "S"
-        }
-      ],
-      "positions_mobile": []
-    },
-    {
       "id": 2,
       "nom": "Salle B",
       "type": "sculpture",
@@ -121,8 +99,7 @@
       "texture": "parquet",
       "visible": true,
       "toiles": [
-        7,
-        6
+        7
       ],
       "positions": [
         {
@@ -130,12 +107,6 @@
           "x": 32,
           "y": 62,
           "gabarit": "M"
-        },
-        {
-          "id": 6,
-          "x": 69,
-          "y": 58,
-          "gabarit": "L"
         }
       ],
       "positions_mobile": [
@@ -169,6 +140,95 @@
             "pan_a": "#5a3794",
             "pan_b": "#5a3794",
             "pan_c": "#5a3794",
+            "pan_d": "#f4b0a8"
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "nom": "Salle Peinture",
+      "type": "peinture",
+      "couleur_mur": "#99c1f1",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
+      "texture": "none",
+      "visible": true,
+      "toiles": [
+        5,
+        4,
+        1
+      ],
+      "positions": [
+        {
+          "id": 5,
+          "col": 9,
+          "row": 3,
+          "w": 2,
+          "h": 2
+        },
+        {
+          "id": 4,
+          "col": 3,
+          "row": 5,
+          "w": 2,
+          "h": 2
+        },
+        {
+          "id": 1,
+          "col": 4,
+          "row": 2,
+          "w": 2,
+          "h": 2
+        }
+      ],
+      "positions_mobile": []
+    },
+    {
+      "id": 9,
+      "nom": "Salle Edde",
+      "type": "peinture",
+      "couleur_mur": "#99f1b7",
+      "couleur_cadres": "#5c3d2e",
+      "epaisseur_cadres": 2,
+      "texture": "carrelage",
+      "visible": true,
+      "toiles": [
+        3
+      ],
+      "positions": [
+        {
+          "id": 3,
+          "col": 7,
+          "row": 3,
+          "w": 2,
+          "h": 2
+        }
+      ],
+      "positions_mobile": [],
+      "greffons": {
+        "immersive": {
+          "actif": true,
+          "decor": {
+            "fond": "#12100c",
+            "exposure": 1,
+            "sol": "#040404",
+            "socle_couleur": "#f0ece4",
+            "socle_use_piece": false,
+            "pan_a": "#7a2525",
+            "pan_b": "#1a3055",
+            "pan_c": "#2a5035",
+            "pan_d": "#a04820",
+            "piquet": "#c8a050",
+            "corde": "#8b0020"
+          }
+        },
+        "descriptive": {
+          "actif": true,
+          "decor": {
+            "pan_a": "#b4e4f4",
+            "pan_b": "#e0f0b0",
+            "pan_c": "#d8c4ec",
             "pan_d": "#f4b0a8"
           }
         }

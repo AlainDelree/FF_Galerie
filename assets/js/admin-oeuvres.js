@@ -4,43 +4,88 @@
  */
 
 var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
+var _oeuvresSelectionType = null;  /* type associé à l'id sélectionné (multi-types) */
+var _oeuvresRecherche = '';
+var _oeuvresTri       = 'titre';
+var _oeuvresTriDesc   = false; /* false = ordre naturel, true = inversé */
+var _oeuvresFiltre    = 'toutes';
 
 /* ── Initialisation (appelée après chargement de tous les modules) ── */
 function initOeuvresTab() {
-  /* Label adaptatif "Toiles" / "Pièces" sur l'onglet */
+  /* Label de l'onglet : 'Œuvres' fixe (terme générique couvrant toiles
+     ET pièces, cohérent avec la cohabitation peinture+sculpture). */
   var ongletEl = document.getElementById('onglet-oeuvres');
-  if (ongletEl && typeof LBL !== 'undefined') ongletEl.textContent = LBL.Items;
+  if (ongletEl) ongletEl.textContent = 'Œuvres';
 
   /* Boutons toolbar */
   var btnAjt = document.getElementById('btn-oeuvres-ajouter');
-  var btnMod = document.getElementById('btn-oeuvres-modifier');
   var btnSup = document.getElementById('btn-oeuvres-supprimer');
   var btnCat = document.getElementById('btn-oeuvres-catalogue');
 
   if (btnAjt) btnAjt.addEventListener('click', function() {
     _oeuvresSelection.clear();
+    _oeuvresSelectionType = null;
     majBoutonsOeuvres();
     if (typeof construirePillsSalle === 'function') construirePillsSalle(null);
     if (typeof ouvrirFormulaireNouvel === 'function') ouvrirFormulaireNouvel();
   });
 
-  if (btnMod) btnMod.addEventListener('click', function() {
-    var id = [..._oeuvresSelection][0];
-    if (id != null && typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
-    else if (id != null && typeof ouvrirFiche === 'function') ouvrirFiche(id);
-  });
-
   if (btnSup) btnSup.addEventListener('click', function() {
     var id = [..._oeuvresSelection][0];
     if (id == null) return;
+    var type = _oeuvresSelectionType;
     selectedToile = (typeof toiles !== 'undefined')
-      ? toiles.find(function(t) { return t.id === id; }) || null
+      ? toiles.find(function(t) {
+          if (t.id !== id) return false;
+          if (!type) return true;  /* fallback mono-type */
+          return ((t._type) || ADMIN_CFG.type) === type;
+        }) || null
       : null;
     if (typeof supprimerToile === 'function') supprimerToile();
   });
 
   if (btnCat) btnCat.addEventListener('click', function() {
     if (typeof ouvrirCatalogue === 'function') ouvrirCatalogue();
+  });
+
+  /* Recherche par titre — re-render à chaque frappe */
+  var inpRech = document.getElementById('oeuvres-recherche');
+  if (inpRech) inpRech.addEventListener('input', function() {
+    _oeuvresRecherche = inpRech.value;
+    afficherOeuvres();
+  });
+
+  /* Tri (select) */
+  var selTri = document.getElementById('oeuvres-tri');
+  if (selTri) selTri.addEventListener('change', function() {
+    _oeuvresTri = selTri.value;
+    afficherOeuvres();
+  });
+
+  /* Bouton d'inversion du sens du tri (↓ par défaut = ordre naturel) */
+  var btnDir = document.getElementById('btn-oeuvres-tri-dir');
+  if (btnDir) {
+    var _majBtnDir = function() {
+      btnDir.textContent = _oeuvresTriDesc ? '↑' : '↓';
+      btnDir.title = _oeuvresTriDesc ? 'Ordre inverse — cliquer pour ordre naturel' : 'Ordre naturel — cliquer pour inverser';
+    };
+    _majBtnDir();
+    btnDir.addEventListener('click', function() {
+      _oeuvresTriDesc = !_oeuvresTriDesc;
+      _majBtnDir();
+      afficherOeuvres();
+    });
+  }
+
+  /* Chips de filtre par statut */
+  var chips = document.querySelectorAll('.oeuvres-chip');
+  chips.forEach(function(c) {
+    c.addEventListener('click', function() {
+      chips.forEach(function(x) { x.classList.remove('actif'); });
+      c.classList.add('actif');
+      _oeuvresFiltre = c.dataset.filtre || 'toutes';
+      afficherOeuvres();
+    });
   });
 }
 
@@ -49,34 +94,106 @@ function afficherOeuvres() {
   var container = document.getElementById('oeuvres-list');
   if (!container) return;
 
-  listeOeuvres({
-    container:  container,
-    filtre:     'toutes',
-    salleRef:   null,          /* inventaire global — pas de salle de référence */
+  /* Détecter les types présents (à partir de _taillesParType chargé par
+     admin.js, OU à partir des _type vus dans toiles[]). Si un seul type
+     → layout single-colonne historique. Si plusieurs → une colonne par type. */
+  var typesPresents = Object.keys(typeof _taillesParType !== 'undefined' ? _taillesParType : {});
+  if (typesPresents.length === 0) {
+    typesPresents = [(typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture')];
+  }
+
+  /* Multi-types → masquer le bouton "+ Ajouter" global (chaque colonne a
+     son propre bouton "+"). Mono-type → garder le bouton global visible. */
+  var btnAjt = document.getElementById('btn-oeuvres-ajouter');
+  if (btnAjt) btnAjt.style.display = (typesPresents.length > 1) ? 'none' : '';
+  /* Ordre prévisible : peinture toujours à gauche, sculpture à droite */
+  typesPresents.sort(function(a, b) {
+    var ORDRE = { peinture: 0, sculpture: 1 };
+    return (ORDRE[a] || 99) - (ORDRE[b] || 99);
+  });
+
+  container.innerHTML = '';
+  container.classList.toggle('multi-types', typesPresents.length > 1);
+
+  var commonOpts = {
+    filtre:     _oeuvresFiltre,
+    salleRef:   null,
     vue:        'pc',
-    tri:        'titre',
-    mode:       'selection',  /* active les handlers de clic */
-    legendes:   ['salle', 'taille'],
+    tri:        _oeuvresTri,
+    triInverse: _oeuvresTriDesc,
+    recherche:  _oeuvresRecherche,
+    mode:       'selection',
+    legendes:   ['disponibilite', 'id', 'salle', 'taille'],
     selection:  _oeuvresSelection,
-    onSelect: function(id) {
-      /* Sélection unique sans rebuild DOM */
-      var wasSelected = _oeuvresSelection.has(id);
-      /* Désélectionner tous visuellement */
+    onSelect: function(id, type) {
+      /* Sélection visuelle (indique l'œuvre en cours d'édition).
+         Identification par couple (id, type) en multi-types : Tiki sculpture
+         id=1 ≠ Rivière peinture id=1. */
       container.querySelectorAll('.lo-item').forEach(function(el) {
         el.classList.remove('sel');
       });
       _oeuvresSelection.clear();
-      if (!wasSelected) {
-        _oeuvresSelection.add(id);
-        var el = container.querySelector('[data-id="' + id + '"]');
-        if (el) el.classList.add('sel');
-      }
+      _oeuvresSelection.add(id);
+      _oeuvresSelectionType = type || null;
+      var sel = type
+        ? container.querySelector('[data-id="' + id + '"][data-type="' + type + '"]')
+        : container.querySelector('[data-id="' + id + '"]');
+      if (sel) sel.classList.add('sel');
       majBoutonsOeuvres();
+      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id, type);
     },
-    onDblClick: function(id) {
-      if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
+    onDblClick: function(id, type) {
+      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id, type);
     }
-  });
+  };
+
+  if (typesPresents.length === 1) {
+    /* Mono-type : pas de header, comportement identique au code historique */
+    listeOeuvres(Object.assign({}, commonOpts, { container: container }));
+  } else {
+    /* Multi-types : une colonne par type avec en-tête + bouton "+" dédié */
+    typesPresents.forEach(function(type) {
+      var col = document.createElement('div');
+      col.className = 'oeuvres-col';
+      col.dataset.type = type;
+
+      var nbTotal = toiles.filter(function(t) {
+        return ((t._type) || ADMIN_CFG.type) === type;
+      }).length;
+
+      var hdr = document.createElement('div');
+      hdr.className = 'oeuvres-col-hdr';
+      var lblType = (type === 'sculpture') ? 'Sculptures' : 'Peintures';
+      hdr.innerHTML = '<span class="oeuvres-col-titre">' + lblType +
+        ' <span class="oeuvres-col-nb">(' + nbTotal + ')</span></span>';
+      var btnPlus = document.createElement('button');
+      btnPlus.className = 'oeuvres-col-add';
+      btnPlus.type = 'button';
+      btnPlus.textContent = '+';
+      btnPlus.title = 'Ajouter une ' + (type === 'sculpture' ? 'sculpture' : 'peinture');
+      btnPlus.addEventListener('click', function() {
+        _oeuvresSelection.clear();
+        _oeuvresSelectionType = null;
+        majBoutonsOeuvres();
+        if (typeof construirePillsSalle === 'function') construirePillsSalle(null);
+        /* On passe le type de la colonne au formulaire : il s'adapte
+           pour afficher les bons champs (peinture vs sculpture). */
+        if (typeof ouvrirFormulaireNouvel === 'function') ouvrirFormulaireNouvel(type);
+      });
+      hdr.appendChild(btnPlus);
+      col.appendChild(hdr);
+
+      var corps = document.createElement('div');
+      corps.className = 'oeuvres-col-corps';
+      col.appendChild(corps);
+      container.appendChild(col);
+
+      listeOeuvres(Object.assign({}, commonOpts, {
+        container:  corps,
+        typeFiltre: type
+      }));
+    });
+  }
 
   majBoutonsOeuvres();
 }
@@ -84,9 +201,7 @@ function afficherOeuvres() {
 /* ── Enable/disable boutons selon sélection ── */
 function majBoutonsOeuvres() {
   var ok = _oeuvresSelection.size === 1;
-  var btnMod = document.getElementById('btn-oeuvres-modifier');
   var btnSup = document.getElementById('btn-oeuvres-supprimer');
-  if (btnMod) btnMod.disabled = !ok;
   if (btnSup) btnSup.disabled = !ok;
 }
 

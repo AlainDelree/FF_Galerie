@@ -483,19 +483,120 @@ async function uploaderGLB(id, b64) {
 // ═══════════════════════════════════════════════
 // DONNÉES
 // ═══════════════════════════════════════════════
+/* Chemin du stock d'œuvres : nouveau format data/oeuvres/<type>.json.
+   Fallback transparent vers data/toiles.json (ancien format) en lecture
+   pour les éventuels environnements pas encore migrés. L'écriture va
+   toujours dans le nouveau chemin (sauvegarder() ci-dessous). */
+function _oeuvresPath() {
+  return ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json';
+}
+
+/* Helper d'introspection — retourne le type d'une œuvre quel que soit
+   son contexte. Utilisé par tout le code qui doit s'adapter selon
+   peinture/sculpture sans dépendre d'ADMIN_CFG.type (qui n'est que le
+   type principal de l'artiste, pas celui de l'œuvre individuelle). */
+function typeDeLOeuvre(t) {
+  return (t && t._type) || ADMIN_CFG.type || 'peinture';
+}
+
+/* Helpers de recherche d'œuvre en multi-types. En mono-type ces helpers
+   sont équivalents aux toiles.find(...) historiques ; en multi-types,
+   ils évitent les collisions d'ID entre peinture et sculpture (id=1 partagé). */
+function _trouverOeuvre(id, typeOpt) {
+  if (typeOpt) return toiles.find(function(t) {
+    return t.id === id && typeDeLOeuvre(t) === typeOpt;
+  });
+  return toiles.find(function(t) { return t.id === id; });
+}
+function _salleContenantOeuvre(id, typeOpt) {
+  return salles.find(function(s) {
+    if (typeOpt && s.type && s.type !== typeOpt) return false;
+    return (s.toiles || []).indexOf(id) >= 0;
+  });
+}
+
+/* Construit le payload "stockData" d'un type donné, à envoyer à une
+   iframe (galerie-apercu ou galerie-edit). En multi-types, c'est
+   indispensable de filtrer toiles[] par type AVANT d'envoyer : sinon
+   les peintures et sculptures de même id se collisionnent. */
+function _stockParType(type) {
+  var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
+  var codes = (typeof _taillesParType !== 'undefined' && _taillesParType[type]) ? _taillesParType[type] : [];
+  var nid   = (typeof _nextIdParType  !== 'undefined' && _nextIdParType[type])  ? _nextIdParType[type]  : 1;
+  return (type === 'sculpture')
+    ? { next_id: nid, gabarits: codes, pieces: items }
+    : { next_id: nid, tailles:  codes, toiles: items };
+}
+
+/* Dictionnaires par type peuplés au chargement (étape 3b-2 cohabitation).
+   - _taillesParType : {peinture: [codes tailles], sculpture: [gabarits]}
+   - _nextIdParType  : {peinture: N, sculpture: M}
+   Permettent à sauvegarder() (étape suivante) de dispatcher correctement. */
+var _taillesParType = {};
+var _nextIdParType  = {};
+
+/* Lit tous les fichiers data/oeuvres/<type>.json présents pour cet artiste
+   et retourne un dict {type: contenu}. Fallback transparent vers l'ancien
+   data/toiles.json si le répertoire oeuvres/ n'existe pas. */
+async function _lireToutesOeuvres() {
+  var dirPath = ADMIN_CFG.repoPath + 'oeuvres';
+  var listing;
+  try {
+    listing = await apiGH('/repos/' + REPO + '/contents/' + dirPath + '?ref=' + BRANCH);
+  } catch (e) {
+    if ((e.message || '').match(/404|Not Found/i)) {
+      /* Pas encore migré : fallback ancien data/toiles.json sous le type principal */
+      console.log('[oeuvres] répertoire ' + dirPath + ' absent → fallback data/toiles.json');
+      var legacy = await lireRaw(ADMIN_CFG.repoPath + 'toiles.json');
+      var t = ADMIN_CFG.type || 'peinture';
+      var r = {}; r[t] = legacy; return r;
+    }
+    throw e;
+  }
+  /* Filtre fichiers JSON (ignore les sous-répertoires éventuels) */
+  var files = (Array.isArray(listing) ? listing : []).filter(function(f) {
+    return f.type === 'file' && /\.json$/i.test(f.name);
+  });
+  var result = {};
+  await Promise.all(files.map(async function(f) {
+    var type = f.name.replace(/\.json$/i, '');
+    result[type] = await lireRaw(dirPath + '/' + f.name);
+  }));
+  return result;
+}
+
 async function chargerTout() {
   const _ov = document.getElementById('overlay-chargement');
   if (_ov) _ov.classList.add('visible');
   try {
-    const [tData, sData] = await Promise.all([
-      lireRaw(ADMIN_CFG.repoPath + 'toiles.json'),
+    const [oeuvresParType, sData] = await Promise.all([
+      _lireToutesOeuvres(),
       lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
-    toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
-    tailles = ADMIN_CFG.type === 'sculpture' ? (tData.gabarits  || []) : (tData.tailles || []);
-    /* next_id : ID plancher qui ne redescend jamais (évite recyclage d'ID après suppression) */
-    const maxExistant = toiles.length ? Math.max(...toiles.map(t => t.id)) : 0;
-    nextId = Math.max(tData.next_id || 0, maxExistant + 1);
+
+    /* Construit le stock fusionné en mémoire : chaque œuvre porte _type pour
+       qu'on puisse plus tard la sauver dans le bon fichier. */
+    toiles = [];
+    _taillesParType = {};
+    _nextIdParType  = {};
+    Object.keys(oeuvresParType).forEach(function(type) {
+      var data  = oeuvresParType[type];
+      var items = (type === 'sculpture') ? (data.pieces   || []) : (data.toiles  || []);
+      var codes = (type === 'sculpture') ? (data.gabarits || []) : (data.tailles || []);
+      items.forEach(function(it) { it._type = type; toiles.push(it); });
+      _taillesParType[type] = codes;
+      var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
+      _nextIdParType[type] = Math.max(data.next_id || 0, maxId + 1);
+    });
+
+    /* Compat : variables globales basées sur le type principal de l'admin.
+       Tant qu'aucun artiste n'a plusieurs types, ces variables sont les
+       seules pertinentes. Le jour où on en aura, le code qui doit
+       différencier doit appeler typeDeLOeuvre(t) au lieu de regarder
+       ADMIN_CFG.type. */
+    var typePrincipal = ADMIN_CFG.type || 'peinture';
+    tailles = _taillesParType[typePrincipal] || [];
+    nextId  = _nextIdParType[typePrincipal]  || 1;
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -551,17 +652,37 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
-  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, …) */
+  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, _type…) */
   var _sansTemp = function(key, val) { return key.charAt(0) === '_' ? undefined : val; };
   try {
-    await commitMulti([
-      { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
-        ADMIN_CFG.type === 'sculpture'
-          ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-          : { next_id: nextId, tailles, toiles }
-      , _sansTemp, 2) },
-      { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) }
-    ], 'Admin : ' + message);
+    /* Dispatch des œuvres par _type → un fichier data/oeuvres/<type>.json par type.
+       Tous les types présents dans _taillesParType OU dans le toiles[] mémoire sont
+       inclus (même vides), pour ne JAMAIS perdre un type qui aurait été chargé. */
+    var typesPresents = {};
+    Object.keys(_taillesParType).forEach(function(t) { typesPresents[t] = true; });
+    toiles.forEach(function(t) { typesPresents[typeDeLOeuvre(t)] = true; });
+
+    var fichiers = [];
+    Object.keys(typesPresents).forEach(function(type) {
+      var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
+      var codes = _taillesParType[type] || [];
+      var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
+      var nid   = Math.max(_nextIdParType[type] || 0, maxId + 1);
+      _nextIdParType[type] = nid;
+      var payload = (type === 'sculpture')
+        ? { next_id: nid, gabarits: codes, pieces: items }
+        : { next_id: nid, tailles:  codes, toiles: items };
+      fichiers.push({
+        chemin:  ADMIN_CFG.repoPath + 'oeuvres/' + type + '.json',
+        contenu: JSON.stringify(payload, _sansTemp, 2)
+      });
+    });
+    /* Sync nextId compat avec le type principal */
+    var typePrincipal = ADMIN_CFG.type || 'peinture';
+    if (_nextIdParType[typePrincipal]) nextId = _nextIdParType[typePrincipal];
+
+    fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) });
+    await commitMulti(fichiers, 'Admin : ' + message);
     syncBadge('ok');
     if (toastMsg) toast(toastMsg);
     /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
@@ -571,7 +692,12 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
         positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
         toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || [])),
         supports:         toiles.map(function(t) {
-          return { id: t.id, support: t.support ? JSON.parse(JSON.stringify(t.support)) : null, sans_socle: t.sans_socle || false };
+          return {
+            id:         t.id,
+            _type:      typeDeLOeuvre(t),
+            support:    t.support ? JSON.parse(JSON.stringify(t.support)) : null,
+            sans_socle: t.sans_socle || false
+          };
         })
       };
     }
@@ -587,9 +713,17 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
    Toutes les sauvegardes passent par des boutons intégrés (Enregistrer
    du mode Arranger, bottom-sheets Couleurs/Textures, modales toile, etc.) */
 
-function prochainId() {
-  const id = nextId;
-  nextId++;
+function prochainId(typeOpt) {
+  /* Avec l'arrivée de la cohabitation peinture+sculpture, chaque type a
+     son propre compteur (next_id séparé dans data/oeuvres/<type>.json).
+     Le param optionnel permet de générer un ID dans le type souhaité ;
+     par défaut, c'est le type principal de l'admin. */
+  var type = typeOpt || ADMIN_CFG.type || 'peinture';
+  if (!_nextIdParType[type]) _nextIdParType[type] = 1;
+  var id = _nextIdParType[type];
+  _nextIdParType[type]++;
+  /* Sync la variable globale nextId pour le code legacy qui la lit */
+  if (type === (ADMIN_CFG.type || 'peinture')) nextId = _nextIdParType[type];
   return id;
 }
 
@@ -642,6 +776,9 @@ $('btn-changer-token')?.addEventListener('click', () => { token = ''; afficherEc
 // Onglets
 document.querySelectorAll('.onglet').forEach(o => {
   o.addEventListener('click', () => {
+    /* Changer d'onglet ferme le panneau d'édition d'œuvre s'il est ouvert
+       (sinon il reste flottant à droite alors qu'on a quitté la vue Œuvres). */
+    if (typeof fermerModalToile === 'function') fermerModalToile();
     document.querySelectorAll('.onglet').forEach(x => x.classList.remove('actif'));
     document.querySelectorAll('.vue').forEach(x => x.classList.remove('active'));
     o.classList.add('actif');
@@ -668,7 +805,7 @@ document.querySelectorAll('.sous-nav-btn').forEach(btn => {
 });
 
 // Plan salles
-$('btn-ajouter-salle').addEventListener('click', () => ouvrirModalSalle());
+$('btn-ajouter-salle')?.addEventListener('click', () => ouvrirModalSalle()); /* défensif : élément retiré du DOM, chip "＋ Salle" prend le relais */
 $('btn-supprimer-salle').addEventListener('click', async () => {
   if (!salleActive) return;
   if (!confirm(`Supprimer "${salleActive.nom}" et toutes ses positions ? Réversible via le backup.`)) return;
@@ -818,14 +955,20 @@ $('btn-apercu-placement').addEventListener('click', () => {
   quitterModePlacement();
 });
 
-/* Switch vue PC / GSM pour sculpture */
+/* Switch vue PC / GSM — dispatch sol/mur selon le type de la salle active */
 $('btn-switch-vue')?.addEventListener('click', function() {
   _placementVue = _placementVue === 'pc' ? 'gsm' : 'pc';
   this.textContent = _placementVue === 'pc' ? '🖥 PC' : '📱 GSM';
   this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
   this.style.color = _placementVue === 'gsm' ? '#fff' : '';
   peintureSurMurSel = null;
-  afficherSolPlacement();
+  /* En GSM peinture : si pas encore de positions mobiles, partir d'une
+     copie des positions PC (cohérent avec ouvrirArrangerApresConfirm) */
+  if (_placementVue === 'gsm' && salleActive
+      && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
+    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+  }
+  afficherMurPlacement(); /* dispatch interne vers afficherSolPlacement si sculpture */
   afficherStripPlacement();
 });
 $('btn-sauver-placement').addEventListener('click', async () => {
@@ -871,11 +1014,13 @@ $('btn-grille-pl').addEventListener('click', function() {
   $("pl-btn-right")?.addEventListener("click", function(){ mvSel( 1, 0); });
   $("pl-btn-details")?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
-    if (typeof ouvrirFiche === 'function') ouvrirFiche(peintureSurMurSel);
+    var _typeAct = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    if (typeof ouvrirFiche === 'function') ouvrirFiche(peintureSurMurSel, _typeAct);
   });
   $("pl-btn-rm")   ?.addEventListener("click", function() {
     if (peintureSurMurSel === null) return;
-    var titre = (toiles.find(function(x){ return x.id === peintureSurMurSel; }) || {}).titre || "—";
+    var _typeRm = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    var titre = (_trouverOeuvre(peintureSurMurSel, _typeRm) || {}).titre || "—";
     if (ADMIN_CFG.type === 'sculpture') {
       var pos = _getPositions();
       var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });

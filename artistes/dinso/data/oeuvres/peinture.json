@@ -1,0 +1,126 @@
+{
+  "next_id": 6,
+  "tailles": [
+    {
+      "code": "XXS",
+      "label": "Très petite"
+    },
+    {
+      "code": "XS",
+      "label": "Petite"
+    },
+    {
+      "code": "M",
+      "label": "Moyenne"
+    },
+    {
+      "code": "XL",
+      "label": "Grande"
+    },
+    {
+      "code": "XXL",
+      "label": "Très grande"
+    },
+    {
+      "code": "E",
+      "label": "Étirée"
+    }
+  ],
+  "toiles": [
+    {
+      "id": 1,
+      "photo": "https://picsum.photos/id/1015/600/800",
+      "source_photo": "picsum",
+      "titre": "Rivière de montagne",
+      "date": "2024",
+      "style": "Paysage",
+      "materiaux": [
+        "Huile",
+        "Toile"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "M",
+      "visible": true
+    },
+    {
+      "id": 2,
+      "photo": "https://picsum.photos/id/1018/800/600",
+      "source_photo": "picsum",
+      "titre": "Lac sauvage",
+      "date": "2023",
+      "style": "Paysage",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "XL",
+      "visible": true,
+      "support": {
+        "type": "presentoir",
+        "couleur": "#2a1a10",
+        "texture": "marbre",
+        "taille": 40
+      },
+      "sans_socle": true
+    },
+    {
+      "id": 3,
+      "photo": "https://picsum.photos/id/1025/600/800",
+      "source_photo": "picsum",
+      "titre": "Portrait canin",
+      "date": "2024",
+      "style": "Portrait",
+      "materiaux": [
+        "Huile"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "XS",
+      "visible": true,
+      "support": {
+        "type": "presentoir",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
+    },
+    {
+      "id": 4,
+      "photo": "https://picsum.photos/id/1037/600/800",
+      "source_photo": "picsum",
+      "titre": "Sentier dans la forêt",
+      "date": "2022",
+      "style": "Paysage",
+      "materiaux": [
+        "Aquarelle"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "M",
+      "visible": true,
+      "support": {
+        "type": "etagere",
+        "couleur": "#d4ae60",
+        "texture": "metal",
+        "taille": 30
+      }
+    },
+    {
+      "id": 5,
+      "photo": "https://picsum.photos/id/1043/800/600",
+      "source_photo": "picsum",
+      "titre": "Côte rocheuse",
+      "date": "2023",
+      "style": "Marine",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "XL",
+      "visible": true
+    }
+  ]
+}

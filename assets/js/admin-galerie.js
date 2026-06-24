@@ -9,6 +9,43 @@ const LBL = _isSculpt
   ? { item:'pièce', items:'pièces', Item:'Pièce', Items:'Pièces', placee:'placée', retiree:'retirée' }
   : { item:'toile', items:'toiles', Item:'Toile', Items:'Toiles', placee:'placée', retiree:'retirée du mur' };
 
+/* Type de l'œuvre en cours d'édition dans le formulaire modal (3b-2-4b).
+   Par défaut, c'est le type principal de l'admin. Mis à jour à chaque
+   ouvrirFormulaireEdition / ouvrirFormulaireNouvel selon le contexte
+   (œuvre cliquée ou bouton "+" d'une colonne dédiée). */
+var _typeEdition = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+
+function _estSculptEdition() {
+  return _typeEdition === 'sculpture';
+}
+
+/* Bascule l'affichage des champs .peinture-only / .sculpture-only DANS
+   le formulaire modal seulement (le reste de l'UI suit ADMIN_CFG.type ou
+   le type de la salle active). */
+function _appliquerTypeFormulaire(type) {
+  _typeEdition = type || ADMIN_CFG.type || 'peinture';
+  var estSculpt = (_typeEdition === 'sculpture');
+  var form = document.getElementById('overlay-toile');
+  if (form) {
+    form.querySelectorAll('.peinture-only').forEach(function(el) {
+      el.style.display = estSculpt ? 'none' : '';
+    });
+    form.querySelectorAll('.sculpture-only').forEach(function(el) {
+      el.style.display = estSculpt ? '' : 'none';
+    });
+  }
+}
+
+/* Helper : type de la salle active (peinture/sculpture).
+   Permet à l'arrangeur de se comporter selon le type de la salle, pas de l'admin.
+   Fallback sur ADMIN_CFG.type si la salle n'a pas de type défini. */
+function _estSculptSalleActive() {
+  if (typeof salleActive !== 'undefined' && salleActive && salleActive.type) {
+    return salleActive.type === 'sculpture';
+  }
+  return _isSculpt;
+}
+
 /* Revêtements de sol pour sculpture */
 const SOL_PATTERNS = {
   parquet: 'repeating-linear-gradient(to bottom,transparent 0px,transparent 17px,rgba(0,0,0,.15) 17px,rgba(0,0,0,.15) 19px),' +
@@ -40,8 +77,10 @@ function afficherPlan() {
     (s.positions        || []).forEach(function(p) { _ids.add(p.id); });
     (s.positions_mobile || []).forEach(function(p) { _ids.add(p.id); });
     var _nb = _ids.size;
+    /* Type de la salle pour bordure colorée (peinture/sculpture) */
+    var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
     const chip = document.createElement('div');
-    chip.className = 'chip' + (_nb === 0 ? ' vide' : '');
+    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
     if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
@@ -110,6 +149,27 @@ function _renderCloneSalleRow() {
   row.appendChild(btn);
 }
 
+/* Ajuste la barre d'apparence (cadres/épaisseur/texture vs revêtement)
+   et le libellé "Couleur du mur/sol" selon le type de la salle active.
+   Permet la cohabitation peinture/sculpture dans un même admin. */
+function _majApparenceSelonSalle() {
+  if (!salleActive) return;
+  var estSculpt = (salleActive.type === 'sculpture');
+  /* Boutons spécifiques peinture (cadres + épaisseur + texture du mur) */
+  ['btn-pop-cadres', 'btn-pop-epaisseur', 'btn-pop-texture'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = estSculpt ? 'none' : '';
+  });
+  /* Boutons spécifiques sculpture (revêtement du sol) */
+  var btnRev = document.getElementById('btn-pop-revetement');
+  if (btnRev) btnRev.style.display = estSculpt ? '' : 'none';
+  /* Libellé du bouton mur (et son popover) : Couleur du mur ↔ Couleur du sol */
+  var btnMur = document.getElementById('btn-pop-mur');
+  if (btnMur) btnMur.title = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+  var popMurT = document.getElementById('pop-mur-titre');
+  if (popMurT) popMurT.textContent = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+}
+
 function selectSalle(id) {
   salleActive = salles.find(s => s.id === id);
   if (!salleActive) return;
@@ -119,6 +179,10 @@ function selectSalle(id) {
   const chips = $('chips-salles').querySelectorAll('.chip');
   chips.forEach((c, i) => { if (salles[i]?.id === id) c.classList.add('sel'); });
   if (typeof _renderCloneSalleRow === 'function') _renderCloneSalleRow();
+  /* Ajuste la barre Apparence + le label couleur mur/sol selon le type
+     de la SALLE (pas de l'admin). Permet à un admin sculpture d'éditer
+     une salle peinture (et inversement). */
+  _majApparenceSelonSalle();
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
   couleurCadresActuel = salleActive.couleur_cadres;
@@ -185,12 +249,12 @@ function afficherMur() {
 
     var apercuPath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-apercu.html';
 
-    /* Données admin en mémoire à injecter dans les iframes */
+    /* Données admin en mémoire à injecter dans les iframes.
+       Filtrer par type de la salle pour éviter collisions d'ID (multi-types). */
+    var typeSalleApercu = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
     var injectData = {
       type: 'init-data',
-      toiles: ADMIN_CFG.type === 'sculpture'
-        ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-        : { next_id: nextId, tailles: tailles, toiles: toiles },
+      toiles: _stockParType(typeSalleApercu),
       salles: { salles: JSON.parse(JSON.stringify(salles)) }
     };
     function brancherApercu(iframe) {
@@ -248,9 +312,10 @@ function afficherMur() {
     return;
   }
 
-  // Toiles posées
+  // Toiles posées — recherche par type de salle (multi-types)
+  var _typeMurAff = salleActive.type || ADMIN_CFG.type || 'peinture';
   (salleActive.positions || []).forEach(p => {
-    const t = toiles.find(x => x.id === p.id);
+    const t = _trouverOeuvre(p.id, _typeMurAff);
     if (!t) return;
     const el = document.createElement('div');
     el.className = 'toile-posee' + (t.visible === false ? ' reserve-posee' : '');
@@ -342,30 +407,39 @@ function deplacerPeinture(toileId, dCol, dRow) {
 function afficherStock() {
   var list = $('stock-list');
   if (!list) return;
-  var hdrSpan = $('stock-hdr') && $('stock-hdr').querySelector('span');
-  if (hdrSpan) hdrSpan.textContent = 'Stock (' + toiles.length + ' ' + LBL.items + ')';
   if (!salleActive) { list.innerHTML = ''; return; }
+  /* Type de la salle active — détermine quelles œuvres on liste */
+  var typeSalleStock = salleActive.type || ADMIN_CFG.type || 'peinture';
+  /* Compteur : nombre d'œuvres du bon type (pas du total fusionné) */
+  var nbStock = toiles.filter(function(t) { return typeDeLOeuvre(t) === typeSalleStock; }).length;
+  var lblItems = (typeSalleStock === 'sculpture') ? 'pièces' : 'toiles';
+  var hdrSpan = $('stock-hdr') && $('stock-hdr').querySelector('span');
+  if (hdrSpan) hdrSpan.textContent = 'Stock (' + nbStock + ' ' + lblItems + ')';
 
   listeOeuvres({
     container:  list,
     filtre:     'toutes',
+    typeFiltre: typeSalleStock,
     salleRef:   salleActive,
     vue:        _placementVue,
     tri:        'statut',
     mode:       'selection',
-    legendes:   _isSculpt ? ['disponibilite'] : ['disponibilite', 'taille'],
+    legendes:   (typeSalleStock === 'sculpture') ? ['disponibilite'] : ['disponibilite', 'taille'],
     selection:  toilesSelectionnees,
     onSelect: function(id) {
       /* Toggle sans rebuild pour que le double-clic fonctionne */
       if (toilesSelectionnees.has(id)) toilesSelectionnees.delete(id);
       else toilesSelectionnees.add(id);
       selectedToile = toilesSelectionnees.size === 1
-        ? toiles.find(function(x) { return x.id === [...toilesSelectionnees][0]; }) : null;
+        ? toiles.find(function(x) {
+            return x.id === [...toilesSelectionnees][0]
+              && typeDeLOeuvre(x) === typeSalleStock;
+          }) : null;
       var el = list.querySelector('[data-id="' + id + '"]');
       if (el) el.classList.toggle('sel', toilesSelectionnees.has(id));
       majBoutons();
     },
-    onDblClick: function(id) { ouvrirFiche(id); }
+    onDblClick: function(id) { ouvrirFiche(id, typeSalleStock); }
   });
 
   /* Badges de sync ⏳ en post-process (toilesEnAttente) */
@@ -416,15 +490,27 @@ function _getPositions() {
 
 function entrerModePlacement() {
   if (!salleActive) return;
-  // Vérifier si des toiles sélectionnées viennent d'une autre salle
+  /* Vérifier si des toiles sélectionnées viennent d'une autre salle DU MÊME TYPE.
+     Sans le filtre par type : une peinture id=5 cochée signalait à tort qu'elle
+     était dans une "autre salle" simplement parce qu'une sculpture id=5 existe
+     dans une salle sculpture. */
+  var typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
   const autresSelectionnees = [...toilesSelectionnees].filter(id => {
-    const salle = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+    const salle = salles.find(s =>
+      s.id !== salleActive.id
+      && (!s.type || s.type === typeSalleAct)
+      && s.toiles.includes(id)
+    );
     return !!salle;
   });
   if (autresSelectionnees.length > 0) {
     const noms = autresSelectionnees.map(id => {
-      const t = toiles.find(x => x.id === id);
-      const s = salles.find(s => s.id !== salleActive.id && s.toiles.includes(id));
+      const t = _trouverOeuvre(id, typeSalleAct);
+      const s = salles.find(s =>
+        s.id !== salleActive.id
+        && (!s.type || s.type === typeSalleAct)
+        && s.toiles.includes(id)
+      );
       return `"${t?.titre || 'Sans titre'}" (${s?.nom || 'autre salle'})`;
     }).join(', ');
     const div = document.createElement('div');
@@ -458,14 +544,24 @@ function entrerModePlacement() {
 
 function ouvrirArrangerApresConfirm() {
   if (!salleActive) return;
-  /* Snapshot — restauré si retour sans sauvegarder */
+  /* Rebuild occupancy à partir de salleActive.positions — sinon en passant
+     d'une salle à une autre dans l'arrangeur, occupancy garde les cases
+     marquées occupées de la salle précédente (bug visible : 2e salle
+     peinture montre les positions de la 1re). */
+  buildOccupancy();
+  /* Snapshot — restauré si retour sans sauvegarder.
+     Supports identifiés par couple (id, _type) en multi-types. */
   _arrangerSnapshot = {
     positions:        JSON.parse(JSON.stringify(salleActive.positions        || [])),
     positions_mobile: JSON.parse(JSON.stringify(salleActive.positions_mobile || [])),
     toiles:           JSON.parse(JSON.stringify(salleActive.toiles           || [])),
-    /* Supports des pièces (vivent dans toiles[], hors salle) */
     supports:         toiles.map(function(t) {
-      return { id: t.id, support: t.support ? JSON.parse(JSON.stringify(t.support)) : null, sans_socle: t.sans_socle || false };
+      return {
+        id:         t.id,
+        _type:      typeDeLOeuvre(t),
+        support:    t.support ? JSON.parse(JSON.stringify(t.support)) : null,
+        sans_socle: t.sans_socle || false
+      };
     })
   };
   const nbPlacees = (salleActive.positions||[]).length;
@@ -481,9 +577,17 @@ function ouvrirArrangerApresConfirm() {
   var _vueGsm = (_placementVue === 'gsm');
   var btnSw = document.getElementById('btn-switch-vue');
   if (btnSw) {
-    btnSw.textContent      = _vueGsm ? '📱 GSM' : '🖥 PC';
-    btnSw.style.background = _vueGsm ? 'var(--gold)' : '';
-    btnSw.style.color      = _vueGsm ? '#fff' : '';
+    /* Bouton PC/GSM utile uniquement pour les salles sculpture (positions_mobile
+       activement utilisé). En peinture, mur PC=GSM (12/8) et positions_mobile
+       n'est pas lu par le renderer → bouton inutile, on le masque. */
+    if (_estSculptSalleActive()) {
+      btnSw.style.display    = '';
+      btnSw.textContent      = _vueGsm ? '📱 GSM' : '🖥 PC';
+      btnSw.style.background = _vueGsm ? 'var(--gold)' : '';
+      btnSw.style.color      = _vueGsm ? '#fff' : '';
+    } else {
+      btnSw.style.display = 'none';
+    }
   }
   $('overlay-placement').classList.add('ouvert');
   // Pousse un état pour intercepter le bouton retour Android
@@ -497,8 +601,8 @@ function ouvrirArrangerApresConfirm() {
   afficherMurPlacement();
   afficherStripPlacement();
   $('pl-aide').textContent = nbPlacees > 0
-    ? 'Cliquez sur un' + (_isSculpt ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
-    : 'Sélectionnez un' + (_isSculpt ? 'e pièce' : 'e toile') + ' en bas';
+    ? 'Cliquez sur un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
+    : 'Sélectionnez un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' en bas';
 }
 
 
@@ -546,11 +650,11 @@ function _arrangerADesModifs() {
   if (j(salleActive.positions)        !== j(_arrangerSnapshot.positions))        return true;
   if (j(salleActive.positions_mobile) !== j(_arrangerSnapshot.positions_mobile)) return true;
   if (j(salleActive.toiles)           !== j(_arrangerSnapshot.toiles))           return true;
-  /* Supports */
+  /* Supports — disambigué par couple (id, _type) en multi-types */
   if (_arrangerSnapshot.supports) {
     for (var i = 0; i < _arrangerSnapshot.supports.length; i++) {
       var snap = _arrangerSnapshot.supports[i];
-      var t = toiles.find(function(x) { return x.id === snap.id; });
+      var t = _trouverOeuvre(snap.id, snap._type);
       if (!t) continue;
       if (JSON.stringify(t.support || null) !== JSON.stringify(snap.support)) return true;
       if ((t.sans_socle || false) !== snap.sans_socle) return true;
@@ -570,6 +674,7 @@ function _refreshArrangerSnapshot() {
     supports: toiles.map(function(t) {
       return {
         id:         t.id,
+        _type:      typeDeLOeuvre(t),
         support:    t.support    ? JSON.parse(JSON.stringify(t.support)) : null,
         sans_socle: t.sans_socle || false
       };
@@ -584,10 +689,10 @@ function quitterModePlacement() {
     salleActive.positions        = _arrangerSnapshot.positions;
     salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
     salleActive.toiles           = _arrangerSnapshot.toiles;
-    /* Restaurer les supports des pièces */
+    /* Restaurer les supports des pièces — par couple (id, _type) */
     if (_arrangerSnapshot.supports) {
       _arrangerSnapshot.supports.forEach(function(snap) {
-        var t = toiles.find(function(x) { return x.id === snap.id; });
+        var t = _trouverOeuvre(snap.id, snap._type);
         if (!t) return;
         if (snap.support) t.support = snap.support; else delete t.support;
         if (snap.sans_socle) t.sans_socle = true; else delete t.sans_socle;
@@ -623,11 +728,120 @@ function majCtrlPanel() {
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
 
+/* ─── Scène peinture (décor autour du mur d'expo dans l'Arrangeur) ───
+   HTML statique : #mur-placement seul dans .placement-mur-zone.
+   Pour les salles peinture, on enveloppe dynamiquement le mur dans :
+     .scene-peinture > .scene-mur-piece (marge latérale) > #mur-placement
+                     + .scene-zb > .scene-mur-inf (avec 2 portes) + .scene-plancher
+   Pour les salles sculpture, on dé-wrappe pour rendre le mur directement
+   enfant de .placement-mur-zone comme à l'origine. → Aucune interférence. */
+var _SCENE_MARGE_LAT_PC = 265; /* px sur PC large (validé via preview) */
+var _SCENE_MARGE_LAT_SM = 80;  /* px sur écran étroit */
+var _SCENE_MARGE_HAUT_PC = 40; /* px bande mur au-dessus du mur d'expo (PC) */
+var _SCENE_MARGE_HAUT_SM = 15; /* px sur écran étroit */
+var _SCENE_ZB_H_PC = 83;       /* mur-inf 32 + plancher 51 */
+var _SCENE_ZB_H_SM = 56;       /* mur-inf 24 + plancher 32 (cf. media query 1100px) */
+
+function _activerSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  if (mur.parentElement && mur.parentElement.classList.contains('scene-mur-piece')) return;
+  var zone = mur.parentElement;
+  var scene = document.createElement('div');
+  scene.className = 'scene-peinture';
+  var block = document.createElement('div');
+  block.className = 'scene-block';
+  scene.appendChild(block);
+  var piece = document.createElement('div');
+  piece.className = 'scene-mur-piece';
+  block.appendChild(piece);
+  zone.insertBefore(scene, mur);
+  piece.appendChild(mur);
+  var zb = document.createElement('div');
+  zb.className = 'scene-zb';
+  zb.setAttribute('aria-hidden', 'true');
+  zb.innerHTML =
+    '<div class="scene-mur-inf">' +
+      '<div class="scene-porte scene-porte-g"></div>' +
+      '<div class="scene-porte scene-porte-d"></div>' +
+    '</div>' +
+    '<div class="scene-plancher"></div>';
+  block.appendChild(zb);
+}
+
+function _desactiverSceneDecorPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var piece = mur.parentElement;
+  if (!piece || !piece.classList.contains('scene-mur-piece')) return;
+  var block = piece.parentElement;          // .scene-block
+  var scene = block.parentElement;          // .scene-peinture
+  var zone  = scene.parentElement;          // .placement-mur-zone
+  mur.style.width = '';
+  mur.style.height = '';
+  zone.insertBefore(mur, scene);
+  scene.remove();
+}
+
+/* Calcule width/height du mur d'expo selon l'espace dispo, EN TENANT COMPTE
+   de la marge latérale (mur-piece padding) et de la zone-basse. */
+function _ajusterMurPeinture() {
+  var mur = $('mur-placement');
+  if (!mur) return;
+  var zone = mur.closest('.placement-mur-zone');
+  if (!zone) return;
+  var rect = zone.getBoundingClientRect();
+  /* Largeur écran < 1100px → marges réduites + zone-basse réduite (cf. media query) */
+  var ecranEtroit = window.innerWidth < 1100;
+  var margeLat  = ecranEtroit ? _SCENE_MARGE_LAT_SM  : _SCENE_MARGE_LAT_PC;
+  var margeHaut = ecranEtroit ? _SCENE_MARGE_HAUT_SM : _SCENE_MARGE_HAUT_PC;
+  var zbH       = ecranEtroit ? _SCENE_ZB_H_SM      : _SCENE_ZB_H_PC;
+  var dispoH = Math.max(200, rect.height - 16);
+  var dispoW = Math.max(300, rect.width - 16);
+  /* Mur d'expo : prend la place dispo moins marge haut, zone-basse. Ratio 12/8. */
+  var murH = dispoH - margeHaut - zbH;
+  if (murH < 120) murH = 120;
+  var murW = murH * 1.5;
+  /* Si mur + 2×marge lat dépasse la largeur dispo, on réduit en gardant le ratio. */
+  if (murW + 2 * margeLat > dispoW) {
+    murW = dispoW - 2 * margeLat;
+    if (murW < 200) {
+      margeLat = Math.max(20, (dispoW - 200) / 2);
+      murW = dispoW - 2 * margeLat;
+    }
+    murH = murW / 1.5;
+  }
+  mur.style.width  = Math.round(murW) + 'px';
+  mur.style.height = Math.round(murH) + 'px';
+  /* Appliquer les marges effectives via vars CSS (utiles si on a dû réduire) */
+  document.documentElement.style.setProperty('--scene-marge-lat', margeLat + 'px');
+  document.documentElement.style.setProperty('--scene-marge-haut', margeHaut + 'px');
+}
+
+/* Recalcul au resize quand on est en arrangeur peinture */
+window.addEventListener('resize', function() {
+  var ov = document.getElementById('overlay-placement');
+  if (ov && ov.classList.contains('ouvert') && !_estSculptSalleActive()) {
+    _ajusterMurPeinture();
+  }
+});
+
 function afficherMurPlacement() {
-  if (_isSculpt) return afficherSolPlacement();
+  if (_estSculptSalleActive()) {
+    /* Bascule vers sculpture : dé-wrapper la scène pour repartir d'un
+       DOM identique au HTML statique (compat. afficherSolPlacement). */
+    _desactiverSceneDecorPeinture();
+    return afficherSolPlacement();
+  }
   const bg = $('mur-placement');
-  bg.className = 'placement-mur-bg'; /* Restaurer la classe grid pour peinture */
+  /* Reset des styles inline laissés par afficherSolPlacement (sculpture). */
+  bg.removeAttribute('style');
+  bg.className = 'placement-mur-bg';
   bg.innerHTML = '';
+  /* Activer la scène (mur-piece + zone-basse) et dimensionner */
+  _activerSceneDecorPeinture();
+  _ajusterMurPeinture();
+  requestAnimationFrame(_ajusterMurPeinture); /* après que le layout soit posé */
   /* Apparence : couleur + texture (gérer images jpg/png/webp comme appliquerApparence) */
   const isImgTex = /\.(jpg|jpeg|png|webp)$/i.test(textureActuelle);
   if (isImgTex) {
@@ -640,9 +854,10 @@ function afficherMurPlacement() {
   }
   bg.classList.toggle('grille-on', grilleVisiblePl);
 
-  // Toiles déjà posées
+  // Toiles déjà posées — recherche par couple (id, type de salle) en multi-types
+  var _typePlMur = salleActive.type || ADMIN_CFG.type || 'peinture';
   (salleActive.positions || []).forEach(p => {
-    const t = toiles.find(x => x.id === p.id); if (!t) return;
+    const t = _trouverOeuvre(p.id, _typePlMur); if (!t) return;
     const estSel = peintureSurMurSel === p.id;
     const el = document.createElement('div');
     el.className = 'toile-posee' + (estSel ? ' sel-mur' : '');
@@ -685,9 +900,14 @@ function afficherMurPlacement() {
 /* Retourne la salle (autre que salleActive) où la pièce est placée, ou null. */
 function _salleDOrigine(id) {
   if (!salleActive) return null;
+  /* En multi-types, ne regarder que les salles du MÊME type que salleActive
+     (sinon la peinture id=5 est faussement détectée comme "origine = Salle E
+     sculpture" qui contient la sculpture id=5). */
+  var typeRef = salleActive.type || ADMIN_CFG.type || null;
   for (var i = 0; i < salles.length; i++) {
     var s = salles[i];
     if (s.id === salleActive.id) continue;
+    if (typeRef && s.type && s.type !== typeRef) continue;
     var dansPos = (s.positions || []).some(function(p) { return p.id === id; });
     var dansMob = (s.positions_mobile || []).some(function(p) { return p.id === id; });
     if (dansPos || dansMob) return s;
@@ -697,11 +917,19 @@ function _salleDOrigine(id) {
 
 function afficherStripPlacement() {
   const strip = $('pl-strip'); strip.innerHTML = '';
-  const poseeIds = new Set((_isSculpt ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
+  const _sculptSalle = _estSculptSalleActive();
+  const typeSalleStrip = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+  /* Sous-ensemble des œuvres du type de la salle active — évite la
+     collision d'IDs entre peinture et sculpture en multi-types. */
+  const toilesType = toiles.filter(function(t) { return typeDeLOeuvre(t) === typeSalleStrip; });
+  const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
+  const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
-  /* Sculpture : TOUTES les pièces de la salle (placées ou non dans le mode actif)
-     Sculpture et peinture : placées + sélectionnées dans le stock */
-  const tousIds = [...new Set([...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])];
+  /* Le strip liste TOUTES les œuvres du type de la salle (peinture ou sculpture),
+     pas seulement les placées ou sélectionnées : ça donne une vue d'ensemble du
+     stock pour pouvoir glisser/placer librement, comme dans l'arrangeur sculpture. */
+  const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
+    .filter(function(id) { return idsValides.has(id); });
 
   /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
   const _rang = function(id) {
@@ -715,12 +943,12 @@ function afficherStripPlacement() {
   });
 
   if (tousIds.length === 0) {
-    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_isSculpt ? 'e pièce' : 'e toile') + '</div>';
+    strip.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:.5rem 1rem;align-self:center;">Aucun' + (_sculptSalle ? 'e pièce' : 'e toile') + '</div>';
     return;
   }
 
   tousIds.forEach(id => {
-    const t = toiles.find(x=>x.id===id); if(!t) return;
+    const t = toilesType.find(x=>x.id===id); if(!t) return;
     const estPlace = poseeIds.has(id);
     const estSelMur = peintureSurMurSel === id;
     const estSelPlace = selectedToilePl?.id === id;
@@ -749,7 +977,7 @@ function afficherStripPlacement() {
     }
 
     // Grille W×H sur la miniature quand mode grille actif (peinture uniquement)
-    if (grilleVisiblePl && !_isSculpt) {
+    if (grilleVisiblePl && !_sculptSalle) {
       var _pos = (salleActive.positions||[]).find(function(p){ return p.id===id; });
       var _wh  = _pos ? {w:_pos.w, h:_pos.h} : calcCases(t.dimensions);
       si.style.position = 'relative';
@@ -779,7 +1007,7 @@ function afficherStripPlacement() {
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
     if (estPlace) {
-      badge.textContent = _isSculpt ? '🔒 sur le sol' : '🔒 sur le mur';
+      badge.textContent = _sculptSalle ? '🔒 sur le sol' : '🔒 sur le mur';
     } else if (estAutreVue) {
       /* Dans cette salle mais sur l'autre vue (ex: posée en PC, absente en GSM) */
       badge.textContent = (_placementVue === 'gsm') ? '🖥 posée en PC' : '📱 posée en GSM';
@@ -801,7 +1029,7 @@ function afficherStripPlacement() {
         selectedToilePl = null; selectedToile = null;
         $('pl-aide').textContent = peintureSurMurSel
           ? `"${t.titre||'—'}" → utilisez les flèches ou ✕ pour retirer`
-          : 'Cliquez sur un' + (_isSculpt ? 'e pièce' : 'e toile') + ' pour la déplacer';
+          : 'Cliquez sur un' + (_sculptSalle ? 'e pièce' : 'e toile') + ' pour la déplacer';
       } else {
         // Sélection pour placer — confirmer si la pièce est dans une autre salle
         if (!(selectedToilePl && selectedToilePl.id === id)) {
@@ -814,12 +1042,12 @@ function afficherStripPlacement() {
         selectedToile = selectedToilePl;
         peintureSurMurSel = null;
         $('pl-aide').textContent = selectedToilePl
-          ? `"${t.titre||'—'}" → cliquez sur ${_isSculpt ? 'le sol' : 'le mur'} pour placer`
-          : 'Sélectionnez un' + (_isSculpt ? 'e pièce' : 'e toile') + ' à placer';
+          ? `"${t.titre||'—'}" → cliquez sur ${_sculptSalle ? 'le sol' : 'le mur'} pour placer`
+          : 'Sélectionnez un' + (_sculptSalle ? 'e pièce' : 'e toile') + ' à placer';
       }
       /* Sculpture : ne PAS recréer l'iframe (flash + pièces perdues).
          Peinture : afficherMurPlacement met à jour les cases occupées. */
-      if (!_isSculpt) afficherMurPlacement();
+      if (!_sculptSalle) afficherMurPlacement();
       afficherStripPlacement();
     });
     strip.appendChild(item);
@@ -830,8 +1058,11 @@ function placerToilePl(col, row) {
   if (!selectedToilePl || !salleActive) return;
   const {w,h} = calcCases(selectedToilePl.dimensions);
   if (!canPlace(col,row,w,h,null)) { toast('Emplacement occupé','err'); return; }
-  // Retire de TOUTES les salles avant de placer
+  /* Retire de toutes les salles du MÊME type (pas des autres types — sinon
+     placer une peinture id=4 retirerait la sculpture id=4 de Salle E). */
+  var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
   salles.forEach(s => {
+    if (s.type && s.type !== _typeSalleAct) return;
     s.toiles = s.toiles.filter(id => id !== selectedToilePl.id);
     s.positions = (s.positions || []).filter(p => p.id !== selectedToilePl.id);
   });
@@ -899,9 +1130,10 @@ function initTailleForm() {
   $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
 }
 
-function ouvrirFormulaireNouvel() {
+function ouvrirFormulaireNouvel(typeOpt) {
+  _appliquerTypeFormulaire(typeOpt || ADMIN_CFG.type || 'peinture');
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
-  $('modal-toile-tit').textContent = _isSculpt ? 'Nouvelle pièce' : 'Nouvelle toile';
+  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
@@ -924,14 +1156,27 @@ function construirePillsSalle(salleSelId) {
   });
 }
 
-function ouvrirFormulaireEdition(id) {
-  const t = toiles.find(x => x.id === id);
+function ouvrirFormulaireEdition(id, typeOpt) {
+  /* En multi-types, l'id n'est pas unique entre peinture et sculpture
+     (les compteurs next_id sont séparés). On disambigue via typeOpt
+     fourni par la liste. Mono-type : typeOpt absent, comportement legacy. */
+  var t;
+  if (typeOpt) {
+    t = toiles.find(function(x) {
+      return x.id === id && ((x._type) || ADMIN_CFG.type) === typeOpt;
+    });
+  } else {
+    t = toiles.find(function(x) { return x.id === id; });
+  }
   if (!t) return;
+  /* Type de l'œuvre éditée (multi-types). Fallback sur ADMIN_CFG.type
+     pour la rétrocompat avec les anciennes œuvres sans _type. */
+  _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
-  const salleDeLaToile = salles.find(s => s.toiles.includes(id))?.id || salleActive?.id || null;
+  const salleDeLaToile = _salleContenantOeuvre(id, _typeEdition)?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
-  $('modal-toile-tit').textContent = ADMIN_CFG.type === 'sculpture' ? 'Modifier la pièce' : 'Modifier la toile';
+  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
   construireFavoris();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
@@ -943,8 +1188,8 @@ function fermerModalToile() { $('overlay-toile').classList.remove('ouvert'); }
 
 let ficheToileId = null;
 
-function ouvrirFiche(id) {
-  const t = toiles.find(x => x.id === id);
+function ouvrirFiche(id, typeOpt) {
+  const t = _trouverOeuvre(id, typeOpt);
   if (!t) return;
   ficheToileId = id;
 
@@ -990,7 +1235,7 @@ function ouvrirFiche(id) {
     lignes.push(['Format', tObj ? `${t.taille} — ${tObj.label}` : t.taille]);
   }
   if (t.materiaux?.length) lignes.push(['Matériaux', t.materiaux.join(', ')]);
-  const salle = salles.find(s => s.toiles.includes(id));
+  const salle = _salleContenantOeuvre(id, typeDeLOeuvre(t));
   if (salle) lignes.push(['Salle', salle.nom]);
   if (t.prix) lignes.push(['Prix', `${t.prix} €`]);
   if (t.description) lignes.push(['Notes', t.description]);
@@ -1105,7 +1350,7 @@ function remplirFormToile(t) {
     if (btnChgPhoto) btnChgPhoto.style.display = 'none';
     var pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   }
-  salleCibleToile = salles.find(s => s.toiles.includes(t.id))?.id || null;
+  salleCibleToile = _salleContenantOeuvre(t.id, typeDeLOeuvre(t))?.id || null;
   /* Champs sculpture */
   if ($('inp-glb')) $('inp-glb').value = t.glb || '';
   if ($('inp-prof') && t.dimensions?.profondeur) $('inp-prof').value = t.dimensions.profondeur;
@@ -1175,7 +1420,7 @@ async function sauverToile() {
      photoExistante = thumbnail déjà uploadé (édition) OU nouvelle photo en attente. */
   var photoExistante = !!photoB64;
   if (toileEnEdition !== null) {
-    var tEdit = toiles.find(function(x) { return x.id === toileEnEdition; });
+    var tEdit = _trouverOeuvre(toileEnEdition, _typeEdition);
     if (tEdit && tEdit.photo) photoExistante = true;
   }
   if (donnees.visible && !photoExistante) {
@@ -1191,7 +1436,7 @@ async function sauverToile() {
   btn.disabled = true; btnAnn.disabled = true; lbl.textContent = 'En cours…';
   try {
     if (toileEnEdition === null) {
-      const id = prochainId();
+      const id = prochainId(_typeEdition);
       var _ext = window.photoEstPng ? 'png' : 'jpg';
       var _mime = window.photoEstPng ? 'image/png' : 'image/jpeg';
       let photo = '';
@@ -1199,16 +1444,23 @@ async function sauverToile() {
       let glb = donnees.glb || '';
       if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
       const t = { id, photo, source_photo: 'admin', ...donnees, glb };
+      /* _type est essentiel : il détermine dans quel fichier
+         data/oeuvres/<type>.json l'œuvre sera écrite. Sans ça, une
+         peinture créée chez un admin sculpture (cas Dinso) atterrirait
+         dans sculpture.json. */
+      t._type = _typeEdition || ADMIN_CFG.type || 'peinture';
       if (photoB64) t._preview = 'data:' + _mime + ';base64,' + photoB64; // aperçu immédiat avant propagation CDN
       toiles.push(t);
       if (salleCibleToile) {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
-      const idx = toiles.findIndex(x => x.id === toileEnEdition);
+      /* Recherche par couple (id, type) — sinon en multi-types une édition
+         de peinture id=4 toucherait par erreur la sculpture id=4. */
+      const idx = toiles.findIndex(x => x.id === toileEnEdition && typeDeLOeuvre(x) === _typeEdition);
       var _extE = window.photoEstPng ? 'png' : 'jpg';
       let photo = toiles[idx].photo;
       if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE);
@@ -1222,7 +1474,9 @@ async function sauverToile() {
         const apres = calcCases(nouvelDim);
         if (avant.w !== apres.w || avant.h !== apres.h) {
           let retiree = false;
+          /* Retirer seulement des salles du MÊME type que la toile éditée. */
           salles.forEach(s => {
+            if (s.type && s.type !== _typeEdition) return;
             if ((s.positions||[]).some(p => p.id === toileEnEdition)) {
               s.positions = s.positions.filter(p => p.id !== toileEnEdition);
               retiree = true;
@@ -1231,16 +1485,19 @@ async function sauverToile() {
           if (retiree) toast("Dimensions modifiées — toile retirée du mur, à replacer via Arranger", "ok", 5000);
         }
       }
-      // Déplace de salle si besoin
+      // Déplace de salle si besoin — uniquement les salles du même type
       if (salleCibleToile) {
-        salles.forEach(s => { s.toiles = s.toiles.filter(id => id !== toileEnEdition); });
+        salles.forEach(s => {
+          if (s.type && s.type !== _typeEdition) return;
+          s.toiles = s.toiles.filter(id => id !== toileEnEdition);
+        });
         const s = salles.find(x => x.id === salleCibleToile);
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
-      const lbl2 = _isSculpt ? 'pièce' : 'toile';
+      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
       await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
     const idSauve = toileEnEdition === null
@@ -1261,12 +1518,21 @@ async function sauverToile() {
 async function supprimerToile() {
   const idCible = toileEnEdition || selectedToile?.id;
   if (!idCible) return;
-  const t = toiles.find(x => x.id === idCible);
+  /* Type : si on supprime depuis le formulaire en édition, _typeEdition est défini.
+     Si c'est depuis l'onglet Œuvres ou stock, selectedToile contient l'objet. */
+  var _typeCible = toileEnEdition
+    ? _typeEdition
+    : (selectedToile ? typeDeLOeuvre(selectedToile) : (ADMIN_CFG.type || 'peinture'));
+  const t = _trouverOeuvre(idCible, _typeCible);
   if (!confirm(`Supprimer "${t?.titre || ('cette ' + LBL.item)}" ? Réversible via le backup.`)) return;
-  toiles = toiles.filter(x => x.id !== idCible);
+  /* Filtre par couple — ne pas supprimer la sculpture id=X quand on supprime la peinture id=X. */
+  toiles = toiles.filter(x => !(x.id === idCible && typeDeLOeuvre(x) === _typeCible));
+  /* Et ne retirer l'ID que des salles du bon type. */
   salles.forEach(s => {
+    if (s.type && s.type !== _typeCible) return;
     s.toiles = s.toiles.filter(id => id !== idCible);
     s.positions = (s.positions || []).filter(p => p.id !== idCible);
+    s.positions_mobile = (s.positions_mobile || []).filter(p => p.id !== idCible);
   });
   if (toileEnEdition) fermerModalToile();
   toilesSelectionnees.clear(); selectedToile = null; majBoutons();
@@ -1301,17 +1567,33 @@ function ouvrirModalSalle() {
   const fin = document.createElement('div');
   fin.className = 'pos-opt sel'; fin.textContent = 'En dernier'; fin.dataset.pos = salles.length;
   pg.appendChild(fin);
-  // Peupler le select "Copier l'apparence de…"
-  const selCopier = $('inp-salle-copier');
-  if (selCopier) {
+  // Helper : (re)peupler le select "Copier l'apparence de…" selon le type
+  function _peuplerSelCopier(typeFiltre) {
+    const selCopier = $('inp-salle-copier');
+    if (!selCopier) return;
+    const valActuelle = selCopier.value;
     selCopier.innerHTML = '<option value="">— Nouvelle salle vierge —</option>';
-    salles.forEach(function(s) {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.nom || ('Salle ' + s.id);
-      selCopier.appendChild(opt);
-    });
+    salles
+      .filter(function(s) { return (s.type || 'peinture') === typeFiltre; })
+      .forEach(function(s) {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.nom || ('Salle ' + s.id);
+        selCopier.appendChild(opt);
+      });
+    // Préserver la sélection si toujours valide, sinon retomber sur vierge
+    if ([...selCopier.options].some(o => o.value === valActuelle)) selCopier.value = valActuelle;
+    else selCopier.value = '';
   }
+  // Type par défaut : type de l'admin courant
+  const selType = $('inp-salle-type');
+  const typeDef = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
+  if (selType) {
+    selType.value = typeDef;
+    // Rafraîchir la liste à chaque changement de type (évite clonage cross-type)
+    selType.onchange = function() { _peuplerSelCopier(selType.value); };
+  }
+  _peuplerSelCopier(typeDef);
   $('overlay-salle').classList.add('ouvert');
 }
 
@@ -1393,14 +1675,16 @@ async function creerSalle() {
   const srcId = parseInt(($('inp-salle-copier') || {}).value) || null;
   const src   = srcId ? salles.find(function(s) { return s.id === srcId; }) : null;
 
-  const estSculpt = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
+  // Type lu depuis le sélecteur (peinture par défaut)
+  const typeSalle = ($('inp-salle-type') || {}).value || 'peinture';
+  const estSculpt = (typeSalle === 'sculpture');
   const couleurMurDefaut    = estSculpt ? '#2a2520' : '#2e2e2e';
   const couleurCadresDefaut = estSculpt ? undefined : '#3a3a3a';
   const textureDefaut       = estSculpt ? 'none'    : 'none';
 
   const salle = {
     id: newId, nom,
-    type:             estSculpt ? 'sculpture' : undefined,
+    type:             typeSalle,
     couleur_mur:      src ? src.couleur_mur      : couleurMurDefaut,
     couleur_cadres:   src ? src.couleur_cadres   : couleurCadresDefaut,
     epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
@@ -1446,7 +1730,10 @@ function afficherSolPlacement() {
   const isGsm = _placementVue === 'gsm';
 
   /* Dimensions calculées en JS pour garantir le ratio (PC 16:9, GSM 9:19).
-     On part de l'espace dispo et on choisit la dimension limitante. */
+     On part de l'espace dispo et on choisit la dimension limitante.
+     #mur-placement est enfant direct de .placement-mur-zone — la scène
+     peinture (.scene-peinture) est créée/détruite dynamiquement par
+     afficherMurPlacement et a déjà été retirée si on arrive ici. */
   var zoneRect = container.parentElement.getBoundingClientRect();
   var availH = Math.max(200, zoneRect.height - 30);
   var availW = Math.max(200, zoneRect.width - 10);
@@ -1489,14 +1776,14 @@ function afficherSolPlacement() {
 
     if (e.data.type === 'iframe-awaiting-data') {
       /* L'iframe attend les données — envoyer l'état admin en mémoire (toujours frais).
-         Évite que l'iframe lise un salles.json périmé via le CDN. */
+         Évite que l'iframe lise un salles.json périmé via le CDN.
+         Stock filtré selon le type de la salle (multi-types : éviter collisions). */
       var iframe = document.getElementById('edit-galerie-iframe');
       if (iframe && iframe.contentWindow) {
+        var typeSalleArr = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
         iframe.contentWindow.postMessage({
           type: 'init-data',
-          toiles: ADMIN_CFG.type === 'sculpture'
-            ? { next_id: nextId, gabarits: tailles, pieces: toiles }
-            : { next_id: nextId, tailles: tailles, toiles: toiles },
+          toiles: _stockParType(typeSalleArr),
           salles: { salles: [JSON.parse(JSON.stringify(salleActive))] }
         }, '*');
       }

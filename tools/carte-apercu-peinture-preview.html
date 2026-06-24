@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview — Carte d'aperçu peinture</title>
+<style>
+  :root {
+    --gold: #c8a050;
+    --bg-page: #f5f0e8;
+    --text: #2a2520;
+    --muted: #8a7e6e;
+    --brd: rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg-page); color: var(--text); font: 14px/1.4 system-ui, sans-serif; display: flex; flex-direction: column; }
+
+  /* Sliders */
+  .ctrl { flex: 0 0 auto; padding: .8rem 1.2rem; background: #fff; border-bottom: 1px solid var(--brd);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .8rem 1.5rem; }
+  .ctrl label { display: flex; flex-direction: column; gap: .2rem; font-size: 12px; color: var(--muted); }
+  .ctrl label > span:first-child { font-weight: 600; color: var(--text); }
+  .ctrl input[type=range] { width: 100%; }
+  .ctrl input[type=color] { width: 100%; height: 28px; border: 1px solid var(--brd); border-radius: 4px; cursor: pointer; }
+  .ctrl .v { color: var(--gold); font-variant-numeric: tabular-nums; }
+  .meta { padding: .4rem 1.2rem; background: rgba(0,0,0,.04); font-size: 11px; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+  .meta b { color: var(--text); font-weight: 600; }
+
+  /* Stage : zone qui simule l'environnement admin (fond crème, espace) */
+  .stage { flex: 1; overflow: auto; padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 16px; }
+
+  /* La carte d'aperçu telle qu'affichée dans l'admin */
+  .carte {
+    background: #e8e2d4; /* var(--bg3) approximatif */
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Scène à l'intérieur de la carte */
+  .carte .scene-block {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  .carte .mur-piece {
+    background: var(--mur-piece-col, #1a1a1a);
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--marge-haut-pct, 8%) var(--marge-lat-pct, 12%) 0;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .carte .mur {
+    background: var(--mur-col, #2e2e2e);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(8, minmax(0, 1fr));
+    gap: 1px;
+    /* Dimensions calculées en JS (ajusterMur) : width et height fixes en px
+       garantissent le ratio 12/8 quelle que soit la taille du mur-piece. */
+  }
+  .carte .mur .c { border: .5px solid rgba(255,255,255,.18); }
+  .carte .zb { display: flex; flex-direction: column; flex: 0 0 var(--zb-h-pct, 18%); }
+  .carte .mur-inf { background: #111; flex: 0 0 40%; padding: 0 4%; display: flex; align-items: flex-end; justify-content: space-between; }
+  .carte .porte { width: 7%; height: 78%; background: #0c0a07;
+    border-top-left-radius: 100% 90%; border-top-right-radius: 100% 90%;
+    box-shadow: inset 0 0 6px rgba(0,0,0,.7); }
+  .carte .plancher { flex: 1 1 auto;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0, rgba(0,0,0,.22) 1px, transparent 1px, transparent 8%),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 5px, rgba(0,0,0,.15) 5px, rgba(0,0,0,.15) 6px),
+      linear-gradient(to bottom, var(--plancher-haut, #5a3a22), var(--plancher-bas, #3a2515));
+    box-shadow: inset 0 4px 6px rgba(0,0,0,.4);
+  }
+
+  .titre-zone { font-size: 11px; color: var(--muted); letter-spacing: .15em; text-transform: uppercase; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <label>
+    <span>Ratio carte <span class="v" id="vRatio">3/2</span></span>
+    <select id="ratio">
+      <option value="3/2">3/2 (mur d'expo seul)</option>
+      <option value="4/3">4/3</option>
+      <option value="16/10">16/10</option>
+      <option value="16/9">16/9 (large)</option>
+      <option value="5/4">5/4</option>
+      <option value="1/1">1/1 (carré)</option>
+    </select>
+  </label>
+  <label>
+    <span>Hauteur carte (px) <span class="v" id="vHauteur">260</span></span>
+    <input type="range" id="hauteur" min="120" max="400" value="260">
+  </label>
+  <label>
+    <span>Marge latérale mur expo (% largeur) <span class="v" id="vMarge">12</span></span>
+    <input type="range" id="marge" min="0" max="40" value="12">
+  </label>
+  <label>
+    <span>Marge haut mur expo (% hauteur) <span class="v" id="vMargeHaut">8</span></span>
+    <input type="range" id="margeHaut" min="0" max="40" value="8">
+  </label>
+  <label>
+    <span>Hauteur zone-basse (% hauteur) <span class="v" id="vZb">18</span></span>
+    <input type="range" id="zb" min="0" max="40" value="18">
+  </label>
+  <label>
+    <span>Couleur mur (pièce)</span>
+    <input type="color" id="murPieceCol" value="#1a1a1a">
+  </label>
+  <label>
+    <span>Couleur mur d'expo</span>
+    <input type="color" id="murCol" value="#2e2e2e">
+  </label>
+  <label>
+    <span>Couleur parquet haut</span>
+    <input type="color" id="plancherHaut" value="#5a3a22">
+  </label>
+  <label>
+    <span>Couleur parquet bas</span>
+    <input type="color" id="plancherBas" value="#3a2515">
+  </label>
+</div>
+
+<div class="meta" id="meta">…</div>
+
+<div class="stage">
+  <div class="titre-zone">Carte aperçu solo (260px de haut, 100% largeur dispo)</div>
+  <div class="carte" id="carte">
+    <div class="scene-block">
+      <div class="mur-piece">
+        <div class="mur" id="mur"></div>
+      </div>
+      <div class="zb">
+        <div class="mur-inf">
+          <div class="porte"></div>
+          <div class="porte"></div>
+        </div>
+        <div class="plancher"></div>
+      </div>
+    </div>
+  </div>
+  <div class="titre-zone">Carte aperçu côte à côte (180px de haut)</div>
+  <div class="carte" id="carte2">
+    <div class="scene-block">
+      <div class="mur-piece">
+        <div class="mur"></div>
+      </div>
+      <div class="zb">
+        <div class="mur-inf">
+          <div class="porte"></div>
+          <div class="porte"></div>
+        </div>
+        <div class="plancher"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Génère les cellules de la grille 12×8 dans les deux .mur */
+  document.querySelectorAll('.carte .mur').forEach(m => {
+    for (let i = 0; i < 12 * 8; i++) {
+      const c = document.createElement('div'); c.className = 'c'; m.appendChild(c);
+    }
+  });
+
+  const carte = document.getElementById('carte');
+  const carte2 = document.getElementById('carte2');
+  const meta = document.getElementById('meta');
+
+  /* Ajuste un .mur (grille 12×8) dans son .mur-piece :
+     mesure la zone intérieure du mur-piece (après padding), calcule la
+     plus grande boîte 12/8 qui tient dedans, applique width/height en px. */
+  function ajusterMur(carte) {
+    const murPiece = carte.querySelector('.mur-piece');
+    const mur = carte.querySelector('.mur');
+    if (!murPiece || !mur) return;
+    const cs = getComputedStyle(murPiece);
+    const w = murPiece.clientWidth
+            - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const h = murPiece.clientHeight
+            - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if (w <= 0 || h <= 0) return;
+    let murH = h, murW = h * 1.5;
+    if (murW > w) { murW = w; murH = w / 1.5; }
+    mur.style.width = Math.round(murW) + 'px';
+    mur.style.height = Math.round(murH) + 'px';
+  }
+
+  function recompute() {
+    const ratio = document.getElementById('ratio').value;
+    const h = parseFloat(document.getElementById('hauteur').value);
+    const marge = parseFloat(document.getElementById('marge').value);
+    const margeHaut = parseFloat(document.getElementById('margeHaut').value);
+    const zb = parseFloat(document.getElementById('zb').value);
+    carte.style.height = h + 'px';
+    carte.style.aspectRatio = ratio;
+    carte2.style.height = '180px';
+    carte2.style.aspectRatio = ratio;
+    document.documentElement.style.setProperty('--marge-lat-pct', marge + '%');
+    document.documentElement.style.setProperty('--marge-haut-pct', margeHaut + '%');
+    document.documentElement.style.setProperty('--zb-h-pct', zb + '%');
+    /* Layout posé → mesurer et ajuster les murs */
+    requestAnimationFrame(() => {
+      ajusterMur(carte);
+      ajusterMur(carte2);
+    });
+    const w = Math.round(h * eval(ratio.replace('/', '/')));
+    meta.innerHTML =
+      'Ratio&nbsp;: <b>' + ratio + '</b>' +
+      ' &nbsp;·&nbsp; Carte solo&nbsp;: <b>' + w + '×' + h + 'px</b>' +
+      ' &nbsp;·&nbsp; Marges&nbsp;: <b>' + marge + '%</b> côtés, <b>' + margeHaut + '%</b> haut' +
+      ' &nbsp;·&nbsp; Zone-basse&nbsp;: <b>' + zb + '%</b> (' + Math.round(h * zb / 100) + 'px)';
+  }
+
+  window.addEventListener('resize', () => {
+    ajusterMur(carte);
+    ajusterMur(carte2);
+  });
+
+  function bind(id, vId, suffix) {
+    const el = document.getElementById(id);
+    const v = vId ? document.getElementById(vId) : null;
+    el.addEventListener('input', () => {
+      if (v) v.textContent = el.value;
+      recompute();
+    });
+  }
+  bind('ratio',     'vRatio');
+  bind('hauteur',   'vHauteur');
+  bind('marge',     'vMarge');
+  bind('margeHaut', 'vMargeHaut');
+  bind('zb',        'vZb');
+
+  document.getElementById('murCol').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--mur-col', e.target.value);
+  });
+  document.getElementById('murPieceCol').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--mur-piece-col', e.target.value);
+  });
+  document.getElementById('plancherHaut').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--plancher-haut', e.target.value);
+  });
+  document.getElementById('plancherBas').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--plancher-bas', e.target.value);
+  });
+
+  document.documentElement.style.setProperty('--mur-col', '#2e2e2e');
+  document.documentElement.style.setProperty('--mur-piece-col', '#1a1a1a');
+  document.documentElement.style.setProperty('--plancher-haut', '#5a3a22');
+  document.documentElement.style.setProperty('--plancher-bas', '#3a2515');
+
+  recompute();
+</script>
+
+</body>
+</html>
