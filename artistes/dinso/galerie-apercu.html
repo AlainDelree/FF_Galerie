@@ -13,8 +13,9 @@
       width: 100% !important; height: 100vh !important;
       display: flex !important; flex-direction: column !important;
     }
-    .salle-sculpture { background-color: #7a7a7a; }
-    .mur-inferieur { flex: 0 0 35px !important; height: 35px !important; background: #222 !important; }
+    /* .salle-sculpture background : pas de règle ici — laissé au JS qui
+       applique salle.couleur_mur_piece (default body #7a7a7a si absent). */
+    .mur-inferieur { flex: 0 0 35px !important; height: 35px !important; }
     .plancher-sol {
       flex: 1 !important; min-height: 0 !important; max-height: none !important;
       position: relative !important;

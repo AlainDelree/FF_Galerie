@@ -179,13 +179,18 @@ function _rafraichirApercusTDB() {
   _tdbRefreshTimer = setTimeout(function() { _renderTDB(); }, 250);
 }
 
-/* Auto-sauvegarde GitHub debouncée (1.5s après dernier changement d'apparence) */
+/* Auto-sauvegarde GitHub debouncée (1.5s après dernier changement d'apparence).
+   Toast 'Sauvegardé ✓' à la fin pour rendre visible que la sauvegarde a bien
+   eu lieu — sinon en cas d'aperçu non rafraîchi (cache iframe, etc.) on peut
+   croire à tort que le changement n'a pas été enregistré. */
 var _autoSaveTimer = null;
 function _autoSaveApparence() {
   if (typeof sauvegarder !== 'function') return;
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(function() {
-    sauvegarder('[admin] Apparence salle', null).catch(function(e) {
+    sauvegarder('[admin] Apparence salle', null).then(function() {
+      if (typeof toast === 'function') toast('Sauvegardé ✓', 'ok', 1200);
+    }).catch(function(e) {
       if (typeof toast === 'function') toast('Erreur sauvegarde : ' + e.message, 'err', 4000);
     });
   }, 1500);
