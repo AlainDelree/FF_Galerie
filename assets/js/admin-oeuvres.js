@@ -13,7 +13,6 @@ function initOeuvresTab() {
 
   /* Boutons toolbar */
   var btnAjt = document.getElementById('btn-oeuvres-ajouter');
-  var btnMod = document.getElementById('btn-oeuvres-modifier');
   var btnSup = document.getElementById('btn-oeuvres-supprimer');
   var btnCat = document.getElementById('btn-oeuvres-catalogue');
 
@@ -22,12 +21,6 @@ function initOeuvresTab() {
     majBoutonsOeuvres();
     if (typeof construirePillsSalle === 'function') construirePillsSalle(null);
     if (typeof ouvrirFormulaireNouvel === 'function') ouvrirFormulaireNouvel();
-  });
-
-  if (btnMod) btnMod.addEventListener('click', function() {
-    var id = [..._oeuvresSelection][0];
-    if (id != null && typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
-    else if (id != null && typeof ouvrirFiche === 'function') ouvrirFiche(id);
   });
 
   if (btnSup) btnSup.addEventListener('click', function() {
@@ -59,22 +52,22 @@ function afficherOeuvres() {
     legendes:   ['salle', 'taille'],
     selection:  _oeuvresSelection,
     onSelect: function(id) {
-      /* Sélection unique sans rebuild DOM */
-      var wasSelected = _oeuvresSelection.has(id);
-      /* Désélectionner tous visuellement */
+      /* Sélection visuelle (indique l'œuvre en cours d'édition) */
       container.querySelectorAll('.lo-item').forEach(function(el) {
         el.classList.remove('sel');
       });
       _oeuvresSelection.clear();
-      if (!wasSelected) {
-        _oeuvresSelection.add(id);
-        var el = container.querySelector('[data-id="' + id + '"]');
-        if (el) el.classList.add('sel');
-      }
+      _oeuvresSelection.add(id);
+      var el = container.querySelector('[data-id="' + id + '"]');
+      if (el) el.classList.add('sel');
       majBoutonsOeuvres();
+      /* Ouverture directe du formulaire d'édition (plus de bouton Modifier
+         intermédiaire). Sur PC large, le formulaire s'affiche en panneau
+         de droite via CSS responsive ; sur GSM il reste en plein écran. */
+      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
     },
     onDblClick: function(id) {
-      if (typeof ouvrirFiche === 'function') ouvrirFiche(id);
+      if (typeof ouvrirFormulaireEdition === 'function') ouvrirFormulaireEdition(id);
     }
   });
 
@@ -84,9 +77,7 @@ function afficherOeuvres() {
 /* ── Enable/disable boutons selon sélection ── */
 function majBoutonsOeuvres() {
   var ok = _oeuvresSelection.size === 1;
-  var btnMod = document.getElementById('btn-oeuvres-modifier');
   var btnSup = document.getElementById('btn-oeuvres-supprimer');
-  if (btnMod) btnMod.disabled = !ok;
   if (btnSup) btnSup.disabled = !ok;
 }
 
