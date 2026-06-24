@@ -28,7 +28,8 @@
           "h": 3
         }
       ],
-      "positions_mobile": []
+      "positions_mobile": [],
+      "couleur_mur_piece": "#f0f0f0"
     },
     {
       "id": 6,
