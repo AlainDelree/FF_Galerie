@@ -677,6 +677,8 @@ function majCtrlPanel() {
    enfant de .placement-mur-zone comme à l'origine. → Aucune interférence. */
 var _SCENE_MARGE_LAT_PC = 265; /* px sur PC large (validé via preview) */
 var _SCENE_MARGE_LAT_SM = 80;  /* px sur écran étroit */
+var _SCENE_MARGE_HAUT_PC = 40; /* px bande mur au-dessus du mur d'expo (PC) */
+var _SCENE_MARGE_HAUT_SM = 15; /* px sur écran étroit */
 var _SCENE_ZB_H_PC = 83;       /* mur-inf 32 + plancher 51 */
 var _SCENE_ZB_H_SM = 56;       /* mur-inf 24 + plancher 32 (cf. media query 1100px) */
 
@@ -731,19 +733,19 @@ function _ajusterMurPeinture() {
   var rect = zone.getBoundingClientRect();
   /* Largeur écran < 1100px → marges réduites + zone-basse réduite (cf. media query) */
   var ecranEtroit = window.innerWidth < 1100;
-  var margeLat = ecranEtroit ? _SCENE_MARGE_LAT_SM : _SCENE_MARGE_LAT_PC;
-  var zbH      = ecranEtroit ? _SCENE_ZB_H_SM      : _SCENE_ZB_H_PC;
+  var margeLat  = ecranEtroit ? _SCENE_MARGE_LAT_SM  : _SCENE_MARGE_LAT_PC;
+  var margeHaut = ecranEtroit ? _SCENE_MARGE_HAUT_SM : _SCENE_MARGE_HAUT_PC;
+  var zbH       = ecranEtroit ? _SCENE_ZB_H_SM      : _SCENE_ZB_H_PC;
   var dispoH = Math.max(200, rect.height - 16);
   var dispoW = Math.max(300, rect.width - 16);
-  /* Mur d'expo : prend la place dispo moins zone-basse, ratio 12/8. */
-  var murH = dispoH - zbH;
+  /* Mur d'expo : prend la place dispo moins marge haut, zone-basse. Ratio 12/8. */
+  var murH = dispoH - margeHaut - zbH;
   if (murH < 120) murH = 120;
   var murW = murH * 1.5;
-  /* Si mur + 2×marge dépasse la largeur dispo, on réduit en gardant le ratio. */
+  /* Si mur + 2×marge lat dépasse la largeur dispo, on réduit en gardant le ratio. */
   if (murW + 2 * margeLat > dispoW) {
     murW = dispoW - 2 * margeLat;
     if (murW < 200) {
-      /* Écran très étroit : on réduit la marge à l'extrême */
       margeLat = Math.max(20, (dispoW - 200) / 2);
       murW = dispoW - 2 * margeLat;
     }
@@ -751,8 +753,9 @@ function _ajusterMurPeinture() {
   }
   mur.style.width  = Math.round(murW) + 'px';
   mur.style.height = Math.round(murH) + 'px';
-  /* Appliquer la marge effective (utile si on a dû réduire) */
+  /* Appliquer les marges effectives via vars CSS (utiles si on a dû réduire) */
   document.documentElement.style.setProperty('--scene-marge-lat', margeLat + 'px');
+  document.documentElement.style.setProperty('--scene-marge-haut', margeHaut + 'px');
 }
 
 /* Recalcul au resize quand on est en arrangeur peinture */
