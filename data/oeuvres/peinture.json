@@ -498,7 +498,7 @@
       "id": 35,
       "photo": "assets/images/toiles/toile-035.jpg",
       "source_photo": "admin",
-      "titre": "",
+      "titre": "Abre de double vie",
       "date": "",
       "style": "",
       "materiaux": [],
@@ -509,7 +509,8 @@
         "hauteur": 50
       },
       "taille": "XS",
-      "visible": true
+      "visible": true,
+      "glb": ""
     }
   ]
 }
