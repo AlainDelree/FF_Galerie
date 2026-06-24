@@ -201,8 +201,11 @@ function _chargerOeuvres() {
       const murBas = document.createElement('div');
       murBas.className = 'mur-inferieur';
       /* Couleur paramétrable par salle — default #111 (= ancien hardcodé,
-         égal au body global pour rester invisible si non personnalisé). */
-      murBas.style.backgroundColor = (salle && salle.couleur_mur_bas) || '#111';
+         égal au body global pour rester invisible si non personnalisé).
+         setProperty avec 'important' garantit l'override de toutes les
+         règles CSS du fichier galerie.css ET galerie-sculpture.css qui
+         peuvent cibler .mur-inferieur en shorthand background. */
+      murBas.style.setProperty('background-color', (salle && salle.couleur_mur_bas) || '#111', 'important');
 
       function makePorte(cote) {
         const btn = document.createElement('button');

@@ -535,8 +535,10 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   (tData.pieces   || []).forEach(p => { pieces[p.id]     = p; });
 
   salleDiv.classList.add('salle-sculpture');
-  /* Couleur du mur de la pièce — par salle */
-  if (salle.couleur_mur_piece) salleDiv.style.backgroundColor = salle.couleur_mur_piece;
+  /* Couleur du mur de la pièce — par salle ; !important pour bypasser
+     le CSS .salle-sculpture { background-color: #7a7a7a } qui est plus
+     spécifique que l'inline ordinaire. */
+  if (salle.couleur_mur_piece) salleDiv.style.setProperty('background-color', salle.couleur_mur_piece, 'important');
   document.body.classList.add('page-sculpture');
   document.documentElement.classList.add('html-sculpture');
 
