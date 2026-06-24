@@ -1001,7 +1001,11 @@ $('btn-grille-pl').addEventListener('click', function() {
 (function() {
   function mvSel(dc, dr) {
     if (peintureSurMurSel === null) return;
-    if (ADMIN_CFG.type === 'sculpture') {
+    /* Comportement basé sur le type de la SALLE active, pas de l'admin —
+       chez Dinso, une salle peinture doit utiliser deplacerPeinture même
+       si ADMIN_CFG.type vaut 'sculpture'. */
+    var _typeSalleSel = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+    if (_typeSalleSel === 'sculpture') {
       deplacerPieceSol(dc * 2, dr * 2);
     } else {
       deplacerPeinture(peintureSurMurSel, dc, dr);
@@ -1021,7 +1025,7 @@ $('btn-grille-pl').addEventListener('click', function() {
     if (peintureSurMurSel === null) return;
     var _typeRm = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
     var titre = (_trouverOeuvre(peintureSurMurSel, _typeRm) || {}).titre || "—";
-    if (ADMIN_CFG.type === 'sculpture') {
+    if (_typeRm === 'sculpture') {
       var pos = _getPositions();
       var idx = pos.findIndex(function(x){ return x.id === peintureSurMurSel; });
       if (idx >= 0) pos.splice(idx, 1);
@@ -1033,7 +1037,7 @@ $('btn-grille-pl').addEventListener('click', function() {
     toilesSelectionnees.add(peintureSurMurSel);
     peintureSurMurSel = null; selectedToilePl = null;
     buildOccupancy(); afficherMurPlacement(); afficherStripPlacement();
-    $("pl-aide").textContent = "\"" + titre + "\" retirée — cliquez sur " + (ADMIN_CFG && ADMIN_CFG.type === 'sculpture' ? 'le sol' : 'le mur') + " pour la replacer";
+    $("pl-aide").textContent = "\"" + titre + "\" retirée — cliquez sur " + (_typeRm === 'sculpture' ? 'le sol' : 'le mur') + " pour la replacer";
   });
 
   /* ── Drag-and-drop du panneau de contrôle ──

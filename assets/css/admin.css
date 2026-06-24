@@ -350,6 +350,17 @@ button{cursor:pointer;}
 .pl-ctrl-panel.active{display:flex;}
 .pl-ctrl-cross{display:grid;grid-template-columns:repeat(3,42px);
   grid-template-rows:repeat(3,42px);gap:3px;}
+/* Mode sculpture : pas de D-pad (drag-and-drop sur le sol), seul ✕ visible
+   en grand bouton étiqueté. Mode peinture : tout visible (défaut). */
+.pl-ctrl-cross.mode-sculpture{grid-template-columns:auto;grid-template-rows:auto;gap:0;}
+.pl-ctrl-cross.mode-sculpture > span,
+.pl-ctrl-cross.mode-sculpture > #pl-btn-up,
+.pl-ctrl-cross.mode-sculpture > #pl-btn-down,
+.pl-ctrl-cross.mode-sculpture > #pl-btn-left,
+.pl-ctrl-cross.mode-sculpture > #pl-btn-right,
+.pl-ctrl-cross.mode-sculpture > #pl-btn-details{display:none;}
+.pl-ctrl-cross.mode-sculpture > #pl-btn-rm{
+  width:auto;height:auto;padding:.4rem .8rem;border-radius:6px;font-size:11px;}
 .pl-btn-arr{background:rgba(200,160,80,.25);border:1.5px solid rgba(200,160,80,.5);
   color:var(--gold);border-radius:7px;font-size:20px;
   display:flex;align-items:center;justify-content:center;
