@@ -90,19 +90,6 @@
       }
     },
     {
-      "id": 7,
-      "nom": "Salle E",
-      "type": "sculpture",
-      "couleur_mur": "#8a6228",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "parquet",
-      "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": []
-    },
-    {
       "id": 2,
       "nom": "Salle B",
       "type": "sculpture",
