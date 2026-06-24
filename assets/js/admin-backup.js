@@ -27,9 +27,13 @@ async function chargerCommits() {
        path (data/toiles.json) ET le NOUVEAU (data/oeuvres/<type>.json) pour conserver
        l'historique pré-migration. */
     var oeuvresPath = (typeof _oeuvresPath === 'function') ? _oeuvresPath() : (ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json');
-    const urlTnew = `/repos/${REPO}/commits?path=${oeuvresPath}&per_page=50`;
-    const urlTold = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
-    const urlS    = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50`;
+    /* &sha=${BRANCH} est CRITIQUE : sans lui, l'API GitHub renvoie les
+       commits de la branche par défaut (main), pas de dev. La liste backup
+       affichait donc les vieux commits de main au lieu des commits récents
+       de dev. Bug latent du code original, démasqué par la migration. */
+    const urlTnew = `/repos/${REPO}/commits?path=${oeuvresPath}&per_page=50&sha=${BRANCH}`;
+    const urlTold = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50&sha=${BRANCH}`;
+    const urlS    = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50&sha=${BRANCH}`;
     const [commitsTnew, commitsTold, commitsS] = await Promise.all([
       apiGH(urlTnew).catch(function() { return []; }),
       apiGH(urlTold).catch(function() { return []; }),
