@@ -185,6 +185,8 @@ function selectSalle(id) {
   _majApparenceSelonSalle();
   // Applique couleurs
   couleurMurActuel = salleActive.couleur_mur;
+  couleurMurPieceActuel = salleActive.couleur_mur_piece || '#1a1a1a';
+  document.documentElement.style.setProperty('--mur-piece-col', couleurMurPieceActuel);
   couleurCadresActuel = salleActive.couleur_cadres;
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
@@ -1706,12 +1708,13 @@ async function creerSalle() {
 
   const salle = {
     id: newId, nom,
-    type:             typeSalle,
-    couleur_mur:      src ? src.couleur_mur      : couleurMurDefaut,
-    couleur_cadres:   src ? src.couleur_cadres   : couleurCadresDefaut,
-    epaisseur_cadres: src ? src.epaisseur_cadres : undefined,
-    texture:          src ? src.texture          : textureDefaut,
-    greffons:         src && src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined,
+    type:               typeSalle,
+    couleur_mur:        src ? src.couleur_mur        : couleurMurDefaut,
+    couleur_mur_piece:  src ? src.couleur_mur_piece  : '#1a1a1a',
+    couleur_cadres:     src ? src.couleur_cadres     : couleurCadresDefaut,
+    epaisseur_cadres:   src ? src.epaisseur_cadres   : undefined,
+    texture:            src ? src.texture            : textureDefaut,
+    greffons:           src && src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined,
     visible: true,
     toiles: [],
     positions: [],

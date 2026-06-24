@@ -90,9 +90,12 @@ function pushColorHist(type, color) {
 }
 
 function renderColorSwatches(type) {
-  var containerId = type === 'mur' ? 'sw-mur' : 'sw-cadres';
+  var containerId, current;
+  if      (type === 'mur')       { containerId = 'sw-mur';       current = couleurMurActuel; }
+  else if (type === 'mur-piece') { containerId = 'sw-mur-piece'; current = couleurMurPieceActuel; }
+  else                           { containerId = 'sw-cadres';    current = couleurCadresActuel; }
   var container   = $(containerId);
-  var current     = type === 'mur' ? couleurMurActuel : couleurCadresActuel;
+  if (!container) return;
   var plus        = container.querySelector('.sw-plus');
   container.innerHTML = '';
   getColorHist(type).forEach(function(col) {
@@ -102,8 +105,9 @@ function renderColorSwatches(type) {
     sw.dataset.val = col;
     sw.addEventListener('click', function() {
       pushColorHist(type, col);
-      if (type === 'mur') setCouleurMur(col);
-      else setCouleurCadres(col);
+      if      (type === 'mur')       setCouleurMur(col);
+      else if (type === 'mur-piece') setCouleurMurPiece(col);
+      else                           setCouleurCadres(col);
     });
     container.appendChild(sw);
   });
@@ -112,6 +116,7 @@ function renderColorSwatches(type) {
 
 function initSwatches() {
   renderColorSwatches('mur');
+  renderColorSwatches('mur-piece');
   renderColorSwatches('cadres');
 
   document.querySelectorAll('#sw-texture .sw').forEach(function(sw) {
@@ -133,6 +138,13 @@ function initSwatches() {
     btnPickerMur.addEventListener('click', function(e) {
       e.stopPropagation();
       ouvrirPickerCouleur('mur');
+    });
+  }
+  var btnPickerMurPiece = document.getElementById('btn-picker-mur-piece');
+  if (btnPickerMurPiece) {
+    btnPickerMurPiece.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('mur-piece');
     });
   }
   var btnPickerCad = document.getElementById('btn-picker-cad');
@@ -173,6 +185,18 @@ function setCouleurMur(col) {
   couleurMurActuel = col;
   if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
+  _rafraichirApercusTDB();
+  _autoSaveApparence();
+}
+
+/* Couleur du mur de la PIÈCE (décor sombre autour du mur d'exposition) —
+   propage via la variable CSS --mur-piece-col qui est lue par
+   .scene-mur-piece (admin.css), l'aperçu carte (admin-tdb.js) et
+   l'arrangeur (admin-galerie.js). Default historique #1a1a1a. */
+function setCouleurMurPiece(col) {
+  couleurMurPieceActuel = col;
+  if (salleActive) { salleActive.couleur_mur_piece = col; }
+  document.documentElement.style.setProperty('--mur-piece-col', col);
   _rafraichirApercusTDB();
   _autoSaveApparence();
 }
@@ -875,10 +899,18 @@ function ouvrirPickerCouleur(type) {
 
   // Mettre à jour le titre
   var titre = document.getElementById('picker-titre');
-  if (titre) titre.textContent = type === 'mur' ? 'Couleur du mur' : type === 'support' ? 'Couleur du support' : 'Couleur des cadres';
+  if (titre) titre.textContent =
+    (type === 'mur')        ? 'Couleur du mur'
+  : (type === 'mur-piece')  ? 'Couleur de la pièce'
+  : (type === 'support')    ? 'Couleur du support'
+                            : 'Couleur des cadres';
 
   // Charger la couleur courante dans le picker
-  var hex = (type === 'mur') ? couleurMurActuel : (type === 'support') ? (window._supportPickerCouleur || '#eae6de') : couleurCadresActuel;
+  var hex =
+    (type === 'mur')        ? couleurMurActuel
+  : (type === 'mur-piece')  ? couleurMurPieceActuel
+  : (type === 'support')    ? (window._supportPickerCouleur || '#eae6de')
+                            : couleurCadresActuel;
   var hsv = _hexToHsv(hex);
   if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
 
@@ -912,6 +944,7 @@ function _confirmerPickerCouleur() {
   var inp = document.getElementById('picker-hex-inp');
   if (inp && /^#[0-9a-fA-F]{6}$/.test(inp.value)) hex = inp.value.toLowerCase();
   if (_pickerCouleurType === 'mur') { pushColorHist('mur', hex); setCouleurMur(hex); }
+  else if (_pickerCouleurType === 'mur-piece') { pushColorHist('mur-piece', hex); setCouleurMurPiece(hex); }
   else if (_pickerCouleurType === 'support') { if (typeof window._supportPickerOnConfirm === 'function') window._supportPickerOnConfirm(hex); }
   else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
   fermerPickerCouleur();
