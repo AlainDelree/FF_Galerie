@@ -98,17 +98,8 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        4
-      ],
-      "positions": [
-        {
-          "id": 4,
-          "x": 39,
-          "y": 52,
-          "gabarit": "S"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
       "positions_mobile": []
     },
     {
@@ -177,13 +168,21 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        5
+        5,
+        4
       ],
       "positions": [
         {
           "id": 5,
           "col": 9,
           "row": 3,
+          "w": 2,
+          "h": 2
+        },
+        {
+          "id": 4,
+          "col": 3,
+          "row": 5,
           "w": 2,
           "h": 2
         }

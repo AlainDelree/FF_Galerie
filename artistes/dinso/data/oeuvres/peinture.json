@@ -56,7 +56,14 @@
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "XL",
-      "visible": true
+      "visible": true,
+      "support": {
+        "type": "presentoir",
+        "couleur": "#2a1a10",
+        "texture": "marbre",
+        "taille": 40
+      },
+      "sans_socle": true
     },
     {
       "id": 3,
@@ -71,7 +78,13 @@
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "XS",
-      "visible": true
+      "visible": true,
+      "support": {
+        "type": "presentoir",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 4,
@@ -86,7 +99,13 @@
       "description": "Test placeholder — image Picsum.",
       "prix": "",
       "taille": "M",
-      "visible": true
+      "visible": true,
+      "support": {
+        "type": "etagere",
+        "couleur": "#d4ae60",
+        "texture": "metal",
+        "taille": 30
+      }
     },
     {
       "id": 5,
