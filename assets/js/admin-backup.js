@@ -21,12 +21,26 @@ async function chargerCommits() {
   }
   cont.innerHTML = '<div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div>';
   try {
-    /* Deux appels parallèles : commits sur toiles.json (catalogue) ET salles.json (placement).
+    /* Deux appels parallèles : commits sur le stock d'œuvres (catalogue) ET salles.json (placement).
        Mergés par SHA pour éviter les doublons. Permet de voir l'historique complet,
-       pas seulement les modifs de catalogue. */
-    const urlT = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
-    const urlS = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50`;
-    const [commitsT, commitsS] = await Promise.all([apiGH(urlT), apiGH(urlS)]);
+       pas seulement les modifs de catalogue. On inclut les commits qui touchent l'ANCIEN
+       path (data/toiles.json) ET le NOUVEAU (data/oeuvres/<type>.json) pour conserver
+       l'historique pré-migration. */
+    var oeuvresPath = (typeof _oeuvresPath === 'function') ? _oeuvresPath() : (ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json');
+    const urlTnew = `/repos/${REPO}/commits?path=${oeuvresPath}&per_page=50`;
+    const urlTold = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50`;
+    const urlS    = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50`;
+    const [commitsTnew, commitsTold, commitsS] = await Promise.all([
+      apiGH(urlTnew).catch(function() { return []; }),
+      apiGH(urlTold).catch(function() { return []; }),
+      apiGH(urlS)
+    ]);
+    /* Fusion des commits "toiles" anciens et nouveaux */
+    var seenT = new Set();
+    var commitsT = [];
+    [].concat(commitsTnew || [], commitsTold || []).forEach(function(c) {
+      if (c && c.sha && !seenT.has(c.sha)) { seenT.add(c.sha); commitsT.push(c); }
+    });
     if (!Array.isArray(commitsT) || !Array.isArray(commitsS)) {
       cont.innerHTML = `<div class="chargement" style="color:var(--danger)">Erreur : réponse API inattendue (toiles=${typeof commitsT}, salles=${typeof commitsS}). Vérifier le token GitHub.</div>`;
       return;
@@ -106,12 +120,28 @@ function demanderRestauration(sha, msg, date) {
 async function executerRestauration() {
   const btn = $('btn-restore-ok'); btn.disabled = true; btn.textContent = '⟳ Restauration…';
   try {
+    var oeuvresPath = (typeof _oeuvresPath === 'function') ? _oeuvresPath() : (ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json');
+    /* Lire le stock d'œuvres au commit cible : essaie le nouveau path d'abord,
+       fallback sur l'ancien data/toiles.json si le commit est pré-migration. */
+    async function _lireOeuvresAuCommit() {
+      try {
+        return await apiGH(`/repos/${REPO}/contents/${oeuvresPath}?ref=${commitARestaurer}`);
+      } catch (e) {
+        if ((e.message || '').match(/404|Not Found/i)) {
+          return await apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}toiles.json?ref=${commitARestaurer}`);
+        }
+        throw e;
+      }
+    }
     const [tf, sf] = await Promise.all([
-      apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}toiles.json?ref=${commitARestaurer}`),
+      _lireOeuvresAuCommit(),
       apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}salles.json?ref=${commitARestaurer}`)
     ]);
+    /* On écrit toujours dans le NOUVEAU path. Si la restauration vient d'un
+       vieux commit, le contenu sera celui de l'ancien toiles.json mais
+       écrit au nouveau chemin → migration silencieuse. */
     await commitMulti([
-      { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: tf.content.replace(/\n/g, ''), encoding: 'base64' },
+      { chemin: oeuvresPath, contenu: tf.content.replace(/\n/g, ''), encoding: 'base64' },
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sf.content.replace(/\n/g, ''), encoding: 'base64' }
     ], `Admin : Restauration vers ${commitARestaurer.substring(0, 7)}`);
     $('overlay-restore').classList.remove('ouvert');

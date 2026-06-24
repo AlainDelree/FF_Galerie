@@ -483,12 +483,33 @@ async function uploaderGLB(id, b64) {
 // ═══════════════════════════════════════════════
 // DONNÉES
 // ═══════════════════════════════════════════════
+/* Chemin du stock d'œuvres : nouveau format data/oeuvres/<type>.json.
+   Fallback transparent vers data/toiles.json (ancien format) en lecture
+   pour les éventuels environnements pas encore migrés. L'écriture va
+   toujours dans le nouveau chemin (sauvegarder() ci-dessous). */
+function _oeuvresPath() {
+  return ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json';
+}
+
+async function _lireOeuvres() {
+  try {
+    return await lireRaw(_oeuvresPath());
+  } catch (e) {
+    var msg = (e && e.message) || '';
+    if (msg.match(/404|Not Found/i)) {
+      console.log('[oeuvres] ' + _oeuvresPath() + ' absent → fallback data/toiles.json');
+      return await lireRaw(ADMIN_CFG.repoPath + 'toiles.json');
+    }
+    throw e;
+  }
+}
+
 async function chargerTout() {
   const _ov = document.getElementById('overlay-chargement');
   if (_ov) _ov.classList.add('visible');
   try {
     const [tData, sData] = await Promise.all([
-      lireRaw(ADMIN_CFG.repoPath + 'toiles.json'),
+      _lireOeuvres(),
       lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
     toiles  = ADMIN_CFG.type === 'sculpture' ? (tData.pieces   || []) : (tData.toiles  || []);
@@ -555,7 +576,7 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   var _sansTemp = function(key, val) { return key.charAt(0) === '_' ? undefined : val; };
   try {
     await commitMulti([
-      { chemin: ADMIN_CFG.repoPath+'toiles.json', contenu: JSON.stringify(
+      { chemin: _oeuvresPath(), contenu: JSON.stringify(
         ADMIN_CFG.type === 'sculpture'
           ? { next_id: nextId, gabarits: tailles, pieces: toiles }
           : { next_id: nextId, tailles, toiles }

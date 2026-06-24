@@ -92,11 +92,16 @@ async function supprimerArtiste(idx) {
   try {
     /* Fichiers à supprimer */
     const base = "artistes/" + a.id + "/";
-    /* Uniquement les fichiers garantis créés par genererFichiers() */
+    /* Uniquement les fichiers garantis créés par genererFichiers().
+       On inclut les deux emplacements possibles du stock d'œuvres
+       (ancien data/toiles.json + nouveau data/oeuvres/<type>.json). */
     const fichiersSup = [
       base + "index.html", base + "galerie.html",
       base + "infos.html", base + "contact.html", base + "admin.html",
-      base + "data/toiles.json", base + "data/salles.json",
+      base + "data/toiles.json",
+      base + "data/oeuvres/peinture.json",
+      base + "data/oeuvres/sculpture.json",
+      base + "data/salles.json",
       base + "data/infos.json", base + "data/contact.json"
     ].map(path => ({ path, mode: "100644", type: "blob", sha: null })); /* mode+type requis meme pour suppression */
 
@@ -357,7 +362,8 @@ async function genererFichiers(a) {
       .replace(/{{INVITE}}/g,           invite)
       .replace(/{{EMAIL_U}}/g,          emailU)
       .replace(/{{EMAIL_D}}/g,          emailD)
-      .replace(/{{GALERIE_RENDERER}}/g, renderer);
+      .replace(/{{GALERIE_RENDERER}}/g, renderer)
+      .replace(/{{TOILES_PATH}}/g,      "data/oeuvres/" + a.type + ".json");
   }
 
   /* ── JSON peinture ── */
@@ -392,6 +398,8 @@ async function genererFichiers(a) {
   const estSculpture = a.type === "sculpture";
   const toiles = estSculpture ? toilesScupture  : toilesPeinture;
   const salles = estSculpture ? sallesSculpture : sallesPeinture;
+  /* Nouveau emplacement du stock (étape 3 cohabitation) : data/oeuvres/<type>.json */
+  const oeuvresFichier = "data/oeuvres/" + a.type + ".json";
 
   const infos = JSON.stringify({ evenements: [], collegues: [] }, null, 2);
 
@@ -401,7 +409,7 @@ async function genererFichiers(a) {
   }, null, 2);
 
   return [
-    { chemin: base + "data/toiles.json",  contenu: toiles   },
+    { chemin: base + oeuvresFichier,      contenu: toiles   },
     { chemin: base + "data/salles.json",  contenu: salles   },
     { chemin: base + "data/infos.json",   contenu: infos    },
     { chemin: base + "data/contact.json", contenu: contact  },
