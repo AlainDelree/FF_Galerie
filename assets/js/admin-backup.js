@@ -148,6 +148,9 @@ async function executerRestauration() {
     syncBadge('ok');
     toast('✓ Restauration effectuée — rechargement…');
     await chargerTout();
+    /* Rafraîchit la liste des commits pour faire apparaître le commit de
+       restauration en tête (sinon la liste reste figée sur l'ancien "Actuel"). */
+    if (typeof chargerCommits === 'function') chargerCommits();
   } catch (e) { toast('Erreur : ' + e.message, 'err', 4000); btn.disabled = false; btn.textContent = 'Restaurer'; }
 }
 
