@@ -180,16 +180,19 @@ function _rafraichirApercusTDB() {
 }
 
 /* Auto-sauvegarde GitHub debouncée (1.5s après dernier changement d'apparence).
-   Toast 'Sauvegardé ✓' à la fin pour rendre visible que la sauvegarde a bien
-   eu lieu — sinon en cas d'aperçu non rafraîchi (cache iframe, etc.) on peut
-   croire à tort que le changement n'a pas été enregistré. */
+   Le libellé indique ce qui vient d'être sauvegardé (avec accord) pour que
+   l'utilisateur sache précisément quoi a été persisté. Dernier libellé set
+   dans la fenêtre debounce gagne (suffisant en pratique). */
 var _autoSaveTimer = null;
-function _autoSaveApparence() {
+var _autoSaveLabel = 'Apparence sauvegardée ✓';
+function _autoSaveApparence(label) {
   if (typeof sauvegarder !== 'function') return;
+  if (label) _autoSaveLabel = label;
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(function() {
+    var msg = _autoSaveLabel;
     sauvegarder('[admin] Apparence salle', null).then(function() {
-      if (typeof toast === 'function') toast('Couleurs sauvegardées ✓', 'ok', 1500);
+      if (typeof toast === 'function') toast(msg, 'ok', 1500);
     }).catch(function(e) {
       if (typeof toast === 'function') toast('Erreur sauvegarde : ' + e.message, 'err', 4000);
     });
@@ -201,7 +204,7 @@ function setCouleurMur(col) {
   if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Couleurs sauvegardées ✓');
 }
 
 /* Couleur du mur de la PIÈCE (décor sombre autour du mur d'exposition) —
@@ -213,7 +216,7 @@ function setCouleurMurPiece(col) {
   if (salleActive) { salleActive.couleur_mur_piece = col; }
   document.documentElement.style.setProperty('--mur-piece-col', col);
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Couleurs sauvegardées ✓');
 }
 
 /* Couleur du mur du bas (plinthe avec portes) — analogue à mur-piece.
@@ -224,7 +227,7 @@ function setCouleurMurBas(col) {
   if (salleActive) { salleActive.couleur_mur_bas = col; }
   document.documentElement.style.setProperty('--mur-bas-col', col);
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Couleurs sauvegardées ✓');
 }
 
 function setCouleurCadres(col) {
@@ -233,7 +236,7 @@ function setCouleurCadres(col) {
   appliquerApparence();
   afficherMur();
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Couleurs sauvegardées ✓');
 }
 
 function setEpaisseurCadres(ep) {
@@ -244,7 +247,7 @@ function setEpaisseurCadres(ep) {
     if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
   });
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Épaisseur des cadres sauvegardée ✓');
 }
 
 function setTexture(val) {
@@ -252,7 +255,7 @@ function setTexture(val) {
   if (salleActive) { salleActive.texture = val; }
   appliquerApparence();
   _rafraichirApercusTDB();
-  _autoSaveApparence();
+  _autoSaveApparence('Texture sauvegardée ✓');
 }
 
 // RECADRAGE PHOTO (Cropper.js)
