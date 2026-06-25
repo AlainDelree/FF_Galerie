@@ -95,11 +95,19 @@ function afficherOeuvres() {
   if (!container) return;
 
   /* Détecter les types présents : union de
-     (a) types des œuvres existantes (_taillesParType chargé par admin.js)
-     (b) types des SALLES (un artiste peut avoir des salles d'un type
+     (a) types des œuvres en mémoire (toiles[]._type) — couvre les œuvres
+         fraîchement créées dont _taillesParType n'a pas encore été mis à jour
+     (b) types présents dans _taillesParType (chargé par admin.js)
+     (c) types des SALLES (un artiste peut avoir des salles d'un type
          sans avoir encore créé d'œuvre de ce type — il doit pouvoir).
      Garantit aussi qu'au moins le type principal de l'admin est présent. */
   var _typesSet = {};
+  if (typeof toiles !== 'undefined' && Array.isArray(toiles)) {
+    toiles.forEach(function(t) {
+      var ty = t._type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+      if (ty) _typesSet[ty] = true;
+    });
+  }
   if (typeof _taillesParType !== 'undefined') {
     Object.keys(_taillesParType).forEach(function(t) { _typesSet[t] = true; });
   }
