@@ -629,10 +629,10 @@ textarea.champ{resize:vertical;min-height:65px;}
 #overlay-crop{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.85);
   flex-direction:column;align-items:center;justify-content:center;}
 #overlay-crop.ouvert{display:flex;}
-.crop-modal{display:flex;flex-direction:column;width:min(96vw,560px);
+.crop-modal{display:flex;flex-direction:column;width:min(96vw,600px);
   max-height:92dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
 @media (min-width:1100px){
-  .crop-modal{width:min(96vw,640px);}
+  .crop-modal{width:min(96vw,720px);}
 }
 .crop-hdr{display:flex;align-items:center;justify-content:space-between;
   padding:.7rem 1rem;border-bottom:1px solid var(--brd);font-weight:600;font-size:.95rem;}
@@ -642,9 +642,9 @@ textarea.champ{resize:vertical;min-height:65px;}
   touch-action:none;user-select:none;
   /* Padding pour que les poignées de recadrage (positionnées sur les bords
      de la cropBox) ne soient pas coupées par overflow:hidden du wrap.
-     Cropper.js dimensionne son canvas à l'espace disponible — donc l'image
-     reste centrée et les poignées trouvent leur place dans ce padding. */
-  padding:18px;box-sizing:border-box;}
+     Plus généreux horizontalement (32px) pour qu'on puisse saisir
+     confortablement les poignées des côtés. */
+  padding:18px 32px;box-sizing:border-box;}
 .crop-canvas-wrap img{display:block;max-width:100%;}
 .crop-aide{font-size:.68rem;letter-spacing:.1em;text-align:center;
   color:var(--muted);padding:.45rem .5rem;background:var(--bg3);}
