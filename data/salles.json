@@ -28,7 +28,9 @@
           "h": 3
         }
       ],
-      "positions_mobile": []
+      "positions_mobile": [],
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#c8a050"
     },
     {
       "id": 6,

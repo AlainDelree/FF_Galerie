@@ -255,6 +255,8 @@ function demarrerTimerAttente() {
 }
 let commitARestaurer = null;
 let couleurMurActuel = '#2e2e2e';
+let couleurMurPieceActuel = '#1a1a1a';   /* fond/décor de la pièce autour du mur d'expo */
+let couleurMurBasActuel   = '#111111';   /* mur du bas (plinthe + portes) */
 let couleurCadresActuel = '#3a3a3a';
 let epaisseurCadresActuel = 2;
 let textureActuelle = 'none';
@@ -602,6 +604,13 @@ async function chargerTout() {
       id: s.id, nom: s.nom,
       type: s.type || (ADMIN_CFG.type !== 'peinture' ? ADMIN_CFG.type : undefined),
       couleur_mur: s.couleur_mur || '#2e2e2e',
+      /* Champs récents — préservés tels quels (undefined si absents,
+         appliquera le default à l'usage). Les omettre ici les perdait
+         silencieusement à chaque chargement : le JSON GitHub gardait
+         les valeurs, mais salleActive en mémoire avait undefined →
+         aperçu admin restait au gris/noir default malgré sauvegarde OK. */
+      couleur_mur_piece: s.couleur_mur_piece,
+      couleur_mur_bas:   s.couleur_mur_bas,
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
       epaisseur_cadres: s.epaisseur_cadres || 2,
       texture: s.texture || 'none',
@@ -881,6 +890,8 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopo
 // Mapping bouton → popover
 [
   ['btn-pop-mur',       'pop-mur'],
+  ['btn-pop-mur-piece', 'pop-mur-piece'],
+  ['btn-pop-mur-bas',   'pop-mur-bas'],
   ['btn-pop-cadres',    'pop-cadres'],
   ['btn-pop-epaisseur', 'pop-epaisseur'],
   ['btn-pop-texture',   'pop-texture'],

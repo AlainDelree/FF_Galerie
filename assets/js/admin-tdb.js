@@ -215,11 +215,17 @@ function _clonerEsthetique(srcId, cibleId) {
     'Apparence (couleur, texture, thème) + présentations immersive/descriptive (activation et décors).\n' +
     'Le placement des pièces n\u0027est pas affecté.')) return;
 
-  /* Apparence de salle */
-  cible.couleur_mur     = src.couleur_mur;
-  cible.couleur_cadres  = src.couleur_cadres;
-  cible.epaisseur_cadres= src.epaisseur_cadres;
-  cible.texture         = src.texture;
+  /* Apparence de salle — copier UNIQUEMENT les champs définis sur la source.
+     Sinon, un src.couleur_mur_piece undefined écrase la cible à undefined,
+     et la sauvegarde retire la clé du JSON → bug historique : cloner sur
+     une salle qui avait des couleurs personnalisées les faisait disparaître
+     silencieusement (commits 5aa8286, 7770199 dans l'historique dev). */
+  cible.couleur_mur       = src.couleur_mur;
+  if (src.couleur_mur_piece !== undefined) cible.couleur_mur_piece = src.couleur_mur_piece;
+  if (src.couleur_mur_bas   !== undefined) cible.couleur_mur_bas   = src.couleur_mur_bas;
+  if (src.couleur_cadres    !== undefined) cible.couleur_cadres    = src.couleur_cadres;
+  if (src.epaisseur_cadres  !== undefined) cible.epaisseur_cadres  = src.epaisseur_cadres;
+  if (src.texture           !== undefined) cible.texture           = src.texture;
 
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
@@ -299,13 +305,14 @@ function _creerCarteVue(facette, salle, lbl, opts) {
          - marge latérale  : 13% de la largeur
          - marge haut      : 5% de la hauteur
          - zone-basse      : 31% de la hauteur (mur-inf 38% + plancher 62%)
-         - couleur mur     : #1a1a1a (mur de la pièce)
+         - couleur mur     : salle.couleur_mur_piece || #1a1a1a (mur de la pièce)
        Le mur d'expo a aspect-ratio 12/8 garanti par contain:layout sur l'iframe. */
     var typeSalleApercu = salle.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
     if (typeSalleApercu === 'peinture' && !isPortrait) {
-      /* Décor mur de la pièce */
+      /* Décor mur de la pièce — couleur paramétrable par salle (default historique #1a1a1a) */
+      var _murPieceCol = salle.couleur_mur_piece || '#1a1a1a';
       var decor = document.createElement('div');
-      decor.style.cssText = 'position:absolute;inset:0;background:#1a1a1a;display:flex;flex-direction:column;padding:5% 13% 0 13%;box-sizing:border-box;';
+      decor.style.cssText = 'position:absolute;inset:0;background:' + _murPieceCol + ';display:flex;flex-direction:column;padding:5% 13% 0 13%;box-sizing:border-box;';
       /* Conteneur du mur d'expo (place dispo restante) */
       var murZone = document.createElement('div');
       murZone.style.cssText = 'flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;';
@@ -315,8 +322,9 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       /* Zone-basse (déborde latéralement pour faire le sol pleine largeur) */
       var zb = document.createElement('div');
       zb.style.cssText = 'flex:0 0 31%;display:flex;flex-direction:column;width:calc(100% + 30%);margin:0 -15%;';
+      var _murBasCol = salle.couleur_mur_bas || '#111';
       var murInf = document.createElement('div');
-      murInf.style.cssText = 'flex:0 0 38%;background:#111;padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
+      murInf.style.cssText = 'flex:0 0 38%;background:' + _murBasCol + ';padding:0 4%;display:flex;align-items:flex-end;justify-content:space-between;';
       var porteG = document.createElement('div');
       porteG.style.cssText = 'width:7%;height:78%;background:#0c0a07;border-top-left-radius:100% 90%;border-top-right-radius:100% 90%;box-shadow:inset 0 0 6px rgba(0,0,0,.7);';
       var porteD = porteG.cloneNode(false);
