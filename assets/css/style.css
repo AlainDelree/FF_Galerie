@@ -29,7 +29,9 @@ body.theme-sombre {
 }
 
 .scene-entree {
-  min-height: 100vh;
+  min-height: 100vh;       /* fallback navigateurs sans dvh */
+  min-height: 100dvh;      /* hauteur viewport visible réel (barre URL mobile exclue) */
+  box-sizing: border-box;  /* paddings inclus → pas de débordement */
   background-color: var(--bg);
   color: var(--text);
   display: flex;
