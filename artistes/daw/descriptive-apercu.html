@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aperçu descriptif</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body { background: #1a1510; display: flex; }
+
+    /* Bandes de fond */
+    #bandes {
+      position: absolute; inset: 0;
+      display: flex; z-index: 0;
+    }
+    .bande { flex: 1; height: 100%; }
+
+    model-viewer {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      --poster-color: transparent;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="bandes"></div>
+
+  <script>
+    var DECOR_DEFAUT = { pan_a: '#1a1510', pan_b: '#2a2018', pan_c: '#1a1510', pan_d: '#2a2018' };
+
+    function appliquerDecor(decor) {
+      var D = Object.assign({}, DECOR_DEFAUT, decor || {});
+      var pal = [D.pan_a, D.pan_b, D.pan_c, D.pan_d];
+      var bandes = document.getElementById('bandes');
+      bandes.innerHTML = '';
+      for (var i = 0; i < 12; i++) {
+        var b = document.createElement('div');
+        b.className = 'bande';
+        b.style.background = pal[i % 4];
+        bandes.appendChild(b);
+      }
+    }
+
+    appliquerDecor({});
+
+    window.addEventListener('message', function(e) {
+      if (!e.data) return;
+
+      if (e.data.type === 'descriptive-init') {
+        var piece = e.data.piece || {};
+        var decor = e.data.decor || {};
+
+        appliquerDecor(decor);
+
+        if (piece.glb) {
+          var glbSrc = /^https?:\/\//.test(piece.glb)
+            ? piece.glb
+            : '../../' + piece.glb;
+
+          var mv = document.createElement('model-viewer');
+          mv.setAttribute('src', glbSrc);
+          mv.setAttribute('alt', piece.titre || '');
+          mv.setAttribute('camera-controls', '');
+          mv.setAttribute('auto-rotate', '');
+          mv.setAttribute('auto-rotate-delay', '0');
+          mv.setAttribute('rotation-per-second', '20deg');
+          mv.setAttribute('interaction-prompt', 'none');
+          mv.setAttribute('shadow-intensity', '0.8');
+          /* Cadrage auto (comme la salle observation de la galerie) — pas de
+             zoom forcé qui agrandit l'objet. */
+          document.body.appendChild(mv);
+        }
+      }
+
+      if (e.data.type === 'descriptive-decor-update') {
+        appliquerDecor(e.data.decor || {});
+      }
+    });
+
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'descriptive-awaiting-data' }, '*');
+    }
+  </script>
+
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+</body>
+</html>

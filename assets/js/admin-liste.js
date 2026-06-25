@@ -175,7 +175,12 @@ function listeOeuvres(opts) {
   if (items.length === 0) {
     var empty = document.createElement('div');
     empty.style.cssText = 'font-size:.75rem;color:var(--muted);padding:.8rem;text-align:center;';
-    var _isSculpt = typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture';
+    /* Label adapté au TYPE DE COLONNE (typeFiltre), pas au type d'admin :
+       chez Fred (peinture), la colonne Sculptures doit dire « Aucune pièce »
+       même si ADMIN_CFG.type === 'peinture'. */
+    var _isSculpt = typeFiltre
+      ? (typeFiltre === 'sculpture')
+      : (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
     empty.textContent = 'Aucune ' + (_isSculpt ? 'pièce' : 'toile');
     container.appendChild(empty);
     return;
