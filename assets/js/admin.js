@@ -52,6 +52,12 @@ const ADMIN_CFG = {
   if (sousEl) sousEl.textContent = ADMIN_CFG.nom;
   if (hdrEl)  hdrEl.textContent  = ADMIN_CFG.nom;
   document.title = ADMIN_CFG.nom + ' — Admin';
+  /* Bouton « Voir le site » → pointe vers la galerie publique de l'artiste
+     courant : Fred = racine, invités = artistes/<id>/. */
+  const lienSite = document.getElementById('btn-voir-site');
+  if (lienSite) {
+    lienSite.href = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'index.html';
+  }
   /* Masquer le combobox artiste sur les admins invités */
   if (ADMIN_CFG.prefix !== 'ff') {
     const wrap = document.getElementById('div-sel-artiste');
