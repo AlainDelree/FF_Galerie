@@ -1,9 +1,33 @@
 {
   "salles": [
     {
+      "id": 13,
+      "nom": "Bureau",
+      "couleur_mur": "#a51d2d",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
+      "texture": "assets/images/textures/texture-bleu.jpg",
+      "visible": true,
+      "toiles": [
+        13
+      ],
+      "positions": [
+        {
+          "id": 13,
+          "col": 2,
+          "row": 2,
+          "w": 8,
+          "h": 5
+        }
+      ],
+      "positions_mobile": []
+    },
+    {
       "id": 5,
       "nom": "Entrée",
       "couleur_mur": "#1c1c1c",
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#c8a050",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 10,
       "texture": "pierre",
@@ -28,9 +52,7 @@
           "h": 3
         }
       ],
-      "positions_mobile": [],
-      "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#c8a050"
+      "positions_mobile": []
     },
     {
       "id": 6,
@@ -334,28 +356,6 @@
           "row": 4,
           "w": 3,
           "h": 3
-        }
-      ],
-      "positions_mobile": []
-    },
-    {
-      "id": 13,
-      "nom": "Bureau",
-      "couleur_mur": "#a51d2d",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/texture-bleu.jpg",
-      "visible": true,
-      "toiles": [
-        13
-      ],
-      "positions": [
-        {
-          "id": 13,
-          "col": 2,
-          "row": 2,
-          "w": 8,
-          "h": 5
         }
       ],
       "positions_mobile": []
