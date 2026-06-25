@@ -80,10 +80,20 @@ function _appliquerStructureSculpture() {
     return h;
   }
 
+  /* Titre + Date AVANT la section Objet — cohérent avec l'ordre peinture
+     (titre apparaît tôt dans le formulaire). M2. */
+  var ancreApresType = typeGrp;
+  if (ancreApresType) {
+    ancreApresType.after(titreGrp);
+    titreGrp.after(dateGrp);
+  } else {
+    body.prepend(dateGrp);
+    body.prepend(titreGrp);
+  }
+
   /* 1. OBJET */
   var hdrObjet = sectionHeader('Objet');
-  /* Placer après le sélecteur de type s'il existe, sinon en premier */
-  if (typeGrp) typeGrp.after(hdrObjet); else body.prepend(hdrObjet);
+  dateGrp.after(hdrObjet);
 
   photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb) — facultatif';
   photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
@@ -202,7 +212,9 @@ function _appliquerStructureSculpture() {
 
   document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
 
-  var detailsOrder = [titreGrp, dateGrp, matGrp, prixGrp, descGrp, visGrp];
+  /* M2 : titreGrp et dateGrp déplacés en haut (avant la section Objet),
+     donc retirés de detailsOrder. */
+  var detailsOrder = [matGrp, prixGrp, descGrp, visGrp];
   if (pillsGrp) detailsOrder.push(pillsGrp);
   var prev = hdrDetails;
   detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
