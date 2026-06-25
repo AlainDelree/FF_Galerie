@@ -139,6 +139,14 @@ button{cursor:pointer;}
 .chip-mv:disabled{opacity:.25;cursor:default;}
 .chip.edit-mode{pointer-events:none;cursor:default;}
 .chip.edit-mode .chip-mv,.chip.edit-mode .chip-del,.chip.edit-mode .chip-conf-btn{pointer-events:all;}
+/* Drag-and-drop chips */
+.chip.draggable{touch-action:none;cursor:grab;pointer-events:all;}
+.chip.draggable:active{cursor:grabbing;}
+.chip.chip-dragging{opacity:.25;transition:none;}
+.chip.chip-drag-over{border-color:var(--gold) !important;background:rgba(200,160,80,.18) !important;
+  box-shadow:inset 3px 0 0 var(--gold) !important;transform:scale(1.04);}
+.chip-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:.85;
+  border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:rotate(2deg);transition:none;}
 .chip-mv-wrap{display:flex;flex-direction:column;gap:2px;margin-left:4px;}
 /* Bouton suppression (✕ rouge, coin haut-gauche) */
 .chip-del{position:absolute;top:-7px;left:-7px;width:17px;height:17px;border-radius:50%;
