@@ -1693,7 +1693,12 @@ function ouvrirFormulaireNouvel(typeOpt) {
   var grpType = document.getElementById('grp-type-oeuvre');
   if (grpType) grpType.style.display = '';
   _appliquerTypeFormulaire(typeEffectif);
-  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
+  toileEnEdition = null;
+  /* Salle pré-sélectionnée UNIQUEMENT si le type de salleActive correspond
+     au type de l'œuvre créée. Sinon, l'utilisateur doit choisir explicitement. */
+  var _typeSalleAct = salleActive ? (salleActive.type || ADMIN_CFG.type || 'peinture') : null;
+  salleCibleToile = (salleActive && _typeSalleAct === typeEffectif) ? salleActive.id : null;
+  photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
   viderFormToile();
@@ -1704,7 +1709,13 @@ function ouvrirFormulaireNouvel(typeOpt) {
 
 function construirePillsSalle(salleSelId) {
   const pills = $('salle-pills'); if (!pills) return; pills.innerHTML = '';
+  /* Filtre par type : une sculpture ne peut être placée que dans une salle
+     sculpture, et inversement. Évite d'envoyer une sculpture en "Cuisine"
+     (salle peinture) ou vice-versa. */
+  var typeForm = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   salles.forEach(s => {
+    var typeSalle = s.type || ADMIN_CFG.type || 'peinture';
+    if (typeSalle !== typeForm) return;
     const p = document.createElement('button');
     p.className = 'salle-pill'; p.type = 'button';
     p.dataset.salle = s.id; p.textContent = s.nom;
@@ -1850,7 +1861,10 @@ function viderFormToile() {
   $('btn-recadrer-photo').classList.remove('visible');
   const pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   document.querySelectorAll('.salle-pill').forEach(p => p.classList.remove('sel'));
-  salleCibleToile = salleActive?.id || null;
+  /* Salle pré-sélectionnée seulement si type compatible (cf. ouvrirFormulaireNouvel) */
+  var _typeForm = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
+  var _typeSalleA = salleActive ? (salleActive.type || ADMIN_CFG.type || 'peinture') : null;
+  salleCibleToile = (salleActive && _typeSalleA === _typeForm) ? salleActive.id : null;
   document.querySelectorAll('.salle-pill').forEach(p => {
     if (parseInt(p.dataset.salle) === salleCibleToile) p.classList.add('sel');
   });
