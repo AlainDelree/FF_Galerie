@@ -124,6 +124,21 @@ button{cursor:pointer;}
   color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;
   pointer-events:none;white-space:nowrap;}
 
+/* Boutons réordonnement salles */
+.plan-btn-ok{border-color:#4a7c59;color:#4a7c59;}
+.plan-btn-ok:hover{background:rgba(74,124,89,.1);}
+.plan-btn-cancel{border-color:#c0392b;color:#c0392b;}
+.plan-btn-cancel:hover{background:rgba(192,57,43,.08);}
+.chip-mv{display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:4px;border:1px solid var(--brd);
+  background:var(--bg2);cursor:pointer;font-size:10px;padding:0;line-height:1;
+  color:var(--text);transition:background .1s,border-color .1s;flex-shrink:0;}
+.chip-mv:hover:not(:disabled){background:var(--gold);border-color:var(--gold);color:#fff;}
+.chip-mv:disabled{opacity:.25;cursor:default;}
+.chip.reorder{pointer-events:none;}
+.chip.reorder .chip-mv{pointer-events:all;}
+.chip-mv-wrap{display:flex;flex-direction:column;gap:2px;margin-left:4px;}
+
 .chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
   border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;
   display:flex;align-items:center;gap:3px;transition:border-color .2s,color .2s;}

@@ -814,6 +814,30 @@ document.querySelectorAll('.sous-nav-btn').forEach(btn => {
 });
 
 // Plan salles
+// Réordonnement salles
+document.getElementById('btn-reordonner-salles')?.addEventListener('click', function() {
+  if (typeof _entrerModeReordonnement === 'function') _entrerModeReordonnement();
+});
+document.getElementById('btn-annuler-ordre')?.addEventListener('click', function() {
+  /* Restaurer l'ordre original */
+  if (_ordreAvantReordonnement && typeof _ordreAvantReordonnement !== 'undefined') {
+    var ordreRef = _ordreAvantReordonnement.slice();
+    salles.sort(function(a, b) {
+      return ordreRef.indexOf(a.id) - ordreRef.indexOf(b.id);
+    });
+  }
+  if (typeof _quitterModeReordonnement === 'function') _quitterModeReordonnement();
+});
+document.getElementById('btn-appliquer-ordre')?.addEventListener('click', async function() {
+  var btn = this;
+  btn.disabled = true;
+  try {
+    await sauvegarder('[admin] Réordonnement des salles', '✓ Ordre sauvegardé');
+    if (typeof _quitterModeReordonnement === 'function') _quitterModeReordonnement();
+  } catch(e) { toast('Erreur : ' + e.message, 'err'); }
+  finally { btn.disabled = false; }
+});
+
 $('btn-ajouter-salle')?.addEventListener('click', () => ouvrirModalSalle()); /* défensif : élément retiré du DOM, chip "＋ Salle" prend le relais */
 $('btn-supprimer-salle').addEventListener('click', async () => {
   if (!salleActive) return;

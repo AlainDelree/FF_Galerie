@@ -68,6 +68,44 @@ function solPatternCSS(texture, couleur) {
 
 // PLAN DES SALLES
 // ═══════════════════════════════════════════════
+
+/* ── Réordonnement des salles ── */
+var _modeReordonnement = false;
+var _ordreAvantReordonnement = null; /* snapshot des IDs avant modification */
+
+function _entrerModeReordonnement() {
+  _modeReordonnement = true;
+  _ordreAvantReordonnement = salles.map(function(s) { return s.id; });
+  var btnR = document.getElementById('btn-reordonner-salles');
+  var divA = document.getElementById('reordonner-actions');
+  if (btnR) btnR.style.display = 'none';
+  if (divA) divA.style.display = 'flex';
+  var btnS = document.getElementById('btn-supprimer-salle');
+  if (btnS) btnS.style.display = 'none';
+  afficherPlan();
+}
+
+function _quitterModeReordonnement() {
+  _modeReordonnement = false;
+  _ordreAvantReordonnement = null;
+  var btnR = document.getElementById('btn-reordonner-salles');
+  var divA = document.getElementById('reordonner-actions');
+  if (btnR) btnR.style.display = '';
+  if (divA) divA.style.display = 'none';
+  var btnS = document.getElementById('btn-supprimer-salle');
+  if (btnS) btnS.style.display = '';
+  afficherPlan();
+}
+
+function deplacerSalle(index, direction) {
+  var cible = index + direction;
+  if (cible < 0 || cible >= salles.length) return;
+  var tmp = salles[index];
+  salles[index] = salles[cible];
+  salles[cible] = tmp;
+  afficherPlan();
+}
+
 function afficherPlan() {
   const cont = $('chips-salles');
   cont.innerHTML = '';
@@ -91,7 +129,31 @@ function afficherPlan() {
       badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
       chip.appendChild(badge);
     }
-    chip.addEventListener('click', () => selectSalle(s.id));
+    if (_modeReordonnement) {
+      chip.classList.add('reorder');
+      var idx = salles.indexOf(s);
+      var wrap = document.createElement('div');
+      wrap.className = 'chip-mv-wrap';
+      var btnG = document.createElement('button');
+      btnG.className = 'chip-mv';
+      btnG.textContent = '←';
+      btnG.title = 'Déplacer à gauche';
+      btnG.disabled = (idx === 0);
+      btnG.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(idx, -1); });
+      var btnD = document.createElement('button');
+      btnD.className = 'chip-mv';
+      btnD.textContent = '→';
+      btnD.title = 'Déplacer à droite';
+      btnD.disabled = (idx === salles.length - 1);
+      btnD.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(idx, 1); });
+      wrap.appendChild(btnG);
+      wrap.appendChild(btnD);
+      chip.style.display = 'flex';
+      chip.style.alignItems = 'center';
+      chip.appendChild(wrap);
+    } else {
+      chip.addEventListener('click', () => selectSalle(s.id));
+    }
     cont.appendChild(chip);
   });
   // Bouton ajouter
