@@ -2010,9 +2010,9 @@ async function sauverToile() {
       var _ext = window.photoEstPng ? 'png' : 'jpg';
       var _mime = window.photoEstPng ? 'image/png' : 'image/jpeg';
       let photo = '';
-      if (photoB64) photo = await uploaderPhoto(id, photoB64, _ext);
+      if (photoB64) photo = await uploaderPhoto(id, photoB64, _ext, _typeEdition);
       let glb = donnees.glb || '';
-      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64, _typeEdition); }
       const t = { id, photo, source_photo: 'admin', ...donnees, glb };
       /* _type est essentiel : il détermine dans quel fichier
          data/oeuvres/<type>.json l'œuvre sera écrite. Sans ça, une
@@ -2033,9 +2033,9 @@ async function sauverToile() {
       const idx = toiles.findIndex(x => x.id === toileEnEdition && typeDeLOeuvre(x) === _typeEdition);
       var _extE = window.photoEstPng ? 'png' : 'jpg';
       let photo = toiles[idx].photo;
-      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE);
+      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE, _typeEdition);
       let glb = donnees.glb || toiles[idx].glb || '';
-      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64); }
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64, _typeEdition); }
       // Protection dimensions : si les cases changent, retirer du mur
       const ancienDim = toiles[idx].dimensions;
       const nouvelDim = donnees.dimensions;

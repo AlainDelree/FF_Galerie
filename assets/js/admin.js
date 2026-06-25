@@ -444,15 +444,19 @@ async function _commitMultiImpl(fichiers, message) {
   }
 }
 
-async function uploaderPhoto(id, b64, ext) {
+async function uploaderPhoto(id, b64, ext, typeOeuvre) {
   /* Dossier propre à chaque artiste, relatif à la racine du repo.
      Frédérique : assets/images/toiles/
      Alain      : artistes/alaindelree/assets/images/toiles/
      Le chemin stocké dans toiles.json est relatif à la galerie.html de l'artiste.
-     ext optionnel ('png' pour thumbnails 3D transparents, défaut 'jpg'). */
+     ext optionnel ('png' pour thumbnails 3D transparents, défaut 'jpg').
+     typeOeuvre : type de l'ŒUVRE en cours de création (pas le type principal
+     de l'admin) — sinon en cohabitation, une sculpture #N créée chez Fred
+     écraserait toile-NNN.jpg. */
   ext = ext || 'jpg';
+  var _type = typeOeuvre || (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
-  const prefix = (ADMIN_CFG.type === 'sculpture') ? 'piece' : 'toile';
+  const prefix = (_type === 'sculpture') ? 'piece' : 'toile';
   const chemin = base + `${prefix}-${String(id).padStart(3, '0')}.${ext}`;
   const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
@@ -463,11 +467,13 @@ async function uploaderPhoto(id, b64, ext) {
   return stored; /* chemin relatif stocké dans toiles.json */
 }
 
-async function uploaderGLB(id, b64) {
+async function uploaderGLB(id, b64, typeOeuvre) {
   /* Upload le fichier GLB dans le dossier models de l'artiste.
-     Chemin GitHub = chemin stocké dans toiles.json (relatif au repo) */
+     Chemin GitHub = chemin stocké dans toiles.json (relatif au repo).
+     typeOeuvre : type de l'œuvre (cf. uploaderPhoto). */
+  var _type = typeOeuvre || (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/models/';
-  const prefix = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'piece-' : 'toile-';
+  const prefix = (_type === 'sculpture') ? 'piece-' : 'toile-';
   const chemin = base + prefix + String(id).padStart(3, '0') + '.glb';
   let sha = null;
   try { const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH); sha = r.sha; } catch (_) {}
