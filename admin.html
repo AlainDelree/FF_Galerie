@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260625b">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260625c">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -98,15 +98,11 @@
     <!-- Plan des salles -->
     <div class="plan-section" id="plan-section">
       <div class="plan-actions">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem;">
-          <span class="plan-act-lbl">Salles</span>
-          <button id="btn-toggle-plan" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:0 2px;" title="Replier/Déplier">▲</button>
-        </div>
-        <button class="plan-btn" id="btn-supprimer-salle">✕ Supprimer</button>
-        <button class="plan-btn" id="btn-reordonner-salles" title="Réordonner les salles">⇄ Ordre</button>
-        <div id="reordonner-actions" style="display:none;flex-direction:column;gap:.25rem;">
-          <button class="plan-btn plan-btn-ok" id="btn-appliquer-ordre">✓ Appliquer</button>
-          <button class="plan-btn plan-btn-cancel" id="btn-annuler-ordre">✕ Annuler</button>
+        <span class="plan-act-lbl">Salles</span>
+        <button class="plan-btn" id="btn-modifier-plan">✏ Modifier</button>
+        <div id="plan-edit-actions" style="display:none;flex-direction:column;gap:.25rem;">
+          <button class="plan-btn plan-btn-ok" id="btn-appliquer-plan">✓ Appliquer</button>
+          <button class="plan-btn plan-btn-cancel" id="btn-annuler-plan">✕ Annuler</button>
         </div>
       </div>
       <div class="salles-chips" id="chips-salles"></div>

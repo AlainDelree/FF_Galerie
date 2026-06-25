@@ -69,31 +69,30 @@ function solPatternCSS(texture, couleur) {
 // PLAN DES SALLES
 // ═══════════════════════════════════════════════
 
-/* ── Réordonnement des salles ── */
-var _modeReordonnement = false;
-var _ordreAvantReordonnement = null; /* snapshot des IDs avant modification */
+/* ── Mode édition plan (réordonnement + suppression) ── */
+var _modeEditionPlan = false;
+var _ordreAvantEdition = null;   /* snapshot IDs pour annulation */
+var _salleConfirmSuppr = null;   /* ID de la salle en attente de confirmation suppression */
 
-function _entrerModeReordonnement() {
-  _modeReordonnement = true;
-  _ordreAvantReordonnement = salles.map(function(s) { return s.id; });
-  var btnR = document.getElementById('btn-reordonner-salles');
-  var divA = document.getElementById('reordonner-actions');
-  if (btnR) btnR.style.display = 'none';
+function _entrerModeEditionPlan() {
+  _modeEditionPlan = true;
+  _salleConfirmSuppr = null;
+  _ordreAvantEdition = salles.map(function(s) { return s.id; });
+  var btnM = document.getElementById('btn-modifier-plan');
+  var divA = document.getElementById('plan-edit-actions');
+  if (btnM) btnM.style.display = 'none';
   if (divA) divA.style.display = 'flex';
-  var btnS = document.getElementById('btn-supprimer-salle');
-  if (btnS) btnS.style.display = 'none';
   afficherPlan();
 }
 
-function _quitterModeReordonnement() {
-  _modeReordonnement = false;
-  _ordreAvantReordonnement = null;
-  var btnR = document.getElementById('btn-reordonner-salles');
-  var divA = document.getElementById('reordonner-actions');
-  if (btnR) btnR.style.display = '';
+function _quitterModeEditionPlan() {
+  _modeEditionPlan = false;
+  _salleConfirmSuppr = null;
+  _ordreAvantEdition = null;
+  var btnM = document.getElementById('btn-modifier-plan');
+  var divA = document.getElementById('plan-edit-actions');
+  if (btnM) btnM.style.display = '';
   if (divA) divA.style.display = 'none';
-  var btnS = document.getElementById('btn-supprimer-salle');
-  if (btnS) btnS.style.display = '';
   afficherPlan();
 }
 
@@ -104,6 +103,33 @@ function deplacerSalle(index, direction) {
   salles[index] = salles[cible];
   salles[cible] = tmp;
   afficherPlan();
+}
+
+function _confirmerSupprSalle(id) {
+  _salleConfirmSuppr = (_salleConfirmSuppr === id) ? null : id;
+  afficherPlan();
+}
+
+async function _supprimerSalleEdit(id) {
+  salles = salles.filter(function(s) { return s.id !== id; });
+  if (salleActive && salleActive.id === id) salleActive = null;
+  _salleConfirmSuppr = null;
+  var btnA = document.getElementById('btn-appliquer-plan');
+  if (btnA) btnA.disabled = true;
+  try {
+    await sauvegarder('[admin] Suppression salle', '✓ Salle supprimée');
+    afficherPlan();
+    if (salles.length) selectSalle(salles[0].id);
+    else {
+      var murBg = document.getElementById('mur-bg');
+      var stockList = document.getElementById('stock-list');
+      var badge = document.getElementById('badge-salle');
+      if (murBg) murBg.innerHTML = '';
+      if (stockList) stockList.innerHTML = '';
+      if (badge) badge.textContent = '—';
+    }
+  } catch(e) { toast('Erreur : ' + e.message, 'err'); }
+  finally { if (btnA) btnA.disabled = false; }
 }
 
 function afficherPlan() {
@@ -129,28 +155,70 @@ function afficherPlan() {
       badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
       chip.appendChild(badge);
     }
-    if (_modeReordonnement) {
-      chip.classList.add('reorder');
+    if (_modeEditionPlan) {
+      chip.classList.add('edit-mode');
       var idx = salles.indexOf(s);
-      var wrap = document.createElement('div');
-      wrap.className = 'chip-mv-wrap';
-      var btnG = document.createElement('button');
-      btnG.className = 'chip-mv';
-      btnG.textContent = '←';
-      btnG.title = 'Déplacer à gauche';
-      btnG.disabled = (idx === 0);
-      btnG.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(idx, -1); });
-      var btnD = document.createElement('button');
-      btnD.className = 'chip-mv';
-      btnD.textContent = '→';
-      btnD.title = 'Déplacer à droite';
-      btnD.disabled = (idx === salles.length - 1);
-      btnD.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(idx, 1); });
-      wrap.appendChild(btnG);
-      wrap.appendChild(btnD);
-      chip.style.display = 'flex';
-      chip.style.alignItems = 'center';
-      chip.appendChild(wrap);
+
+      /* ✕ Supprimer (coin haut-gauche) */
+      if (_salleConfirmSuppr === s.id) {
+        /* État confirmation */
+        chip.classList.add('confirming');
+        chip.style.display = 'flex';
+        chip.style.alignItems = 'center';
+        chip.style.gap = '5px';
+        chip.innerHTML = '';
+        var lbl = document.createElement('span');
+        lbl.className = 'chip-conf-lbl';
+        lbl.textContent = 'Supprimer ?';
+        var btnOk = document.createElement('button');
+        btnOk.className = 'chip-conf-btn ok';
+        btnOk.textContent = '✓';
+        btnOk.title = 'Confirmer la suppression';
+        btnOk.addEventListener('click', function(e) { e.stopPropagation(); _supprimerSalleEdit(s.id); });
+        var btnNo = document.createElement('button');
+        btnNo.className = 'chip-conf-btn no';
+        btnNo.textContent = '✗';
+        btnNo.title = 'Annuler';
+        btnNo.addEventListener('click', function(e) { e.stopPropagation(); _confirmerSupprSalle(s.id); });
+        chip.appendChild(lbl);
+        chip.appendChild(btnOk);
+        chip.appendChild(btnNo);
+      } else {
+        /* État normal en mode édition */
+        var btnDel = document.createElement('button');
+        btnDel.className = 'chip-del';
+        btnDel.textContent = '✕';
+        btnDel.title = 'Supprimer cette salle';
+        (function(sid) {
+          btnDel.addEventListener('click', function(e) { e.stopPropagation(); _confirmerSupprSalle(sid); });
+        })(s.id);
+        chip.appendChild(btnDel);
+
+        /* ← → réordonnement */
+        var wrap = document.createElement('div');
+        wrap.className = 'chip-mv-wrap';
+        var btnG = document.createElement('button');
+        btnG.className = 'chip-mv';
+        btnG.textContent = '←';
+        btnG.title = 'Déplacer à gauche';
+        btnG.disabled = (idx === 0);
+        (function(i) {
+          btnG.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(i, -1); });
+        })(idx);
+        var btnD = document.createElement('button');
+        btnD.className = 'chip-mv';
+        btnD.textContent = '→';
+        btnD.title = 'Déplacer à droite';
+        btnD.disabled = (idx === salles.length - 1);
+        (function(i) {
+          btnD.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(i, 1); });
+        })(idx);
+        wrap.appendChild(btnG);
+        wrap.appendChild(btnD);
+        chip.style.display = 'flex';
+        chip.style.alignItems = 'center';
+        chip.appendChild(wrap);
+      }
     } else {
       chip.addEventListener('click', () => selectSalle(s.id));
     }

@@ -814,46 +814,29 @@ document.querySelectorAll('.sous-nav-btn').forEach(btn => {
 });
 
 // Plan salles
-// Réordonnement salles
-document.getElementById('btn-reordonner-salles')?.addEventListener('click', function() {
-  if (typeof _entrerModeReordonnement === 'function') _entrerModeReordonnement();
+document.getElementById('btn-modifier-plan')?.addEventListener('click', function() {
+  if (typeof _entrerModeEditionPlan === 'function') _entrerModeEditionPlan();
 });
-document.getElementById('btn-annuler-ordre')?.addEventListener('click', function() {
-  /* Restaurer l'ordre original */
-  if (_ordreAvantReordonnement && typeof _ordreAvantReordonnement !== 'undefined') {
-    var ordreRef = _ordreAvantReordonnement.slice();
+document.getElementById('btn-annuler-plan')?.addEventListener('click', function() {
+  if (typeof _ordreAvantEdition !== 'undefined' && _ordreAvantEdition) {
+    var ordreRef = _ordreAvantEdition.slice();
     salles.sort(function(a, b) {
       return ordreRef.indexOf(a.id) - ordreRef.indexOf(b.id);
     });
   }
-  if (typeof _quitterModeReordonnement === 'function') _quitterModeReordonnement();
+  if (typeof _quitterModeEditionPlan === 'function') _quitterModeEditionPlan();
 });
-document.getElementById('btn-appliquer-ordre')?.addEventListener('click', async function() {
+document.getElementById('btn-appliquer-plan')?.addEventListener('click', async function() {
   var btn = this;
   btn.disabled = true;
   try {
-    await sauvegarder('[admin] Réordonnement des salles', '✓ Ordre sauvegardé');
-    if (typeof _quitterModeReordonnement === 'function') _quitterModeReordonnement();
+    await sauvegarder('[admin] Ordre des salles modifié', '✓ Ordre sauvegardé');
+    if (typeof _quitterModeEditionPlan === 'function') _quitterModeEditionPlan();
   } catch(e) { toast('Erreur : ' + e.message, 'err'); }
   finally { btn.disabled = false; }
 });
 
 $('btn-ajouter-salle')?.addEventListener('click', () => ouvrirModalSalle()); /* défensif : élément retiré du DOM, chip "＋ Salle" prend le relais */
-$('btn-supprimer-salle').addEventListener('click', async () => {
-  if (!salleActive) return;
-  if (!confirm(`Supprimer "${salleActive.nom}" et toutes ses positions ? Réversible via le backup.`)) return;
-  salles = salles.filter(s => s.id !== salleActive.id);
-  salleActive = null;
-  const btnDel = $('btn-supprimer-salle');
-  btnDel.disabled = true;
-  try {
-    await sauvegarder('[admin] Suppression salle', '✓ Salle supprimée');
-    if (typeof afficherPlan === 'function') afficherPlan();
-    if (salles.length) selectSalle(salles[0].id);
-    else { $('mur-bg').innerHTML = ''; $('stock-list').innerHTML = ''; $('badge-salle').textContent = '—'; }
-  } catch (e) { toast('Erreur : ' + e.message, 'err'); }
-  finally { btnDel.disabled = false; }
-});
 // ── Système popover (1 popover ouvert max, fermeture clic dehors / Échap) ──
 let _popoverOuvert = null;
 function fermerPopover() {
@@ -951,17 +934,6 @@ $('btn-vider-annuler')?.addEventListener('click', () => fermerModalViderSalles()
 $('btn-vider-valider')?.addEventListener('click', () => validerViderSalles());
 $('overlay-vider-salles')?.addEventListener('click', function(e) {
   if (e.target === this) fermerModalViderSalles();
-});
-// Plan repliable
-let planOuvert = true;
-$('btn-toggle-plan').addEventListener('click', () => {
-  planOuvert = !planOuvert;
-  const chips = $('chips-salles');
-  const btns = document.querySelector('.plan-actions').querySelectorAll('.plan-btn');
-  chips.style.display = planOuvert ? '' : 'none';
-  btns.forEach(b => b.style.display = planOuvert ? '' : 'none');
-  $('btn-toggle-plan').textContent = planOuvert ? '▲' : '▼';
-  $('plan-section').style.minHeight = planOuvert ? '' : '0';
 });
 $('btn-rename').addEventListener('click', async () => {
   const nom = $('inp-rename').value.trim();
