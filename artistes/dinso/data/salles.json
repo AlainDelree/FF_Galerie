@@ -13,9 +13,8 @@
       "visible": true,
       "toiles": [
         1,
-        2,
-        3,
-        9
+        9,
+        4
       ],
       "positions": [
         {
@@ -25,22 +24,16 @@
           "gabarit": "SOL"
         },
         {
-          "id": 2,
-          "x": 39.69984447900467,
-          "y": 29.479989189985996,
-          "gabarit": "S"
-        },
-        {
-          "id": 3,
-          "x": 88,
-          "y": 31,
-          "gabarit": "L"
-        },
-        {
           "id": 9,
           "x": 67,
           "y": 52,
           "gabarit": "M"
+        },
+        {
+          "id": 4,
+          "x": 47,
+          "y": 48,
+          "gabarit": "S"
         }
       ],
       "positions_mobile": [
@@ -51,16 +44,16 @@
           "gabarit": "SOL"
         },
         {
-          "id": 2,
-          "x": 22.383827162987348,
-          "y": 5,
-          "gabarit": "S"
-        },
-        {
           "id": 3,
           "x": 88,
           "y": 31,
           "gabarit": "L"
+        },
+        {
+          "id": 4,
+          "x": 55.197889182058056,
+          "y": 12.972027972027973,
+          "gabarit": "S"
         }
       ],
       "greffons": {
@@ -164,13 +157,21 @@
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        3
+        3,
+        5
       ],
       "positions": [
         {
           "id": 3,
           "col": 6,
           "row": 3,
+          "w": 2,
+          "h": 2
+        },
+        {
+          "id": 5,
+          "col": 9,
+          "row": 6,
           "w": 2,
           "h": 2
         }
