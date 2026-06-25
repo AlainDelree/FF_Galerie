@@ -361,11 +361,27 @@
       "couleur_mur": "#2a2520",
       "couleur_mur_piece": "#1a1a1a",
       "couleur_mur_bas": "#111111",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [],
       "positions": [],
-      "positions_mobile": []
+      "positions_mobile": [],
+      "greffons": {
+        "immersive": {
+          "actif": true
+        },
+        "descriptive": {
+          "actif": true,
+          "decor": {
+            "pan_a": "#e0ccf0",
+            "pan_b": "#17c1c6",
+            "pan_c": "#c0eccc",
+            "pan_d": "#f5730a"
+          }
+        }
+      }
     }
   ]
 }
