@@ -508,7 +508,13 @@ function construireFavoris() {
   favoris.forEach(function(f) {
     var chip = document.createElement('button');
     chip.type = 'button'; chip.className = 'dim-chip';
-    chip.textContent = f.l + '\u00d7' + f.h;
+    /* M2 / amélioration : code taille en label principal (XS, M, XL...)
+       avec dimensions en sous-texte discret. Plus parlant que le format
+       châssis français pour l'artiste qui pense en termes de catégories. */
+    var codeTxt = f.taille || autoComputeTaille(f.l, f.h) || '?';
+    var dimTxt  = f.l + '\u00d7' + f.h;
+    chip.innerHTML = '<span class="dim-chip-code">' + codeTxt + '</span>' +
+                     '<span class="dim-chip-dim">' + dimTxt + '</span>';
     chip.dataset.l = f.l; chip.dataset.h = f.h; chip.dataset.taille = f.taille;
     chip.addEventListener('click', function() {
       $('inp-larg').value = f.l; $('inp-haut').value = f.h;
