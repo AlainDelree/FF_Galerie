@@ -1,0 +1,19 @@
+{
+  "next_id": 2,
+  "gabarits": [],
+  "pieces": [
+    {
+      "id": 1,
+      "photo": "assets/images/toiles/toile-001.jpg",
+      "source_photo": "admin",
+      "titre": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": null,
+      "visible": true,
+      "glb": ""
+    }
+  ]
+}
