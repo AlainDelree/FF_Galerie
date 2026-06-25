@@ -532,6 +532,52 @@ function synchroChips(l, h) {
   });
 }
 
+/* Peuple le dropdown 'Codes taille' avec les codes définis par l'artiste,
+   chaque code accompagné de la dimension la plus utilisée parmi ses toiles.
+   Remplace l'ancien dropdown 'Formats châssis français' statique. */
+function peuplerSelectFormatCodes() {
+  var sel = $('sel-format'); if (!sel) return;
+  /* Réservé peinture : en sculpture, cette zone est masquée */
+  var _typeAct = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || window.ADMIN_TYPE || 'peinture';
+  if (_typeAct === 'sculpture') return;
+
+  /* Récupère la liste des codes : tailles[] définies par l'artiste */
+  var tailles = (typeof _taillesParType !== 'undefined' && _taillesParType.peinture)
+    ? _taillesParType.peinture
+    : (typeof window.tailles !== 'undefined' ? window.tailles : []);
+
+  /* Pour chaque code, compte les dimensions utilisées (l×h → fréquence) */
+  var dimsParCode = {};
+  toiles.forEach(function(t) {
+    if (((t._type)||window.ADMIN_TYPE||'peinture') !== 'peinture') return;
+    if (!t.taille || !t.dimensions || !t.dimensions.largeur || !t.dimensions.hauteur) return;
+    if (t.dimensions.type === 'ronde') return;
+    var c = t.taille;
+    var k = t.dimensions.largeur + 'x' + t.dimensions.hauteur;
+    if (!dimsParCode[c]) dimsParCode[c] = {};
+    dimsParCode[c][k] = (dimsParCode[c][k] || 0) + 1;
+  });
+
+  /* Vide et reconstruit les options dans l'ordre des tailles[] (XXS, XS, M, XL, XXL, E) */
+  sel.innerHTML = '<option value="">Choisir…</option>';
+  tailles.forEach(function(t) {
+    var code = t.code;
+    var dims = dimsParCode[code];
+    if (!dims) return; /* code défini mais aucune toile l'utilise → on saute */
+    /* Choisir la dimension la plus fréquente */
+    var meilleur = null, meilleurNb = 0;
+    Object.keys(dims).forEach(function(k) {
+      if (dims[k] > meilleurNb) { meilleur = k; meilleurNb = dims[k]; }
+    });
+    if (!meilleur) return;
+    var opt = document.createElement('option');
+    opt.value = meilleur;
+    var dimAff = meilleur.replace('x', '\u00d7');
+    opt.textContent = code + ' — ' + dimAff + ' cm' + (t.label ? ' (' + t.label + ')' : '');
+    sel.appendChild(opt);
+  });
+}
+
 function autoComputeTaille(l, h) {
   if (!l || !h) return '';
   for (var i = 0; i < toiles.length; i++) {
@@ -591,10 +637,8 @@ function afficherTailleAuto(code) {
 $('sel-format').addEventListener('change', function() {
   var fv = this.value;
   if (!fv) return;
-  if (fv === 'ronde50') {
-    $('inp-larg').value = ''; $('inp-haut').value = '';
-    synchroChips(0, 0); afficherTailleAuto(''); return;
-  }
+  /* Format: 'LxH' (ex: '40x50') — les options sont peuplées dynamiquement par
+     peuplerSelectFormatCodes() depuis les codes taille + dimensions courantes. */
   var parts = fv.split('x');
   if (parts.length === 2) {
     var l = parseInt(parts[0]), h = parseInt(parts[1]);
@@ -607,7 +651,7 @@ $('sel-format').addEventListener('change', function() {
 $('btn-toggle-chassis').addEventListener('click', function() {
   var open = $('dims-chassis').style.display !== 'none';
   $('dims-chassis').style.display = open ? 'none' : '';
-  this.textContent = (open ? '\u25b8' : '\u25be') + ' Formats ch\u00e2ssis fran\u00e7ais';
+  this.textContent = (open ? '\u25b8' : '\u25be') + ' Codes taille';
 });
 
 $('btn-taille-modifier').addEventListener('click', function() {

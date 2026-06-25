@@ -1826,6 +1826,7 @@ function ouvrirFormulaireNouvel(typeOpt) {
   photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
+  if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
   var mb = $('overlay-toile').querySelector('.modal-body');
@@ -1879,6 +1880,7 @@ function ouvrirFormulaireEdition(id, typeOpt) {
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
   construireFavoris();
+  if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
   var mb = $('overlay-toile').querySelector('.modal-body');

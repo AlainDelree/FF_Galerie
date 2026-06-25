@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260625z">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260626a">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -687,22 +687,11 @@
           <div class="grp"><label class="lbl">Hauteur cm</label><input class="champ" type="number" id="inp-haut" min="1" max="500" placeholder="ex: 60"></div>
           <div class="grp sculpture-only" style="display:none;"><label class="lbl">Profondeur cm</label><input class="champ" type="number" id="inp-prof" min="1" max="500" placeholder="ex: 30"></div>
         </div>
-        <!-- Formats châssis français (replié par défaut) -->
-        <button type="button" id="btn-toggle-chassis" class="chassis-toggle peinture-only">▸ Formats châssis français</button>
+        <!-- Codes taille (replié par défaut) — peuplé dynamiquement depuis tailles[] + toiles[] -->
+        <button type="button" id="btn-toggle-chassis" class="chassis-toggle peinture-only">▸ Codes taille</button>
         <div id="dims-chassis" class="peinture-only" style="display:none;margin-top:.3rem;">
           <select class="champ" id="sel-format">
             <option value="">Choisir…</option>
-            <option value="35x27">F5 — 35×27 cm</option>
-            <option value="55x46">F10 — 55×46 cm</option>
-            <option value="65x54">F15 — 65×54 cm</option>
-            <option value="73x60">F20 — 73×60 cm</option>
-            <option value="81x65">F25 — 81×65 cm</option>
-            <option value="92x73">F30 — 92×73 cm</option>
-            <option value="73x50">P20 — 73×50 cm</option>
-            <option value="92x60">P30 — 92×60 cm</option>
-            <option value="50x50">Carré 50 — 50×50 cm</option>
-            <option value="60x60">Carré 60 — 60×60 cm</option>
-            <option value="ronde50">Ronde ⌀50 cm</option>
           </select>
         </div>
       </div>
