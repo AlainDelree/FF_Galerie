@@ -588,10 +588,46 @@ async function renderImmersiveApercu(canvas, piece, decor) {
       });
     } catch(e) {}
   } else if (glbSrc === null) {
-    /* Placeholder box */
-    var phMat = new THREE.MeshStandardMaterial({ color: 0x7a5028, roughness: 0.6 });
-    var ph = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.4), phMat);
-    ph.position.y = 1.4; ph.castShadow = true; scene.add(ph);
+    /* Pas de GLB — cadre suspendu avec la photo de la pièce, ou boîte neutre */
+    var photoUrl = (piece && piece.photo)
+      ? (/^https?:\/\//.test(piece.photo) ? piece.photo
+          : ((window.GALERIE_CFG && window.GALERIE_CFG.assetsBase) || '') + piece.photo)
+      : null;
+    if (photoUrl) {
+      var texLoader = new THREE.TextureLoader();
+      texLoader.load(photoUrl, function(tex) {
+        var imgW = (tex.image && tex.image.naturalWidth)  || tex.image.width  || 3;
+        var imgH = (tex.image && tex.image.naturalHeight) || tex.image.height || 4;
+        var aspect = imgW / imgH;
+        var fH = 0.75, fW = fH * aspect;
+        var border = 0.03;
+        /* Cadre (moulure dorée) */
+        var cadreM = new THREE.MeshStandardMaterial({ color: 0xc8a050, roughness: 0.4, metalness: 0.5 });
+        var cadreG = new THREE.BoxGeometry(fW + border * 2, fH + border * 2, 0.02);
+        var cadreMesh = new THREE.Mesh(cadreG, cadreM);
+        cadreMesh.position.set(0, 1.55, 0); cadreMesh.castShadow = true; scene.add(cadreMesh);
+        /* Photo (plane légèrement devant le cadre) */
+        var photoM = new THREE.MeshBasicMaterial({ map: tex });
+        var photoG = new THREE.PlaneGeometry(fW, fH);
+        var photoMesh = new THREE.Mesh(photoG, photoM);
+        photoMesh.position.set(0, 1.55, 0.012); scene.add(photoMesh);
+        /* Fil de suspension */
+        var filM = new THREE.LineBasicMaterial({ color: 0xc8a050 });
+        var filPts = [new THREE.Vector3(0, 1.55 + fH / 2 + border, 0), new THREE.Vector3(0, 2.8, 0)];
+        var filG = new THREE.BufferGeometry().setFromPoints(filPts);
+        scene.add(new THREE.Line(filG, filM));
+      }, undefined, function() {
+        /* Erreur chargement photo → boîte neutre */
+        var phM = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.7 });
+        var phMesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.04), phM);
+        phMesh.position.y = 1.55; scene.add(phMesh);
+      });
+    } else {
+      /* Ni GLB ni photo — boîte neutre sobre */
+      var phMat2 = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.7 });
+      var ph2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.04), phMat2);
+      ph2.position.y = 1.55; ph2.castShadow = true; scene.add(ph2);
+    }
   }
 
   /* Boucle */
