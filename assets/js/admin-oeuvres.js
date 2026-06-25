@@ -94,10 +94,22 @@ function afficherOeuvres() {
   var container = document.getElementById('oeuvres-list');
   if (!container) return;
 
-  /* Détecter les types présents (à partir de _taillesParType chargé par
-     admin.js, OU à partir des _type vus dans toiles[]). Si un seul type
-     → layout single-colonne historique. Si plusieurs → une colonne par type. */
-  var typesPresents = Object.keys(typeof _taillesParType !== 'undefined' ? _taillesParType : {});
+  /* Détecter les types présents : union de
+     (a) types des œuvres existantes (_taillesParType chargé par admin.js)
+     (b) types des SALLES (un artiste peut avoir des salles d'un type
+         sans avoir encore créé d'œuvre de ce type — il doit pouvoir).
+     Garantit aussi qu'au moins le type principal de l'admin est présent. */
+  var _typesSet = {};
+  if (typeof _taillesParType !== 'undefined') {
+    Object.keys(_taillesParType).forEach(function(t) { _typesSet[t] = true; });
+  }
+  if (typeof salles !== 'undefined' && Array.isArray(salles)) {
+    salles.forEach(function(s) {
+      var t = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
+      if (t) _typesSet[t] = true;
+    });
+  }
+  var typesPresents = Object.keys(_typesSet);
   if (typesPresents.length === 0) {
     typesPresents = [(typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture')];
   }
