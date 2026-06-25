@@ -288,7 +288,7 @@ function listeOeuvres(opts) {
     }
 
     if (showSalle) {
-      var nomS = _loNomSalle(t.id, salleRef);
+      var nomS = _loNomSalle(t.id, salleRef, itemType);
       if (nomS) {
         var salleEl = document.createElement('div');
         salleEl.className = 'lo-meta lo-salle-lbl';
@@ -329,12 +329,20 @@ function listeOeuvres(opts) {
 }
 
 /* Nom de la salle qui contient l'œuvre (hors salle courante) */
-function _loNomSalle(oeuvreId, salleCourante) {
+function _loNomSalle(oeuvreId, salleCourante, typeOeuvre) {
+  /* Filtre crucial par TYPE : peinture #N et sculpture #N peuvent coexister.
+     Sans ce filtre, une sculpture #3 trouverait la salle peinture qui contient
+     la peinture #3 et afficherait son nom à tort. */
   var all = Array.isArray(salles) ? salles : [];
   var idC = salleCourante ? salleCourante.id : -Infinity;
+  var typeAdm = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+  var typeRech = typeOeuvre || typeAdm;
   var s = null;
   for (var i = 0; i < all.length; i++) {
     if (all[i].id === idC) continue;
+    /* Salle d'un autre type : impossible qu'elle contienne notre œuvre */
+    var typeSalle = all[i].type || typeAdm;
+    if (typeSalle !== typeRech) continue;
     var inPos  = (all[i].positions        || []).some(function(p) { return p.id === oeuvreId; });
     var inMob  = (all[i].positions_mobile || []).some(function(p) { return p.id === oeuvreId; });
     if (inPos || inMob) { s = all[i]; break; }

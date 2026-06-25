@@ -26,23 +26,27 @@ async function chargerCommits() {
        pas seulement les modifs de catalogue. On inclut les commits qui touchent l'ANCIEN
        path (data/toiles.json) ET le NOUVEAU (data/oeuvres/<type>.json) pour conserver
        l'historique pré-migration. */
-    var oeuvresPath = (typeof _oeuvresPath === 'function') ? _oeuvresPath() : (ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json');
+    /* Multi-types : on suit data/oeuvres/peinture.json ET data/oeuvres/sculpture.json
+       en parallèle (un admin peut maintenant créer/modifier les deux types).
+       Plus l'ancien path data/toiles.json pour la rétrocompat pré-migration. */
+    var oeuvresPathPeinture = ADMIN_CFG.repoPath + 'oeuvres/peinture.json';
+    var oeuvresPathSculpture = ADMIN_CFG.repoPath + 'oeuvres/sculpture.json';
     /* &sha=${BRANCH} est CRITIQUE : sans lui, l'API GitHub renvoie les
-       commits de la branche par défaut (main), pas de dev. La liste backup
-       affichait donc les vieux commits de main au lieu des commits récents
-       de dev. Bug latent du code original, démasqué par la migration. */
-    const urlTnew = `/repos/${REPO}/commits?path=${oeuvresPath}&per_page=50&sha=${BRANCH}`;
-    const urlTold = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50&sha=${BRANCH}`;
-    const urlS    = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50&sha=${BRANCH}`;
-    const [commitsTnew, commitsTold, commitsS] = await Promise.all([
-      apiGH(urlTnew).catch(function() { return []; }),
+       commits de la branche par défaut (main), pas de dev. */
+    const urlTpeint = `/repos/${REPO}/commits?path=${oeuvresPathPeinture}&per_page=50&sha=${BRANCH}`;
+    const urlTsculp = `/repos/${REPO}/commits?path=${oeuvresPathSculpture}&per_page=50&sha=${BRANCH}`;
+    const urlTold   = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}toiles.json&per_page=50&sha=${BRANCH}`;
+    const urlS      = `/repos/${REPO}/commits?path=${ADMIN_CFG.repoPath}salles.json&per_page=50&sha=${BRANCH}`;
+    const [commitsTpeint, commitsTsculp, commitsTold, commitsS] = await Promise.all([
+      apiGH(urlTpeint).catch(function() { return []; }),
+      apiGH(urlTsculp).catch(function() { return []; }),
       apiGH(urlTold).catch(function() { return []; }),
       apiGH(urlS)
     ]);
-    /* Fusion des commits "toiles" anciens et nouveaux */
+    /* Fusion des commits "œuvres" tous types confondus (incluant l'ancien chemin) */
     var seenT = new Set();
     var commitsT = [];
-    [].concat(commitsTnew || [], commitsTold || []).forEach(function(c) {
+    [].concat(commitsTpeint || [], commitsTsculp || [], commitsTold || []).forEach(function(c) {
       if (c && c.sha && !seenT.has(c.sha)) { seenT.add(c.sha); commitsT.push(c); }
     });
     if (!Array.isArray(commitsT) || !Array.isArray(commitsS)) {
@@ -124,30 +128,39 @@ function demanderRestauration(sha, msg, date) {
 async function executerRestauration() {
   const btn = $('btn-restore-ok'); btn.disabled = true; btn.textContent = '⟳ Restauration…';
   try {
-    var oeuvresPath = (typeof _oeuvresPath === 'function') ? _oeuvresPath() : (ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json');
-    /* Lire le stock d'œuvres au commit cible : essaie le nouveau path d'abord,
-       fallback sur l'ancien data/toiles.json si le commit est pré-migration. */
-    async function _lireOeuvresAuCommit() {
+    var pathPeinture  = ADMIN_CFG.repoPath + 'oeuvres/peinture.json';
+    var pathSculpture = ADMIN_CFG.repoPath + 'oeuvres/sculpture.json';
+    var pathOldToiles = ADMIN_CFG.repoPath + 'toiles.json';
+    /* Multi-types : on restaure les DEUX fichiers oeuvres/*.json qui existent
+       au commit cible, plus l'ancien toiles.json si présent (rétrocompat). */
+    async function _lireFichierAuCommitOuNull(path) {
       try {
-        return await apiGH(`/repos/${REPO}/contents/${oeuvresPath}?ref=${commitARestaurer}`);
+        return await apiGH(`/repos/${REPO}/contents/${path}?ref=${commitARestaurer}`);
       } catch (e) {
-        if ((e.message || '').match(/404|Not Found/i)) {
-          return await apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}toiles.json?ref=${commitARestaurer}`);
-        }
+        if ((e.message || '').match(/404|Not Found/i)) return null;
         throw e;
       }
     }
-    const [tf, sf] = await Promise.all([
-      _lireOeuvresAuCommit(),
+    const [fPeint, fSculp, fOld, sf] = await Promise.all([
+      _lireFichierAuCommitOuNull(pathPeinture),
+      _lireFichierAuCommitOuNull(pathSculpture),
+      _lireFichierAuCommitOuNull(pathOldToiles),
       apiGH(`/repos/${REPO}/contents/${ADMIN_CFG.repoPath}salles.json?ref=${commitARestaurer}`)
     ]);
-    /* On écrit toujours dans le NOUVEAU path. Si la restauration vient d'un
-       vieux commit, le contenu sera celui de l'ancien toiles.json mais
-       écrit au nouveau chemin → migration silencieuse. */
-    await commitMulti([
-      { chemin: oeuvresPath, contenu: tf.content.replace(/\n/g, ''), encoding: 'base64' },
+    var fichiersRestaurer = [
       { chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sf.content.replace(/\n/g, ''), encoding: 'base64' }
-    ], `Admin : Restauration vers ${commitARestaurer.substring(0, 7)}`);
+    ];
+    if (fPeint) fichiersRestaurer.push({ chemin: pathPeinture, contenu: fPeint.content.replace(/\n/g, ''), encoding: 'base64' });
+    if (fSculp) fichiersRestaurer.push({ chemin: pathSculpture, contenu: fSculp.content.replace(/\n/g, ''), encoding: 'base64' });
+    /* Si NI nouveau format NI ancien format → on a juste le salles.json (pas idéal mais ne casse rien).
+       Si SEULEMENT l'ancien toiles.json existe (commit pré-migration), on l'écrit dans le NOUVEAU path
+       correspondant au type principal de l'admin → migration silencieuse. */
+    if (!fPeint && !fSculp && fOld) {
+      var typeP = ADMIN_CFG.type || 'peinture';
+      var pathNouveau = ADMIN_CFG.repoPath + 'oeuvres/' + typeP + '.json';
+      fichiersRestaurer.push({ chemin: pathNouveau, contenu: fOld.content.replace(/\n/g, ''), encoding: 'base64' });
+    }
+    await commitMulti(fichiersRestaurer, `Admin : Restauration vers ${commitARestaurer.substring(0, 7)}`);
     $('overlay-restore').classList.remove('ouvert');
     syncBadge('ok');
     toast('✓ Restauration effectuée — rechargement…');

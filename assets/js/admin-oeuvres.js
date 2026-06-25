@@ -6,7 +6,7 @@
 var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
 var _oeuvresSelectionType = null;  /* type associé à l'id sélectionné (multi-types) */
 var _oeuvresRecherche = '';
-var _oeuvresTri       = 'titre';
+var _oeuvresTri       = 'ajout'; /* N° d'ajout (récent en tête) — défaut M6 */
 var _oeuvresTriDesc   = false; /* false = ordre naturel, true = inversé */
 var _oeuvresFiltre    = 'toutes';
 
@@ -94,10 +94,29 @@ function afficherOeuvres() {
   var container = document.getElementById('oeuvres-list');
   if (!container) return;
 
-  /* Détecter les types présents (à partir de _taillesParType chargé par
-     admin.js, OU à partir des _type vus dans toiles[]). Si un seul type
-     → layout single-colonne historique. Si plusieurs → une colonne par type. */
-  var typesPresents = Object.keys(typeof _taillesParType !== 'undefined' ? _taillesParType : {});
+  /* Détecter les types présents : union de
+     (a) types des œuvres en mémoire (toiles[]._type)
+     (b) types des SALLES (artiste avec salle d'un type mais 0 œuvre de
+         ce type — il doit pouvoir créer la première)
+     (c) type principal de l'admin (fallback toujours présent).
+     NOTE : on n'utilise PAS _taillesParType car ses entrées survivent à
+     la suppression de toutes les œuvres d'un type (fichier vide persiste). */
+  var _typesSet = {};
+  var _typeP = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+  _typesSet[_typeP] = true;
+  if (typeof toiles !== 'undefined' && Array.isArray(toiles)) {
+    toiles.forEach(function(t) {
+      var ty = t._type || _typeP;
+      if (ty) _typesSet[ty] = true;
+    });
+  }
+  if (typeof salles !== 'undefined' && Array.isArray(salles)) {
+    salles.forEach(function(s) {
+      var t = s.type || _typeP;
+      if (t) _typesSet[t] = true;
+    });
+  }
+  var typesPresents = Object.keys(_typesSet);
   if (typesPresents.length === 0) {
     typesPresents = [(typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture')];
   }

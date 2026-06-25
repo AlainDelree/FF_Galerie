@@ -19,12 +19,290 @@ function _estSculptEdition() {
   return _typeEdition === 'sculpture';
 }
 
-/* Bascule l'affichage des champs .peinture-only / .sculpture-only DANS
-   le formulaire modal seulement (le reste de l'UI suit ADMIN_CFG.type ou
-   le type de la salle active). */
+/* ── Snapshot de l'état initial (peinture) du formulaire ───────────
+   Capturé UNE FOIS avant la première restructuration sculpture.
+   Permet à _appliquerStructurePeinture() de défaire ce qu'a fait
+   _appliquerStructureSculpture(). */
+var _formSnapInitial = null;
+var _formStructEtat  = 'peinture'; /* 'peinture' | 'sculpture' */
+
+function _capturerSnapshotFormulaire() {
+  if (_formSnapInitial) return;
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+  /* Ordre des .grp directement enfants de body (par ID quand dispo) */
+  var grps = Array.from(body.children).filter(function(el) { return el.classList && el.classList.contains('grp'); });
+  _formSnapInitial = {
+    ordreGrps: grps.map(function(g) { return g.id || ''; }),
+    /* Labels originaux (.lbl) à restaurer */
+    photoGrpLbl: document.getElementById('zone-photo').closest('.grp').querySelector('.lbl').textContent,
+    dimsGrpLbl:  document.querySelector('#dims-lh').closest('.grp').querySelector('.lbl').textContent,
+    photoPh:     (document.getElementById('photo-ph') || {}).textContent || 'Appuyer pour choisir une photo',
+    matPlaceholder: document.getElementById('inp-mat').placeholder,
+    /* zone-glb, inp-glb, glb-thumb-status seront déplacés dans photoGrp ;
+       on doit les remettre dans glbGrp (leur .grp parent original). */
+    glbGrp: document.getElementById('zone-glb').closest('.grp'),
+    photoGrpStyleMaxW: document.getElementById('photo-prev').style.maxWidth,
+    photoGrpStyleMarginT: document.getElementById('photo-prev').style.marginTop,
+    dimsFavorisDisplay: (document.getElementById('dims-favoris') || {}).style ? document.getElementById('dims-favoris').style.display : ''
+  };
+}
+
+/* Applique la mise en page sculpture (sections OBJET/SOCLE/DÉTAILS,
+   GLB+photo dans le même groupe, stepper diamètre socle). Idempotente
+   via flag. Tous les éléments créés ici sont taggés data-sculpt-dyn="1". */
+function _appliquerStructureSculpture() {
+  if (_formStructEtat === 'sculpture') return;
+  _capturerSnapshotFormulaire();
+
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+  var photoGrp = document.getElementById('zone-photo').closest('.grp');
+  var glbGrp   = document.getElementById('zone-glb').closest('.grp');
+  var dimsGrp  = document.querySelector('#dims-lh').closest('.grp');
+  var titreGrp = document.getElementById('inp-titre').closest('.grp');
+  var dateGrp  = document.getElementById('inp-date').closest('.grp');
+  var matGrp   = document.getElementById('inp-mat').closest('.grp');
+  var prixGrp  = document.getElementById('inp-prix').closest('.grp');
+  var descGrp  = document.getElementById('inp-desc').closest('.grp');
+  var visGrp   = document.getElementById('inp-visible').closest('.grp');
+  var typeGrp  = document.getElementById('grp-type-oeuvre');
+  var pillsEl  = document.getElementById('salle-pills');
+  var pillsGrp = pillsEl ? pillsEl.closest('.grp') : null;
+  var zonePhoto = document.getElementById('zone-photo');
+  var prevImg   = document.getElementById('photo-prev');
+
+  function sectionHeader(text) {
+    var h = document.createElement('div');
+    h.dataset.sculptDyn = '1';
+    h.style.cssText = 'font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid rgba(200,160,80,.2);';
+    h.textContent = text;
+    return h;
+  }
+
+  /* Titre + Date AVANT la section Objet — cohérent avec l'ordre peinture
+     (titre apparaît tôt dans le formulaire). M2. */
+  var ancreApresType = typeGrp;
+  if (ancreApresType) {
+    ancreApresType.after(titreGrp);
+    titreGrp.after(dateGrp);
+  } else {
+    body.prepend(dateGrp);
+    body.prepend(titreGrp);
+  }
+
+  /* 1. OBJET */
+  var hdrObjet = sectionHeader('Objet');
+  dateGrp.after(hdrObjet);
+
+  photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb) — facultatif';
+  photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
+  photoGrp.insertBefore(document.getElementById('inp-glb'), zonePhoto);
+  photoGrp.insertBefore(document.getElementById('glb-thumb-status'), zonePhoto);
+  photoGrp.insertBefore(prevImg, zonePhoto);
+  prevImg.style.maxWidth = '200px'; prevImg.style.marginTop = '.5rem';
+
+  var btnChg = document.createElement('button');
+  btnChg.type = 'button'; btnChg.id = 'btn-change-photo-sculpt';
+  btnChg.dataset.sculptDyn = '1';
+  btnChg.textContent = '📷 Changer la photo…';
+  btnChg.style.cssText = 'display:none !important;';
+  btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
+  photoGrp.insertBefore(btnChg, zonePhoto);
+
+  var btnRegen = document.createElement('button');
+  btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
+  btnRegen.dataset.sculptDyn = '1';
+  btnRegen.textContent = '🔄 Recréer depuis le 3D';
+  btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
+  btnRegen.addEventListener('click', async function() {
+    var glbPath = document.getElementById('inp-glb').value;
+    if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
+    btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
+    try {
+      var url = /^https?:\/\//.test(glbPath) ? glbPath : ('/' + glbPath.replace(/^\/+/, ''));
+      var resp = await fetch(url + '?v=' + Date.now());
+      if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
+      var blob = await resp.blob();
+      var blobUrl = URL.createObjectURL(blob);
+      var result = await genererThumbnailGLB(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      photoB64 = result.b64;
+      window.photoEstPng = true;
+      document.getElementById('photo-prev').src = 'data:image/png;base64,' + result.b64;
+      document.getElementById('photo-prev').style.display = 'block';
+      toast('✓ Photo recréée depuis le 3D');
+    } catch (e) {
+      toast('Erreur : ' + e.message, 'err');
+    }
+    btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
+  });
+  photoGrp.insertBefore(btnRegen, zonePhoto);
+
+  var ouSep = document.createElement('div');
+  ouSep.id = 'sculpt-photo-ou';
+  ouSep.dataset.sculptDyn = '1';
+  ouSep.style.cssText = 'font-size:.7rem;color:var(--muted);text-align:center;margin:.5rem 0 .3rem;letter-spacing:.06em;';
+  ouSep.textContent = '— ou téléchargez une photo directement —';
+  photoGrp.insertBefore(ouSep, zonePhoto);
+
+  var photoPh = document.getElementById('photo-ph');
+  if (photoPh) photoPh.textContent = 'Appuyer pour choisir une photo (.jpg / .png)';
+  glbGrp.style.display = 'none';
+
+  hdrObjet.after(photoGrp);
+
+  dimsGrp.querySelector('.lbl').textContent = 'Dimensions de la pièce';
+  document.getElementById('dims-lh').style.display = '';
+  var favEl = document.getElementById('dims-favoris');
+  if (favEl) favEl.style.display = 'none';
+  photoGrp.after(dimsGrp);
+
+  /* 2. SOCLE */
+  var hdrSocle = sectionHeader('Socle');
+  dimsGrp.after(hdrSocle);
+
+  var socleGrp = document.createElement('div');
+  socleGrp.className = 'grp';
+  socleGrp.dataset.sculptDyn = '1';
+  var socleLbl = document.createElement('label');
+  socleLbl.className = 'lbl'; socleLbl.textContent = 'Diamètre (cm)';
+  socleGrp.appendChild(socleLbl);
+
+  var stepper = document.createElement('div');
+  stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
+  var btnStyle = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+
+  var btnMoins = document.createElement('button');
+  btnMoins.type = 'button'; btnMoins.textContent = '−'; btnMoins.style.cssText = btnStyle;
+  var inpDiam = document.createElement('input');
+  inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
+  inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
+  inpDiam.min = '1'; inpDiam.max = '200'; inpDiam.placeholder = 'défaut';
+  var btnPlus = document.createElement('button');
+  btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
+  var unite = document.createElement('span');
+  unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
+
+  btnMoins.addEventListener('click', function() {
+    var v = parseInt(inpDiam.value);
+    if (isNaN(v) || v <= 5) { inpDiam.value = ''; return; }
+    inpDiam.value = v - 5;
+  });
+  btnPlus.addEventListener('click', function() {
+    var v = parseInt(inpDiam.value);
+    if (isNaN(v)) { inpDiam.value = 5; return; }
+    inpDiam.value = Math.min(200, v + 5);
+  });
+
+  stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
+  stepper.appendChild(btnPlus); stepper.appendChild(unite);
+  var btnDefaut = document.createElement('button');
+  btnDefaut.type = 'button'; btnDefaut.textContent = 'Par défaut';
+  btnDefaut.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:.68rem;text-decoration:underline;margin-left:.3rem;padding:0;';
+  btnDefaut.addEventListener('click', function() { inpDiam.value = ''; });
+  stepper.appendChild(btnDefaut);
+  socleGrp.appendChild(stepper);
+
+  hdrSocle.after(socleGrp);
+
+  /* 3. DÉTAILS */
+  var hdrDetails = sectionHeader('Détails');
+  socleGrp.after(hdrDetails);
+
+  document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
+
+  /* M2 : titreGrp et dateGrp déplacés en haut (avant la section Objet),
+     donc retirés de detailsOrder. */
+  var detailsOrder = [matGrp, prixGrp, descGrp, visGrp];
+  if (pillsGrp) detailsOrder.push(pillsGrp);
+  var prev = hdrDetails;
+  detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
+
+  _formStructEtat = 'sculpture';
+}
+
+/* Défait la restructuration sculpture, restaure l'état peinture initial. */
+function _appliquerStructurePeinture() {
+  if (_formStructEtat === 'peinture') return;
+  if (!_formSnapInitial) { _formStructEtat = 'peinture'; return; }
+
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+
+  /* 1. Supprimer tous les éléments dynamiquement créés en sculpture */
+  body.querySelectorAll('[data-sculpt-dyn]').forEach(function(el) {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  });
+
+  /* 2. Restaurer le label photoGrp et le placeholder */
+  var photoGrp = document.getElementById('zone-photo').closest('.grp');
+  if (photoGrp && photoGrp.querySelector('.lbl')) {
+    photoGrp.querySelector('.lbl').textContent = _formSnapInitial.photoGrpLbl;
+  }
+  var photoPh = document.getElementById('photo-ph');
+  if (photoPh) photoPh.textContent = _formSnapInitial.photoPh;
+
+  /* 3. Restaurer le label dimsGrp et l'affichage des favoris */
+  var dimsGrp = document.querySelector('#dims-lh').closest('.grp');
+  if (dimsGrp && dimsGrp.querySelector('.lbl')) {
+    dimsGrp.querySelector('.lbl').textContent = _formSnapInitial.dimsGrpLbl;
+  }
+  var favEl = document.getElementById('dims-favoris');
+  if (favEl) favEl.style.display = _formSnapInitial.dimsFavorisDisplay;
+
+  /* 4. Restaurer placeholder matériaux */
+  document.getElementById('inp-mat').placeholder = _formSnapInitial.matPlaceholder;
+
+  /* 5. Sortir zone-glb, inp-glb, glb-thumb-status de photoGrp et les remettre dans glbGrp */
+  var glbGrp = _formSnapInitial.glbGrp;
+  if (glbGrp) {
+    var zoneGlb = document.getElementById('zone-glb');
+    var inpGlb = document.getElementById('inp-glb');
+    var glbStatus = document.getElementById('glb-thumb-status');
+    if (zoneGlb && zoneGlb.parentNode !== glbGrp) glbGrp.appendChild(zoneGlb);
+    if (inpGlb && inpGlb.parentNode !== glbGrp) glbGrp.appendChild(inpGlb);
+    if (glbStatus && glbStatus.parentNode !== glbGrp) glbGrp.appendChild(glbStatus);
+    glbGrp.style.display = ''; /* peinture : laissé visible mais masqué via .sculpture-only */
+  }
+
+  /* 6. Restaurer le style de prevImg */
+  var prevImg = document.getElementById('photo-prev');
+  if (prevImg) {
+    prevImg.style.maxWidth = _formSnapInitial.photoGrpStyleMaxW || '';
+    prevImg.style.marginTop = _formSnapInitial.photoGrpStyleMarginT || '';
+    /* Le remettre dans zone-photo (sa position d'origine) */
+    var zonePhoto = document.getElementById('zone-photo');
+    if (zonePhoto && prevImg.parentNode !== zonePhoto) {
+      zonePhoto.appendChild(prevImg);
+    }
+  }
+
+  /* 7. Restaurer l'ordre des .grp selon le snapshot */
+  var ordreCible = _formSnapInitial.ordreGrps;
+  var typeGrpFirst = document.getElementById('grp-type-oeuvre');
+  ordreCible.forEach(function(id) {
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && el.classList.contains('grp')) {
+      body.appendChild(el); /* ré-append dans l'ordre du snapshot */
+    }
+  });
+  /* Le sélecteur de type doit rester en premier */
+  if (typeGrpFirst) body.prepend(typeGrpFirst);
+
+  _formStructEtat = 'peinture';
+}
+
+/* Bascule l'affichage des champs .peinture-only / .sculpture-only ET
+   applique la restructuration DOM appropriée. */
 function _appliquerTypeFormulaire(type) {
   _typeEdition = type || ADMIN_CFG.type || 'peinture';
   var estSculpt = (_typeEdition === 'sculpture');
+  /* Restructuration DOM */
+  if (estSculpt) _appliquerStructureSculpture();
+  else            _appliquerStructurePeinture();
+  /* Show/hide des champs */
   var form = document.getElementById('overlay-toile');
   if (form) {
     form.querySelectorAll('.peinture-only').forEach(function(el) {
@@ -33,7 +311,16 @@ function _appliquerTypeFormulaire(type) {
     form.querySelectorAll('.sculpture-only').forEach(function(el) {
       el.style.display = estSculpt ? '' : 'none';
     });
+    /* Code couleur peinture/sculpture sur le modal (repérage visuel) */
+    var modal = form.querySelector('.modal');
+    if (modal) {
+      modal.classList.toggle('type-peinture',  !estSculpt);
+      modal.classList.toggle('type-sculpture',  estSculpt);
+    }
   }
+  /* Synchroniser le sélecteur */
+  var selType = document.getElementById('inp-type-oeuvre');
+  if (selType && selType.value !== _typeEdition) selType.value = _typeEdition;
 }
 
 /* Helper : type de la salle active (peinture/sculpture).
@@ -632,17 +919,35 @@ function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
 function deplacerPeinture(toileId, dCol, dRow) {
   const pos = salleActive.positions.find(p => p.id === toileId);
   if (!pos) return;
-  const newCol = pos.col + dCol, newRow = pos.row + dRow;
-  // Retire temporairement de l'occupancy
+  // Retire temporairement la toile de l'occupancy (sinon on bloque sur soi-même)
   for (let c = pos.col; c < pos.col + pos.w; c++)
     for (let r = pos.row; r < pos.row + pos.h; r++)
       delete occupancy[`${c},${r}`];
-  if (!canPlace(newCol, newRow, pos.w, pos.h, null)) {
-    // Restaure
+
+  /* M4 — Traversée des emplacements occupés : avance pas à pas dans la
+     direction (dCol, dRow) en survolant les toiles déjà posées, jusqu'à
+     trouver une position libre, ou jusqu'au bord du mur. */
+  let newCol = pos.col + dCol;
+  let newRow = pos.row + dRow;
+  let found = false;
+  /* Garde-fou anti-boucle infinie au cas où (dCol, dRow) = (0, 0). */
+  let safety = COLS * ROWS;
+  while (safety-- > 0
+      && newCol >= 1 && newCol + pos.w - 1 <= COLS
+      && newRow >= 1 && newRow + pos.h - 1 <= ROWS) {
+    if (canPlace(newCol, newRow, pos.w, pos.h, null)) { found = true; break; }
+    /* Position dans les limites mais occupée : on traverse et on continue. */
+    newCol += dCol;
+    newRow += dRow;
+    if (dCol === 0 && dRow === 0) break;
+  }
+
+  if (!found) {
+    // Restaure la position d'origine dans l'occupancy
     for (let c = pos.col; c < pos.col + pos.w; c++)
       for (let r = pos.row; r < pos.row + pos.h; r++)
         occupancy[`${c},${r}`] = toileId;
-    toast('Impossible — bord ou emplacement occupé', 'err'); return;
+    toast('Bord du mur atteint', 'err'); return;
   }
   pos.col = newCol; pos.row = newRow;
   buildOccupancy(); afficherMur();
@@ -772,13 +1077,16 @@ function entrerModePlacement() {
     div.querySelector('#arr-ann').addEventListener('click', () => div.remove());
     div.querySelector('#arr-ok').addEventListener('click', () => {
       div.remove();
-      // Retire les toiles de leur ancienne salle
+      // Retire les œuvres de leur ancienne salle — UNIQUEMENT des salles du
+      // même type. Sinon, déplacer la peinture id=4 dans Cuisine retirerait
+      // la sculpture id=4 de Salle E (collision d'ID inter-types).
+      var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
       autresSelectionnees.forEach(id => {
         salles.forEach(s => {
-          if (s.id !== salleActive.id) {
-            s.toiles = s.toiles.filter(tid => tid !== id);
-            s.positions = (s.positions||[]).filter(p => p.id !== id);
-          }
+          if (s.id === salleActive.id) return;
+          if (s.type && s.type !== _typeSalleAct) return;
+          s.toiles = s.toiles.filter(tid => tid !== id);
+          s.positions = (s.positions||[]).filter(p => p.id !== id);
         });
         if (!salleActive.toiles.includes(id)) salleActive.toiles.push(id);
       });
@@ -854,44 +1162,78 @@ function ouvrirArrangerApresConfirm() {
   $('pl-aide').textContent = nbPlacees > 0
     ? 'Cliquez sur un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
     : 'Sélectionnez un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' en bas';
+  /* M5 — affichage / masquage des flèches selon le nombre de salles voisines */
+  _majFlechesNavSalles();
 }
 
+/* M5 — Salle voisine de salleActive (direction = -1 ou +1), null si bord.
+   Navigation entre TOUTES les salles, tous types confondus : ouvrirArrangerApresConfirm
+   gère déjà le dispatch peinture/sculpture (panneau D-pad ↔ ✕, toggle PC/GSM, etc.).
+   Aucune raison de cloisonner la navigation par type. */
+function _salleVoisine(direction) {
+  if (!salleActive || salles.length <= 1) return null;
+  var idx = salles.findIndex(function(s) { return s.id === salleActive.id; });
+  if (idx < 0) return null;
+  var nIdx = idx + direction;
+  if (nIdx < 0 || nIdx >= salles.length) return null;
+  return salles[nIdx];
+}
 
+/* M5 — Mise à jour visibilité + label des flèches */
+function _majFlechesNavSalles() {
+  var prev = document.getElementById('pl-nav-prev');
+  var next = document.getElementById('pl-nav-next');
+  var lbl  = document.getElementById('pl-nav-label');
+  if (!prev || !next) return;
+  prev.style.display = _salleVoisine(-1) ? '' : 'none';
+  next.style.display = _salleVoisine(+1) ? '' : 'none';
+  if (lbl && salleActive) {
+    var idx = salles.findIndex(function(s) { return s.id === salleActive.id; });
+    if (salles.length > 1) {
+      lbl.style.display = '';
+      lbl.textContent = salleActive.nom + ' — ' + (idx+1) + '/' + salles.length;
+    } else {
+      lbl.style.display = 'none';
+    }
+  }
+}
 
-function autoPlacerTout() {
-  if (!salleActive) return;
-  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
-  const aplacer = [...new Set([...poseeIds,...toilesSelectionnees])]
-    .filter(id => !poseeIds.has(id))
-    .map(id => toiles.find(x=>x.id===id)).filter(Boolean);
-
-  if (aplacer.length === 0) { toast("Toutes les toiles sont déjà placées"); return; }
-
-  let placees = 0, impossible = 0;
-  for (const t of aplacer) {
-    const {w,h} = calcCases(t.dimensions);
-    let done = false;
-    outer: for (let r=1; r<=ROWS-h+1; r++) {
-      for (let col=1; col<=COLS-w+1; col++) {
-        if (canPlace(col,r,w,h,null)) {
-          salles.forEach(s => {
-            s.toiles = s.toiles.filter(x=>x!==t.id);
-            s.positions = (s.positions||[]).filter(p=>p.id!==t.id);
+/* M5 — Navigue vers salle voisine (direction -1 ou +1) sans quitter le mode édition.
+   Si modifications non sauvegardées : demande confirmation. */
+function _naviguerSalleArranger(direction) {
+  var cible = _salleVoisine(direction);
+  if (!cible) return;
+  function go() {
+    salleActive = cible;
+    /* Re-render complet via ouvrirArrangerApresConfirm : rebuild occupancy,
+       nouveau snapshot, mur + strip + panneau ctrl mis à jour. */
+    ouvrirArrangerApresConfirm();
+  }
+  if (typeof _arrangerADesModifs === 'function' && _arrangerADesModifs()) {
+    if (!confirm('Modifications non sauvegardées dans « ' + (salleActive.nom||'cette salle') + ' ». Continuer sans sauvegarder ?')) return;
+    /* Restaurer le snapshot avant de quitter — sinon les modifs subsistent en mémoire */
+    if (_arrangerSnapshot) {
+      salleActive.positions        = _arrangerSnapshot.positions;
+      salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
+      salleActive.toiles           = _arrangerSnapshot.toiles;
+      /* Restaurer les supports */
+      if (_arrangerSnapshot.supports) {
+        _arrangerSnapshot.supports.forEach(function(snap) {
+          var t = toiles.find(function(x) {
+            return x.id === snap.id && (x._type || ADMIN_CFG.type) === snap._type;
           });
-          salleActive.positions.push({id:t.id,col,row:r,w,h});
-          salleActive.toiles.push(t.id);
-          for(let cc=col;cc<col+w;cc++) for(let rr=r;rr<r+h;rr++) occupancy[`${cc},${rr}`]=t.id;
-          placees++; done=true; break outer;
-        }
+          if (t) {
+            t.support    = snap.support ? JSON.parse(JSON.stringify(snap.support)) : null;
+            t.sans_socle = snap.sans_socle;
+          }
+        });
       }
     }
-    if (!done) impossible++;
   }
-  afficherMurPlacement(); afficherStripPlacement();
-  toast(impossible>0
-    ? `${placees} placée(s) — ${impossible} ne rentrent pas sur le mur`
-    : `✓ ${placees} toile(s) placée(s)`);
+  go();
 }
+
+
 
 /* Compare l'état actuel au snapshot (= dernier état enregistré).
    Retourne true s'il y a des modifications non sauvegardées. */
@@ -992,7 +1334,11 @@ function majCtrlPanel() {
     panel.classList.remove("active");
     return;
   }
-  var t = toiles.find(function(x){ return x.id === peintureSurMurSel; });
+  /* Lookup avec filtre type de la salle active (cohabitation) */
+  var _typeSalleCtrl = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+  var t = toiles.find(function(x){
+    return x.id === peintureSurMurSel && ((x._type)||ADMIN_CFG.type) === _typeSalleCtrl;
+  });
   panel.classList.add("active");
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
@@ -1151,19 +1497,54 @@ function afficherMurPlacement() {
     bg.appendChild(ov);
   }
 
-  // Cellules vides — colorées vert/rouge si une toile est en attente de placement
-  const _plWH = selectedToilePl ? calcCases(selectedToilePl.dimensions) : null;
+  /* Cellules vides — colorées vert/rouge si une œuvre est en cours de placement
+     OU si une œuvre du mur est sélectionnée (déplacement direct au clic).
+     Le clic dispatch vers placerToilePl (depuis le strip) ou _deplacerPeintureVers
+     (toile du mur). Permet de bouger en diagonale ou en saut, ce que le D-pad ne couvre pas. */
+  var _dimsPourCells = null;
+  if (selectedToilePl) {
+    _dimsPourCells = calcCases(selectedToilePl.dimensions);
+  } else if (peintureSurMurSel !== null) {
+    var _posSel = (salleActive.positions||[]).find(function(p){ return p.id === peintureSurMurSel; });
+    if (_posSel) _dimsPourCells = { w: _posSel.w, h: _posSel.h };
+  }
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
     if (occupancy[`${c},${r}`]) continue;
     const cell = document.createElement('div'); cell.className='cellule';
-    if (_plWH) cell.classList.add(canPlace(c,r,_plWH.w,_plWH.h,null) ? 'cel-ok' : 'cel-ko');
+    if (_dimsPourCells) cell.classList.add(canPlace(c,r,_dimsPourCells.w,_dimsPourCells.h,null) ? 'cel-ok' : 'cel-ko');
     cell.style.gridColumn=c; cell.style.gridRow=r;
     cell.dataset.col=c; cell.dataset.row=r;
     cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
     cell.addEventListener('mouseleave', () => nettoyerSurvolBg('mur-placement'));
-    cell.addEventListener('click', () => placerToilePl(c,r));
+    cell.addEventListener('click', function() {
+      if (selectedToilePl) placerToilePl(c, r);
+      else if (peintureSurMurSel !== null) _deplacerPeintureVers(peintureSurMurSel, c, r);
+    });
     bg.appendChild(cell);
   }
+}
+
+/* Déplace une toile déjà posée vers (col, row). Pose finale toujours validée
+   par canPlace : impossible de poser sur une position occupée. */
+function _deplacerPeintureVers(toileId, col, row) {
+  var pos = (salleActive.positions||[]).find(function(p){ return p.id === toileId; });
+  if (!pos) return;
+  // Retire temporairement de l'occupancy (sinon on bloque sur soi-même)
+  for (var c = pos.col; c < pos.col + pos.w; c++)
+    for (var r = pos.row; r < pos.row + pos.h; r++)
+      delete occupancy[c+','+r];
+  if (!canPlace(col, row, pos.w, pos.h, null)) {
+    // Restaure
+    for (var c2 = pos.col; c2 < pos.col + pos.w; c2++)
+      for (var r2 = pos.row; r2 < pos.row + pos.h; r2++)
+        occupancy[c2+','+r2] = toileId;
+    toast('Emplacement occupé','err');
+    return;
+  }
+  pos.col = col;
+  pos.row = row;
+  buildOccupancy();
+  afficherMurPlacement();
 }
 
 /* Retourne la salle (autre que salleActive) où la pièce est placée, ou null. */
@@ -1345,13 +1726,26 @@ function placerToilePl(col, row) {
 }
 
 function survolCellule(col, row, bgId) {
-  const t = selectedToilePl || selectedToile; if (!t) return;
-  const {w,h} = calcCases(t.dimensions);
-  const ok = canPlace(col,row,w,h,null);
+  /* Détecter les dimensions de l'œuvre actuellement manipulée :
+     - depuis le strip (selectedToilePl) — placement initial
+     - depuis le mur en mode normal (selectedToile) — lecture seule
+     - depuis le mur en mode placement (peintureSurMurSel) — déplacement direct (M4) */
+  var w, h;
+  if (selectedToilePl || selectedToile) {
+    var dims = calcCases((selectedToilePl || selectedToile).dimensions);
+    w = dims.w; h = dims.h;
+  } else if (peintureSurMurSel !== null && salleActive) {
+    var posSel = (salleActive.positions||[]).find(function(p){ return p.id === peintureSurMurSel; });
+    if (!posSel) return;
+    w = posSel.w; h = posSel.h;
+  } else {
+    return;
+  }
+  var ok = canPlace(col, row, w, h, null);
   nettoyerSurvolBg(bgId);
-  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
-    const cell = $(bgId).querySelector(`[data-col="${c}"][data-row="${r}"]`);
-    if (cell) cell.classList.add(ok?'survol':'survol-ko');
+  for (var c = col; c < col + w; c++) for (var r = row; r < row + h; r++) {
+    var cell = $(bgId).querySelector('[data-col="' + c + '"][data-row="' + r + '"]');
+    if (cell) cell.classList.add(ok ? 'survol' : 'survol-ko');
   }
 }
 
@@ -1399,11 +1793,40 @@ function initTailleForm() {
   $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
 }
 
+/* Type majoritaire parmi les œuvres existantes (en cas d'absence d'argument
+   dans ouvrirFormulaireNouvel). Si aucune œuvre, fallback ADMIN_CFG.type. */
+function _typeMajoritaire() {
+  if (typeof toiles === 'undefined' || !toiles.length) {
+    return ADMIN_CFG.type || 'peinture';
+  }
+  var counts = {};
+  toiles.forEach(function(t) {
+    var ty = t._type || ADMIN_CFG.type || 'peinture';
+    counts[ty] = (counts[ty] || 0) + 1;
+  });
+  var maxType = ADMIN_CFG.type || 'peinture';
+  var maxN = -1;
+  Object.keys(counts).forEach(function(ty) {
+    if (counts[ty] > maxN) { maxN = counts[ty]; maxType = ty; }
+  });
+  return maxType;
+}
+
 function ouvrirFormulaireNouvel(typeOpt) {
-  _appliquerTypeFormulaire(typeOpt || ADMIN_CFG.type || 'peinture');
-  toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
+  var typeEffectif = typeOpt || _typeMajoritaire();
+  /* Sélecteur de type visible en création */
+  var grpType = document.getElementById('grp-type-oeuvre');
+  if (grpType) grpType.style.display = '';
+  _appliquerTypeFormulaire(typeEffectif);
+  toileEnEdition = null;
+  /* Salle pré-sélectionnée UNIQUEMENT si le type de salleActive correspond
+     au type de l'œuvre créée. Sinon, l'utilisateur doit choisir explicitement. */
+  var _typeSalleAct = salleActive ? (salleActive.type || ADMIN_CFG.type || 'peinture') : null;
+  salleCibleToile = (salleActive && _typeSalleAct === typeEffectif) ? salleActive.id : null;
+  photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
+  if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   viderFormToile();
   $('overlay-toile').classList.add('ouvert');
   var mb = $('overlay-toile').querySelector('.modal-body');
@@ -1412,7 +1835,13 @@ function ouvrirFormulaireNouvel(typeOpt) {
 
 function construirePillsSalle(salleSelId) {
   const pills = $('salle-pills'); if (!pills) return; pills.innerHTML = '';
+  /* Filtre par type : une sculpture ne peut être placée que dans une salle
+     sculpture, et inversement. Évite d'envoyer une sculpture en "Cuisine"
+     (salle peinture) ou vice-versa. */
+  var typeForm = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   salles.forEach(s => {
+    var typeSalle = s.type || ADMIN_CFG.type || 'peinture';
+    if (typeSalle !== typeForm) return;
     const p = document.createElement('button');
     p.className = 'salle-pill'; p.type = 'button';
     p.dataset.salle = s.id; p.textContent = s.nom;
@@ -1440,6 +1869,10 @@ function ouvrirFormulaireEdition(id, typeOpt) {
   if (!t) return;
   /* Type de l'œuvre éditée (multi-types). Fallback sur ADMIN_CFG.type
      pour la rétrocompat avec les anciennes œuvres sans _type. */
+  /* Sélecteur de type masqué en édition (on ne change pas le type d'une
+     œuvre existante — il faudrait migrer entre fichiers JSON séparés). */
+  var grpType = document.getElementById('grp-type-oeuvre');
+  if (grpType) grpType.style.display = 'none';
   _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   const salleDeLaToile = _salleContenantOeuvre(id, _typeEdition)?.id || salleActive?.id || null;
@@ -1447,6 +1880,7 @@ function ouvrirFormulaireEdition(id, typeOpt) {
   salleCibleToile = salleDeLaToile;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
   construireFavoris();
+  if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   remplirFormToile(t);
   $('overlay-toile').classList.add('ouvert');
   var mb = $('overlay-toile').querySelector('.modal-body');
@@ -1554,7 +1988,10 @@ function viderFormToile() {
   $('btn-recadrer-photo').classList.remove('visible');
   const pq = $('photo-qualite'); if (pq) { pq.style.display = 'none'; pq.textContent = ''; }
   document.querySelectorAll('.salle-pill').forEach(p => p.classList.remove('sel'));
-  salleCibleToile = salleActive?.id || null;
+  /* Salle pré-sélectionnée seulement si type compatible (cf. ouvrirFormulaireNouvel) */
+  var _typeForm = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
+  var _typeSalleA = salleActive ? (salleActive.type || ADMIN_CFG.type || 'peinture') : null;
+  salleCibleToile = (salleActive && _typeSalleA === _typeForm) ? salleActive.id : null;
   document.querySelectorAll('.salle-pill').forEach(p => {
     if (parseInt(p.dataset.salle) === salleCibleToile) p.classList.add('sel');
   });
@@ -1714,9 +2151,9 @@ async function sauverToile() {
       var _ext = window.photoEstPng ? 'png' : 'jpg';
       var _mime = window.photoEstPng ? 'image/png' : 'image/jpeg';
       let photo = '';
-      if (photoB64) photo = await uploaderPhoto(id, photoB64, _ext);
+      if (photoB64) photo = await uploaderPhoto(id, photoB64, _ext, _typeEdition);
       let glb = donnees.glb || '';
-      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64); }
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(id, glbB64, _typeEdition); }
       const t = { id, photo, source_photo: 'admin', ...donnees, glb };
       /* _type est essentiel : il détermine dans quel fichier
          data/oeuvres/<type>.json l'œuvre sera écrite. Sans ça, une
@@ -1737,9 +2174,9 @@ async function sauverToile() {
       const idx = toiles.findIndex(x => x.id === toileEnEdition && typeDeLOeuvre(x) === _typeEdition);
       var _extE = window.photoEstPng ? 'png' : 'jpg';
       let photo = toiles[idx].photo;
-      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE);
+      if (photoB64) photo = await uploaderPhoto(toileEnEdition, photoB64, _extE, _typeEdition);
       let glb = donnees.glb || toiles[idx].glb || '';
-      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64); }
+      if (glbB64) { toast('Upload GLB…'); glb = await uploaderGLB(toileEnEdition, glbB64, _typeEdition); }
       // Protection dimensions : si les cases changent, retirer du mur
       const ancienDim = toiles[idx].dimensions;
       const nouvelDim = donnees.dimensions;
@@ -1859,15 +2296,36 @@ function ouvrirModalSalle() {
     if ([...selCopier.options].some(o => o.value === valActuelle)) selCopier.value = valActuelle;
     else selCopier.value = '';
   }
-  // Type par défaut : type de l'admin courant
+  // Type par défaut : type majoritaire des salles existantes ou type de l'admin
   const selType = $('inp-salle-type');
-  const typeDef = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
+  function _typeMajoritaireSalles() {
+    if (!salles.length) return ADMIN_CFG.type || 'peinture';
+    var counts = { peinture: 0, sculpture: 0 };
+    salles.forEach(function(s) {
+      var t = s.type || ADMIN_CFG.type || 'peinture';
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    return counts.sculpture > counts.peinture ? 'sculpture' : 'peinture';
+  }
+  const typeDef = _typeMajoritaireSalles();
+  // Helper pour appliquer le code couleur + adapter le titre
+  function _appliquerCouleurModalSalle(type) {
+    var modal = document.querySelector('#overlay-salle .modal');
+    if (!modal) return;
+    modal.classList.toggle('type-peinture',  type !== 'sculpture');
+    modal.classList.toggle('type-sculpture', type === 'sculpture');
+    var titEl = modal.querySelector('.modal-tit');
+    if (titEl) titEl.textContent = (type === 'sculpture' ? 'Nouvelle salle sculpture' : 'Nouvelle salle peinture');
+  }
   if (selType) {
     selType.value = typeDef;
-    // Rafraîchir la liste à chaque changement de type (évite clonage cross-type)
-    selType.onchange = function() { _peuplerSelCopier(selType.value); };
+    selType.onchange = function() {
+      _peuplerSelCopier(selType.value);
+      _appliquerCouleurModalSalle(selType.value);
+    };
   }
   _peuplerSelCopier(typeDef);
+  _appliquerCouleurModalSalle(typeDef);
   $('overlay-salle').classList.add('ouvert');
 }
 
@@ -2116,9 +2574,12 @@ function placerPieceSolViaIframe(x, y) {
   var gab = _gabaritSculpt(piece.dimensions?.hauteur);
   var pos = _getPositions();
 
-  /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) */
+  /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) — UNIQUEMENT
+     du même type. Cohabitation : sculpture #N et peinture #N ont le même id. */
+  var _typeSalleActP = salleActive.type || ADMIN_CFG.type || 'sculpture';
   salles.forEach(function(s) {
     if (s.id === salleActive.id) return;
+    if (s.type && s.type !== _typeSalleActP) return;
     if (s.positions)        s.positions        = s.positions.filter(function(p) { return p.id !== piece.id; });
     if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(function(p) { return p.id !== piece.id; });
     if (s.toiles)           s.toiles           = s.toiles.filter(function(t) { return t !== piece.id; });
@@ -2181,15 +2642,22 @@ function _gabaritSculpt(h) {
    support attaché à la pièce : { type, couleur, texture, taille }
    ══════════════════════════════════════════════════════════════ */
 var _supportPieceId = null;
+var _supportPieceType = null; /* type de la pièce en cours d'édition support — pour disambiguer en cohabitation */
 
 function _supportDefaut() {
   return { type: 'socle', couleur: '#eae6de', texture: 'marbre', taille: 40 };
 }
 
 function ouvrirPanneauSupport(pieceId) {
-  var piece = toiles.find(function(t) { return t.id === pieceId; });
+  /* Filtre par type sculpture : ce panneau n'existe que pour les sculptures.
+     En cohabitation, peinture #N et sculpture #N ont le même id — il faut
+     impérativement filtrer sinon on récupère la mauvaise œuvre. */
+  var piece = toiles.find(function(t) {
+    return t.id === pieceId && ((t._type)||ADMIN_CFG.type) === 'sculpture';
+  });
   if (!piece) return;
   _supportPieceId = pieceId;
+  _supportPieceType = 'sculpture';
 
   /* Migration douce : sans_socle → type aucun ; sinon socle par défaut */
   if (!piece.support) {
@@ -2237,7 +2705,7 @@ function ouvrirPanneauSupport(pieceId) {
     /* Type */
     document.querySelectorAll('.support-type-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
         if (!p) return;
         var type = btn.dataset.type;
         /* Conserver couleur/texture/taille même en passant par "aucun" :
@@ -2257,7 +2725,7 @@ function ouvrirPanneauSupport(pieceId) {
     /* Texture */
     document.querySelectorAll('.support-tex-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
         if (!p || !p.support || p.support.type === 'aucun') return;
         p.support.texture = btn.dataset.tex;
         _supportSyncUI();
@@ -2266,7 +2734,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Couleur → picker HSV */
     document.getElementById('support-couleur-btn').addEventListener('click', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       window._supportPickerCouleur = p.support.couleur || '#eae6de';
       window._supportPickerOnConfirm = function(hex) {
@@ -2278,7 +2746,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Taille */
     document.getElementById('support-taille').addEventListener('input', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.taille = parseInt(this.value);
       document.getElementById('support-taille-val').textContent = this.value + ' cm';
@@ -2289,7 +2757,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Hauteur */
     document.getElementById('support-hauteur').addEventListener('input', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.hauteur = parseInt(this.value);
       document.getElementById('support-hauteur-val').textContent = this.value + ' cm';
@@ -2300,7 +2768,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Bouton Auto → supprime la hauteur explicite (retour calcul auto) */
     document.getElementById('support-hauteur-auto').addEventListener('click', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       delete p.support.hauteur;
       _supportSyncUI();
@@ -2315,6 +2783,7 @@ function fermerPanneauSupport() {
   var aide = document.getElementById('pl-aide');
   if (aide) aide.style.visibility = '';
   _supportPieceId = null;
+  _supportPieceType = null;
 }
 
 /* Déplie (true) ou replie (false) le corps de l'accordéon support */
@@ -2327,7 +2796,7 @@ function _supportCorpsOuvert(ouvert) {
 
 /* Reflète l'état de piece.support dans l'UI du panneau */
 function _supportSyncUI() {
-  var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+  var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
   if (!p || !p.support) return;
   var s = p.support;
 
@@ -2480,7 +2949,7 @@ function _supportAppliquer() {
     iframe.contentWindow.postMessage({
       type: 'support-updated',
       pieceId: _supportPieceId,
-      piece: JSON.parse(JSON.stringify(toiles.find(function(t) { return t.id === _supportPieceId; })))
+      piece: JSON.parse(JSON.stringify(toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); })))
     }, '*');
   }
 }

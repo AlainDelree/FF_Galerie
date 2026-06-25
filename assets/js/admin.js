@@ -444,15 +444,19 @@ async function _commitMultiImpl(fichiers, message) {
   }
 }
 
-async function uploaderPhoto(id, b64, ext) {
+async function uploaderPhoto(id, b64, ext, typeOeuvre) {
   /* Dossier propre à chaque artiste, relatif à la racine du repo.
      Frédérique : assets/images/toiles/
      Alain      : artistes/alaindelree/assets/images/toiles/
      Le chemin stocké dans toiles.json est relatif à la galerie.html de l'artiste.
-     ext optionnel ('png' pour thumbnails 3D transparents, défaut 'jpg'). */
+     ext optionnel ('png' pour thumbnails 3D transparents, défaut 'jpg').
+     typeOeuvre : type de l'ŒUVRE en cours de création (pas le type principal
+     de l'admin) — sinon en cohabitation, une sculpture #N créée chez Fred
+     écraserait toile-NNN.jpg. */
   ext = ext || 'jpg';
+  var _type = typeOeuvre || (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/images/toiles/';
-  const prefix = (ADMIN_CFG.type === 'sculpture') ? 'piece' : 'toile';
+  const prefix = (_type === 'sculpture') ? 'piece' : 'toile';
   const chemin = base + `${prefix}-${String(id).padStart(3, '0')}.${ext}`;
   const stored = chemin; /* stocké tel quel dans toiles.json */
   let sha = null;
@@ -463,11 +467,13 @@ async function uploaderPhoto(id, b64, ext) {
   return stored; /* chemin relatif stocké dans toiles.json */
 }
 
-async function uploaderGLB(id, b64) {
+async function uploaderGLB(id, b64, typeOeuvre) {
   /* Upload le fichier GLB dans le dossier models de l'artiste.
-     Chemin GitHub = chemin stocké dans toiles.json (relatif au repo) */
+     Chemin GitHub = chemin stocké dans toiles.json (relatif au repo).
+     typeOeuvre : type de l'œuvre (cf. uploaderPhoto). */
+  var _type = typeOeuvre || (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || ADMIN_CFG.type || 'peinture';
   const base   = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'assets/models/';
-  const prefix = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'piece-' : 'toile-';
+  const prefix = (_type === 'sculpture') ? 'piece-' : 'toile-';
   const chemin = base + prefix + String(id).padStart(3, '0') + '.glb';
   let sha = null;
   try { const r = await apiGH('/repos/' + REPO + '/contents/' + chemin + '?ref=' + BRANCH); sha = r.sha; } catch (_) {}
@@ -962,6 +968,14 @@ $('btn-apercu-placement').addEventListener('click', () => {
   quitterModePlacement();
 });
 
+/* M5 — flèches navigation salles en mode édition */
+$('pl-nav-prev')?.addEventListener('click', function() {
+  if (typeof _naviguerSalleArranger === 'function') _naviguerSalleArranger(-1);
+});
+$('pl-nav-next')?.addEventListener('click', function() {
+  if (typeof _naviguerSalleArranger === 'function') _naviguerSalleArranger(+1);
+});
+
 /* Switch vue PC / GSM — dispatch sol/mur selon le type de la salle active */
 $('btn-switch-vue')?.addEventListener('click', function() {
   _placementVue = _placementVue === 'pc' ? 'gsm' : 'pc';
@@ -995,7 +1009,6 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   }
   btn.disabled = false; btn.textContent = '💾 Enregistrer';
 });
-$('btn-tout-mettre').addEventListener('click', () => autoPlacerTout());
 $('btn-grille-pl').addEventListener('click', function() {
   grilleVisiblePl = !grilleVisiblePl;
   $('btn-grille-pl').style.color       = grilleVisiblePl ? 'var(--gold)' : '';
@@ -1133,6 +1146,23 @@ $('btn-ajouter-toile').addEventListener('click', () => {
 
 // Modal toile
 $('btn-close-toile').addEventListener('click', () => fermerModalToile());
+/* Sélecteur de type d'œuvre dans le formulaire — bascule en direct la structure */
+$('inp-type-oeuvre')?.addEventListener('change', function() {
+  if (typeof _appliquerTypeFormulaire === 'function') {
+    _appliquerTypeFormulaire(this.value);
+    /* Mettre à jour le titre selon le type sélectionné */
+    var tit = document.getElementById('modal-toile-tit');
+    if (tit) {
+      var enEdit = (typeof toileEnEdition !== 'undefined' && toileEnEdition !== null);
+      if (enEdit) {
+        tit.textContent = (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
+      } else {
+        tit.textContent = (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
+      }
+    }
+  }
+});
+
 $('btn-annuler-toile').addEventListener('click', () => fermerModalToile());
 $('btn-sauver-toile').addEventListener('click', () => sauverToile());
 $('btn-supprimer-toile').addEventListener('click', () => supprimerToile());

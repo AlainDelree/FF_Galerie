@@ -420,7 +420,27 @@ button{cursor:pointer;}
 .placement-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--brd);flex-shrink:0;padding-top:max(.55rem,env(safe-area-inset-top));}
 .pl-titre{font-size:12px;color:var(--muted);}
 .pl-titre strong{color:var(--text);}
-.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.placement-mur-zone{flex:1;overflow:auto;padding:.3rem;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+/* M5 — flèches navigation salles en mode édition (même type) */
+.pl-nav-fleche{position:absolute;top:50%;transform:translateY(-50%);
+  width:44px;height:64px;border-radius:8px;border:1px solid var(--brd);
+  background:rgba(20,20,20,.55);backdrop-filter:blur(6px);
+  color:rgba(255,255,255,.78);font-size:2rem;line-height:1;
+  cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s,border-color .15s;
+  padding:0;font-family:inherit;}
+.pl-nav-fleche:hover{background:rgba(40,40,40,.85);color:var(--gold);border-color:var(--gold);}
+.pl-nav-prev{left:.8rem;}
+.pl-nav-next{right:.8rem;}
+.pl-nav-label{position:absolute;top:.5rem;left:50%;transform:translateX(-50%);
+  font-size:.72rem;letter-spacing:.05em;color:var(--muted);background:var(--bg2);
+  padding:.25rem .6rem;border-radius:6px;border:1px solid var(--brd);
+  pointer-events:none;z-index:4;white-space:nowrap;}
+@media (max-width:560px){
+  .pl-nav-fleche{width:36px;height:54px;font-size:1.6rem;}
+  .pl-nav-prev{left:.4rem;}
+  .pl-nav-next{right:.4rem;}
+}
 /* Mur grille peinture : dimensions calculées en JS par _ajusterMurPeinture()
    (au-dessus, dans afficherMurPlacement et au resize). CSS donne juste la grille. */
 .placement-mur-bg{position:relative;border-radius:6px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;min-width:320px;flex-shrink:0;z-index:1;}
@@ -537,6 +557,36 @@ button{cursor:pointer;}
   padding-bottom:max(.9rem,env(safe-area-inset-bottom));}
 .modal-foot .btn{flex:1;}
 
+/* Code couleur peinture/sculpture du formulaire d'œuvre — repérage visuel */
+#overlay-toile .modal.type-peinture .modal-hdr{
+  background:rgba(107,138,168,.12);
+  border-bottom-color:rgba(107,138,168,.35);
+}
+#overlay-toile .modal.type-peinture{box-shadow:inset 5px 0 0 #6b8aa8, -8px 0 24px rgba(0,0,0,.25);}
+#overlay-toile .modal.type-peinture .modal-tit{color:#5a7390;}
+
+#overlay-toile .modal.type-sculpture .modal-hdr{
+  background:rgba(168,123,80,.12);
+  border-bottom-color:rgba(168,123,80,.35);
+}
+#overlay-toile .modal.type-sculpture{box-shadow:inset 5px 0 0 #a87b50, -8px 0 24px rgba(0,0,0,.25);}
+#overlay-toile .modal.type-sculpture .modal-tit{color:#946a44;}
+
+/* Même code couleur sur le modal Nouvelle salle */
+#overlay-salle .modal.type-peinture .modal-hdr{
+  background:rgba(107,138,168,.12);
+  border-bottom-color:rgba(107,138,168,.35);
+}
+#overlay-salle .modal.type-peinture{box-shadow:inset 5px 0 0 #6b8aa8;}
+#overlay-salle .modal.type-peinture .modal-tit{color:#5a7390;}
+
+#overlay-salle .modal.type-sculpture .modal-hdr{
+  background:rgba(168,123,80,.12);
+  border-bottom-color:rgba(168,123,80,.35);
+}
+#overlay-salle .modal.type-sculpture{box-shadow:inset 5px 0 0 #a87b50;}
+#overlay-salle .modal.type-sculpture .modal-tit{color:#946a44;}
+
 /* ── Split-view PC : overlay-toile devient un drawer à droite ──
    Sur PC large (≥1100px), le formulaire d'édition d'une œuvre s'affiche
    en panneau à droite (540px) sans masquer la liste à gauche. Permet de
@@ -614,14 +664,25 @@ textarea.champ{resize:vertical;min-height:65px;}
 #overlay-crop{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.85);
   flex-direction:column;align-items:center;justify-content:center;}
 #overlay-crop.ouvert{display:flex;}
-.crop-modal{display:flex;flex-direction:column;width:min(96vw,480px);
-  max-height:90dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
+.crop-modal{display:flex;flex-direction:column;width:min(96vw,600px);
+  max-height:92dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
+@media (min-width:1100px){
+  .crop-modal{width:min(96vw,720px);}
+}
 .crop-hdr{display:flex;align-items:center;justify-content:space-between;
   padding:.7rem 1rem;border-bottom:1px solid var(--brd);font-weight:600;font-size:.95rem;}
 .crop-hdr button{background:none;border:none;color:var(--muted);font-size:1.4rem;
   cursor:pointer;line-height:1;padding:0 .2rem;}
-.crop-canvas-wrap{flex:1;overflow:hidden;min-height:0;background:#111;touch-action:none;user-select:none;}
-.crop-canvas-wrap img{display:block;max-width:100%;}
+/* Le wrap externe contient le padding noir autour de la zone de recadrage.
+   L'inner est la zone réelle de Cropper.js — Cropper s'aligne sur ses dimensions
+   et ses poignées débordantes sont confinées dans le padding du wrap. */
+.crop-canvas-wrap{flex:1;overflow:hidden;min-height:280px;background:#111;
+  touch-action:none;user-select:none;
+  padding:18px 32px;box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;}
+.crop-canvas-inner{position:relative;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;}
+.crop-canvas-wrap img{display:block;max-width:100%;max-height:100%;}
 .crop-aide{font-size:.68rem;letter-spacing:.1em;text-align:center;
   color:var(--muted);padding:.45rem .5rem;background:var(--bg3);}
 .crop-rot-barre{display:flex;gap:.5rem;padding:.5rem .75rem 0;justify-content:center;}
@@ -851,11 +912,15 @@ textarea.champ{resize:vertical;min-height:65px;}
 }
 
 /* ── Chips dimensions favorites ── */
-.dim-chip{padding:.2rem .55rem;border-radius:20px;font-size:11px;
+.dim-chip{padding:.28rem .6rem;border-radius:10px;font-size:11px;
   border:0.5px solid var(--brd);background:var(--bg3);color:var(--muted);
-  cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;}
+  cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;
+  display:inline-flex;flex-direction:column;align-items:center;gap:.05rem;line-height:1.15;}
 .dim-chip:hover{border-color:var(--gold);color:var(--gold);}
+.dim-chip:hover .dim-chip-code{color:var(--gold);}
 .dim-chip.sel{border-color:var(--gold);background:rgba(200,160,80,.12);color:var(--gold);font-weight:600;}
+.dim-chip-code{font-size:11px;font-weight:600;letter-spacing:.06em;}
+.dim-chip-dim{font-size:9.5px;opacity:.65;letter-spacing:.02em;}
 /* Badge taille auto */
 .taille-auto-badge{font-size:12px;font-weight:700;padding:.22rem .65rem;border-radius:4px;
   background:rgba(200,160,80,.12);color:var(--gold);letter-spacing:.04em;display:inline-block;}
