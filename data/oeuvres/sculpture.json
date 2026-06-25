@@ -1,5 +1,19 @@
 {
-  "next_id": 3,
+  "next_id": 4,
   "gabarits": [],
-  "pieces": []
+  "pieces": [
+    {
+      "id": 3,
+      "photo": "assets/images/toiles/piece-003.jpg",
+      "source_photo": "admin",
+      "titre": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": null,
+      "visible": true,
+      "glb": ""
+    }
+  ]
 }
