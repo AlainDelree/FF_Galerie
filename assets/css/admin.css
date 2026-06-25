@@ -117,12 +117,54 @@ button{cursor:pointer;}
 .chip.vide{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);}
 .chip.vide .cn{color:#ef9fa0;}
 .chip{position:relative;}
-/* Bordure latérale gauche colorée par type de salle (info visuelle) */
-.chip-peinture{box-shadow:inset 4px 0 0 #6b8aa8;}
-.chip-sculpture{box-shadow:inset 4px 0 0 #a87b50;}
+/* Fond teinté par type + bordure latérale gauche */
+.chip-peinture{background:rgba(107,138,168,.13);box-shadow:inset 3px 0 0 #6b8aa8;}
+.chip-sculpture{background:rgba(168,123,80,.13);box-shadow:inset 3px 0 0 #a87b50;}
+.chip-peinture.sel{background:rgba(107,138,168,.22);}
+.chip-sculpture.sel{background:rgba(168,123,80,.22);}
 .chip-sync{position:absolute;top:-6px;right:-6px;background:rgba(180,120,0,.92);
   color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;
   pointer-events:none;white-space:nowrap;}
+
+/* Mode édition plan (ordre + suppression) */
+.plan-btn-ok{border-color:#4a7c59;color:#4a7c59;}
+.plan-btn-ok:hover{background:rgba(74,124,89,.1);}
+.plan-btn-cancel{border-color:#c0392b;color:#c0392b;}
+.plan-btn-cancel:hover{background:rgba(192,57,43,.08);}
+.chip-mv{display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:4px;border:1px solid var(--brd);
+  background:var(--bg2);cursor:pointer;font-size:10px;padding:0;line-height:1;
+  color:var(--text);transition:background .1s,border-color .1s;flex-shrink:0;}
+.chip-mv:hover:not(:disabled){background:var(--gold);border-color:var(--gold);color:#fff;}
+.chip-mv:disabled{opacity:.25;cursor:default;}
+.chip.edit-mode{pointer-events:none;cursor:default;}
+.chip.edit-mode .chip-mv,.chip.edit-mode .chip-del,.chip.edit-mode .chip-conf-btn{pointer-events:all;}
+/* Drag-and-drop chips */
+.chip.draggable{touch-action:none;cursor:grab;pointer-events:all;}
+.chip.draggable:active{cursor:grabbing;}
+.chip.chip-dragging{opacity:.25;transition:none;}
+.chip.chip-drag-over{border-color:var(--gold) !important;background:rgba(200,160,80,.18) !important;
+  box-shadow:inset 3px 0 0 var(--gold) !important;transform:scale(1.04);}
+.chip-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:.85;
+  border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:rotate(2deg);transition:none;}
+.chip-mv-wrap{display:flex;flex-direction:column;gap:2px;margin-left:4px;}
+/* Bouton suppression (✕ rouge, coin haut-gauche) */
+.chip-del{position:absolute;top:-7px;left:-7px;width:17px;height:17px;border-radius:50%;
+  background:#c0392b;border:none;color:#fff;font-size:9px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  line-height:1;padding:0;transition:background .15s,transform .1s;z-index:2;}
+.chip-del:hover{background:#e74c3c;transform:scale(1.15);}
+/* Confirmation inline suppression */
+.chip.confirming{background:rgba(192,57,43,.15) !important;box-shadow:inset 3px 0 0 #c0392b !important;
+  border-color:rgba(192,57,43,.5) !important;}
+.chip-conf-lbl{font-size:10px;font-weight:600;color:#c0392b;white-space:nowrap;}
+.chip-conf-btn{display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:4px;border:1px solid;
+  cursor:pointer;font-size:11px;font-weight:700;padding:0;background:none;transition:background .1s;}
+.chip-conf-btn.ok{border-color:#4a7c59;color:#4a7c59;}
+.chip-conf-btn.ok:hover{background:rgba(74,124,89,.15);}
+.chip-conf-btn.no{border-color:var(--brd);color:var(--muted);}
+.chip-conf-btn.no:hover{background:var(--bg2);}
 
 .chip-add{padding:.35rem .6rem;border-radius:8px;cursor:pointer;
   border:1px dashed var(--brd);background:none;color:var(--muted);font-size:11px;

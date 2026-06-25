@@ -65,7 +65,7 @@
       ],
       "greffons": {
         "immersive": {
-          "actif": true,
+          "actif": false,
           "decor": {
             "fond": "#12100c",
             "exposure": 1,
@@ -121,7 +121,7 @@
       ],
       "greffons": {
         "immersive": {
-          "actif": true,
+          "actif": false,
           "decor": {
             "fond": "#12100c",
             "exposure": 1,
