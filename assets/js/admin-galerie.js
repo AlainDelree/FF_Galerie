@@ -1136,46 +1136,6 @@ function ouvrirArrangerApresConfirm() {
 
 
 
-function autoPlacerTout() {
-  if (!salleActive) return;
-  /* Filtrer toiles candidates par TYPE de la salle active (cohabitation). */
-  var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
-  const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
-  const aplacer = [...new Set([...poseeIds,...toilesSelectionnees])]
-    .filter(id => !poseeIds.has(id))
-    .map(id => toiles.find(x => x.id === id && ((x._type)||ADMIN_CFG.type) === _typeSalleAct))
-    .filter(Boolean);
-
-  if (aplacer.length === 0) { toast("Toutes les " + LBL.items + " sont déjà placées"); return; }
-
-  let placees = 0, impossible = 0;
-  for (const t of aplacer) {
-    const {w,h} = calcCases(t.dimensions);
-    let done = false;
-    outer: for (let r=1; r<=ROWS-h+1; r++) {
-      for (let col=1; col<=COLS-w+1; col++) {
-        if (canPlace(col,r,w,h,null)) {
-          /* Retirer t.id UNIQUEMENT des salles du même type. */
-          salles.forEach(s => {
-            if (s.type && s.type !== _typeSalleAct) return;
-            s.toiles = s.toiles.filter(x=>x!==t.id);
-            s.positions = (s.positions||[]).filter(p=>p.id!==t.id);
-          });
-          salleActive.positions.push({id:t.id,col,row:r,w,h});
-          salleActive.toiles.push(t.id);
-          for(let cc=col;cc<col+w;cc++) for(let rr=r;rr<r+h;rr++) occupancy[`${cc},${rr}`]=t.id;
-          placees++; done=true; break outer;
-        }
-      }
-    }
-    if (!done) impossible++;
-  }
-  afficherMurPlacement(); afficherStripPlacement();
-  toast(impossible>0
-    ? `${placees} placée(s) — ${impossible} ne rentrent pas sur le mur`
-    : `✓ ${placees} toile(s) placée(s)`);
-}
-
 /* Compare l'état actuel au snapshot (= dernier état enregistré).
    Retourne true s'il y a des modifications non sauvegardées. */
 function _arrangerADesModifs() {

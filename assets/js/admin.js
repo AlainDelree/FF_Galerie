@@ -1001,7 +1001,6 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   }
   btn.disabled = false; btn.textContent = '💾 Enregistrer';
 });
-$('btn-tout-mettre').addEventListener('click', () => autoPlacerTout());
 $('btn-grille-pl').addEventListener('click', function() {
   grilleVisiblePl = !grilleVisiblePl;
   $('btn-grille-pl').style.color       = grilleVisiblePl ? 'var(--gold)' : '';

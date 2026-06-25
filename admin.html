@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260625o">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260625p">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -303,7 +303,7 @@
       <input type="text" id="oeuvres-recherche" placeholder="🔍 Rechercher par titre…" autocomplete="off">
       <select id="oeuvres-tri" title="Trier par…">
         <option value="titre">Titre (A→Z)</option>
-        <option value="ajout">N° d'ajout (récent)</option>
+        <option value="ajout" selected>N° d'ajout (récent)</option>
         <option value="date">Date de l'œuvre (récent)</option>
         <option value="statut">Statut</option>
         <option value="taille">Taille</option>
@@ -870,7 +870,6 @@
     <button class="btn btn-sm" id="btn-sauver-placement" style="background:var(--gold);color:#fff;border:none;" title="Enregistrer sur le site">💾 Enregistrer</button>
     <button class="btn btn-outline btn-sm sculpture-only" id="btn-switch-vue" style="display:none;margin-left:auto;font-size:11px;" title="Basculer entre vue PC et GSM">🖥 PC</button>
     <button id="btn-grille-pl" title="Afficher/cacher la grille" style="font-size:11px;padding:.28rem .6rem;border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;">⊞ Grille</button>
-    <button id="btn-tout-mettre" style="font-size:11px;padding:.28rem .6rem;border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;" title="Place automatiquement toutes les toiles sélectionnées">↳ Tout mettre</button>
     </div>
   <div class="placement-mur-zone">
     <div class="placement-mur-bg" id="mur-placement" style="background:#2e2e2e;"></div>

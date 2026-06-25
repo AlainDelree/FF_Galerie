@@ -6,7 +6,7 @@
 var _oeuvresSelection = new Set(); /* au plus 1 id sélectionné */
 var _oeuvresSelectionType = null;  /* type associé à l'id sélectionné (multi-types) */
 var _oeuvresRecherche = '';
-var _oeuvresTri       = 'titre';
+var _oeuvresTri       = 'ajout'; /* N° d'ajout (récent en tête) — défaut M6 */
 var _oeuvresTriDesc   = false; /* false = ordre naturel, true = inversé */
 var _oeuvresFiltre    = 'toutes';
 
