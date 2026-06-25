@@ -482,8 +482,12 @@ $('overlay-guide').addEventListener('click', e => {
 function construireFavoris() {
   var cont = $('dims-favoris');
   if (!cont) return;
-  /* Pas de favoris pour sculpture — chaque pièce a des dimensions uniques */
-  if (window.ADMIN_TYPE === 'sculpture') { cont.style.display = 'none'; return; }
+  /* Pas de favoris pour sculpture — chaque pièce a des dimensions uniques.
+     Utilise _typeEdition (type de l'œuvre en cours), pas ADMIN_TYPE
+     (type principal de l'admin) — sinon en cohabitation, une sculpture
+     éditée chez Fred verrait les favoris peinture. */
+  var _typeAct = (typeof _typeEdition !== 'undefined' ? _typeEdition : null) || window.ADMIN_TYPE || 'peinture';
+  if (_typeAct === 'sculpture') { cont.style.display = 'none'; return; }
   cont.innerHTML = '';
   var seen = new Set(), favoris = [];
   toiles.forEach(function(t) {

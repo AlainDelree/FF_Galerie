@@ -537,6 +537,21 @@ button{cursor:pointer;}
   padding-bottom:max(.9rem,env(safe-area-inset-bottom));}
 .modal-foot .btn{flex:1;}
 
+/* Code couleur peinture/sculpture du formulaire d'œuvre — repérage visuel */
+#overlay-toile .modal.type-peinture .modal-hdr{
+  background:rgba(107,138,168,.12);
+  border-bottom-color:rgba(107,138,168,.35);
+}
+#overlay-toile .modal.type-peinture{box-shadow:inset 5px 0 0 #6b8aa8, -8px 0 24px rgba(0,0,0,.25);}
+#overlay-toile .modal.type-peinture .modal-tit{color:#5a7390;}
+
+#overlay-toile .modal.type-sculpture .modal-hdr{
+  background:rgba(168,123,80,.12);
+  border-bottom-color:rgba(168,123,80,.35);
+}
+#overlay-toile .modal.type-sculpture{box-shadow:inset 5px 0 0 #a87b50, -8px 0 24px rgba(0,0,0,.25);}
+#overlay-toile .modal.type-sculpture .modal-tit{color:#946a44;}
+
 /* ── Split-view PC : overlay-toile devient un drawer à droite ──
    Sur PC large (≥1100px), le formulaire d'édition d'une œuvre s'affiche
    en panneau à droite (540px) sans masquer la liste à gauche. Permet de

@@ -299,6 +299,12 @@ function _appliquerTypeFormulaire(type) {
     form.querySelectorAll('.sculpture-only').forEach(function(el) {
       el.style.display = estSculpt ? '' : 'none';
     });
+    /* Code couleur peinture/sculpture sur le modal (repérage visuel) */
+    var modal = form.querySelector('.modal');
+    if (modal) {
+      modal.classList.toggle('type-peinture',  !estSculpt);
+      modal.classList.toggle('type-sculpture',  estSculpt);
+    }
   }
   /* Synchroniser le sélecteur */
   var selType = document.getElementById('inp-type-oeuvre');
