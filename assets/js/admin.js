@@ -1133,6 +1133,23 @@ $('btn-ajouter-toile').addEventListener('click', () => {
 
 // Modal toile
 $('btn-close-toile').addEventListener('click', () => fermerModalToile());
+/* Sélecteur de type d'œuvre dans le formulaire — bascule en direct la structure */
+$('inp-type-oeuvre')?.addEventListener('change', function() {
+  if (typeof _appliquerTypeFormulaire === 'function') {
+    _appliquerTypeFormulaire(this.value);
+    /* Mettre à jour le titre selon le type sélectionné */
+    var tit = document.getElementById('modal-toile-tit');
+    if (tit) {
+      var enEdit = (typeof toileEnEdition !== 'undefined' && toileEnEdition !== null);
+      if (enEdit) {
+        tit.textContent = (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
+      } else {
+        tit.textContent = (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
+      }
+    }
+  }
+});
+
 $('btn-annuler-toile').addEventListener('click', () => fermerModalToile());
 $('btn-sauver-toile').addEventListener('click', () => sauverToile());
 $('btn-supprimer-toile').addEventListener('click', () => supprimerToile());

@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260625g">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260625h">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -652,6 +652,13 @@
       <button class="btn-close" id="btn-close-toile">×</button>
     </div>
     <div class="modal-body">
+      <div class="grp" id="grp-type-oeuvre">
+        <label class="lbl" for="inp-type-oeuvre">Type d'œuvre</label>
+        <select class="champ" id="inp-type-oeuvre">
+          <option value="peinture">Peinture</option>
+          <option value="sculpture">Sculpture</option>
+        </select>
+      </div>
       <div class="grp">
         <label class="lbl">Photo</label>
         <div class="photo-zone" id="zone-photo" tabindex="0">
@@ -1166,166 +1173,13 @@
            pour Dinso qui a maintenant des salles peinture (D-pad utile)
            ET des salles sculpture (✕ seul, drag-and-drop). */
 
-        /* ═══ RESTRUCTURATION COMPLÈTE MODAL SCULPTURE ═══ */
-        (function() {
-          var body = document.querySelector('#overlay-toile .modal-body');
-          var photoGrp = document.getElementById('zone-photo').closest('.grp');
-          var glbGrp   = document.getElementById('zone-glb').closest('.grp');
-          var dimsGrp  = document.querySelector('#dims-lh').closest('.grp');
-          var titreGrp = document.getElementById('inp-titre').closest('.grp');
-          var dateGrp  = document.getElementById('inp-date').closest('.grp');
-          var matGrp   = document.getElementById('inp-mat').closest('.grp');
-          var prixGrp  = document.getElementById('inp-prix').closest('.grp');
-          var descGrp  = document.getElementById('inp-desc').closest('.grp');
-          var visGrp   = document.getElementById('inp-visible').closest('.grp');
-          var pillsGrp = document.getElementById('salle-pills')?.closest('.grp');
-          var zonePhoto = document.getElementById('zone-photo');
-          var prevImg   = document.getElementById('photo-prev');
-
-          /* ── Helper : créer un en-tête de section ── */
-          function sectionHeader(text) {
-            var h = document.createElement('div');
-            h.style.cssText = 'font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid rgba(200,160,80,.2);';
-            h.textContent = text;
-            return h;
-          }
-
-          /* ── 1. OBJET ── */
-          var hdrObjet = sectionHeader('Objet');
-          body.prepend(hdrObjet);
-
-          /* GLB zone dans le grp photo */
-          photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb) — facultatif';
-          photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
-          photoGrp.insertBefore(document.getElementById('inp-glb'), zonePhoto);
-          photoGrp.insertBefore(document.getElementById('glb-thumb-status'), zonePhoto);
-          photoGrp.insertBefore(prevImg, zonePhoto);
-          prevImg.style.maxWidth = '200px'; prevImg.style.marginTop = '.5rem';
-
-          /* Bouton "Changer la photo…" */
-          var btnChg = document.createElement('button');
-          btnChg.type = 'button'; btnChg.id = 'btn-change-photo-sculpt';
-          btnChg.textContent = '📷 Changer la photo…';
-          btnChg.style.cssText = 'display:none !important;';
-          btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
-          photoGrp.insertBefore(btnChg, zonePhoto);
-
-          /* Bouton "Recréer depuis le 3D" */
-          var btnRegen = document.createElement('button');
-          btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
-          btnRegen.textContent = '🔄 Recréer depuis le 3D';
-          btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
-          btnRegen.addEventListener('click', async function() {
-            var glbPath = document.getElementById('inp-glb').value;
-            if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
-            btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
-            try {
-              /* glbPath est relatif à la racine du repo → URL absolue depuis la racine
-                 (robuste quelle que soit l'URL de la page admin). */
-              var url = /^https?:\/\//.test(glbPath) ? glbPath : ('/' + glbPath.replace(/^\/+/, ''));
-              var resp = await fetch(url + '?v=' + Date.now());
-              if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
-              var blob = await resp.blob();
-              var blobUrl = URL.createObjectURL(blob);
-              var result = await genererThumbnailGLB(blobUrl);
-              URL.revokeObjectURL(blobUrl);
-              photoB64 = result.b64;
-              window.photoEstPng = true;
-              document.getElementById('photo-prev').src = 'data:image/png;base64,' + result.b64;
-              document.getElementById('photo-prev').style.display = 'block';
-              toast('✓ Photo recréée depuis le 3D');
-            } catch (e) {
-              toast('Erreur : ' + e.message, 'err');
-            }
-            btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
-          });
-          photoGrp.insertBefore(btnRegen, zonePhoto);
-
-          /* Sous-titre "ou" entre GLB et zone photo, pour que l'utilisateur
-             comprenne qu'il peut uploader une photo seule (sans GLB). */
-          var ouSep = document.createElement('div');
-          ouSep.id = 'sculpt-photo-ou';
-          ouSep.style.cssText = 'font-size:.7rem;color:var(--muted);text-align:center;margin:.5rem 0 .3rem;letter-spacing:.06em;';
-          ouSep.textContent = '— ou téléchargez une photo directement —';
-          photoGrp.insertBefore(ouSep, zonePhoto);
-
-          /* La zone photo reste accessible (pas de display:none).
-             Le placeholder #photo-ph indique "Appuyer pour choisir une photo". */
-          var photoPh = document.getElementById('photo-ph');
-          if (photoPh) photoPh.textContent = 'Appuyer pour choisir une photo (.jpg / .png)';
-          glbGrp.style.display = 'none';
-
-          /* Placer photo grp juste après header OBJET */
-          hdrObjet.after(photoGrp);
-
-          /* Dimensions L×H×P visibles */
-          dimsGrp.querySelector('.lbl').textContent = 'Dimensions de la pièce';
-          document.getElementById('dims-lh').style.display = '';
-          var favEl = document.getElementById('dims-favoris');
-          if (favEl) favEl.style.display = 'none';
-          photoGrp.after(dimsGrp);
-
-          /* ── 2. SOCLE ── */
-          var hdrSocle = sectionHeader('Socle');
-          dimsGrp.after(hdrSocle);
-
-          /* Stepper diamètre */
-          var socleGrp = document.createElement('div');
-          socleGrp.className = 'grp';
-          var socleLbl = document.createElement('label');
-          socleLbl.className = 'lbl'; socleLbl.textContent = 'Diamètre (cm)';
-          socleGrp.appendChild(socleLbl);
-
-          var stepper = document.createElement('div');
-          stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
-          var btnStyle = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
-
-          var btnMoins = document.createElement('button');
-          btnMoins.type = 'button'; btnMoins.textContent = '−'; btnMoins.style.cssText = btnStyle;
-          var inpDiam = document.createElement('input');
-          inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
-          inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
-          inpDiam.min = '1'; inpDiam.max = '200'; inpDiam.placeholder = 'défaut';
-          var btnPlus = document.createElement('button');
-          btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
-          var unite = document.createElement('span');
-          unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
-
-          btnMoins.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value);
-            if (isNaN(v) || v <= 5) { inpDiam.value = ''; return; }
-            inpDiam.value = v - 5;
-          });
-          btnPlus.addEventListener('click', function() {
-            var v = parseInt(inpDiam.value);
-            if (isNaN(v)) { inpDiam.value = 5; return; }
-            inpDiam.value = Math.min(200, v + 5);
-          });
-
-          stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
-          stepper.appendChild(btnPlus); stepper.appendChild(unite);
-          var btnDefaut = document.createElement('button');
-          btnDefaut.type = 'button'; btnDefaut.textContent = 'Par défaut';
-          btnDefaut.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:.68rem;text-decoration:underline;margin-left:.3rem;padding:0;';
-          btnDefaut.addEventListener('click', function() { inpDiam.value = ''; });
-          stepper.appendChild(btnDefaut);
-          socleGrp.appendChild(stepper);
-
-          hdrSocle.after(socleGrp);
-
-          /* ── 3. DÉTAILS ── */
-          var hdrDetails = sectionHeader('Détails');
-          socleGrp.after(hdrDetails);
-
-          /* Placeholder matériaux */
-          document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
-
-          /* Réordonner : Titre, Date, Matériaux, Prix, Description, Visible, Salle */
-          var detailsOrder = [titreGrp, dateGrp, matGrp, prixGrp, descGrp, visGrp];
-          if (pillsGrp) detailsOrder.push(pillsGrp);
-          var prev = hdrDetails;
-          detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
-        })();
+        /* La restructuration sculpture du formulaire est maintenant gérée
+           dans admin-galerie.js → _appliquerStructureSculpture() / Peinture().
+           Appel initial selon le type principal de l'admin (le sélecteur de
+           type du formulaire permet ensuite à l'utilisateur de basculer). */
+        if (typeof _appliquerTypeFormulaire === 'function') {
+          _appliquerTypeFormulaire(ADMIN_TYPE || 'sculpture');
+        }
 
         /* Aperçu plus grand */
         const murBg = document.getElementById('mur-bg');

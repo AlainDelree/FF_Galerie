@@ -19,12 +19,278 @@ function _estSculptEdition() {
   return _typeEdition === 'sculpture';
 }
 
-/* Bascule l'affichage des champs .peinture-only / .sculpture-only DANS
-   le formulaire modal seulement (le reste de l'UI suit ADMIN_CFG.type ou
-   le type de la salle active). */
+/* ── Snapshot de l'état initial (peinture) du formulaire ───────────
+   Capturé UNE FOIS avant la première restructuration sculpture.
+   Permet à _appliquerStructurePeinture() de défaire ce qu'a fait
+   _appliquerStructureSculpture(). */
+var _formSnapInitial = null;
+var _formStructEtat  = 'peinture'; /* 'peinture' | 'sculpture' */
+
+function _capturerSnapshotFormulaire() {
+  if (_formSnapInitial) return;
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+  /* Ordre des .grp directement enfants de body (par ID quand dispo) */
+  var grps = Array.from(body.children).filter(function(el) { return el.classList && el.classList.contains('grp'); });
+  _formSnapInitial = {
+    ordreGrps: grps.map(function(g) { return g.id || ''; }),
+    /* Labels originaux (.lbl) à restaurer */
+    photoGrpLbl: document.getElementById('zone-photo').closest('.grp').querySelector('.lbl').textContent,
+    dimsGrpLbl:  document.querySelector('#dims-lh').closest('.grp').querySelector('.lbl').textContent,
+    photoPh:     (document.getElementById('photo-ph') || {}).textContent || 'Appuyer pour choisir une photo',
+    matPlaceholder: document.getElementById('inp-mat').placeholder,
+    /* zone-glb, inp-glb, glb-thumb-status seront déplacés dans photoGrp ;
+       on doit les remettre dans glbGrp (leur .grp parent original). */
+    glbGrp: document.getElementById('zone-glb').closest('.grp'),
+    photoGrpStyleMaxW: document.getElementById('photo-prev').style.maxWidth,
+    photoGrpStyleMarginT: document.getElementById('photo-prev').style.marginTop,
+    dimsFavorisDisplay: (document.getElementById('dims-favoris') || {}).style ? document.getElementById('dims-favoris').style.display : ''
+  };
+}
+
+/* Applique la mise en page sculpture (sections OBJET/SOCLE/DÉTAILS,
+   GLB+photo dans le même groupe, stepper diamètre socle). Idempotente
+   via flag. Tous les éléments créés ici sont taggés data-sculpt-dyn="1". */
+function _appliquerStructureSculpture() {
+  if (_formStructEtat === 'sculpture') return;
+  _capturerSnapshotFormulaire();
+
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+  var photoGrp = document.getElementById('zone-photo').closest('.grp');
+  var glbGrp   = document.getElementById('zone-glb').closest('.grp');
+  var dimsGrp  = document.querySelector('#dims-lh').closest('.grp');
+  var titreGrp = document.getElementById('inp-titre').closest('.grp');
+  var dateGrp  = document.getElementById('inp-date').closest('.grp');
+  var matGrp   = document.getElementById('inp-mat').closest('.grp');
+  var prixGrp  = document.getElementById('inp-prix').closest('.grp');
+  var descGrp  = document.getElementById('inp-desc').closest('.grp');
+  var visGrp   = document.getElementById('inp-visible').closest('.grp');
+  var typeGrp  = document.getElementById('grp-type-oeuvre');
+  var pillsEl  = document.getElementById('salle-pills');
+  var pillsGrp = pillsEl ? pillsEl.closest('.grp') : null;
+  var zonePhoto = document.getElementById('zone-photo');
+  var prevImg   = document.getElementById('photo-prev');
+
+  function sectionHeader(text) {
+    var h = document.createElement('div');
+    h.dataset.sculptDyn = '1';
+    h.style.cssText = 'font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid rgba(200,160,80,.2);';
+    h.textContent = text;
+    return h;
+  }
+
+  /* 1. OBJET */
+  var hdrObjet = sectionHeader('Objet');
+  /* Placer après le sélecteur de type s'il existe, sinon en premier */
+  if (typeGrp) typeGrp.after(hdrObjet); else body.prepend(hdrObjet);
+
+  photoGrp.querySelector('.lbl').textContent = 'Modèle 3D (.glb) — facultatif';
+  photoGrp.insertBefore(document.getElementById('zone-glb'), zonePhoto);
+  photoGrp.insertBefore(document.getElementById('inp-glb'), zonePhoto);
+  photoGrp.insertBefore(document.getElementById('glb-thumb-status'), zonePhoto);
+  photoGrp.insertBefore(prevImg, zonePhoto);
+  prevImg.style.maxWidth = '200px'; prevImg.style.marginTop = '.5rem';
+
+  var btnChg = document.createElement('button');
+  btnChg.type = 'button'; btnChg.id = 'btn-change-photo-sculpt';
+  btnChg.dataset.sculptDyn = '1';
+  btnChg.textContent = '📷 Changer la photo…';
+  btnChg.style.cssText = 'display:none !important;';
+  btnChg.addEventListener('click', function() { document.getElementById('inp-photo').click(); });
+  photoGrp.insertBefore(btnChg, zonePhoto);
+
+  var btnRegen = document.createElement('button');
+  btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
+  btnRegen.dataset.sculptDyn = '1';
+  btnRegen.textContent = '🔄 Recréer depuis le 3D';
+  btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
+  btnRegen.addEventListener('click', async function() {
+    var glbPath = document.getElementById('inp-glb').value;
+    if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
+    btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
+    try {
+      var url = /^https?:\/\//.test(glbPath) ? glbPath : ('/' + glbPath.replace(/^\/+/, ''));
+      var resp = await fetch(url + '?v=' + Date.now());
+      if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
+      var blob = await resp.blob();
+      var blobUrl = URL.createObjectURL(blob);
+      var result = await genererThumbnailGLB(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      photoB64 = result.b64;
+      window.photoEstPng = true;
+      document.getElementById('photo-prev').src = 'data:image/png;base64,' + result.b64;
+      document.getElementById('photo-prev').style.display = 'block';
+      toast('✓ Photo recréée depuis le 3D');
+    } catch (e) {
+      toast('Erreur : ' + e.message, 'err');
+    }
+    btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
+  });
+  photoGrp.insertBefore(btnRegen, zonePhoto);
+
+  var ouSep = document.createElement('div');
+  ouSep.id = 'sculpt-photo-ou';
+  ouSep.dataset.sculptDyn = '1';
+  ouSep.style.cssText = 'font-size:.7rem;color:var(--muted);text-align:center;margin:.5rem 0 .3rem;letter-spacing:.06em;';
+  ouSep.textContent = '— ou téléchargez une photo directement —';
+  photoGrp.insertBefore(ouSep, zonePhoto);
+
+  var photoPh = document.getElementById('photo-ph');
+  if (photoPh) photoPh.textContent = 'Appuyer pour choisir une photo (.jpg / .png)';
+  glbGrp.style.display = 'none';
+
+  hdrObjet.after(photoGrp);
+
+  dimsGrp.querySelector('.lbl').textContent = 'Dimensions de la pièce';
+  document.getElementById('dims-lh').style.display = '';
+  var favEl = document.getElementById('dims-favoris');
+  if (favEl) favEl.style.display = 'none';
+  photoGrp.after(dimsGrp);
+
+  /* 2. SOCLE */
+  var hdrSocle = sectionHeader('Socle');
+  dimsGrp.after(hdrSocle);
+
+  var socleGrp = document.createElement('div');
+  socleGrp.className = 'grp';
+  socleGrp.dataset.sculptDyn = '1';
+  var socleLbl = document.createElement('label');
+  socleLbl.className = 'lbl'; socleLbl.textContent = 'Diamètre (cm)';
+  socleGrp.appendChild(socleLbl);
+
+  var stepper = document.createElement('div');
+  stepper.style.cssText = 'display:flex;align-items:center;gap:.5rem;margin-top:.3rem;';
+  var btnStyle = 'width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--bg3);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+
+  var btnMoins = document.createElement('button');
+  btnMoins.type = 'button'; btnMoins.textContent = '−'; btnMoins.style.cssText = btnStyle;
+  var inpDiam = document.createElement('input');
+  inpDiam.type = 'number'; inpDiam.className = 'champ'; inpDiam.id = 'inp-diam-sculpt';
+  inpDiam.style.cssText = 'width:80px;text-align:center;font-size:1rem;font-weight:600;';
+  inpDiam.min = '1'; inpDiam.max = '200'; inpDiam.placeholder = 'défaut';
+  var btnPlus = document.createElement('button');
+  btnPlus.type = 'button'; btnPlus.textContent = '+'; btnPlus.style.cssText = btnStyle;
+  var unite = document.createElement('span');
+  unite.style.cssText = 'color:var(--muted);font-size:.82rem;'; unite.textContent = 'cm';
+
+  btnMoins.addEventListener('click', function() {
+    var v = parseInt(inpDiam.value);
+    if (isNaN(v) || v <= 5) { inpDiam.value = ''; return; }
+    inpDiam.value = v - 5;
+  });
+  btnPlus.addEventListener('click', function() {
+    var v = parseInt(inpDiam.value);
+    if (isNaN(v)) { inpDiam.value = 5; return; }
+    inpDiam.value = Math.min(200, v + 5);
+  });
+
+  stepper.appendChild(btnMoins); stepper.appendChild(inpDiam);
+  stepper.appendChild(btnPlus); stepper.appendChild(unite);
+  var btnDefaut = document.createElement('button');
+  btnDefaut.type = 'button'; btnDefaut.textContent = 'Par défaut';
+  btnDefaut.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:.68rem;text-decoration:underline;margin-left:.3rem;padding:0;';
+  btnDefaut.addEventListener('click', function() { inpDiam.value = ''; });
+  stepper.appendChild(btnDefaut);
+  socleGrp.appendChild(stepper);
+
+  hdrSocle.after(socleGrp);
+
+  /* 3. DÉTAILS */
+  var hdrDetails = sectionHeader('Détails');
+  socleGrp.after(hdrDetails);
+
+  document.getElementById('inp-mat').placeholder = 'Métal, bois, pierre…';
+
+  var detailsOrder = [titreGrp, dateGrp, matGrp, prixGrp, descGrp, visGrp];
+  if (pillsGrp) detailsOrder.push(pillsGrp);
+  var prev = hdrDetails;
+  detailsOrder.forEach(function(g) { prev.after(g); prev = g; });
+
+  _formStructEtat = 'sculpture';
+}
+
+/* Défait la restructuration sculpture, restaure l'état peinture initial. */
+function _appliquerStructurePeinture() {
+  if (_formStructEtat === 'peinture') return;
+  if (!_formSnapInitial) { _formStructEtat = 'peinture'; return; }
+
+  var body = document.querySelector('#overlay-toile .modal-body');
+  if (!body) return;
+
+  /* 1. Supprimer tous les éléments dynamiquement créés en sculpture */
+  body.querySelectorAll('[data-sculpt-dyn]').forEach(function(el) {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  });
+
+  /* 2. Restaurer le label photoGrp et le placeholder */
+  var photoGrp = document.getElementById('zone-photo').closest('.grp');
+  if (photoGrp && photoGrp.querySelector('.lbl')) {
+    photoGrp.querySelector('.lbl').textContent = _formSnapInitial.photoGrpLbl;
+  }
+  var photoPh = document.getElementById('photo-ph');
+  if (photoPh) photoPh.textContent = _formSnapInitial.photoPh;
+
+  /* 3. Restaurer le label dimsGrp et l'affichage des favoris */
+  var dimsGrp = document.querySelector('#dims-lh').closest('.grp');
+  if (dimsGrp && dimsGrp.querySelector('.lbl')) {
+    dimsGrp.querySelector('.lbl').textContent = _formSnapInitial.dimsGrpLbl;
+  }
+  var favEl = document.getElementById('dims-favoris');
+  if (favEl) favEl.style.display = _formSnapInitial.dimsFavorisDisplay;
+
+  /* 4. Restaurer placeholder matériaux */
+  document.getElementById('inp-mat').placeholder = _formSnapInitial.matPlaceholder;
+
+  /* 5. Sortir zone-glb, inp-glb, glb-thumb-status de photoGrp et les remettre dans glbGrp */
+  var glbGrp = _formSnapInitial.glbGrp;
+  if (glbGrp) {
+    var zoneGlb = document.getElementById('zone-glb');
+    var inpGlb = document.getElementById('inp-glb');
+    var glbStatus = document.getElementById('glb-thumb-status');
+    if (zoneGlb && zoneGlb.parentNode !== glbGrp) glbGrp.appendChild(zoneGlb);
+    if (inpGlb && inpGlb.parentNode !== glbGrp) glbGrp.appendChild(inpGlb);
+    if (glbStatus && glbStatus.parentNode !== glbGrp) glbGrp.appendChild(glbStatus);
+    glbGrp.style.display = ''; /* peinture : laissé visible mais masqué via .sculpture-only */
+  }
+
+  /* 6. Restaurer le style de prevImg */
+  var prevImg = document.getElementById('photo-prev');
+  if (prevImg) {
+    prevImg.style.maxWidth = _formSnapInitial.photoGrpStyleMaxW || '';
+    prevImg.style.marginTop = _formSnapInitial.photoGrpStyleMarginT || '';
+    /* Le remettre dans zone-photo (sa position d'origine) */
+    var zonePhoto = document.getElementById('zone-photo');
+    if (zonePhoto && prevImg.parentNode !== zonePhoto) {
+      zonePhoto.appendChild(prevImg);
+    }
+  }
+
+  /* 7. Restaurer l'ordre des .grp selon le snapshot */
+  var ordreCible = _formSnapInitial.ordreGrps;
+  var typeGrpFirst = document.getElementById('grp-type-oeuvre');
+  ordreCible.forEach(function(id) {
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && el.classList.contains('grp')) {
+      body.appendChild(el); /* ré-append dans l'ordre du snapshot */
+    }
+  });
+  /* Le sélecteur de type doit rester en premier */
+  if (typeGrpFirst) body.prepend(typeGrpFirst);
+
+  _formStructEtat = 'peinture';
+}
+
+/* Bascule l'affichage des champs .peinture-only / .sculpture-only ET
+   applique la restructuration DOM appropriée. */
 function _appliquerTypeFormulaire(type) {
   _typeEdition = type || ADMIN_CFG.type || 'peinture';
   var estSculpt = (_typeEdition === 'sculpture');
+  /* Restructuration DOM */
+  if (estSculpt) _appliquerStructureSculpture();
+  else            _appliquerStructurePeinture();
+  /* Show/hide des champs */
   var form = document.getElementById('overlay-toile');
   if (form) {
     form.querySelectorAll('.peinture-only').forEach(function(el) {
@@ -34,6 +300,9 @@ function _appliquerTypeFormulaire(type) {
       el.style.display = estSculpt ? '' : 'none';
     });
   }
+  /* Synchroniser le sélecteur */
+  var selType = document.getElementById('inp-type-oeuvre');
+  if (selType && selType.value !== _typeEdition) selType.value = _typeEdition;
 }
 
 /* Helper : type de la salle active (peinture/sculpture).
@@ -1399,8 +1668,31 @@ function initTailleForm() {
   $('inp-new-taille-code').addEventListener('keydown', e => { if(e.key==='Enter') confirmerNouveauTaille(); });
 }
 
+/* Type majoritaire parmi les œuvres existantes (en cas d'absence d'argument
+   dans ouvrirFormulaireNouvel). Si aucune œuvre, fallback ADMIN_CFG.type. */
+function _typeMajoritaire() {
+  if (typeof toiles === 'undefined' || !toiles.length) {
+    return ADMIN_CFG.type || 'peinture';
+  }
+  var counts = {};
+  toiles.forEach(function(t) {
+    var ty = t._type || ADMIN_CFG.type || 'peinture';
+    counts[ty] = (counts[ty] || 0) + 1;
+  });
+  var maxType = ADMIN_CFG.type || 'peinture';
+  var maxN = -1;
+  Object.keys(counts).forEach(function(ty) {
+    if (counts[ty] > maxN) { maxN = counts[ty]; maxType = ty; }
+  });
+  return maxType;
+}
+
 function ouvrirFormulaireNouvel(typeOpt) {
-  _appliquerTypeFormulaire(typeOpt || ADMIN_CFG.type || 'peinture');
+  var typeEffectif = typeOpt || _typeMajoritaire();
+  /* Sélecteur de type visible en création */
+  var grpType = document.getElementById('grp-type-oeuvre');
+  if (grpType) grpType.style.display = '';
+  _appliquerTypeFormulaire(typeEffectif);
   toileEnEdition = null; salleCibleToile = salleActive?.id || null; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
   construireFavoris();
@@ -1440,6 +1732,10 @@ function ouvrirFormulaireEdition(id, typeOpt) {
   if (!t) return;
   /* Type de l'œuvre éditée (multi-types). Fallback sur ADMIN_CFG.type
      pour la rétrocompat avec les anciennes œuvres sans _type. */
+  /* Sélecteur de type masqué en édition (on ne change pas le type d'une
+     œuvre existante — il faudrait migrer entre fichiers JSON séparés). */
+  var grpType = document.getElementById('grp-type-oeuvre');
+  if (grpType) grpType.style.display = 'none';
   _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   const salleDeLaToile = _salleContenantOeuvre(id, _typeEdition)?.id || salleActive?.id || null;
