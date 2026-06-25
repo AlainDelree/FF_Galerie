@@ -604,6 +604,13 @@ async function chargerTout() {
       id: s.id, nom: s.nom,
       type: s.type || (ADMIN_CFG.type !== 'peinture' ? ADMIN_CFG.type : undefined),
       couleur_mur: s.couleur_mur || '#2e2e2e',
+      /* Champs récents — préservés tels quels (undefined si absents,
+         appliquera le default à l'usage). Les omettre ici les perdait
+         silencieusement à chaque chargement : le JSON GitHub gardait
+         les valeurs, mais salleActive en mémoire avait undefined →
+         aperçu admin restait au gris/noir default malgré sauvegarde OK. */
+      couleur_mur_piece: s.couleur_mur_piece,
+      couleur_mur_bas:   s.couleur_mur_bas,
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
       epaisseur_cadres: s.epaisseur_cadres || 2,
       texture: s.texture || 'none',
