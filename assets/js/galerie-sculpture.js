@@ -154,13 +154,19 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
     'padding:8px 0;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,.25),transparent);';
   overlay.appendChild(titreEl);
 
-  /* Hint rotation — en bas centre */
+  /* Hint rotation — bien visible au début puis s'estompe. */
   const hint = document.createElement('div');
   hint.style.cssText =
     'position:absolute;bottom:8rem;left:0;width:100%;text-align:center;z-index:20;' +
-    'font-family:Lato,sans-serif;font-size:.6rem;color:rgba(255,255,255,.25);letter-spacing:.06em;';
-  hint.textContent = 'Glissez pour tourner la sculpture';
+    'font-family:Lato,sans-serif;font-size:.75rem;color:rgba(255,255,255,.85);letter-spacing:.08em;' +
+    'pointer-events:none;transition:color 1.2s ease,font-size 1.2s ease;';
+  hint.textContent = 'Cliquez sur l\u2019objet et glissez pour le tourner';
   overlay.appendChild(hint);
+  /* Après 4s : retour à un hint discret (laisser une trace, pas un encombrement) */
+  setTimeout(function() {
+    hint.style.color = 'rgba(255,255,255,.25)';
+    hint.style.fontSize = '.6rem';
+  }, 4000);
 
   /* Meta superposé en bas avec backdrop */
   const meta = document.createElement('div');

@@ -2702,6 +2702,18 @@ function ouvrirPanneauSupport(pieceId) {
         iframe.contentWindow.postMessage({ type: 'retirer-piece', id: _supportPieceId }, '*');
       }
     });
+    /* Clic en DEHORS du panneau (mais avec panneau ouvert + accordéon déployé)
+       → replier l'accordéon. Le panneau reste visible (barre titre) — c'est
+       juste le corps qui se ferme pour libérer la vue du sol. Listener en
+       capture pour intercepter avant que d'autres handlers réagissent. */
+    document.addEventListener('click', function(e) {
+      var panel = document.getElementById('support-panel');
+      if (!panel || panel.style.display === 'none') return;
+      var corps = document.getElementById('support-corps');
+      if (!corps || corps.style.display === 'none') return; /* déjà replié */
+      if (e.target.closest('#support-panel')) return;       /* clic dans le panneau */
+      _supportCorpsOuvert(false);
+    }, true);
     /* Type */
     document.querySelectorAll('.support-type-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
