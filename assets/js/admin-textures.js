@@ -189,7 +189,7 @@ function _autoSaveApparence() {
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(function() {
     sauvegarder('[admin] Apparence salle', null).then(function() {
-      if (typeof toast === 'function') toast('Sauvegardé ✓', 'ok', 1200);
+      if (typeof toast === 'function') toast('Couleurs sauvegardées ✓', 'ok', 1500);
     }).catch(function(e) {
       if (typeof toast === 'function') toast('Erreur sauvegarde : ' + e.message, 'err', 4000);
     });
