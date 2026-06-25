@@ -101,7 +101,8 @@
       "texture": "parquet",
       "visible": true,
       "toiles": [
-        7
+        7,
+        10
       ],
       "positions": [
         {
@@ -109,6 +110,12 @@
           "x": 32,
           "y": 62,
           "gabarit": "M"
+        },
+        {
+          "id": 10,
+          "x": 59,
+          "y": 40,
+          "gabarit": "L"
         }
       ],
       "positions_mobile": [
