@@ -907,17 +907,35 @@ function nettoyerSurvol() { nettoyerSurvolBg('mur-bg'); }
 function deplacerPeinture(toileId, dCol, dRow) {
   const pos = salleActive.positions.find(p => p.id === toileId);
   if (!pos) return;
-  const newCol = pos.col + dCol, newRow = pos.row + dRow;
-  // Retire temporairement de l'occupancy
+  // Retire temporairement la toile de l'occupancy (sinon on bloque sur soi-même)
   for (let c = pos.col; c < pos.col + pos.w; c++)
     for (let r = pos.row; r < pos.row + pos.h; r++)
       delete occupancy[`${c},${r}`];
-  if (!canPlace(newCol, newRow, pos.w, pos.h, null)) {
-    // Restaure
+
+  /* M4 — Traversée des emplacements occupés : avance pas à pas dans la
+     direction (dCol, dRow) en survolant les toiles déjà posées, jusqu'à
+     trouver une position libre, ou jusqu'au bord du mur. */
+  let newCol = pos.col + dCol;
+  let newRow = pos.row + dRow;
+  let found = false;
+  /* Garde-fou anti-boucle infinie au cas où (dCol, dRow) = (0, 0). */
+  let safety = COLS * ROWS;
+  while (safety-- > 0
+      && newCol >= 1 && newCol + pos.w - 1 <= COLS
+      && newRow >= 1 && newRow + pos.h - 1 <= ROWS) {
+    if (canPlace(newCol, newRow, pos.w, pos.h, null)) { found = true; break; }
+    /* Position dans les limites mais occupée : on traverse et on continue. */
+    newCol += dCol;
+    newRow += dRow;
+    if (dCol === 0 && dRow === 0) break;
+  }
+
+  if (!found) {
+    // Restaure la position d'origine dans l'occupancy
     for (let c = pos.col; c < pos.col + pos.w; c++)
       for (let r = pos.row; r < pos.row + pos.h; r++)
         occupancy[`${c},${r}`] = toileId;
-    toast('Impossible — bord ou emplacement occupé', 'err'); return;
+    toast('Bord du mur atteint', 'err'); return;
   }
   pos.col = newCol; pos.row = newRow;
   buildOccupancy(); afficherMur();
