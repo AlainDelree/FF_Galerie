@@ -1275,7 +1275,11 @@ function majCtrlPanel() {
     panel.classList.remove("active");
     return;
   }
-  var t = toiles.find(function(x){ return x.id === peintureSurMurSel; });
+  /* Lookup avec filtre type de la salle active (cohabitation) */
+  var _typeSalleCtrl = (salleActive && salleActive.type) || ADMIN_CFG.type || 'peinture';
+  var t = toiles.find(function(x){
+    return x.id === peintureSurMurSel && ((x._type)||ADMIN_CFG.type) === _typeSalleCtrl;
+  });
   panel.classList.add("active");
   if (nomEl) nomEl.textContent = t ? (t.titre || "Sans titre") : "—";
 }
@@ -2440,9 +2444,12 @@ function placerPieceSolViaIframe(x, y) {
   var gab = _gabaritSculpt(piece.dimensions?.hauteur);
   var pos = _getPositions();
 
-  /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) */
+  /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) — UNIQUEMENT
+     du même type. Cohabitation : sculpture #N et peinture #N ont le même id. */
+  var _typeSalleActP = salleActive.type || ADMIN_CFG.type || 'sculpture';
   salles.forEach(function(s) {
     if (s.id === salleActive.id) return;
+    if (s.type && s.type !== _typeSalleActP) return;
     if (s.positions)        s.positions        = s.positions.filter(function(p) { return p.id !== piece.id; });
     if (s.positions_mobile) s.positions_mobile = s.positions_mobile.filter(function(p) { return p.id !== piece.id; });
     if (s.toiles)           s.toiles           = s.toiles.filter(function(t) { return t !== piece.id; });
@@ -2505,15 +2512,22 @@ function _gabaritSculpt(h) {
    support attaché à la pièce : { type, couleur, texture, taille }
    ══════════════════════════════════════════════════════════════ */
 var _supportPieceId = null;
+var _supportPieceType = null; /* type de la pièce en cours d'édition support — pour disambiguer en cohabitation */
 
 function _supportDefaut() {
   return { type: 'socle', couleur: '#eae6de', texture: 'marbre', taille: 40 };
 }
 
 function ouvrirPanneauSupport(pieceId) {
-  var piece = toiles.find(function(t) { return t.id === pieceId; });
+  /* Filtre par type sculpture : ce panneau n'existe que pour les sculptures.
+     En cohabitation, peinture #N et sculpture #N ont le même id — il faut
+     impérativement filtrer sinon on récupère la mauvaise œuvre. */
+  var piece = toiles.find(function(t) {
+    return t.id === pieceId && ((t._type)||ADMIN_CFG.type) === 'sculpture';
+  });
   if (!piece) return;
   _supportPieceId = pieceId;
+  _supportPieceType = 'sculpture';
 
   /* Migration douce : sans_socle → type aucun ; sinon socle par défaut */
   if (!piece.support) {
@@ -2561,7 +2575,7 @@ function ouvrirPanneauSupport(pieceId) {
     /* Type */
     document.querySelectorAll('.support-type-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
         if (!p) return;
         var type = btn.dataset.type;
         /* Conserver couleur/texture/taille même en passant par "aucun" :
@@ -2581,7 +2595,7 @@ function ouvrirPanneauSupport(pieceId) {
     /* Texture */
     document.querySelectorAll('.support-tex-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+        var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
         if (!p || !p.support || p.support.type === 'aucun') return;
         p.support.texture = btn.dataset.tex;
         _supportSyncUI();
@@ -2590,7 +2604,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Couleur → picker HSV */
     document.getElementById('support-couleur-btn').addEventListener('click', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       window._supportPickerCouleur = p.support.couleur || '#eae6de';
       window._supportPickerOnConfirm = function(hex) {
@@ -2602,7 +2616,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Taille */
     document.getElementById('support-taille').addEventListener('input', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.taille = parseInt(this.value);
       document.getElementById('support-taille-val').textContent = this.value + ' cm';
@@ -2613,7 +2627,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Hauteur */
     document.getElementById('support-hauteur').addEventListener('input', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       p.support.hauteur = parseInt(this.value);
       document.getElementById('support-hauteur-val').textContent = this.value + ' cm';
@@ -2624,7 +2638,7 @@ function ouvrirPanneauSupport(pieceId) {
     });
     /* Bouton Auto → supprime la hauteur explicite (retour calcul auto) */
     document.getElementById('support-hauteur-auto').addEventListener('click', function() {
-      var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+      var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
       if (!p || !p.support || p.support.type === 'aucun') return;
       delete p.support.hauteur;
       _supportSyncUI();
@@ -2639,6 +2653,7 @@ function fermerPanneauSupport() {
   var aide = document.getElementById('pl-aide');
   if (aide) aide.style.visibility = '';
   _supportPieceId = null;
+  _supportPieceType = null;
 }
 
 /* Déplie (true) ou replie (false) le corps de l'accordéon support */
@@ -2651,7 +2666,7 @@ function _supportCorpsOuvert(ouvert) {
 
 /* Reflète l'état de piece.support dans l'UI du panneau */
 function _supportSyncUI() {
-  var p = toiles.find(function(t) { return t.id === _supportPieceId; });
+  var p = toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); });
   if (!p || !p.support) return;
   var s = p.support;
 
@@ -2804,7 +2819,7 @@ function _supportAppliquer() {
     iframe.contentWindow.postMessage({
       type: 'support-updated',
       pieceId: _supportPieceId,
-      piece: JSON.parse(JSON.stringify(toiles.find(function(t) { return t.id === _supportPieceId; })))
+      piece: JSON.parse(JSON.stringify(toiles.find(function(t) { return t.id === _supportPieceId && ((t._type)||ADMIN_CFG.type) === (_supportPieceType||'sculpture'); })))
     }, '*');
   }
 }
