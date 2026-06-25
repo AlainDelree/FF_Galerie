@@ -141,7 +141,9 @@
     {
       "id": 8,
       "nom": "Salle à manger",
-      "couleur_mur": "#2c2535",
+      "couleur_mur": "#e5a50a",
+      "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#4c7245",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
