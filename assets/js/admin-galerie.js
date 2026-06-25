@@ -1485,19 +1485,54 @@ function afficherMurPlacement() {
     bg.appendChild(ov);
   }
 
-  // Cellules vides — colorées vert/rouge si une toile est en attente de placement
-  const _plWH = selectedToilePl ? calcCases(selectedToilePl.dimensions) : null;
+  /* Cellules vides — colorées vert/rouge si une œuvre est en cours de placement
+     OU si une œuvre du mur est sélectionnée (déplacement direct au clic).
+     Le clic dispatch vers placerToilePl (depuis le strip) ou _deplacerPeintureVers
+     (toile du mur). Permet de bouger en diagonale ou en saut, ce que le D-pad ne couvre pas. */
+  var _dimsPourCells = null;
+  if (selectedToilePl) {
+    _dimsPourCells = calcCases(selectedToilePl.dimensions);
+  } else if (peintureSurMurSel !== null) {
+    var _posSel = (salleActive.positions||[]).find(function(p){ return p.id === peintureSurMurSel; });
+    if (_posSel) _dimsPourCells = { w: _posSel.w, h: _posSel.h };
+  }
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
     if (occupancy[`${c},${r}`]) continue;
     const cell = document.createElement('div'); cell.className='cellule';
-    if (_plWH) cell.classList.add(canPlace(c,r,_plWH.w,_plWH.h,null) ? 'cel-ok' : 'cel-ko');
+    if (_dimsPourCells) cell.classList.add(canPlace(c,r,_dimsPourCells.w,_dimsPourCells.h,null) ? 'cel-ok' : 'cel-ko');
     cell.style.gridColumn=c; cell.style.gridRow=r;
     cell.dataset.col=c; cell.dataset.row=r;
     cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
     cell.addEventListener('mouseleave', () => nettoyerSurvolBg('mur-placement'));
-    cell.addEventListener('click', () => placerToilePl(c,r));
+    cell.addEventListener('click', function() {
+      if (selectedToilePl) placerToilePl(c, r);
+      else if (peintureSurMurSel !== null) _deplacerPeintureVers(peintureSurMurSel, c, r);
+    });
     bg.appendChild(cell);
   }
+}
+
+/* Déplace une toile déjà posée vers (col, row). Pose finale toujours validée
+   par canPlace : impossible de poser sur une position occupée. */
+function _deplacerPeintureVers(toileId, col, row) {
+  var pos = (salleActive.positions||[]).find(function(p){ return p.id === toileId; });
+  if (!pos) return;
+  // Retire temporairement de l'occupancy (sinon on bloque sur soi-même)
+  for (var c = pos.col; c < pos.col + pos.w; c++)
+    for (var r = pos.row; r < pos.row + pos.h; r++)
+      delete occupancy[c+','+r];
+  if (!canPlace(col, row, pos.w, pos.h, null)) {
+    // Restaure
+    for (var c2 = pos.col; c2 < pos.col + pos.w; c2++)
+      for (var r2 = pos.row; r2 < pos.row + pos.h; r2++)
+        occupancy[c2+','+r2] = toileId;
+    toast('Emplacement occupé','err');
+    return;
+  }
+  pos.col = col;
+  pos.row = row;
+  buildOccupancy();
+  afficherMurPlacement();
 }
 
 /* Retourne la salle (autre que salleActive) où la pièce est placée, ou null. */
@@ -1679,13 +1714,26 @@ function placerToilePl(col, row) {
 }
 
 function survolCellule(col, row, bgId) {
-  const t = selectedToilePl || selectedToile; if (!t) return;
-  const {w,h} = calcCases(t.dimensions);
-  const ok = canPlace(col,row,w,h,null);
+  /* Détecter les dimensions de l'œuvre actuellement manipulée :
+     - depuis le strip (selectedToilePl) — placement initial
+     - depuis le mur en mode normal (selectedToile) — lecture seule
+     - depuis le mur en mode placement (peintureSurMurSel) — déplacement direct (M4) */
+  var w, h;
+  if (selectedToilePl || selectedToile) {
+    var dims = calcCases((selectedToilePl || selectedToile).dimensions);
+    w = dims.w; h = dims.h;
+  } else if (peintureSurMurSel !== null && salleActive) {
+    var posSel = (salleActive.positions||[]).find(function(p){ return p.id === peintureSurMurSel; });
+    if (!posSel) return;
+    w = posSel.w; h = posSel.h;
+  } else {
+    return;
+  }
+  var ok = canPlace(col, row, w, h, null);
   nettoyerSurvolBg(bgId);
-  for (let c=col;c<col+w;c++) for (let r=row;r<row+h;r++) {
-    const cell = $(bgId).querySelector(`[data-col="${c}"][data-row="${r}"]`);
-    if (cell) cell.classList.add(ok?'survol':'survol-ko');
+  for (var c = col; c < col + w; c++) for (var r = row; r < row + h; r++) {
+    var cell = $(bgId).querySelector('[data-col="' + c + '"][data-row="' + r + '"]');
+    if (cell) cell.classList.add(ok ? 'survol' : 'survol-ko');
   }
 }
 
