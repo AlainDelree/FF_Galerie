@@ -1241,7 +1241,7 @@ function afficherStripPlacement() {
     } else {
       const ph = document.createElement('div');
       ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.5);border-radius:3px;';
-      ph.textContent = t.glb ? '3D' : '?';
+      ph.textContent = t.glb ? '3D' : (t.photo ? 'Photo' : '?');
       si.appendChild(ph);
     }
 
@@ -1693,11 +1693,16 @@ async function sauverToile() {
     if (tEdit && tEdit.photo) photoExistante = true;
   }
   if (donnees.visible && !photoExistante) {
-    alert(
-      'Impossible de rendre cette ' + LBL.item + ' visible sans photo valide.\n\n' +
-      'Régénérez le thumbnail depuis le 3D, ou téléchargez votre propre image.\n\n' +
-      'Vous pouvez aussi décocher « Visible » pour l\u0027enregistrer en brouillon.'
-    );
+    var _hasGlbNow = !!(donnees.glb || glbB64 ||
+      (toileEnEdition !== null && _trouverOeuvre(toileEnEdition, _typeEdition) && _trouverOeuvre(toileEnEdition, _typeEdition).glb));
+    var _msgPhoto = 'Impossible de rendre cette ' + LBL.item + ' visible sans photo valide.\n\n';
+    if (_isSculptEdition() && _hasGlbNow) {
+      _msgPhoto += 'Régénérez le thumbnail depuis le 3D, ou téléchargez votre propre image.\n\n';
+    } else {
+      _msgPhoto += 'Téléchargez une photo (image .jpg ou .png).\n\n';
+    }
+    _msgPhoto += 'Vous pouvez aussi décocher « Visible » pour l\u0027enregistrer en brouillon.';
+    alert(_msgPhoto);
     return;
   }
 

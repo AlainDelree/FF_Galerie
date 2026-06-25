@@ -148,47 +148,6 @@
       }
     },
     {
-      "id": 8,
-      "nom": "Salle Peinture",
-      "type": "peinture",
-      "couleur_mur": "#99c1f1",
-      "couleur_mur_piece": "#5c3d2e",
-      "couleur_mur_bas": "#50acc8",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "none",
-      "visible": true,
-      "toiles": [
-        5,
-        4,
-        1
-      ],
-      "positions": [
-        {
-          "id": 5,
-          "col": 9,
-          "row": 3,
-          "w": 2,
-          "h": 2
-        },
-        {
-          "id": 4,
-          "col": 3,
-          "row": 5,
-          "w": 2,
-          "h": 2
-        },
-        {
-          "id": 1,
-          "col": 4,
-          "row": 2,
-          "w": 2,
-          "h": 2
-        }
-      ],
-      "positions_mobile": []
-    },
-    {
       "id": 9,
       "nom": "Salle Edde",
       "type": "peinture",
