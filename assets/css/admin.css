@@ -629,13 +629,22 @@ textarea.champ{resize:vertical;min-height:65px;}
 #overlay-crop{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.85);
   flex-direction:column;align-items:center;justify-content:center;}
 #overlay-crop.ouvert{display:flex;}
-.crop-modal{display:flex;flex-direction:column;width:min(96vw,480px);
-  max-height:90dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
+.crop-modal{display:flex;flex-direction:column;width:min(96vw,560px);
+  max-height:92dvh;background:var(--bg2);border-radius:14px;overflow:hidden;}
+@media (min-width:1100px){
+  .crop-modal{width:min(96vw,640px);}
+}
 .crop-hdr{display:flex;align-items:center;justify-content:space-between;
   padding:.7rem 1rem;border-bottom:1px solid var(--brd);font-weight:600;font-size:.95rem;}
 .crop-hdr button{background:none;border:none;color:var(--muted);font-size:1.4rem;
   cursor:pointer;line-height:1;padding:0 .2rem;}
-.crop-canvas-wrap{flex:1;overflow:hidden;min-height:0;background:#111;touch-action:none;user-select:none;}
+.crop-canvas-wrap{flex:1;overflow:hidden;min-height:280px;background:#111;
+  touch-action:none;user-select:none;
+  /* Padding pour que les poignées de recadrage (positionnées sur les bords
+     de la cropBox) ne soient pas coupées par overflow:hidden du wrap.
+     Cropper.js dimensionne son canvas à l'espace disponible — donc l'image
+     reste centrée et les poignées trouvent leur place dans ce padding. */
+  padding:18px;box-sizing:border-box;}
 .crop-canvas-wrap img{display:block;max-width:100%;}
 .crop-aide{font-size:.68rem;letter-spacing:.1em;text-align:center;
   color:var(--muted);padding:.45rem .5rem;background:var(--bg3);}
