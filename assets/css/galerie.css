@@ -498,10 +498,10 @@
 
       /* Mur-inférieur compact */
       .mur-inferieur { height:55px !important; }
-      .porte-mur { height:52px !important; width:36px !important; }
-      .pm-ouverture { height:38px !important; width:26px !important; border-radius:13px 13px 0 0 !important; }
-      .pm-nom { font-size:.45rem !important; }
-      .pm-ouverture  { width:32px; height:44px; border-radius:16px 16px 0 0; }
+      /* Portes : zone cliquable confortable (M1) — au moins la hauteur du mur du bas */
+      .porte-mur { height:55px !important; width:62px !important; }
+      .pm-ouverture { height:48px !important; width:42px !important; border-radius:21px 21px 0 0 !important; }
+      .pm-nom { font-size:.5rem !important; }
 
       /* Plancher */
       .plancher-sol    { min-height:120px !important; max-height:175px !important; }
