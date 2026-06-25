@@ -83,8 +83,13 @@ var FACETTES_META = {
       /* Aperçu iframe model-viewer — pièce avec l'id le plus bas */
       var apercuBase = (typeof ADMIN_CFG !== 'undefined')
         ? ADMIN_CFG.repoPath.replace(/data\/?$/, '') : '';
-      var piece = (typeof toiles !== 'undefined' && toiles.length)
-        ? toiles.slice().sort(function(a,b){ return a.id - b.id; })[0] : null;
+      /* Filtre par type SALLE (sculpture only ici) : en cohabitation peinture+sculpture,
+         toiles[] contient les deux types — il faut prendre une pièce sculpture. */
+      var _pieces = (typeof toiles !== 'undefined')
+        ? toiles.filter(function(t){ return ((t._type)||ADMIN_CFG.type) === 'sculpture'; })
+        : [];
+      var piece = _pieces.length
+        ? _pieces.slice().sort(function(a,b){ return a.id - b.id; })[0] : null;
       var decor = (salle.greffons && salle.greffons.descriptive && salle.greffons.descriptive.decor)
         ? salle.greffons.descriptive.decor : {};
       var wrap = document.createElement('div');
@@ -450,8 +455,11 @@ function _creerCarteGreffon(greffon, salle) {
     (function(iframe) {
       var decorSalle = (salle.greffons && salle.greffons.immersive && salle.greffons.immersive.decor)
         ? salle.greffons.immersive.decor : {};
-      var piece = (typeof toiles !== 'undefined')
-        ? (toiles.find(function(t) { return t.glb; }) || toiles[0] || {}) : {};
+      /* Filtre par type sculpture (greffon immersive = sculpture only) */
+      var _piecesSc = (typeof toiles !== 'undefined')
+        ? toiles.filter(function(t){ return ((t._type)||ADMIN_CFG.type) === 'sculpture'; })
+        : [];
+      var piece = _piecesSc.find(function(t) { return t.glb; }) || _piecesSc[0] || {};
       function onMsg(e) {
         if (!iframe.contentWindow || e.source !== iframe.contentWindow) return;
         if (e.data && e.data.type === 'immersive-awaiting-data') {
@@ -700,10 +708,11 @@ function ouvrirEditeurImmersif(salle) {
   iframe.style.cssText = 'flex:1;border:none;';
   iframe.tabIndex = -1;
 
-  /* Pièce à afficher : première avec GLB */
-  var piece = (typeof toiles !== 'undefined')
-    ? (toiles.find(function(t) { return t.glb; }) || toiles[0] || {})
-    : {};
+  /* Pièce à afficher : première sculpture avec GLB (filtre cohabitation) */
+  var _piecesEdit = (typeof toiles !== 'undefined')
+    ? toiles.filter(function(t){ return ((t._type)||ADMIN_CFG.type) === 'sculpture'; })
+    : [];
+  var piece = _piecesEdit.find(function(t) { return t.glb; }) || _piecesEdit[0] || {};
 
   /* Injecter les données quand l'iframe est prête */
   function onMsg(e) {
@@ -921,8 +930,12 @@ function ouvrirEditeurDescriptif(salle) {
 
   var apercuBase = (typeof ADMIN_CFG !== 'undefined')
     ? ADMIN_CFG.repoPath.replace(/data\/?$/, '') : '';
-  var aperçuPiece = (typeof toiles !== 'undefined' && toiles.length)
-    ? toiles.slice().sort(function(a,b){ return a.id - b.id; })[0] : null;
+  /* Aperçu salle descriptive (sculpture only) : prendre une sculpture */
+  var _piecesDesc = (typeof toiles !== 'undefined')
+    ? toiles.filter(function(t){ return ((t._type)||ADMIN_CFG.type) === 'sculpture'; })
+    : [];
+  var aperçuPiece = _piecesDesc.length
+    ? _piecesDesc.slice().sort(function(a,b){ return a.id - b.id; })[0] : null;
 
   var iframeDesc = document.createElement('iframe');
   iframeDesc.src = apercuBase + 'descriptive-apercu.html?v=' + Date.now();

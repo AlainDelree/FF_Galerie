@@ -1047,13 +1047,16 @@ function entrerModePlacement() {
     div.querySelector('#arr-ann').addEventListener('click', () => div.remove());
     div.querySelector('#arr-ok').addEventListener('click', () => {
       div.remove();
-      // Retire les toiles de leur ancienne salle
+      // Retire les œuvres de leur ancienne salle — UNIQUEMENT des salles du
+      // même type. Sinon, déplacer la peinture id=4 dans Cuisine retirerait
+      // la sculpture id=4 de Salle E (collision d'ID inter-types).
+      var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
       autresSelectionnees.forEach(id => {
         salles.forEach(s => {
-          if (s.id !== salleActive.id) {
-            s.toiles = s.toiles.filter(tid => tid !== id);
-            s.positions = (s.positions||[]).filter(p => p.id !== id);
-          }
+          if (s.id === salleActive.id) return;
+          if (s.type && s.type !== _typeSalleAct) return;
+          s.toiles = s.toiles.filter(tid => tid !== id);
+          s.positions = (s.positions||[]).filter(p => p.id !== id);
         });
         if (!salleActive.toiles.includes(id)) salleActive.toiles.push(id);
       });
@@ -1135,12 +1138,15 @@ function ouvrirArrangerApresConfirm() {
 
 function autoPlacerTout() {
   if (!salleActive) return;
+  /* Filtrer toiles candidates par TYPE de la salle active (cohabitation). */
+  var _typeSalleAct = salleActive.type || ADMIN_CFG.type || 'peinture';
   const poseeIds = new Set((salleActive.positions||[]).map(p=>p.id));
   const aplacer = [...new Set([...poseeIds,...toilesSelectionnees])]
     .filter(id => !poseeIds.has(id))
-    .map(id => toiles.find(x=>x.id===id)).filter(Boolean);
+    .map(id => toiles.find(x => x.id === id && ((x._type)||ADMIN_CFG.type) === _typeSalleAct))
+    .filter(Boolean);
 
-  if (aplacer.length === 0) { toast("Toutes les toiles sont déjà placées"); return; }
+  if (aplacer.length === 0) { toast("Toutes les " + LBL.items + " sont déjà placées"); return; }
 
   let placees = 0, impossible = 0;
   for (const t of aplacer) {
@@ -1149,7 +1155,9 @@ function autoPlacerTout() {
     outer: for (let r=1; r<=ROWS-h+1; r++) {
       for (let col=1; col<=COLS-w+1; col++) {
         if (canPlace(col,r,w,h,null)) {
+          /* Retirer t.id UNIQUEMENT des salles du même type. */
           salles.forEach(s => {
+            if (s.type && s.type !== _typeSalleAct) return;
             s.toiles = s.toiles.filter(x=>x!==t.id);
             s.positions = (s.positions||[]).filter(p=>p.id!==t.id);
           });
