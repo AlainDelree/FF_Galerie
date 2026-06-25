@@ -2216,15 +2216,36 @@ function ouvrirModalSalle() {
     if ([...selCopier.options].some(o => o.value === valActuelle)) selCopier.value = valActuelle;
     else selCopier.value = '';
   }
-  // Type par défaut : type de l'admin courant
+  // Type par défaut : type majoritaire des salles existantes ou type de l'admin
   const selType = $('inp-salle-type');
-  const typeDef = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture') ? 'sculpture' : 'peinture';
+  function _typeMajoritaireSalles() {
+    if (!salles.length) return ADMIN_CFG.type || 'peinture';
+    var counts = { peinture: 0, sculpture: 0 };
+    salles.forEach(function(s) {
+      var t = s.type || ADMIN_CFG.type || 'peinture';
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    return counts.sculpture > counts.peinture ? 'sculpture' : 'peinture';
+  }
+  const typeDef = _typeMajoritaireSalles();
+  // Helper pour appliquer le code couleur + adapter le titre
+  function _appliquerCouleurModalSalle(type) {
+    var modal = document.querySelector('#overlay-salle .modal');
+    if (!modal) return;
+    modal.classList.toggle('type-peinture',  type !== 'sculpture');
+    modal.classList.toggle('type-sculpture', type === 'sculpture');
+    var titEl = modal.querySelector('.modal-tit');
+    if (titEl) titEl.textContent = (type === 'sculpture' ? 'Nouvelle salle sculpture' : 'Nouvelle salle peinture');
+  }
   if (selType) {
     selType.value = typeDef;
-    // Rafraîchir la liste à chaque changement de type (évite clonage cross-type)
-    selType.onchange = function() { _peuplerSelCopier(selType.value); };
+    selType.onchange = function() {
+      _peuplerSelCopier(selType.value);
+      _appliquerCouleurModalSalle(selType.value);
+    };
   }
   _peuplerSelCopier(typeDef);
+  _appliquerCouleurModalSalle(typeDef);
   $('overlay-salle').classList.add('ouvert');
 }
 
