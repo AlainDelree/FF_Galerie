@@ -1136,25 +1136,17 @@ function ouvrirArrangerApresConfirm() {
   _majFlechesNavSalles();
 }
 
-/* M5 — Liste des salles du même type que salleActive, ordonnées comme dans salles[] */
-function _sallesMemeType() {
-  if (!salleActive) return [];
-  var typeA = salleActive.type || ADMIN_CFG.type || 'peinture';
-  return salles.filter(function(s) {
-    var t = s.type || ADMIN_CFG.type || 'peinture';
-    return t === typeA;
-  });
-}
-
-/* M5 — Salle voisine de salleActive (direction = -1 ou +1), null si bord. */
+/* M5 — Salle voisine de salleActive (direction = -1 ou +1), null si bord.
+   Navigation entre TOUTES les salles, tous types confondus : ouvrirArrangerApresConfirm
+   gère déjà le dispatch peinture/sculpture (panneau D-pad ↔ ✕, toggle PC/GSM, etc.).
+   Aucune raison de cloisonner la navigation par type. */
 function _salleVoisine(direction) {
-  var liste = _sallesMemeType();
-  if (liste.length <= 1) return null;
-  var idx = liste.findIndex(function(s) { return s.id === salleActive.id; });
+  if (!salleActive || salles.length <= 1) return null;
+  var idx = salles.findIndex(function(s) { return s.id === salleActive.id; });
   if (idx < 0) return null;
   var nIdx = idx + direction;
-  if (nIdx < 0 || nIdx >= liste.length) return null;
-  return liste[nIdx];
+  if (nIdx < 0 || nIdx >= salles.length) return null;
+  return salles[nIdx];
 }
 
 /* M5 — Mise à jour visibilité + label des flèches */
@@ -1163,16 +1155,13 @@ function _majFlechesNavSalles() {
   var next = document.getElementById('pl-nav-next');
   var lbl  = document.getElementById('pl-nav-label');
   if (!prev || !next) return;
-  var sPrev = _salleVoisine(-1);
-  var sNext = _salleVoisine(+1);
-  prev.style.display = sPrev ? '' : 'none';
-  next.style.display = sNext ? '' : 'none';
+  prev.style.display = _salleVoisine(-1) ? '' : 'none';
+  next.style.display = _salleVoisine(+1) ? '' : 'none';
   if (lbl && salleActive) {
-    var liste = _sallesMemeType();
-    var idx = liste.findIndex(function(s) { return s.id === salleActive.id; });
-    if (liste.length > 1) {
+    var idx = salles.findIndex(function(s) { return s.id === salleActive.id; });
+    if (salles.length > 1) {
       lbl.style.display = '';
-      lbl.textContent = salleActive.nom + ' — ' + (idx+1) + '/' + liste.length;
+      lbl.textContent = salleActive.nom + ' — ' + (idx+1) + '/' + salles.length;
     } else {
       lbl.style.display = 'none';
     }
