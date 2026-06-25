@@ -719,7 +719,7 @@ function selectSalle(id) {
   couleurMurBasActuel   = salleActive.couleur_mur_bas   || '#111111';
   document.documentElement.style.setProperty('--mur-piece-col', couleurMurPieceActuel);
   document.documentElement.style.setProperty('--mur-bas-col',   couleurMurBasActuel);
-  couleurCadresActuel = salleActive.couleur_cadres;
+  couleurCadresActuel = salleActive.couleur_cadres || '#3a3a3a';
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
   if (typeof appliquerApparence === 'function') appliquerApparence();

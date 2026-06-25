@@ -99,9 +99,12 @@ function renderColorSwatches(type) {
   if (!container) return;
   var plus        = container.querySelector('.sw-plus');
   container.innerHTML = '';
+  /* Garde-fou : si current undefined (salle sans couleur_cadres p.ex.),
+     fallback sur une chaîne vide pour éviter le crash toLowerCase. */
+  var curLc = (typeof current === 'string') ? current.toLowerCase() : '';
   getColorHist(type).forEach(function(col) {
     var sw = document.createElement('div');
-    sw.className = 'sw' + (col.toLowerCase() === current.toLowerCase() ? ' sel' : '');
+    sw.className = 'sw' + (col.toLowerCase() === curLc ? ' sel' : '');
     sw.style.background = col;
     sw.dataset.val = col;
     sw.addEventListener('click', function() {
