@@ -1132,6 +1132,86 @@ function ouvrirArrangerApresConfirm() {
   $('pl-aide').textContent = nbPlacees > 0
     ? 'Cliquez sur un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' du bas pour la placer ou la déplacer'
     : 'Sélectionnez un' + (_estSculptSalleActive() ? 'e pièce' : 'e toile') + ' en bas';
+  /* M5 — affichage / masquage des flèches selon le nombre de salles voisines */
+  _majFlechesNavSalles();
+}
+
+/* M5 — Liste des salles du même type que salleActive, ordonnées comme dans salles[] */
+function _sallesMemeType() {
+  if (!salleActive) return [];
+  var typeA = salleActive.type || ADMIN_CFG.type || 'peinture';
+  return salles.filter(function(s) {
+    var t = s.type || ADMIN_CFG.type || 'peinture';
+    return t === typeA;
+  });
+}
+
+/* M5 — Salle voisine de salleActive (direction = -1 ou +1), null si bord. */
+function _salleVoisine(direction) {
+  var liste = _sallesMemeType();
+  if (liste.length <= 1) return null;
+  var idx = liste.findIndex(function(s) { return s.id === salleActive.id; });
+  if (idx < 0) return null;
+  var nIdx = idx + direction;
+  if (nIdx < 0 || nIdx >= liste.length) return null;
+  return liste[nIdx];
+}
+
+/* M5 — Mise à jour visibilité + label des flèches */
+function _majFlechesNavSalles() {
+  var prev = document.getElementById('pl-nav-prev');
+  var next = document.getElementById('pl-nav-next');
+  var lbl  = document.getElementById('pl-nav-label');
+  if (!prev || !next) return;
+  var sPrev = _salleVoisine(-1);
+  var sNext = _salleVoisine(+1);
+  prev.style.display = sPrev ? '' : 'none';
+  next.style.display = sNext ? '' : 'none';
+  if (lbl && salleActive) {
+    var liste = _sallesMemeType();
+    var idx = liste.findIndex(function(s) { return s.id === salleActive.id; });
+    if (liste.length > 1) {
+      lbl.style.display = '';
+      lbl.textContent = salleActive.nom + ' — ' + (idx+1) + '/' + liste.length;
+    } else {
+      lbl.style.display = 'none';
+    }
+  }
+}
+
+/* M5 — Navigue vers salle voisine (direction -1 ou +1) sans quitter le mode édition.
+   Si modifications non sauvegardées : demande confirmation. */
+function _naviguerSalleArranger(direction) {
+  var cible = _salleVoisine(direction);
+  if (!cible) return;
+  function go() {
+    salleActive = cible;
+    /* Re-render complet via ouvrirArrangerApresConfirm : rebuild occupancy,
+       nouveau snapshot, mur + strip + panneau ctrl mis à jour. */
+    ouvrirArrangerApresConfirm();
+  }
+  if (typeof _arrangerADesModifs === 'function' && _arrangerADesModifs()) {
+    if (!confirm('Modifications non sauvegardées dans « ' + (salleActive.nom||'cette salle') + ' ». Continuer sans sauvegarder ?')) return;
+    /* Restaurer le snapshot avant de quitter — sinon les modifs subsistent en mémoire */
+    if (_arrangerSnapshot) {
+      salleActive.positions        = _arrangerSnapshot.positions;
+      salleActive.positions_mobile = _arrangerSnapshot.positions_mobile;
+      salleActive.toiles           = _arrangerSnapshot.toiles;
+      /* Restaurer les supports */
+      if (_arrangerSnapshot.supports) {
+        _arrangerSnapshot.supports.forEach(function(snap) {
+          var t = toiles.find(function(x) {
+            return x.id === snap.id && (x._type || ADMIN_CFG.type) === snap._type;
+          });
+          if (t) {
+            t.support    = snap.support ? JSON.parse(JSON.stringify(snap.support)) : null;
+            t.sans_socle = snap.sans_socle;
+          }
+        });
+      }
+    }
+  }
+  go();
 }
 
 

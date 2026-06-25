@@ -968,6 +968,14 @@ $('btn-apercu-placement').addEventListener('click', () => {
   quitterModePlacement();
 });
 
+/* M5 — flèches navigation salles en mode édition */
+$('pl-nav-prev')?.addEventListener('click', function() {
+  if (typeof _naviguerSalleArranger === 'function') _naviguerSalleArranger(-1);
+});
+$('pl-nav-next')?.addEventListener('click', function() {
+  if (typeof _naviguerSalleArranger === 'function') _naviguerSalleArranger(+1);
+});
+
 /* Switch vue PC / GSM — dispatch sol/mur selon le type de la salle active */
 $('btn-switch-vue')?.addEventListener('click', function() {
   _placementVue = _placementVue === 'pc' ? 'gsm' : 'pc';
