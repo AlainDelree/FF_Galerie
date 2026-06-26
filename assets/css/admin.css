@@ -168,7 +168,7 @@ button{cursor:pointer;}
 #plan-edit-bar .plan-mv-btn:disabled{opacity:.4;cursor:default;}
 #plan-edit-bar .plan-mv-del{border-color:#c0392b;color:#c0392b;}
 #plan-edit-bar .plan-mv-del:hover:not(:disabled){background:rgba(192,57,43,.08);border-color:#c0392b;}
-.chip.edit-mode{pointer-events:none;cursor:default;}
+.chip.edit-mode{pointer-events:auto;cursor:pointer;}
 .chip.edit-mode .chip-mv,.chip.edit-mode .chip-del,.chip.edit-mode .chip-conf-btn{pointer-events:all;}
 /* Drag-and-drop chips */
 .chip.draggable{touch-action:none;cursor:grab;pointer-events:all;}
