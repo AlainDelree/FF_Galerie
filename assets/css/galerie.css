@@ -516,7 +516,7 @@
       bottom:0;
       left:0;
       right:0;
-      background:rgba(17,17,17,.95);
+      background:rgba(17,17,17,.20); /* DEBUG: était .95 — voir ce qu'il y a derrière */
       padding:.8rem 0;
       justify-content:center;
       z-index:50;
