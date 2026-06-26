@@ -113,7 +113,13 @@ button{cursor:pointer;}
    et les blocs de salles deviennent invisibles. Desktop (>=860px) inchange. */
 @media (max-width: 859px) {
   .plan-section    { flex-wrap: wrap; }
-  #clone-salle-row { flex-basis: 100%; }
+  /* Chips de salles : ligne pleine dediee -> on en voit davantage avant de scroller */
+  .salles-chips    { flex-basis: 100%; }
+  /* Ligne Cloner : sa propre ligne + contenu force sur UNE ligne (label tronque si besoin) */
+  #clone-salle-row { flex-basis: 100%; flex-wrap: nowrap !important; }
+  #clone-salle-row > span   { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #clone-salle-row > select,
+  #clone-salle-row > button { flex-shrink: 0; }
 }
 .chip{padding:.35rem .7rem .35rem 10px;border-radius:8px;cursor:pointer;text-align:center;
   border:2px solid transparent;transition:all .15s;min-width:72px;background:var(--bg3);}
