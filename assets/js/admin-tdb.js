@@ -235,9 +235,16 @@ function _clonerEsthetique(srcId, cibleId) {
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
 
-  /* Rafraîchir l'aperçu + sauvegarder */
-  if (typeof appliquerApparence === 'function') appliquerApparence();
-  _renderTDB();
+  /* Recharge complètement l'apparence de la salle active (globales mur /
+     mur-pièce / mur-bas / texture / cadres + CSS vars) puis re-render TDB +
+     Arranger. Sans ça, seules les DONNÉES de la salle changent : l'aperçu se
+     met à jour mais l'Arranger garde l'ancienne apparence jusqu'à un refresh. */
+  if (typeof selectSalle === 'function' && salleActive && salleActive.id === cibleId) {
+    selectSalle(cibleId);
+  } else {
+    if (typeof appliquerApparence === 'function') appliquerApparence();
+    _renderTDB();
+  }
   if (typeof sauvegarder === 'function') {
     sauvegarder('[admin] Clonage esthétique « ' + nomSrc + ' » → « ' + (cible.nom || 'salle') + ' »', null)
       .then(function() { if (typeof toast === 'function') toast('✓ Esthétique clonée'); })
