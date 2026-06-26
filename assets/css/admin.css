@@ -150,11 +150,11 @@ button{cursor:pointer;}
 .plan-btn-cancel{border-color:#c0392b;color:#c0392b;}
 .plan-btn-cancel:hover{background:rgba(192,57,43,.08);}
 .chip-mv{display:inline-flex;align-items:center;justify-content:center;
-  width:18px;height:18px;border-radius:4px;border:1px solid var(--brd);
-  background:var(--bg2);cursor:pointer;font-size:10px;padding:0;line-height:1;
-  color:var(--text);transition:background .1s,border-color .1s;flex-shrink:0;}
+  width:23px;height:20px;border-radius:5px;border:1.5px solid var(--gold);
+  background:rgba(200,160,80,.18);cursor:pointer;font-size:14px;padding:0;line-height:1;
+  color:var(--gold);font-weight:700;transition:background .1s,border-color .1s,color .1s;flex-shrink:0;}
 .chip-mv:hover:not(:disabled){background:var(--gold);border-color:var(--gold);color:#fff;}
-.chip-mv:disabled{opacity:.25;cursor:default;}
+.chip-mv:disabled{opacity:.28;cursor:default;}
 .chip.edit-mode{pointer-events:none;cursor:default;}
 .chip.edit-mode .chip-mv,.chip.edit-mode .chip-del,.chip.edit-mode .chip-conf-btn{pointer-events:all;}
 /* Drag-and-drop chips */
