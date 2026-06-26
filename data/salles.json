@@ -3,7 +3,7 @@
     {
       "id": 13,
       "nom": "Bureau",
-      "couleur_mur": "#a51d2d",
+      "couleur_mur": "#5f0b1a",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
@@ -25,12 +25,12 @@
     {
       "id": 5,
       "nom": "Entrée",
-      "couleur_mur": "#1c1c1c",
+      "couleur_mur": "#5f0b1a",
       "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#c8a050",
+      "couleur_mur_bas": "#55c850",
       "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 10,
-      "texture": "pierre",
+      "epaisseur_cadres": 2,
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": false,
       "toiles": [
         8,
@@ -39,8 +39,8 @@
       "positions": [
         {
           "id": 8,
-          "col": 7,
-          "row": 1,
+          "col": 9,
+          "row": 3,
           "w": 4,
           "h": 5
         },
@@ -57,10 +57,12 @@
     {
       "id": 6,
       "nom": "Couloir",
-      "couleur_mur": "#29275e",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/ecorce-grosse.jpg",
+      "couleur_mur": "#ffff00",
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#55c850",
+      "couleur_cadres": "#f0f0f0",
+      "epaisseur_cadres": 6,
+      "texture": "pierre",
       "visible": true,
       "toiles": [
         14,
@@ -172,7 +174,7 @@
         },
         {
           "id": 21,
-          "col": 1,
+          "col": 3,
           "row": 4,
           "w": 8,
           "h": 5
@@ -197,10 +199,10 @@
     {
       "id": 9,
       "nom": "Buanderie",
-      "couleur_mur": "#25dbdb",
-      "couleur_cadres": "#1c1c1c",
+      "couleur_mur": "#5f0b1a",
+      "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "velours",
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
       "toiles": [
         27,
@@ -243,7 +245,7 @@
     {
       "id": 10,
       "nom": "Escaliers",
-      "couleur_mur": "#e8e4dc",
+      "couleur_mur": "#f5f5f5",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
@@ -289,7 +291,9 @@
     {
       "id": 11,
       "nom": "Salle de bain",
-      "couleur_mur": "#f5f5f5",
+      "couleur_mur": "#e5a50a",
+      "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#4c7245",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
