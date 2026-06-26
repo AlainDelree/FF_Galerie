@@ -1388,9 +1388,12 @@ textarea.champ{resize:vertical;min-height:65px;}
     border-right: none;
     border-bottom: 1px solid var(--brd);
     flex: 0 0 auto;
-    max-height: 50vh;
+    /* Pas de max-height : hauteur naturelle. Le scroll se fait sur
+       .oeuvres-list (conteneur unique) -> swipe continu sculptures -> peintures. */
   }
   .oeuvres-col:last-child { border-bottom: none; }
+  /* Le corps ne scrolle plus en interne sur mobile : evite le double scroll. */
+  .oeuvres-col-corps { overflow-y: visible; }
 }
 
 /* ── Config décor immersif (TDB carte greffon) ── */
