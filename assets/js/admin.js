@@ -497,14 +497,6 @@ async function uploaderGLB(id, b64, typeOeuvre) {
 // ═══════════════════════════════════════════════
 // DONNÉES
 // ═══════════════════════════════════════════════
-/* Chemin du stock d'œuvres : nouveau format data/oeuvres/<type>.json.
-   Fallback transparent vers data/toiles.json (ancien format) en lecture
-   pour les éventuels environnements pas encore migrés. L'écriture va
-   toujours dans le nouveau chemin (sauvegarder() ci-dessous). */
-function _oeuvresPath() {
-  return ADMIN_CFG.repoPath + 'oeuvres/' + ADMIN_CFG.type + '.json';
-}
-
 /* Helper d'introspection — retourne le type d'une œuvre quel que soit
    son contexte. Utilisé par tout le code qui doit s'adapter selon
    peinture/sculpture sans dépendre d'ADMIN_CFG.type (qui n'est que le
