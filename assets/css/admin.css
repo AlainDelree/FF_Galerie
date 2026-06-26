@@ -1456,7 +1456,8 @@ textarea.champ{resize:vertical;min-height:65px;}
   overflow-y: auto;
 }
 @media (max-width: 600px) {
-  #overlay-imm-edit { flex-direction: column; }
+  #overlay-imm-edit,
+  #overlay-desc-edit { flex-direction: column; }
   .imm-edit-panel { width: 100%; border-left: none; border-top: 1px solid var(--brd); max-height: 40vh; }
 }
 
