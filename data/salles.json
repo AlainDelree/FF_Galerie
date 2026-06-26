@@ -97,10 +97,12 @@
     {
       "id": 7,
       "nom": "Cuisine",
-      "couleur_mur": "#571b1b",
+      "couleur_mur": "#5f0b1a",
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#55c850",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/ecorce-grosse.jpg",
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
       "toiles": [
         4,
