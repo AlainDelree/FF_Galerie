@@ -516,7 +516,7 @@
       bottom:0;
       left:0;
       right:0;
-      background:rgba(17,17,17,.95);
+      background:rgba(17,17,17,.20);
       padding:.8rem 0;
       justify-content:center;
       z-index:50;
@@ -608,6 +608,35 @@
       .etiquette { position:absolute; top:100%; left:0; right:0; transform:none; margin-top:.3rem; display:flex; justify-content:center; }
       .etiquette-titre { font-size:.65rem; letter-spacing:.03em; }
       .plaquette { padding:.25rem .5rem; }
+
+      /* Nav-mobile : numéro de salle "I / III" caché (info redondante avec
+         le titre "Salle X" du bandeau) — laisse plus de place visuelle aux
+         flèches transparentes et au support de l'œuvre placée tout en bas. */
+      .nav-mobile-info { display:none; }
+
+      /* Nom de la salle (italique doré sur bandeau ocre) : contraste renforcé
+         pour rester lisible sur les couleurs claires de mur personnalisées. */
+      .nom-salle {
+        color:#3a2818 !important;
+        text-shadow:0 1px 0 rgba(255,255,255,.4), 0 0 2px rgba(0,0,0,.15);
+        font-weight:600;
+      }
+
+      /* Nom de salle au-dessus des portes : mini-badge transparent noir +
+         texte or. Plus de calcul d'ombre/outline (problématique sur fond
+         clair où l'outline noir crée un effet d'épaisseur perçu comme flou).
+         Le badge noir contraste garanti sur tout mur (clair ou foncé),
+         et le texte or à l'intérieur reste pur — rendu net partout.
+         Même esthétique que les chevrons de la nav (ronds noirs + flèches or). */
+      .pm-nom {
+        color:var(--accent) !important;
+        background:rgba(0,0,0,.55);
+        padding:1px 5px;
+        border-radius:3px;
+        font-weight:500;
+        font-size:.62rem !important;
+        text-shadow:none;
+      }
     }
 
     /* ═══════════════════════════════════════════════════════════════
