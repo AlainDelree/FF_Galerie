@@ -1,1 +1,21 @@
-{ "evenements": [], "collegues": [] }
+{
+  "evenements": [
+    {
+      "titre": "Test",
+      "dateAffichage": "",
+      "lieu": "",
+      "description": "",
+      "lien": "",
+      "id": 1782473139658
+    }
+  ],
+  "collegues": [],
+  "musique": {
+    "fichier": ""
+  },
+  "presentation": {
+    "titre": "",
+    "texte": "",
+    "photo": ""
+  }
+}
