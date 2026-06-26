@@ -1,37 +1,61 @@
 {
   "salles": [
     {
-      "id": 9,
-      "nom": "Salle Edde",
-      "type": "peinture",
-      "couleur_mur": "#99c1f1",
-      "couleur_mur_piece": "#ecf0b0",
-      "couleur_mur_bas": "#3a3a3a",
+      "id": 1,
+      "nom": "Salle I",
+      "type": "sculpture",
+      "couleur_mur": "#99f1b7",
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#f0f0f0",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        3,
-        5
+        1,
+        9,
+        4
       ],
       "positions": [
         {
-          "id": 3,
-          "col": 6,
-          "row": 3,
-          "w": 2,
-          "h": 2
+          "id": 1,
+          "x": 19,
+          "y": 27,
+          "gabarit": "SOL"
         },
         {
-          "id": 5,
-          "col": 9,
-          "row": 6,
-          "w": 2,
-          "h": 2
+          "id": 9,
+          "x": 67,
+          "y": 52,
+          "gabarit": "M"
+        },
+        {
+          "id": 4,
+          "x": 47,
+          "y": 48,
+          "gabarit": "S"
         }
       ],
-      "positions_mobile": [],
+      "positions_mobile": [
+        {
+          "id": 1,
+          "x": 25.608870461113206,
+          "y": 85.9090909090909,
+          "gabarit": "SOL"
+        },
+        {
+          "id": 3,
+          "x": 91.95778364116094,
+          "y": 51.25518341307815,
+          "gabarit": "L"
+        },
+        {
+          "id": 4,
+          "x": 50.71240105540898,
+          "y": 5,
+          "gabarit": "S"
+        }
+      ],
       "greffons": {
         "immersive": {
           "actif": true,
@@ -65,7 +89,6 @@
       "nom": "Salle B",
       "type": "sculpture",
       "couleur_mur": "#99c1f1",
-      "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#b4e4f4",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
@@ -126,61 +149,37 @@
       }
     },
     {
-      "id": 1,
-      "nom": "Salle I",
-      "type": "sculpture",
+      "id": 9,
+      "nom": "Salle Edde",
+      "type": "peinture",
       "couleur_mur": "#99c1f1",
-      "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#b4e4f4",
+      "couleur_mur_piece": "#ecf0b0",
+      "couleur_mur_bas": "#3a3a3a",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "parquet",
+      "texture": "carrelage",
       "visible": true,
       "toiles": [
-        1,
-        9,
-        4
+        3,
+        5
       ],
       "positions": [
         {
-          "id": 1,
-          "x": 19,
-          "y": 27,
-          "gabarit": "SOL"
-        },
-        {
-          "id": 9,
-          "x": 67,
-          "y": 52,
-          "gabarit": "M"
-        },
-        {
-          "id": 4,
-          "x": 47,
-          "y": 48,
-          "gabarit": "S"
-        }
-      ],
-      "positions_mobile": [
-        {
-          "id": 1,
-          "x": 25.608870461113206,
-          "y": 85.9090909090909,
-          "gabarit": "SOL"
-        },
-        {
           "id": 3,
-          "x": 91.95778364116094,
-          "y": 51.25518341307815,
-          "gabarit": "L"
+          "col": 6,
+          "row": 3,
+          "w": 2,
+          "h": 2
         },
         {
-          "id": 4,
-          "x": 50.71240105540898,
-          "y": 5,
-          "gabarit": "S"
+          "id": 5,
+          "col": 9,
+          "row": 6,
+          "w": 2,
+          "h": 2
         }
       ],
+      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
@@ -191,9 +190,9 @@
             "socle_couleur": "#f0ece4",
             "socle_use_piece": false,
             "pan_a": "#7a2525",
-            "pan_b": "#7a2525",
+            "pan_b": "#1a3055",
             "pan_c": "#2a5035",
-            "pan_d": "#2a5035",
+            "pan_d": "#a04820",
             "piquet": "#c8a050",
             "corde": "#8b0020"
           }
@@ -201,9 +200,9 @@
         "descriptive": {
           "actif": true,
           "decor": {
-            "pan_a": "#5a3794",
-            "pan_b": "#5a3794",
-            "pan_c": "#5a3794",
+            "pan_a": "#b4e4f4",
+            "pan_b": "#e0f0b0",
+            "pan_c": "#d8c4ec",
             "pan_d": "#f4b0a8"
           }
         }

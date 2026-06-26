@@ -13,6 +13,17 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 
 ---
 
+## Suivi des corrections
+
+**Session 26/06/2026** — H1, A3, A1 traités sur `dev` puis mergés en prod :
+- **H1 — Dead code chips** : ✅ résolu (`b919539`). `_initChipsDrag` + `deplacerSalleVers` + CSS associé retirés.
+- **A3 — innerHTML nom de salle** : ✅ résolu (`a23345b`). `galerie-core.js:230` passe le nom en `textContent`. Bonus : cache-buster `galerie-core.js` uniformisé sur les 12 HTML (H3 partiel).
+- **A1 — Accolade orpheline `style.css`** : ✅ résolu (`2be22d9`). Cause diagnostiquée via `git blame` (origine `fbcab00c`, seuil `@media max-width:540px`). Enveloppe `@media` restaurée, accolades 66/66. Vérifié sur PC (`.plan-galerie` reprend `max-width:400px` au lieu de 320). Aucune régression.
+- **A2 — `commitMulti` force:true** : ⏸️ reporté (décision Alain : attendre ≥ 2 éditeurs parallèles).
+- **H3 — cache-busters** : partiellement traité (galerie-core uniformisé). Reste : `style.css` n'a aucun `?v=` → à ajouter un jour pour fiabiliser le rechargement après modif.
+
+---
+
 ## ✅ Points solides (vérifiés)
 
 - **Écritures GitHub** : tous les `PUT`/`DELETE` portent `branch: BRANCH` dans le corps.
