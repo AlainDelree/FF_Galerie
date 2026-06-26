@@ -97,12 +97,12 @@
     {
       "id": 7,
       "nom": "Cuisine",
-      "couleur_mur": "#5f0b1a",
-      "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#55c850",
+      "couleur_mur": "#e5a50a",
+      "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#4c7245",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/texture-bleu.jpg",
+      "texture": "none",
       "visible": true,
       "toiles": [
         4,
