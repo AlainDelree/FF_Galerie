@@ -616,7 +616,11 @@ function afficherPlan() {
       chip.classList.add('edit-mode');
       if (s.id === _salleSelEdit) chip.classList.add('sel-edit');
       (function(sid) {
-        chip.addEventListener('click', function() { _salleSelEdit = sid; afficherPlan(); });
+        chip.addEventListener('click', function() {
+          _salleSelEdit = sid;
+          selectSalle(sid);   /* charge la salle (badge, apparence, arrangement) */
+          afficherPlan();     /* re-rend les chips (surlignage) + la barre de contrôle */
+        });
       })(s.id);
     } else {
       chip.addEventListener('click', () => selectSalle(s.id));
