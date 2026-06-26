@@ -622,14 +622,15 @@
         font-weight:600;
       }
 
-      /* Nom de salle au-dessus des portes : sur mur clair (ex Salle I #f0f0f0)
-         l'or est peu lisible. Ombre PROJETÉE (pas d'outline) — sur fond clair
-         elle crée un effet de relief qui donne du contraste ; sur fond foncé
-         elle disparaît dans le mur et le texte or reste pur et net. */
+      /* Nom de salle au-dessus des portes : à .55rem (~9px) le texte paraissait
+         flou simplement parce que trop petit. Taille bumped à .68rem (~11px) +
+         ombre projetée simple (sans halo). Sur fond clair → relief lisible ;
+         sur fond foncé → ombre noyée dans le mur, texte or pur. */
       .pm-nom {
         color:var(--accent) !important;
-        text-shadow:0 1px 2px rgba(0,0,0,.55), 0 0 1px rgba(0,0,0,.4);
+        text-shadow:0 1px 2px rgba(0,0,0,.6);
         font-weight:600;
+        font-size:.68rem !important;
       }
     }
 
