@@ -250,7 +250,17 @@ function listeOeuvres(opts) {
       var img = document.createElement('img');
       img.alt = ''; img.loading = 'lazy'; img.draggable = false;
       img.onerror = function() { this.onerror = null; this.style.display = 'none'; };
-      img.src = t._preview || photo;
+      /* Vignette : _preview (base64 frais) prioritaire ; sinon photo locale
+         cache-bustee par le jeton (bumpe au reload/save) -> pas d'image perimee. */
+      var _srcVignette = t._preview;
+      if (!_srcVignette) {
+        _srcVignette = photo;
+        if (photo && !/^https?:/i.test(t.photo)) {
+          var _tk = (typeof _imgCacheToken !== 'undefined') ? _imgCacheToken : Date.now();
+          _srcVignette = photo + (photo.indexOf('?') < 0 ? '?' : '&') + 'v=' + _tk;
+        }
+      }
+      img.src = _srcVignette;
       thumb.appendChild(img);
     } else {
       var ph = document.createElement('span');

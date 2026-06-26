@@ -579,6 +579,11 @@ async function _lireToutesOeuvres() {
   return result;
 }
 
+/* Jeton de cache pour les vignettes : ne change qu'au (re)chargement des
+   donnees et apres chaque sauvegarde -> evite l'image perimee post-edition
+   sans recharger les vignettes a chaque frappe de recherche/tri. */
+var _imgCacheToken = Date.now();
+
 async function chargerTout() {
   const _ov = document.getElementById('overlay-chargement');
   if (_ov) _ov.classList.add('visible');
@@ -587,6 +592,7 @@ async function chargerTout() {
       _lireToutesOeuvres(),
       lireRaw(ADMIN_CFG.repoPath + 'salles.json')
     ]);
+    _imgCacheToken = Date.now();
 
     /* Construit le stock fusionné en mémoire : chaque œuvre porte _type pour
        qu'on puisse plus tard la sauver dans le bon fichier. */
@@ -704,6 +710,7 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
 
     fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) });
     await commitMulti(fichiers, 'Admin : ' + message);
+    _imgCacheToken = Date.now();
     syncBadge('ok');
     if (toastMsg) toast(toastMsg);
     /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
