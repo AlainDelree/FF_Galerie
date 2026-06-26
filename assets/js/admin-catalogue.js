@@ -4,6 +4,11 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Ouverture du panneau de sélection ── */
+/* Type d'une oeuvre (peinture/sculpture) avec repli sur la config admin */
+function _catTypeDe(t) {
+  return (t && t._type) || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+}
+
 function ouvrirCatalogue() {
   var overlay = document.getElementById('overlay-catalogue');
   if (!overlay) return;
@@ -32,7 +37,7 @@ function ouvrirCatalogue() {
       : '<div class="cat-thumb cat-thumb-ph">🖼</div>';
 
     item.innerHTML =
-      '<input type="checkbox" class="cat-cb" data-id="' + t.id + '" checked>' +
+      '<input type="checkbox" class="cat-cb" data-id="' + t.id + '" data-type="' + _catTypeDe(t) + '" checked>' +
       photo +
       '<div class="cat-info">' +
         '<strong>' + (t.titre || '(sans titre)') + '</strong>' +
@@ -41,6 +46,30 @@ function ouvrirCatalogue() {
       '</div>';
     liste.appendChild(item);
   });
+
+  /* Boutons "ne selectionner que ce type" (uniquement si plusieurs types presents) */
+  var _typesPresents = [];
+  toiles.forEach(function(t) {
+    var ty = _catTypeDe(t);
+    if (_typesPresents.indexOf(ty) < 0) _typesPresents.push(ty);
+  });
+  var ctf = document.getElementById('cat-type-filtres');
+  if (ctf) {
+    ctf.innerHTML = '';
+    if (_typesPresents.length > 1) {
+      _typesPresents.forEach(function(ty) {
+        var b = document.createElement('button');
+        b.className = 'cat-ctrl-btn';
+        b.textContent = (ty === 'sculpture') ? '\uD83D\uDDFF Sculptures' : '\uD83D\uDDBC Peintures';
+        b.title = 'Ne selectionner que les ' + (ty === 'sculpture' ? 'sculptures' : 'peintures');
+        b.addEventListener('click', function() { cocherUniquementType(ty); });
+        ctf.appendChild(b);
+      });
+      ctf.style.display = 'flex';
+    } else {
+      ctf.style.display = 'none';
+    }
+  }
 
   overlay.style.display = 'flex';
 }
@@ -52,6 +81,13 @@ function fermerCatalogue() {
 
 function cocherTousCatalogue(val) {
   document.querySelectorAll('.cat-cb').forEach(function(cb) { cb.checked = val; });
+}
+
+/* Ne coche QUE les oeuvres du type demande (decoche les autres) */
+function cocherUniquementType(type) {
+  document.querySelectorAll('.cat-cb').forEach(function(cb) {
+    cb.checked = (cb.dataset.type === type);
+  });
 }
 
 /* ── Génération du PDF ── */
