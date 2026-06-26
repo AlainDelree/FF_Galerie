@@ -360,10 +360,12 @@ function solPatternCSS(texture, couleur) {
 var _modeEditionPlan = false;
 var _ordreAvantEdition = null;   /* snapshot IDs pour annulation */
 var _salleConfirmSuppr = null;   /* ID de la salle en attente de confirmation suppression */
+var _salleSelEdit = null;        /* ID de la salle sélectionnée en mode édition (barre de contrôle) */
 
 function _entrerModeEditionPlan() {
   _modeEditionPlan = true;
   _salleConfirmSuppr = null;
+  _salleSelEdit = (salleActive && salleActive.id) || (salles[0] && salles[0].id) || null;
   _ordreAvantEdition = salles.map(function(s) { return s.id; });
   var btnM = document.getElementById('btn-modifier-plan');
   var divA = document.getElementById('plan-edit-actions');
@@ -375,12 +377,70 @@ function _entrerModeEditionPlan() {
 function _quitterModeEditionPlan() {
   _modeEditionPlan = false;
   _salleConfirmSuppr = null;
+  _salleSelEdit = null;
   _ordreAvantEdition = null;
   var btnM = document.getElementById('btn-modifier-plan');
   var divA = document.getElementById('plan-edit-actions');
   if (btnM) btnM.style.display = '';
   if (divA) divA.style.display = 'none';
   afficherPlan();
+}
+
+/* Barre de contrôle du mode édition : agit sur la salle sélectionnée
+   (◀ Reculer · Avancer ▶ · 🗑 Supprimer). Évite d'encombrer les chips. */
+function _renderPlanEditBar() {
+  var bar = document.getElementById('plan-edit-bar');
+  if (!bar) return;
+  if (!_modeEditionPlan) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin-top:.55rem;';
+  bar.innerHTML = '';
+
+  var sel = (_salleSelEdit != null) ? salles.find(function(s) { return s.id === _salleSelEdit; }) : null;
+  var idx = sel ? salles.indexOf(sel) : -1;
+
+  /* État confirmation suppression */
+  if (sel && _salleConfirmSuppr === sel.id) {
+    var q = document.createElement('span');
+    q.style.cssText = 'font-size:12px;color:var(--text);margin-right:.2rem;';
+    q.innerHTML = 'Supprimer « <strong>' + sel.nom + '</strong> » ?';
+    var ok = document.createElement('button');
+    ok.className = 'plan-mv-btn plan-mv-del';
+    ok.textContent = '✓ Oui, supprimer';
+    ok.addEventListener('click', function() { _supprimerSalleEdit(sel.id); });
+    var no = document.createElement('button');
+    no.className = 'plan-mv-btn';
+    no.textContent = '✕ Non';
+    no.addEventListener('click', function() { _salleConfirmSuppr = null; afficherPlan(); });
+    bar.appendChild(q); bar.appendChild(ok); bar.appendChild(no);
+    return;
+  }
+
+  var lbl = document.createElement('span');
+  lbl.style.cssText = 'font-size:12px;color:var(--muted);margin-right:.2rem;';
+  lbl.innerHTML = sel
+    ? ('Salle : <strong style="color:var(--gold);">' + sel.nom + '</strong>')
+    : 'Touchez une salle pour la sélectionner';
+  bar.appendChild(lbl);
+
+  var bRec = document.createElement('button');
+  bRec.className = 'plan-mv-btn';
+  bRec.innerHTML = '◀ Reculer';
+  bRec.disabled = !sel || idx <= 0;
+  bRec.addEventListener('click', function() { deplacerSalle(idx, -1); });
+
+  var bAv = document.createElement('button');
+  bAv.className = 'plan-mv-btn';
+  bAv.innerHTML = 'Avancer ▶';
+  bAv.disabled = !sel || idx < 0 || idx >= salles.length - 1;
+  bAv.addEventListener('click', function() { deplacerSalle(idx, 1); });
+
+  var bDel = document.createElement('button');
+  bDel.className = 'plan-mv-btn plan-mv-del';
+  bDel.innerHTML = '🗑 Supprimer';
+  bDel.disabled = !sel;
+  bDel.addEventListener('click', function() { if (sel) { _salleConfirmSuppr = sel.id; afficherPlan(); } });
+
+  bar.appendChild(bRec); bar.appendChild(bAv); bar.appendChild(bDel);
 }
 
 function deplacerSalle(index, direction) {
@@ -510,6 +570,7 @@ async function _supprimerSalleEdit(id) {
   salles = salles.filter(function(s) { return s.id !== id; });
   if (salleActive && salleActive.id === id) salleActive = null;
   _salleConfirmSuppr = null;
+  _salleSelEdit = null;
   var btnA = document.getElementById('btn-appliquer-plan');
   if (btnA) btnA.disabled = true;
   try {
@@ -541,7 +602,7 @@ function afficherPlan() {
     var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
     const chip = document.createElement('div');
     chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
-    if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
+
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
@@ -553,70 +614,10 @@ function afficherPlan() {
     }
     if (_modeEditionPlan) {
       chip.classList.add('edit-mode');
-      chip.classList.add('draggable');
-      var idx = salles.indexOf(s);
-      chip.dataset.salleIdx = idx;
-
-      /* ✕ Supprimer (coin haut-gauche) */
-      if (_salleConfirmSuppr === s.id) {
-        /* État confirmation */
-        chip.classList.add('confirming');
-        chip.style.display = 'flex';
-        chip.style.alignItems = 'center';
-        chip.style.gap = '5px';
-        chip.innerHTML = '';
-        var lbl = document.createElement('span');
-        lbl.className = 'chip-conf-lbl';
-        lbl.textContent = 'Supprimer ?';
-        var btnOk = document.createElement('button');
-        btnOk.className = 'chip-conf-btn ok';
-        btnOk.textContent = '✓';
-        btnOk.title = 'Confirmer la suppression';
-        btnOk.addEventListener('click', function(e) { e.stopPropagation(); _supprimerSalleEdit(s.id); });
-        var btnNo = document.createElement('button');
-        btnNo.className = 'chip-conf-btn no';
-        btnNo.textContent = '✗';
-        btnNo.title = 'Annuler';
-        btnNo.addEventListener('click', function(e) { e.stopPropagation(); _confirmerSupprSalle(s.id); });
-        chip.appendChild(lbl);
-        chip.appendChild(btnOk);
-        chip.appendChild(btnNo);
-      } else {
-        /* État normal en mode édition */
-        var btnDel = document.createElement('button');
-        btnDel.className = 'chip-del';
-        btnDel.textContent = '✕';
-        btnDel.title = 'Supprimer cette salle';
-        (function(sid) {
-          btnDel.addEventListener('click', function(e) { e.stopPropagation(); _confirmerSupprSalle(sid); });
-        })(s.id);
-        chip.appendChild(btnDel);
-
-        /* ← → réordonnement */
-        var wrap = document.createElement('div');
-        wrap.className = 'chip-mv-wrap';
-        var btnG = document.createElement('button');
-        btnG.className = 'chip-mv';
-        btnG.textContent = '←';
-        btnG.title = 'Déplacer à gauche';
-        btnG.disabled = (idx === 0);
-        (function(i) {
-          btnG.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(i, -1); });
-        })(idx);
-        var btnD = document.createElement('button');
-        btnD.className = 'chip-mv';
-        btnD.textContent = '→';
-        btnD.title = 'Déplacer à droite';
-        btnD.disabled = (idx === salles.length - 1);
-        (function(i) {
-          btnD.addEventListener('click', function(e) { e.stopPropagation(); deplacerSalle(i, 1); });
-        })(idx);
-        wrap.appendChild(btnG);
-        wrap.appendChild(btnD);
-        chip.style.display = 'flex';
-        chip.style.alignItems = 'center';
-        chip.appendChild(wrap);
-      }
+      if (s.id === _salleSelEdit) chip.classList.add('sel-edit');
+      (function(sid) {
+        chip.addEventListener('click', function() { _salleSelEdit = sid; afficherPlan(); });
+      })(s.id);
     } else {
       chip.addEventListener('click', () => selectSalle(s.id));
     }
@@ -629,8 +630,11 @@ function afficherPlan() {
   add.addEventListener('click', () => ouvrirModalSalle());
   cont.appendChild(add);
 
-  /* Drag-and-drop en mode édition */
-  if (_modeEditionPlan) _initChipsDrag(cont);
+  /* Réordonnancement / suppression via la barre de contrôle dédiée
+     (#plan-edit-bar) qui agit sur la salle sélectionnée — chips épurés,
+     plus de boutons entassés dessus. Le drag-and-drop a été retiré (sur GSM
+     il posait touch-action:none et bloquait le scroll horizontal). */
+  _renderPlanEditBar();
   /* Ligne de clonage esthétique (cible = salle active) */
   _renderCloneSalleRow();
 }
@@ -2206,6 +2210,14 @@ async function sauverToile() {
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
+      /* Aperçu immédiat (base64) si une nouvelle photo a été uploadée :
+         évite la vignette périmée le temps de la propagation CDN (~1 min). */
+      if (photoB64) {
+        var _mimeE = window.photoEstPng ? 'image/png' : 'image/jpeg';
+        toiles[idx]._preview = 'data:' + _mimeE + ';base64,' + photoB64;
+      } else {
+        delete toiles[idx]._preview;
+      }
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
       const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
@@ -2487,13 +2499,9 @@ function afficherSolPlacement() {
     'border-radius:' + (isGsm ? '12px' : '6px') + ';overflow:hidden;position:relative;' +
     (isGsm ? 'border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);' : '');
 
-  /* Label mode */
-  if (isGsm) {
-    var lbl = document.createElement('div');
-    lbl.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.1em;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;';
-    lbl.textContent = '📱 Vue GSM';
-    iframeWrap.appendChild(lbl);
-  }
+  /* (Pas de label « 📱 Vue GSM » : il se superposait au badge admin
+     « Salle X — n/N » en haut-centre. Le mode est déjà indiqué par le toggle
+     du header et la forme portrait à bordure or du cadre.) */
 
   /* Iframe charge la vraie galerie en mode édition */
   const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-edit.html';

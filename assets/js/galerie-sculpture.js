@@ -684,12 +684,31 @@ if (window._GALERIE_EDIT) {
     /* Forcer les dimensions — écrase les !important de galerie.css */
     plancher.style.setProperty('max-height', 'none', 'important');
     plancher.style.setProperty('min-height', '0', 'important');
-    plancher.style.setProperty('flex', '1', 'important');
+    plancher.style.setProperty('flex', '1 1 auto', 'important');
+    /* Chaîne flex fiable conteneur → salle → zone-basse → plancher, basée sur
+       height:100% + flex (et NON 100vh, peu fiable dans une iframe : laissait
+       une bande « mur de la pièce » sous le sol et empêchait le remplissage). */
+    var conteneurEl = document.querySelector('.conteneur-salles');
+    if (conteneurEl) {
+      conteneurEl.style.setProperty('height', '100%', 'important');
+      conteneurEl.style.setProperty('flex', '1 1 auto', 'important');
+      conteneurEl.style.setProperty('min-height', '0', 'important');
+      conteneurEl.style.setProperty('display', 'flex', 'important');
+      conteneurEl.style.setProperty('flex-direction', 'column', 'important');
+    }
     var salleEl = document.querySelector('.salle');
     if (salleEl) {
-      salleEl.style.setProperty('height', '100vh', 'important');
+      salleEl.style.setProperty('flex', '1 1 auto', 'important');
+      salleEl.style.setProperty('height', 'auto', 'important');
+      salleEl.style.setProperty('min-height', '100dvh', 'important');
+      salleEl.style.setProperty('padding-bottom', '0', 'important');
       salleEl.style.setProperty('display', 'flex', 'important');
       salleEl.style.setProperty('flex-direction', 'column', 'important');
+    }
+    var zoneBasseEl = document.querySelector('.zone-basse');
+    if (zoneBasseEl) {
+      zoneBasseEl.style.setProperty('flex', '1 1 auto', 'important');
+      zoneBasseEl.style.setProperty('min-height', '0', 'important');
     }
     var murInf = document.querySelector('.mur-inferieur');
     if (murInf) murInf.style.setProperty('height', '40px', 'important');

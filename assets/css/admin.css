@@ -150,12 +150,25 @@ button{cursor:pointer;}
 .plan-btn-cancel{border-color:#c0392b;color:#c0392b;}
 .plan-btn-cancel:hover{background:rgba(192,57,43,.08);}
 .chip-mv{display:inline-flex;align-items:center;justify-content:center;
-  width:18px;height:18px;border-radius:4px;border:1px solid var(--brd);
-  background:var(--bg2);cursor:pointer;font-size:10px;padding:0;line-height:1;
-  color:var(--text);transition:background .1s,border-color .1s;flex-shrink:0;}
+  width:23px;height:20px;border-radius:5px;border:1.5px solid var(--gold);
+  background:rgba(200,160,80,.18);cursor:pointer;font-size:14px;padding:0;line-height:1;
+  color:var(--gold);font-weight:700;transition:background .1s,border-color .1s,color .1s;flex-shrink:0;}
 .chip-mv:hover:not(:disabled){background:var(--gold);border-color:var(--gold);color:#fff;}
-.chip-mv:disabled{opacity:.25;cursor:default;}
-.chip.edit-mode{pointer-events:none;cursor:default;}
+.chip-mv:disabled{opacity:.28;cursor:default;}
+
+/* Mode édition salles : chip sélectionné + barre de contrôle dédiée */
+.chip.sel-edit{border-color:var(--gold);background:rgba(200,160,80,.16);box-shadow:0 0 0 1.5px var(--gold);}
+.chip.sel-edit .cn{color:var(--gold);}
+.chip.edit-mode{cursor:pointer;}
+#plan-edit-bar .plan-mv-btn{font-size:12px;padding:.42rem .75rem;border-radius:7px;
+  border:1px solid var(--brd);background:var(--bg2);color:var(--text);cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;line-height:1;
+  transition:background .12s,border-color .12s,opacity .12s;}
+#plan-edit-bar .plan-mv-btn:hover:not(:disabled){border-color:var(--gold);background:rgba(200,160,80,.12);}
+#plan-edit-bar .plan-mv-btn:disabled{opacity:.4;cursor:default;}
+#plan-edit-bar .plan-mv-del{border-color:#c0392b;color:#c0392b;}
+#plan-edit-bar .plan-mv-del:hover:not(:disabled){background:rgba(192,57,43,.08);border-color:#c0392b;}
+.chip.edit-mode{pointer-events:auto;cursor:pointer;}
 .chip.edit-mode .chip-mv,.chip.edit-mode .chip-del,.chip.edit-mode .chip-conf-btn{pointer-events:all;}
 /* Drag-and-drop chips */
 .chip.draggable{touch-action:none;cursor:grab;pointer-events:all;}
@@ -1456,7 +1469,8 @@ textarea.champ{resize:vertical;min-height:65px;}
   overflow-y: auto;
 }
 @media (max-width: 600px) {
-  #overlay-imm-edit { flex-direction: column; }
+  #overlay-imm-edit,
+  #overlay-desc-edit { flex-direction: column; }
   .imm-edit-panel { width: 100%; border-left: none; border-top: 1px solid var(--brd); max-height: 40vh; }
 }
 

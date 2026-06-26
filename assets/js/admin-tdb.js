@@ -235,9 +235,16 @@ function _clonerEsthetique(srcId, cibleId) {
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
 
-  /* Rafraîchir l'aperçu + sauvegarder */
-  if (typeof appliquerApparence === 'function') appliquerApparence();
-  _renderTDB();
+  /* Recharge complètement l'apparence de la salle active (globales mur /
+     mur-pièce / mur-bas / texture / cadres + CSS vars) puis re-render TDB +
+     Arranger. Sans ça, seules les DONNÉES de la salle changent : l'aperçu se
+     met à jour mais l'Arranger garde l'ancienne apparence jusqu'à un refresh. */
+  if (typeof selectSalle === 'function' && salleActive && salleActive.id === cibleId) {
+    selectSalle(cibleId);
+  } else {
+    if (typeof appliquerApparence === 'function') appliquerApparence();
+    _renderTDB();
+  }
   if (typeof sauvegarder === 'function') {
     sauvegarder('[admin] Clonage esthétique « ' + nomSrc + ' » → « ' + (cible.nom || 'salle') + ' »', null)
       .then(function() { if (typeof toast === 'function') toast('✓ Esthétique clonée'); })
@@ -344,7 +351,11 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       decor.appendChild(zb);
       wrap.appendChild(decor);
     } else {
-      /* Sculpture (et GSM portrait) : iframe pleine carte comme avant */
+      /* Sculpture (Galerie PC paysage + Galerie GSM portrait) : iframe pleine
+         carte. Le rendu virtuel 1280×720 + mise à l'échelle s'est avéré peu
+         fiable sur Chrome mobile (dvh faux dans une iframe scalée → demi-
+         hauteur). À taille réelle, le sol remplit via min-height:100dvh +
+         flex (cf. galerie-apercu.html). */
       iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
       wrap.appendChild(iframe);
     }
