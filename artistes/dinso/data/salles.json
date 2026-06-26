@@ -89,6 +89,7 @@
       "nom": "Salle B",
       "type": "sculpture",
       "couleur_mur": "#99c1f1",
+      "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#b4e4f4",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
