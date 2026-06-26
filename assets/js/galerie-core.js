@@ -577,7 +577,7 @@ function initGalerie() {
   if (window._GALERIE_EDIT) {
     var editStyle = document.createElement('style');
     editStyle.textContent =
-      '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav,.galerie-footer,.nav-cote,.salle-titre,.nom-salle,.porte-nav{display:none!important;}' +
+      '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav,.galerie-footer,.nav-cote,.salle-titre,.nom-salle,.porte-nav,.porte-mur{display:none!important;}' +
       'body{margin:0!important;padding:0!important;overflow:hidden!important;}' +
       '.galerie-principale{padding:0!important;margin:0!important;}' +
       /* Chaîne flex complète : galerie.css n'est pas chargé en édition, donc
