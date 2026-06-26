@@ -148,7 +148,11 @@ body.theme-sombre {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  /* Padding vertical réduit (4rem → 2.5rem) : sur les pages courtes (contact,
+     infos, à propos), le contenu + le pied tiennent dans 100dvh sur desktop
+     sans scroll → l'initiale du pied reste visible. Le mobile garde sa propre
+     valeur via le @media plus bas. */
+  padding: 2.5rem 2rem;
 }
 
 .encadre-titre {
