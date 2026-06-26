@@ -4,6 +4,11 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Ouverture du panneau de sélection ── */
+/* Type d'une oeuvre (peinture/sculpture) avec repli sur la config admin */
+function _catTypeDe(t) {
+  return (t && t._type) || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+}
+
 function ouvrirCatalogue() {
   var overlay = document.getElementById('overlay-catalogue');
   if (!overlay) return;
@@ -32,7 +37,7 @@ function ouvrirCatalogue() {
       : '<div class="cat-thumb cat-thumb-ph">🖼</div>';
 
     item.innerHTML =
-      '<input type="checkbox" class="cat-cb" data-id="' + t.id + '" checked>' +
+      '<input type="checkbox" class="cat-cb" data-id="' + t.id + '" data-type="' + _catTypeDe(t) + '" checked>' +
       photo +
       '<div class="cat-info">' +
         '<strong>' + (t.titre || '(sans titre)') + '</strong>' +
@@ -41,6 +46,30 @@ function ouvrirCatalogue() {
       '</div>';
     liste.appendChild(item);
   });
+
+  /* Boutons "ne selectionner que ce type" (uniquement si plusieurs types presents) */
+  var _typesPresents = [];
+  toiles.forEach(function(t) {
+    var ty = _catTypeDe(t);
+    if (_typesPresents.indexOf(ty) < 0) _typesPresents.push(ty);
+  });
+  var ctf = document.getElementById('cat-type-filtres');
+  if (ctf) {
+    ctf.innerHTML = '';
+    if (_typesPresents.length > 1) {
+      _typesPresents.forEach(function(ty) {
+        var b = document.createElement('button');
+        b.className = 'cat-ctrl-btn';
+        b.textContent = (ty === 'sculpture') ? '\uD83D\uDDFF Sculptures' : '\uD83D\uDDBC Peintures';
+        b.title = 'Ne selectionner que les ' + (ty === 'sculpture' ? 'sculptures' : 'peintures');
+        b.addEventListener('click', function() { cocherUniquementType(ty); });
+        ctf.appendChild(b);
+      });
+      ctf.style.display = 'flex';
+    } else {
+      ctf.style.display = 'none';
+    }
+  }
 
   overlay.style.display = 'flex';
 }
@@ -54,13 +83,20 @@ function cocherTousCatalogue(val) {
   document.querySelectorAll('.cat-cb').forEach(function(cb) { cb.checked = val; });
 }
 
+/* Ne coche QUE les oeuvres du type demande (decoche les autres) */
+function cocherUniquementType(type) {
+  document.querySelectorAll('.cat-cb').forEach(function(cb) {
+    cb.checked = (cb.dataset.type === type);
+  });
+}
+
 /* ── Génération du PDF ── */
 function genererCatalogueSelection() {
   var checked = document.querySelectorAll('.cat-cb:checked');
-  var ids = new Set();
-  checked.forEach(function(cb) { ids.add(parseInt(cb.dataset.id)); });
+  var keys = new Set();
+  checked.forEach(function(cb) { keys.add(cb.dataset.id + '|' + cb.dataset.type); });
 
-  var selection = toiles.filter(function(t) { return ids.has(t.id); });
+  var selection = toiles.filter(function(t) { return keys.has(t.id + '|' + _catTypeDe(t)); });
   selection.sort(function(a, b) { return a.id - b.id; });
 
   if (selection.length === 0) {
@@ -80,7 +116,7 @@ function _ouvrirFenetreCatalogue(selection) {
 
   /* ── Cartes des œuvres ── */
   var cartes = selection.map(function(t) {
-    var photo = t.photo ? base + t.photo : '';
+    var photo = t.photo ? (/^(https?:)?\/\//.test(t.photo) ? t.photo : base + t.photo) : '';
     var titre = t.titre || '(sans titre)';
     var dims  = (t.dimensions && t.dimensions.largeur && t.dimensions.hauteur)
       ? t.dimensions.largeur + '\u00a0\u00d7\u00a0' + t.dimensions.hauteur + '\u00a0cm'
@@ -269,6 +305,149 @@ cartes + '\n' +
   win.document.open();
   win.document.write(html);
   win.document.close();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Téléchargement des photos (sauvegarde perso de l'artiste)
+   Réutilise la sélection (cases cochées) de la fenêtre catalogue.
+   ZIP unique : marche sur PC et Android (dossier Téléchargements).
+   ════════════════════════════════════════════════════════════════ */
+
+/* Charge JSZip à la volée depuis le CDN (une seule fois) */
+function _chargerJSZip() {
+  return new Promise(function(resolve, reject) {
+    if (typeof JSZip !== 'undefined') return resolve();
+    var sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    sc.onload = function() { resolve(); };
+    sc.onerror = function() { reject(new Error('CDN JSZip injoignable')); };
+    document.head.appendChild(sc);
+  });
+}
+
+/* Extension d'après l'URL (image OU glb) ou le type MIME du blob */
+function _extFichier(url, mime) {
+  var m = (url || '').split('?')[0].match(/\.([a-z0-9]{2,5})$/i);
+  if (m) { var e = m[1].toLowerCase(); return '.' + (e === 'jpeg' ? 'jpg' : e); }
+  if (mime) {
+    if (mime.indexOf('png') >= 0)  return '.png';
+    if (mime.indexOf('webp') >= 0) return '.webp';
+    if (mime.indexOf('gif') >= 0)  return '.gif';
+    if (mime.indexOf('gltf') >= 0 || mime.indexOf('glb') >= 0) return '.glb';
+  }
+  return '.jpg';
+}
+
+/* Nom de fichier lisible basé sur le titre de l'œuvre */
+function _nomPhoto(titre, id) {
+  var base = (titre || '').replace(/[\\/:*?"<>|\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!base) base = 'oeuvre-' + id;
+  return base.substring(0, 60);
+}
+
+function _horodatage() {
+  var d = new Date(), pad = function(n) { return (n < 10 ? '0' : '') + n; };
+  return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+}
+
+/* Livre le ZIP : partage natif sur mobile si dispo, sinon téléchargement direct */
+async function _livrerZip(blob, nom) {
+  var estMobile = window.matchMedia('(max-width: 859px)').matches;
+  if (estMobile && navigator.canShare) {
+    try {
+      var file = new File([blob], nom, { type: 'application/zip' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: nom });
+        return;
+      }
+    } catch (e) { /* partage annulé/non supporté → téléchargement classique */ }
+  }
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = nom;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+/* Action principale : télécharge en ZIP les photos des œuvres cochées */
+async function telechargerPhotosSelection() {
+  var info = document.getElementById('cat-info');
+  function dire(msg, danger) {
+    if (!info) return;
+    info.textContent = msg;
+    info.style.color = danger ? 'var(--danger)' : 'var(--muted)';
+  }
+
+  /* Sélection par couple (id, type) — cohabitation peinture/sculpture */
+  var keys = new Set();
+  document.querySelectorAll('.cat-cb:checked').forEach(function(cb) {
+    keys.add(cb.dataset.id + '|' + cb.dataset.type);
+  });
+  var selection = toiles.filter(function(t) {
+    return keys.has(t.id + '|' + _catTypeDe(t));
+  });
+  if (!selection.length) { dire('Sélectionnez au moins une œuvre.', true); return; }
+
+  var btn = document.querySelector('.cat-btn-dl');
+  if (btn) btn.disabled = true;
+  dire('Préparation…');
+
+  try {
+    await _chargerJSZip();
+  } catch (e) {
+    dire('Impossible de charger le compresseur ZIP (connexion ?).', true);
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  var zip = new JSZip();
+  var pris = {}, ok = 0, ko = 0, okGlb = 0;
+
+  /* Réserve un nom unique dans le ZIP (anti-collision titres identiques) */
+  function _nomUnique(nom) {
+    var fin = nom, n = 1, pt = nom.lastIndexOf('.');
+    while (pris[fin]) { fin = nom.substring(0, pt) + '-' + (++n) + nom.substring(pt); }
+    pris[fin] = true;
+    return fin;
+  }
+
+  for (var i = 0; i < selection.length; i++) {
+    var t = selection[i];
+    dire('Téléchargement ' + (i + 1) + '/' + selection.length + '…');
+    var base = _nomPhoto(t.titre, t.id);
+    /* On récupère la photo + le modèle 3D (GLB) s'il existe.
+       Une sculpture sans GLB ne télécharge que sa photo (pas d'erreur). */
+    var sources = [];
+    if (t.photo) sources.push(t.photo);
+    if (t.glb)   sources.push(t.glb);
+    if (!sources.length) { ko++; continue; }
+    for (var j = 0; j < sources.length; j++) {
+      try {
+        var resp = await fetch(sources[j], { cache: 'no-store' });
+        if (!resp.ok) { ko++; continue; }
+        var blob = await resp.blob();
+        zip.file(_nomUnique(base + _extFichier(sources[j], blob.type)), blob);
+        ok++;
+        if (sources[j] === t.glb) okGlb++;
+      } catch (e) { ko++; }
+    }
+  }
+
+  if (ok === 0) { dire('Aucune photo n\u2019a pu être récupérée.', true); if (btn) btn.disabled = false; return; }
+
+  dire('Compression…');
+  try {
+    var content = await zip.generateAsync({ type: 'blob' });
+    var prefixe = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.prefix) ? ADMIN_CFG.prefix : 'oeuvres';
+    await _livrerZip(content, prefixe + '-photos-' + _horodatage() + '.zip');
+    dire(ok + ' fichier' + (ok > 1 ? 's' : '') + ' récupéré' + (ok > 1 ? 's' : '') +
+         (okGlb ? ' (dont ' + okGlb + ' modèle' + (okGlb > 1 ? 's' : '') + ' 3D)' : '') +
+         (ko ? ' \u2014 ' + ko + ' introuvable' + (ko > 1 ? 's' : '') : '') + '.');
+  } catch (e) {
+    dire('Erreur lors de la création du ZIP.', true);
+  }
+  if (btn) btn.disabled = false;
 }
 
 /* ── Init ── */
