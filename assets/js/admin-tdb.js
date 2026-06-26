@@ -350,30 +350,12 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       zb.appendChild(murInf); zb.appendChild(plancher);
       decor.appendChild(zb);
       wrap.appendChild(decor);
-    } else if (typeSalleApercu === 'sculpture' && !isPortrait) {
-      /* Carte « Galerie PC » sculpture : à la taille réelle de la carte
-         (~320×180) le viewport INTERNE de l'iframe déclenche les media
-         mobiles/paysage et le mur-inférieur occupe une part énorme de la
-         hauteur → le plancher est écrasé, son ratio W/H grimpe (~2.2 au lieu
-         de ~1.9) et l'angle du sol ne colle plus à la vraie galerie PC.
-         On rend donc l'iframe à une taille desktop virtuelle 16/9 (1280×720,
-         mêmes proportions que la galerie réelle) puis on la met à l'échelle
-         pour tenir dans la carte → miniature fidèle. Scopé PC : la carte GSM
-         (portrait, ci-dessous) garde son rendu mobile, déjà correct. */
-      var _VW = 1280, _VH = 720;
-      iframe.style.cssText = 'position:absolute;top:0;left:0;width:' + _VW + 'px;height:' + _VH + 'px;'
-        + 'border:none;pointer-events:none;transform-origin:top left;background:#1a1510;';
-      wrap.appendChild(iframe);
-      (function(ifr, w) {
-        function _fit() {
-          var cw = w.clientWidth || w.getBoundingClientRect().width;
-          if (cw > 0) ifr.style.transform = 'scale(' + (cw / _VW) + ')';
-        }
-        requestAnimationFrame(_fit);
-        if (window.ResizeObserver) { try { new ResizeObserver(_fit).observe(w); } catch(e) {} }
-      })(iframe, wrap);
     } else {
-      /* GSM portrait : iframe pleine carte (rendu mobile correct) */
+      /* Sculpture (Galerie PC paysage + Galerie GSM portrait) : iframe pleine
+         carte. Le rendu virtuel 1280×720 + mise à l'échelle s'est avéré peu
+         fiable sur Chrome mobile (dvh faux dans une iframe scalée → demi-
+         hauteur). À taille réelle, le sol remplit via min-height:100dvh +
+         flex (cf. galerie-apercu.html). */
       iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;';
       wrap.appendChild(iframe);
     }
