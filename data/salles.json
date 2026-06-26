@@ -3,7 +3,7 @@
     {
       "id": 13,
       "nom": "Bureau",
-      "couleur_mur": "#a51d2d",
+      "couleur_mur": "#ffee00",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
