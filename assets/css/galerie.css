@@ -623,11 +623,16 @@
       }
 
       /* Nom de salle au-dessus des portes : même problème de fond clair sur
-         clair (mur-inferieur paramétrable, ex Salle I = #f0f0f0). Halo noir
-         + or pour rester lisible sur tout fond, clair comme foncé. */
+         clair (mur-inferieur paramétrable, ex Salle I = #f0f0f0). Outline noir
+         4 directions (plus net qu'un halo flou) + or pour rester lisible sur
+         tout fond, clair comme foncé. */
       .pm-nom {
         color:var(--accent) !important;
-        text-shadow:0 0 2px rgba(0,0,0,.85), 0 1px 1px rgba(0,0,0,.6);
+        text-shadow:
+          1px 0 0 rgba(0,0,0,.85),
+          -1px 0 0 rgba(0,0,0,.85),
+          0 1px 0 rgba(0,0,0,.85),
+          0 -1px 0 rgba(0,0,0,.85);
         font-weight:600;
       }
     }
