@@ -199,10 +199,10 @@
     {
       "id": 9,
       "nom": "Buanderie",
-      "couleur_mur": "#25dbdb",
-      "couleur_cadres": "#1c1c1c",
+      "couleur_mur": "#5f0b1a",
+      "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "velours",
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
       "toiles": [
         27,
@@ -245,7 +245,7 @@
     {
       "id": 10,
       "nom": "Escaliers",
-      "couleur_mur": "#e8e4dc",
+      "couleur_mur": "#f5f5f5",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
@@ -291,7 +291,9 @@
     {
       "id": 11,
       "nom": "Salle de bain",
-      "couleur_mur": "#f5f5f5",
+      "couleur_mur": "#e5a50a",
+      "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#4c7245",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
