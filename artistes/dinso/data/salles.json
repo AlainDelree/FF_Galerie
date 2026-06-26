@@ -63,7 +63,7 @@
             "fond": "#12100c",
             "exposure": 1,
             "sol": "#040404",
-            "socle_couleur": "#00eeff",
+            "socle_couleur": "#f0ece4",
             "socle_use_piece": false,
             "pan_a": "#7a2525",
             "pan_b": "#1a3055",
@@ -94,14 +94,30 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [],
-      "positions": [],
+      "toiles": [
+        7,
+        10
+      ],
+      "positions": [
+        {
+          "id": 7,
+          "x": 32,
+          "y": 62,
+          "gabarit": "M"
+        },
+        {
+          "id": 10,
+          "x": 59,
+          "y": 40,
+          "gabarit": "L"
+        }
+      ],
       "positions_mobile": [
         {
-          "id": 5,
-          "x": 46,
-          "y": 48,
-          "gabarit": "S"
+          "id": 7,
+          "x": 36,
+          "y": 37,
+          "gabarit": "M"
         }
       ],
       "greffons": {
