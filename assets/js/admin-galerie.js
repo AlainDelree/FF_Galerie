@@ -2206,6 +2206,14 @@ async function sauverToile() {
         if (s) s.toiles.push(toileEnEdition);
       }
       toiles[idx] = { ...toiles[idx], photo, glb, ...donnees };
+      /* Aperçu immédiat (base64) si une nouvelle photo a été uploadée :
+         évite la vignette périmée le temps de la propagation CDN (~1 min). */
+      if (photoB64) {
+        var _mimeE = window.photoEstPng ? 'image/png' : 'image/jpeg';
+        toiles[idx]._preview = 'data:' + _mimeE + ';base64,' + photoB64;
+      } else {
+        delete toiles[idx]._preview;
+      }
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
       const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
