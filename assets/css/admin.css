@@ -1388,6 +1388,8 @@ textarea.champ{resize:vertical;min-height:65px;}
 /* Mobile : toolbar Œuvres sur 2 lignes —
    ligne 1 : recherche + (combobox tri + flèche) ; ligne 2 : chips statut */
 @media (max-width: 720px) {
+  /* recherche compressible (base 0) : le groupe tri tient sur la meme ligne au lieu de wrapper */
+  .oeuvres-filtres #oeuvres-recherche { flex-basis: 0; }
   .oeuvres-tri-groupe { order: 1; }
   .oeuvres-chips      { order: 2; flex-basis: 100%; }
 }
