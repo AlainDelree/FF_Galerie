@@ -9,7 +9,15 @@
       "id": 1782473139658
     }
   ],
-  "collegues": [],
+  "collegues": [
+    {
+      "id": 1782473148968,
+      "nom": "Test aussi",
+      "description": "",
+      "lien": "",
+      "type": "site"
+    }
+  ],
   "musique": {
     "fichier": ""
   },
