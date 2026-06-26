@@ -602,7 +602,7 @@ function afficherPlan() {
     var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
     const chip = document.createElement('div');
     chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
-    if (salleActive && s.id === salleActive.id) chip.classList.add('sel');
+
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
@@ -616,11 +616,7 @@ function afficherPlan() {
       chip.classList.add('edit-mode');
       if (s.id === _salleSelEdit) chip.classList.add('sel-edit');
       (function(sid) {
-        chip.addEventListener('click', function() {
-          _salleSelEdit = sid;
-          selectSalle(sid);   /* charge la salle (badge, apparence, arrangement) */
-          afficherPlan();     /* re-rend les chips (surlignage) + la barre de contrôle */
-        });
+        chip.addEventListener('click', function() { _salleSelEdit = sid; afficherPlan(); });
       })(s.id);
     } else {
       chip.addEventListener('click', () => selectSalle(s.id));
