@@ -119,9 +119,12 @@ button{cursor:pointer;}
   #clone-salle-row { flex-basis: 100%; flex-wrap: nowrap !important; }
   /* Mobile : libelle court "Cloner depuis :" (le label complet du JS reste affiche sur PC) */
   #clone-salle-row > span   { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0 !important; }
-  #clone-salle-row > span::before { content: "Cloner depuis : "; font-size: .74rem; color: var(--muted); }
+  #clone-salle-row > span::before { content: "Cloner l'apparence depuis : "; font-size: .74rem; color: var(--muted); }
   #clone-salle-row > select,
   #clone-salle-row > button { flex-shrink: 0; }
+  /* Bouton compacte en icone copie pour laisser tenir le label complet (PC garde "🎨 Cloner") */
+  #clone-salle-row > button { font-size: 0 !important; }
+  #clone-salle-row > button::before { content: "📋"; font-size: 1rem; }
 }
 .chip{padding:.35rem .7rem .35rem 10px;border-radius:8px;cursor:pointer;text-align:center;
   border:2px solid transparent;transition:all .15s;min-width:72px;background:var(--bg3);}
