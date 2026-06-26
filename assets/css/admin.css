@@ -1164,6 +1164,15 @@ textarea.champ{resize:vertical;min-height:65px;}
   transition:opacity .15s;
 }
 .cat-btn-gen:hover{opacity:.88;}
+.cat-btn-dl{
+  width:100%;padding:.58rem;margin-top:.45rem;
+  border-radius:8px;border:1px solid var(--gold);
+  background:transparent;color:var(--gold);
+  font-weight:600;font-size:.82rem;cursor:pointer;
+  transition:background .15s;
+}
+.cat-btn-dl:hover{background:rgba(200,160,80,.12);}
+.cat-btn-dl:disabled{opacity:.5;cursor:default;}
 
 /* ── Panneau Support (sculpture) ── */
 .support-type-btn, .support-tex-btn {
