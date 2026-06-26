@@ -25,7 +25,7 @@
     {
       "id": 5,
       "nom": "Entrée",
-      "couleur_mur": "#2a2774",
+      "couleur_mur": "#ffff00",
       "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#55c850",
       "couleur_cadres": "#f0f0f0",
