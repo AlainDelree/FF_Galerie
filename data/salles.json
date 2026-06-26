@@ -29,7 +29,7 @@
       "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#55c850",
       "couleur_cadres": "#f0f0f0",
-      "epaisseur_cadres": 10,
+      "epaisseur_cadres": 6,
       "texture": "pierre",
       "visible": false,
       "toiles": [
