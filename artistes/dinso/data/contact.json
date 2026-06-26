@@ -1,20 +1,5 @@
 {
-  "email": "mail@mail",
-  "telephone": "",
-  "instagram": "",
-  "instagram_nom": "",
-  "facebook": "",
-  "facebook_nom": "",
-  "tiktok": "",
-  "tiktok_nom": "",
-  "pinterest": "",
-  "pinterest_nom": "",
-  "youtube": "",
-  "youtube_nom": "",
-  "twitter": "",
-  "twitter_nom": "",
-  "linkedin": "",
-  "linkedin_nom": "",
-  "site": "",
-  "site_nom": ""
+  "email": "", "telephone": "", "instagram": "", "facebook": "",
+  "tiktok": "", "pinterest": "", "youtube": "", "twitter": "",
+  "linkedin": "", "site": ""
 }

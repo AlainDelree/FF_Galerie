@@ -1,5 +1,5 @@
 {
-  "next_id": 12,
+  "next_id": 11,
   "gabarits": [
     {
       "code": "S",
@@ -235,25 +235,6 @@
         "texture": "marbre",
         "taille": 40
       }
-    },
-    {
-      "id": 11,
-      "photo": "artistes/dinso/assets/images/toiles/piece-011.jpg",
-      "source_photo": "admin",
-      "titre": "Test smoke",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 147,
-        "hauteur": 81,
-        "profondeur": 44
-      },
-      "visible": true,
-      "socle": 192,
-      "glb": "artistes/dinso/assets/models/piece-011.glb"
     }
   ]
 }
