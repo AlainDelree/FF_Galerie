@@ -1385,11 +1385,11 @@ textarea.champ{resize:vertical;min-height:65px;}
   padding: .3rem .4rem;
   display: flex; flex-direction: column;
 }
-/* Mobile : toolbar Œuvres réordonnée — recherche / chips statut / (combobox tri + flèche) */
+/* Mobile : toolbar Œuvres sur 2 lignes —
+   ligne 1 : recherche + (combobox tri + flèche) ; ligne 2 : chips statut */
 @media (max-width: 720px) {
-  .oeuvres-filtres #oeuvres-recherche { flex-basis: 100%; }
-  .oeuvres-chips      { order: 1; }
-  .oeuvres-tri-groupe { order: 2; }
+  .oeuvres-tri-groupe { order: 1; }
+  .oeuvres-chips      { order: 2; flex-basis: 100%; }
 }
 
 /* Mobile : colonnes empilées verticalement */
