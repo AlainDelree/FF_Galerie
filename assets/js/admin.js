@@ -426,28 +426,79 @@ async function commitMulti(fichiers, message) {
   return _commitQueue;
 }
 
+/* Alerte (email + Issue via rapporterErreur) DES la 2e tentative en cas de course
+   concurrente. Passer a false quand la curiosite est rassasiee. L'alerte d'ECHEC des
+   3 tentatives reste TOUJOURS active, independamment de ce flag. */
+const ALERTER_RETENTATIVE = true;
+
+/* Backoff exponentiel + jitter (anti-livelock + menage les rate limits GitHub).
+   re-tentative 1 -> ~200ms, re-tentative 2 -> ~400ms, + jusqu'a 50% d'alea. */
+function _backoffMs(reTentative) {
+  const base = 100 * Math.pow(2, reTentative);
+  return Math.round(base + Math.random() * base * 0.5);
+}
+
 async function _commitMultiImpl(fichiers, message) {
-  const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
-  const commitSha = ref.object.sha;
-  const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${commitSha}`);
+  /* Les blobs ne dependent pas de HEAD : crees UNE fois, reutilises a chaque tentative. */
   const blobs = await Promise.all(fichiers.map(async f => {
     const b64 = f.encoding === 'base64' ? f.contenu : btoa(unescape(encodeURIComponent(f.contenu)));
     const blob = await apiGH(`/repos/${REPO}/git/blobs`, 'POST', { content: b64, encoding: 'base64' });
     return { path: f.chemin, mode: '100644', type: 'blob', sha: blob.sha };
   }));
-  const tree = await apiGH(`/repos/${REPO}/git/trees`, 'POST', { base_tree: baseCommit.tree.sha, tree: blobs });
-  const commit = await apiGH(`/repos/${REPO}/git/commits`, 'POST', { message, tree: tree.sha, parents: [commitSha] });
-  /* Mise à jour du ref — retry avec force si fast-forward impossible */
-  try {
-    await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false });
-  } catch (e) {
-    /* La file d'attente devrait éviter ce cas, mais on garde le fallback */
-    if (e.message && (e.message.includes('fast forward') || e.message.includes('Update is not'))) {
-      await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: true });
-    } else {
-      throw e;
+
+  const MAX = 3;        /* 1 tentative initiale + 2 re-tentatives */
+  const journal = [];   /* trace de chaque tentative, jointe aux alertes (preuve) */
+
+  for (let n = 1; n <= MAX; n++) {
+    if (n > 1) {
+      const delai = _backoffMs(n - 1);
+      if (journal.length) journal[journal.length - 1].delaiAvantSuivanteMs = delai;
+      await new Promise(r => setTimeout(r, delai));
+    }
+
+    /* (Re)lire HEAD : on repart toujours de la verite courante. */
+    const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
+    const headSha = ref.object.sha;
+    const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${headSha}`);
+
+    /* (Re)construire arbre + commit sur ce HEAD (blobs reutilises). */
+    const tree = await apiGH(`/repos/${REPO}/git/trees`, 'POST', { base_tree: baseCommit.tree.sha, tree: blobs });
+    const commit = await apiGH(`/repos/${REPO}/git/commits`, 'POST', { message, tree: tree.sha, parents: [headSha] });
+
+    try {
+      await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false });
+      journal.push({ tentative: n, headAttendu: headSha, commit: commit.sha, resultat: 'succes' });
+      if (n > 1) console.warn('[commitMulti] succes a la tentative ' + n + '/' + MAX + ' apres course concurrente', journal);
+      return; /* commit pose proprement par-dessus l etat reel */
+    } catch (e) {
+      const estCourse = e.message && (e.message.includes('fast forward') || e.message.includes('Update is not'));
+      if (!estCourse) throw e; /* vraie erreur (token, reseau...) : on remonte */
+
+      journal.push({ tentative: n, headAttendu: headSha, commit: commit.sha, resultat: 'echec_course' });
+      console.warn('[commitMulti] course concurrente, tentative ' + n + '/' + MAX + ' rejetee', journal);
+
+      /* Alerte de curiosite : une seule fois, des que la 1re tentative echoue
+         (= on entre dans la 2e). Gatee par ALERTER_RETENTATIVE. */
+      if (n === 1 && ALERTER_RETENTATIVE && typeof rapporterErreur === 'function') {
+        rapporterErreur(
+          'Course concurrente detectee sur commitMulti (re-tentative en cours)',
+          'bug',
+          'Commit : ' + message + '\n\nJournal :\n' + JSON.stringify(journal, null, 2)
+        ).catch(function(){});
+      }
     }
   }
+
+  /* Les 3 tentatives ont echoue : email TOUJOURS (hors flag) + erreur visible,
+     jamais d ecrasement silencieux. */
+  if (typeof rapporterErreur === 'function') {
+    rapporterErreur(
+      'ECHEC commitMulti apres ' + MAX + ' tentatives (course concurrente persistante)',
+      'bloquant',
+      'Commit : ' + message + '\n\nJournal complet :\n' + JSON.stringify(journal, null, 2)
+    ).catch(function(){});
+  }
+  throw new Error('commitMulti : ecriture impossible apres ' + MAX + ' tentatives (course concurrente). Reessayez dans un instant.');
 }
 
 async function uploaderPhoto(id, b64, ext, typeOeuvre) {
