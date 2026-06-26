@@ -98,7 +98,7 @@ button{cursor:pointer;}
 #vue-backup.active{flex-direction:column;max-height:calc(100vh - 120px);overflow-y:auto;}
 
 /* ══ PLAN DES SALLES ══ */
-.plan-section{display:flex;gap:.75rem;padding:.65rem .9rem;
+.plan-section{display:flex;flex-wrap:wrap;gap:.75rem;padding:.65rem .9rem;
   border-bottom:1px solid var(--brd);background:var(--bg2);}
 .plan-actions{display:flex;flex-direction:column;gap:.35rem;min-width:130px;flex-shrink:0;}
 .plan-act-lbl{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.1rem;}
@@ -154,6 +154,7 @@ button{cursor:pointer;}
 .chip.sel-edit{border-color:var(--gold);background:rgba(200,160,80,.16);box-shadow:0 0 0 1.5px var(--gold);}
 .chip.sel-edit .cn{color:var(--gold);}
 .chip.edit-mode{cursor:pointer;}
+#plan-edit-bar{flex-basis:100%;} /* barre Reculer/Avancer/Supprimer : ligne dediee sous les chips (PC + GSM) */
 #plan-edit-bar .plan-mv-btn{font-size:12px;padding:.42rem .75rem;border-radius:7px;
   border:1px solid var(--brd);background:var(--bg2);color:var(--text);cursor:pointer;
   display:inline-flex;align-items:center;gap:4px;line-height:1;
