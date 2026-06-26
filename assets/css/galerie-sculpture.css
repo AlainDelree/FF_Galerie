@@ -29,10 +29,12 @@ body.page-sculpture .galerie-principale { min-height: 0 !important; overflow: hi
 
 /* Mobile : redonner le padding-bottom de .salle (galerie.css :570) pour réserver
    la place de la nav-mobile fixe — sinon le plancher-sol va jusqu'au bord
-   viewport et la nav (z-index 50) masque les œuvres placées tout en bas. */
+   viewport et la nav (z-index 50) masque les œuvres placées tout en bas.
+   Valeur 5.5rem = nav-mobile (4.6rem = .8+3+.8) + ~1rem de marge confort pour
+   que la dernière ligne de parquet reste visible. */
 @media (max-width: 600px) {
   .salle.salle-sculpture {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
