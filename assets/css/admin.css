@@ -1324,6 +1324,10 @@ textarea.champ{resize:vertical;min-height:65px;}
   cursor: pointer; flex-shrink: 0;
 }
 .oeuvres-tri-dir:hover { background: var(--bg3); }
+/* Combobox tri + flèche regroupées : restent toujours collées (jamais séparées au wrap) */
+.oeuvres-tri-groupe {
+  display: flex; gap: .5rem; align-items: center; flex-shrink: 0;
+}
 .oeuvres-chips {
   display: flex; gap: .25rem; flex-wrap: wrap;
 }
@@ -1381,6 +1385,13 @@ textarea.champ{resize:vertical;min-height:65px;}
   padding: .3rem .4rem;
   display: flex; flex-direction: column;
 }
+/* Mobile : toolbar Œuvres réordonnée — recherche / chips statut / (combobox tri + flèche) */
+@media (max-width: 720px) {
+  .oeuvres-filtres #oeuvres-recherche { flex-basis: 100%; }
+  .oeuvres-chips      { order: 1; }
+  .oeuvres-tri-groupe { order: 2; }
+}
+
 /* Mobile : colonnes empilées verticalement */
 @media (max-width: 720px) {
   .oeuvres-list.multi-types { flex-direction: column; }

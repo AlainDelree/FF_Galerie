@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260626c">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260626d">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -302,14 +302,16 @@
     </div>
     <div class="oeuvres-filtres">
       <input type="text" id="oeuvres-recherche" placeholder="🔍 Rechercher par titre…" autocomplete="off">
-      <select id="oeuvres-tri" title="Trier par…">
-        <option value="titre">Titre (A→Z)</option>
-        <option value="ajout" selected>N° d'ajout (récent)</option>
-        <option value="date">Date de l'œuvre (récent)</option>
-        <option value="statut">Statut</option>
-        <option value="taille">Taille</option>
-      </select>
-      <button type="button" class="oeuvres-tri-dir" id="btn-oeuvres-tri-dir" aria-label="Inverser l'ordre">↓</button>
+      <div class="oeuvres-tri-groupe">
+        <select id="oeuvres-tri" title="Trier par…">
+          <option value="titre">Titre (A→Z)</option>
+          <option value="ajout" selected>N° d'ajout (récent)</option>
+          <option value="date">Date de l'œuvre (récent)</option>
+          <option value="statut">Statut</option>
+          <option value="taille">Taille</option>
+        </select>
+        <button type="button" class="oeuvres-tri-dir" id="btn-oeuvres-tri-dir" aria-label="Inverser l'ordre">↓</button>
+      </div>
       <div class="oeuvres-chips" role="group" aria-label="Filtrer par statut">
         <button type="button" class="oeuvres-chip actif" data-filtre="toutes">Toutes</button>
         <button type="button" class="oeuvres-chip" data-filtre="placees">Placées</button>
