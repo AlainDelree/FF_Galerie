@@ -553,7 +553,6 @@ function afficherPlan() {
     }
     if (_modeEditionPlan) {
       chip.classList.add('edit-mode');
-      chip.classList.add('draggable');
       var idx = salles.indexOf(s);
       chip.dataset.salleIdx = idx;
 
@@ -629,8 +628,11 @@ function afficherPlan() {
   add.addEventListener('click', () => ouvrirModalSalle());
   cont.appendChild(add);
 
-  /* Drag-and-drop en mode édition */
-  if (_modeEditionPlan) _initChipsDrag(cont);
+  /* Réordonnancement via les flèches ← → des chips (cf. plus bas).
+     Le drag-and-drop a été retiré : sur GSM il posait touch-action:none sur
+     les chips et bloquait le scroll horizontal du conteneur (scroll et
+     réordonnancement partagent le même axe). _initChipsDrag est conservé mais
+     n'est plus appelé. */
   /* Ligne de clonage esthétique (cible = salle active) */
   _renderCloneSalleRow();
 }
