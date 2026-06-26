@@ -325,14 +325,15 @@ function _chargerJSZip() {
   });
 }
 
-/* Extension d'après l'URL ou le type MIME du blob */
-function _extPhoto(url, mime) {
-  var m = (url || '').split('?')[0].match(/\.(jpe?g|png|webp|gif|avif)$/i);
-  if (m) return '.' + m[1].toLowerCase().replace('jpeg', 'jpg');
+/* Extension d'après l'URL (image OU glb) ou le type MIME du blob */
+function _extFichier(url, mime) {
+  var m = (url || '').split('?')[0].match(/\.([a-z0-9]{2,5})$/i);
+  if (m) { var e = m[1].toLowerCase(); return '.' + (e === 'jpeg' ? 'jpg' : e); }
   if (mime) {
     if (mime.indexOf('png') >= 0)  return '.png';
     if (mime.indexOf('webp') >= 0) return '.webp';
     if (mime.indexOf('gif') >= 0)  return '.gif';
+    if (mime.indexOf('gltf') >= 0 || mime.indexOf('glb') >= 0) return '.glb';
   }
   return '.jpg';
 }
@@ -401,25 +402,36 @@ async function telechargerPhotosSelection() {
   }
 
   var zip = new JSZip();
-  var pris = {}, ok = 0, ko = 0;
+  var pris = {}, ok = 0, ko = 0, okGlb = 0;
+
+  /* Réserve un nom unique dans le ZIP (anti-collision titres identiques) */
+  function _nomUnique(nom) {
+    var fin = nom, n = 1, pt = nom.lastIndexOf('.');
+    while (pris[fin]) { fin = nom.substring(0, pt) + '-' + (++n) + nom.substring(pt); }
+    pris[fin] = true;
+    return fin;
+  }
+
   for (var i = 0; i < selection.length; i++) {
     var t = selection[i];
     dire('Téléchargement ' + (i + 1) + '/' + selection.length + '…');
-    try {
-      if (!t.photo) { ko++; continue; }
-      var resp = await fetch(t.photo, { cache: 'no-store' });
-      if (!resp.ok) { ko++; continue; }
-      var blob = await resp.blob();
-      var nom = _nomPhoto(t.titre, t.id) + _extPhoto(t.photo, blob.type);
-      var n = 1, fin = nom;
-      while (pris[fin]) {
-        var pt = nom.lastIndexOf('.');
-        fin = nom.substring(0, pt) + '-' + (++n) + nom.substring(pt);
-      }
-      pris[fin] = true;
-      zip.file(fin, blob);
-      ok++;
-    } catch (e) { ko++; }
+    var base = _nomPhoto(t.titre, t.id);
+    /* On récupère la photo + le modèle 3D (GLB) s'il existe.
+       Une sculpture sans GLB ne télécharge que sa photo (pas d'erreur). */
+    var sources = [];
+    if (t.photo) sources.push(t.photo);
+    if (t.glb)   sources.push(t.glb);
+    if (!sources.length) { ko++; continue; }
+    for (var j = 0; j < sources.length; j++) {
+      try {
+        var resp = await fetch(sources[j], { cache: 'no-store' });
+        if (!resp.ok) { ko++; continue; }
+        var blob = await resp.blob();
+        zip.file(_nomUnique(base + _extFichier(sources[j], blob.type)), blob);
+        ok++;
+        if (sources[j] === t.glb) okGlb++;
+      } catch (e) { ko++; }
+    }
   }
 
   if (ok === 0) { dire('Aucune photo n\u2019a pu être récupérée.', true); if (btn) btn.disabled = false; return; }
@@ -429,7 +441,8 @@ async function telechargerPhotosSelection() {
     var content = await zip.generateAsync({ type: 'blob' });
     var prefixe = (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.prefix) ? ADMIN_CFG.prefix : 'oeuvres';
     await _livrerZip(content, prefixe + '-photos-' + _horodatage() + '.zip');
-    dire(ok + ' photo' + (ok > 1 ? 's' : '') + ' téléchargée' + (ok > 1 ? 's' : '') +
+    dire(ok + ' fichier' + (ok > 1 ? 's' : '') + ' récupéré' + (ok > 1 ? 's' : '') +
+         (okGlb ? ' (dont ' + okGlb + ' modèle' + (okGlb > 1 ? 's' : '') + ' 3D)' : '') +
          (ko ? ' \u2014 ' + ko + ' introuvable' + (ko > 1 ? 's' : '') : '') + '.');
   } catch (e) {
     dire('Erreur lors de la création du ZIP.', true);
