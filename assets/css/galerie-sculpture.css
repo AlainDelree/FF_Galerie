@@ -16,6 +16,15 @@ body.page-sculpture .galerie-principale { min-height: 0 !important; overflow: hi
   align-items: stretch;
 }
 
+/* Mobile : redonner le padding-bottom de .salle (galerie.css :570) pour réserver
+   la place de la nav-mobile fixe — sinon le plancher-sol va jusqu'au bord
+   viewport et la nav (z-index 50) masque les œuvres placées tout en bas. */
+@media (max-width: 600px) {
+  .salle.salle-sculpture {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .salle-sculpture .nom-salle {
   padding: 0 2rem;
 }
