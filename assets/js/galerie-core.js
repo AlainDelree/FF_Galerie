@@ -583,7 +583,11 @@ function initGalerie() {
       '.conteneur-salles{width:100%!important;transform:none!important;transition:none!important;}' +
       '.salle{width:100%!important;height:100vh!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}' +
       '.salle-sculpture .mur-inferieur{flex:0 0 auto!important;}' +
-      '.salle-sculpture .plancher-sol{flex:1!important;min-height:0!important;max-height:none!important;}';
+      '.salle-sculpture .plancher-sol{flex:1!important;min-height:0!important;max-height:none!important;}' +
+      /* Pas de nav-mobile en édition → annuler le padding-bottom mobile de
+         galerie-sculpture.css (réservé à la nav fixe) qui laisse sinon une
+         grosse zone morte (couleur du mur de la pièce) sous le plancher. */
+      '.salle.salle-sculpture{padding-bottom:0!important;}';
     document.head.appendChild(editStyle);
   }
 

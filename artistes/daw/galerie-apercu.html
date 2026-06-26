@@ -13,6 +13,10 @@
       width: 100% !important; height: 100vh !important;
       display: flex !important; flex-direction: column !important;
     }
+    /* Pas de nav-mobile en aperçu → annuler le padding-bottom mobile de
+       galerie-sculpture.css (réservé à la nav fixe), sinon grosse zone morte
+       (couleur du mur de la pièce) sous le plancher. */
+    .salle.salle-sculpture { padding-bottom: 0 !important; }
     /* .salle-sculpture background : pas de règle ici — laissé au JS qui
        applique salle.couleur_mur_piece (default body #7a7a7a si absent). */
     .mur-inferieur { flex: 0 0 35px !important; height: 35px !important; }
