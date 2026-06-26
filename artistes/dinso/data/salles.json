@@ -4,12 +4,12 @@
       "id": 1,
       "nom": "Salle I",
       "type": "sculpture",
-      "couleur_mur": "#99f1b7",
+      "couleur_mur": "#99c1f1",
       "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#f0f0f0",
+      "couleur_mur_bas": "#b4e4f4",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
-      "texture": "carrelage",
+      "texture": "parquet",
       "visible": true,
       "toiles": [
         1,
@@ -66,9 +66,9 @@
             "socle_couleur": "#f0ece4",
             "socle_use_piece": false,
             "pan_a": "#7a2525",
-            "pan_b": "#1a3055",
+            "pan_b": "#7a2525",
             "pan_c": "#2a5035",
-            "pan_d": "#a04820",
+            "pan_d": "#2a5035",
             "piquet": "#c8a050",
             "corde": "#8b0020"
           }
@@ -76,9 +76,9 @@
         "descriptive": {
           "actif": true,
           "decor": {
-            "pan_a": "#b4e4f4",
-            "pan_b": "#e0f0b0",
-            "pan_c": "#d8c4ec",
+            "pan_a": "#5a3794",
+            "pan_b": "#5a3794",
+            "pan_c": "#5a3794",
             "pan_d": "#f4b0a8"
           }
         }
