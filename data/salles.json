@@ -57,10 +57,12 @@
     {
       "id": 6,
       "nom": "Couloir",
-      "couleur_mur": "#5f0b1a",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/texture-bleu.jpg",
+      "couleur_mur": "#ffff00",
+      "couleur_mur_piece": "#c8a050",
+      "couleur_mur_bas": "#55c850",
+      "couleur_cadres": "#f0f0f0",
+      "epaisseur_cadres": 6,
+      "texture": "pierre",
       "visible": true,
       "toiles": [
         14,
