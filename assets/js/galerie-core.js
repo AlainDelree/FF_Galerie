@@ -227,7 +227,8 @@ function _chargerOeuvres() {
         else if (estGauche && salleIdx > 1)        nom = "\u2190 " + nomPrev;
         else if (!estGauche && salleIdx < totalSalles) nom = nomNext + " \u2192";
 
-        btn.innerHTML = '<span class="pm-nom">'+nom+'</span><div class="pm-ouverture"><span class="pm-fleche">'+(estGauche?"\u2039":"\u203a")+'</span></div>';
+        btn.innerHTML = '<span class="pm-nom"></span><div class="pm-ouverture"><span class="pm-fleche">'+(estGauche?"\u2039":"\u203a")+'</span></div>';
+        btn.querySelector(".pm-nom").textContent = nom; /* A3 : nom de salle injecte en textContent (insensible a < & " ) */
         btn.addEventListener("click", function() {
           if (!estGauche && salleIdx >= totalSalles) { window.location.href = "index.html"; return; }
           allerSalle(cibleIdx);
