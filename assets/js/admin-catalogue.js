@@ -93,10 +93,10 @@ function cocherUniquementType(type) {
 /* ── Génération du PDF ── */
 function genererCatalogueSelection() {
   var checked = document.querySelectorAll('.cat-cb:checked');
-  var ids = new Set();
-  checked.forEach(function(cb) { ids.add(parseInt(cb.dataset.id)); });
+  var keys = new Set();
+  checked.forEach(function(cb) { keys.add(cb.dataset.id + '|' + cb.dataset.type); });
 
-  var selection = toiles.filter(function(t) { return ids.has(t.id); });
+  var selection = toiles.filter(function(t) { return keys.has(t.id + '|' + _catTypeDe(t)); });
   selection.sort(function(a, b) { return a.id - b.id; });
 
   if (selection.length === 0) {
@@ -116,7 +116,7 @@ function _ouvrirFenetreCatalogue(selection) {
 
   /* ── Cartes des œuvres ── */
   var cartes = selection.map(function(t) {
-    var photo = t.photo ? base + t.photo : '';
+    var photo = t.photo ? (/^(https?:)?\/\//.test(t.photo) ? t.photo : base + t.photo) : '';
     var titre = t.titre || '(sans titre)';
     var dims  = (t.dimensions && t.dimensions.largeur && t.dimensions.hauteur)
       ? t.dimensions.largeur + '\u00a0\u00d7\u00a0' + t.dimensions.hauteur + '\u00a0cm'
