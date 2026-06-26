@@ -2495,13 +2495,9 @@ function afficherSolPlacement() {
     'border-radius:' + (isGsm ? '12px' : '6px') + ';overflow:hidden;position:relative;' +
     (isGsm ? 'border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.3);' : '');
 
-  /* Label mode */
-  if (isGsm) {
-    var lbl = document.createElement('div');
-    lbl.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.1em;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;';
-    lbl.textContent = '📱 Vue GSM';
-    iframeWrap.appendChild(lbl);
-  }
+  /* (Pas de label « 📱 Vue GSM » : il se superposait au badge admin
+     « Salle X — n/N » en haut-centre. Le mode est déjà indiqué par le toggle
+     du header et la forme portrait à bordure or du cadre.) */
 
   /* Iframe charge la vraie galerie en mode édition */
   const galeriePath = ADMIN_CFG.repoPath.replace(/data\/?$/, '') + 'galerie-edit.html';
