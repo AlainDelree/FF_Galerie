@@ -108,6 +108,13 @@ button{cursor:pointer;}
 .plan-btn:hover{border-color:var(--gold);}
 /* Chips salles */
 .salles-chips{flex:1;display:flex;align-items:center;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding-bottom:2px;}
+/* Mobile (<860px) : la ligne Cloner passe SOUS les chips de salles.
+   Sinon, en flex row sans wrap, elle ecrase #chips-salles a ~0px de large
+   et les blocs de salles deviennent invisibles. Desktop (>=860px) inchange. */
+@media (max-width: 859px) {
+  .plan-section    { flex-wrap: wrap; }
+  #clone-salle-row { flex-basis: 100%; }
+}
 .chip{padding:.35rem .7rem .35rem 10px;border-radius:8px;cursor:pointer;text-align:center;
   border:2px solid transparent;transition:all .15s;min-width:72px;background:var(--bg3);}
 .chip .cn{font-size:11px;font-weight:600;color:var(--text);}
