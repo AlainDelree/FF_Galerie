@@ -63,7 +63,7 @@
             "fond": "#12100c",
             "exposure": 1,
             "sol": "#040404",
-            "socle_couleur": "#f0ece4",
+            "socle_couleur": "#00eeff",
             "socle_use_piece": false,
             "pan_a": "#7a2525",
             "pan_b": "#1a3055",
@@ -94,30 +94,14 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        7,
-        10
-      ],
-      "positions": [
-        {
-          "id": 7,
-          "x": 32,
-          "y": 62,
-          "gabarit": "M"
-        },
-        {
-          "id": 10,
-          "x": 59,
-          "y": 40,
-          "gabarit": "L"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
       "positions_mobile": [
         {
-          "id": 7,
-          "x": 36,
-          "y": 37,
-          "gabarit": "M"
+          "id": 5,
+          "x": 46,
+          "y": 48,
+          "gabarit": "S"
         }
       ],
       "greffons": {
@@ -207,6 +191,19 @@
           }
         }
       }
+    },
+    {
+      "id": 10,
+      "nom": "Salle D",
+      "type": "sculpture",
+      "couleur_mur": "#2a2520",
+      "couleur_mur_piece": "#1a1a1a",
+      "couleur_mur_bas": "#111111",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": []
     }
   ]
 }
