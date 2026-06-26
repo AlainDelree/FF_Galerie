@@ -577,7 +577,7 @@ function initGalerie() {
   if (window._GALERIE_EDIT) {
     var editStyle = document.createElement('style');
     editStyle.textContent =
-      '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav,.galerie-footer{display:none!important;}' +
+      '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav,.galerie-footer,.nav-cote,.salle-titre,.nom-salle,.porte-nav{display:none!important;}' +
       'body{margin:0!important;padding:0!important;overflow:hidden!important;}' +
       '.galerie-principale{padding:0!important;margin:0!important;}' +
       /* Chaîne flex complète : galerie.css n'est pas chargé en édition, donc
@@ -587,7 +587,7 @@ function initGalerie() {
          dépendre de 100vh/100svh (peu fiables en iframe). */
       '.conteneur-salles{width:100%!important;height:100%!important;flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;transform:none!important;transition:none!important;}' +
       '.salle{width:100%!important;display:flex!important;flex-direction:column!important;}' +
-      '.salle.salle-sculpture{flex:1 1 auto!important;height:auto!important;min-height:0!important;padding-bottom:0!important;}' +
+      '.salle.salle-sculpture{flex:1 1 auto!important;height:auto!important;min-height:100dvh!important;padding-bottom:0!important;}' +
       '.salle-sculpture .mur-inferieur{flex:0 0 auto!important;}' +
       '.salle-sculpture .zone-basse{flex:1 1 auto!important;min-height:0!important;}' +
       '.salle-sculpture .plancher-sol{flex:1 1 auto!important;min-height:0!important;max-height:none!important;}';

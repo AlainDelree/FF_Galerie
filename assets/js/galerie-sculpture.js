@@ -700,7 +700,7 @@ if (window._GALERIE_EDIT) {
     if (salleEl) {
       salleEl.style.setProperty('flex', '1 1 auto', 'important');
       salleEl.style.setProperty('height', 'auto', 'important');
-      salleEl.style.setProperty('min-height', '0', 'important');
+      salleEl.style.setProperty('min-height', '100dvh', 'important');
       salleEl.style.setProperty('padding-bottom', '0', 'important');
       salleEl.style.setProperty('display', 'flex', 'important');
       salleEl.style.setProperty('flex-direction', 'column', 'important');
