@@ -452,11 +452,6 @@ function deplacerSalle(index, direction) {
   afficherPlan();
 }
 
-function _confirmerSupprSalle(id) {
-  _salleConfirmSuppr = (_salleConfirmSuppr === id) ? null : id;
-  afficherPlan();
-}
-
 async function _supprimerSalleEdit(id) {
   salles = salles.filter(function(s) { return s.id !== id; });
   if (salleActive && salleActive.id === id) salleActive = null;

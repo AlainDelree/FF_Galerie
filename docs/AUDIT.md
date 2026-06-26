@@ -20,6 +20,10 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 - **A3 — innerHTML nom de salle** : ✅ résolu (`a23345b`). `galerie-core.js:230` passe le nom en `textContent`. Bonus : cache-buster `galerie-core.js` uniformisé sur les 12 HTML (H3 partiel).
 - **A1 — Accolade orpheline `style.css`** : ✅ résolu (`2be22d9`). Cause diagnostiquée via `git blame` (origine `fbcab00c`, seuil `@media max-width:540px`). Enveloppe `@media` restaurée, accolades 66/66. Vérifié sur PC (`.plan-galerie` reprend `max-width:400px` au lieu de 320). Aucune régression.
 - **A2 — `commitMulti` force:true** : ⏸️ reporté (décision Alain : attendre ≥ 2 éditeurs parallèles).
+
+**Session 26/06 (nettoyage code mort, option 2)** :
+- **3 fonctions orphelines retirées** (`_oeuvresPath`, `_confirmerSupprSalle`, `_creerConfigDecor`) + cascade CSS `.tdb-decor-wrap/grille/row/lbl`. Variables/classes vivantes conservées (`_salleConfirmSuppr`, `_DECOR_CHAMPS`, `.tdb-decor-pastille`). Scan : 261 fonctions, seulement 3 mortes (~1 %, JS très propre).
+- **⚠️ CSS = CHAMP DE MINES, ne pas purger au grep** : ~16 classes admin.css flaggées « mortes » NON retirées car entrelacées avec du vivant (`.taille-badge` au milieu du bloc `.stock-item`, `.bas-btn` parmi des voisines mortes, ambiguïté classe/id sur `.stock-list`) + faux positif prouvé `.chip-peinture` (assemblé par `'chip chip-'+type`, invisible au grep, et même invisible à une heuristique de préfixe). Pour un balayage CSS fiable : Chrome DevTools → Coverage (observe le rendu réel), jamais un grep. knip/vulture inadaptés (code global vanilla, pas de graphe de modules).
 - **H3 — cache-busters** : ✅ résolu (`8f78f5d` + `b3d64fb`). `style.css` doté d'un `?v=` sur ses 20 références ; `galerie-peinture.js`, `galerie-sculpture.js`, `salle-immersive.js` et le straggler `galerie-core` (template) harmonisés. Les 7 fichiers versionnés ont chacun une valeur unique.
 
 ---
