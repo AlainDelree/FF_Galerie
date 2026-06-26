@@ -20,7 +20,7 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 - **A3 — innerHTML nom de salle** : ✅ résolu (`a23345b`). `galerie-core.js:230` passe le nom en `textContent`. Bonus : cache-buster `galerie-core.js` uniformisé sur les 12 HTML (H3 partiel).
 - **A1 — Accolade orpheline `style.css`** : ✅ résolu (`2be22d9`). Cause diagnostiquée via `git blame` (origine `fbcab00c`, seuil `@media max-width:540px`). Enveloppe `@media` restaurée, accolades 66/66. Vérifié sur PC (`.plan-galerie` reprend `max-width:400px` au lieu de 320). Aucune régression.
 - **A2 — `commitMulti` force:true** : ⏸️ reporté (décision Alain : attendre ≥ 2 éditeurs parallèles).
-- **H3 — cache-busters** : partiellement traité (galerie-core uniformisé). Reste : `style.css` n'a aucun `?v=` → à ajouter un jour pour fiabiliser le rechargement après modif.
+- **H3 — cache-busters** : ✅ résolu (`8f78f5d` + `b3d64fb`). `style.css` doté d'un `?v=` sur ses 20 références ; `galerie-peinture.js`, `galerie-sculpture.js`, `salle-immersive.js` et le straggler `galerie-core` (template) harmonisés. Les 7 fichiers versionnés ont chacun une valeur unique.
 
 ---
 
@@ -76,10 +76,19 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 - CSS associé : `.chip-mv / .chip-del / .chip-conf* / .chip.draggable / .chip-ghost / .chip-drag*`.
 - **Origine** : vestiges du mode drag des chips, remplacé par la barre Reculer/Avancer/Supprimer.
 
-### H2 — `construirePillsSalle` / `salle-pills`
-- Encore référencé (`admin-oeuvres.js`, `admin-galerie.js:1883`) avec garde `if(!pills) return`
-  → inerte si l'élément n'existe plus, mais **pas mort**.
-- Cascade complexe → **reporté**, pas prioritaire.
+### H2 — `construirePillsSalle` / `salle-pills` *(reporté à dessein — PIÈGE)*
+- Feature « pills » (boutons de choix de salle dans le form d'édition) : l'élément
+  `#salle-pills` a été retiré du HTML, mais le JS subsiste. `construirePillsSalle()`
+  est encore appelée à 4 endroits (admin.js:1156, admin-galerie.js:1774,
+  admin-oeuvres.js:29 & 197) mais sort aussitôt (`if(!pills) return`) → **inerte**.
+  Idem les `querySelectorAll('.salle-pill')` (boucles vides) + CSS `.salle-pill`.
+- **PIÈGE** : les pills écrivaient `salleCibleToile`, variable **vivante et critique** —
+  écrite par 5 chemins (1720/1775/1889/1954 vivants, 1746 mort) et **lue par la
+  sauvegarde** (2060-2061, 2095-2100) pour assigner l'œuvre à sa salle. Le code mort
+  des pills est entrelacé avec ces écritures vivantes (ex. 1889 vivant collé à 1890-1891 morts).
+- Conséquence : retirer les pills = micro-chirurgie préservant chaque `salleCibleToile = …`
+  + un smoke-test sauvegarde derrière. Inoffensif tel quel (zéro coût, zéro bug) →
+  **on laisse**, sauf tâche dédiée. NE PAS supprimer `salleCibleToile`.
 
 ### H3 — Cache-busters hétérogènes
 - Les `?v=` s'étalent de `20260622i` à `20260626o`.
