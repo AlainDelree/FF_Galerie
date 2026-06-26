@@ -28,7 +28,7 @@
       "couleur_mur": "#2a2774",
       "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#55c850",
-      "couleur_cadres": "#3a3a3a",
+      "couleur_cadres": "#f0f0f0",
       "epaisseur_cadres": 10,
       "texture": "pierre",
       "visible": false,
