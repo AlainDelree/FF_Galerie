@@ -580,14 +580,17 @@ function initGalerie() {
       '.bandeau-invite,.entete,.nav-pages,.controles,.btn-musique,.barre-navigation,.nav-mobile,.dots,.nav-retour,.retour-plan,.panneau-nav,.plaque-nav,.galerie-footer{display:none!important;}' +
       'body{margin:0!important;padding:0!important;overflow:hidden!important;}' +
       '.galerie-principale{padding:0!important;margin:0!important;}' +
-      '.conteneur-salles{width:100%!important;transform:none!important;transition:none!important;}' +
-      '.salle{width:100%!important;height:100vh!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}' +
+      /* Chaîne flex complète : galerie.css n'est pas chargé en édition, donc
+         .conteneur-salles n'a ni hauteur ni flex → la salle n'a pas de hauteur
+         définie et zone-basse/plancher en flex:1 ne remplissent pas (le fond
+         « mur de la pièce » ressort sous le sol). On reconstruit la chaîne sans
+         dépendre de 100vh/100svh (peu fiables en iframe). */
+      '.conteneur-salles{width:100%!important;height:100%!important;flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;transform:none!important;transition:none!important;}' +
+      '.salle{width:100%!important;display:flex!important;flex-direction:column!important;}' +
+      '.salle.salle-sculpture{flex:1 1 auto!important;height:auto!important;min-height:0!important;padding-bottom:0!important;}' +
       '.salle-sculpture .mur-inferieur{flex:0 0 auto!important;}' +
-      '.salle-sculpture .plancher-sol{flex:1!important;min-height:0!important;max-height:none!important;}' +
-      /* Pas de nav-mobile en édition → annuler le padding-bottom mobile de
-         galerie-sculpture.css (réservé à la nav fixe) qui laisse sinon une
-         grosse zone morte (couleur du mur de la pièce) sous le plancher. */
-      '.salle.salle-sculpture{padding-bottom:0!important;}';
+      '.salle-sculpture .zone-basse{flex:1 1 auto!important;min-height:0!important;}' +
+      '.salle-sculpture .plancher-sol{flex:1 1 auto!important;min-height:0!important;max-height:none!important;}';
     document.head.appendChild(editStyle);
   }
 
