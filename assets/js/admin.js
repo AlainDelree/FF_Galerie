@@ -266,6 +266,8 @@ let couleurMurBasActuel   = '#111111';   /* mur du bas (plinthe + portes) */
 let couleurCadresActuel = '#3a3a3a';
 let epaisseurCadresActuel = 2;
 let textureActuelle = 'none';
+let couleurSolActuel = '#4a3018';        /* sol peinture : couleur (parquet teinte ou uni) */
+let solTypeActuel = 'parquet';           /* 'parquet' | 'uni' */
 
 // ═══════════════════════════════════════════════
 // UTILITAIRES
@@ -1003,6 +1005,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopo
   ['btn-pop-cadres',    'pop-cadres'],
   ['btn-pop-epaisseur', 'pop-epaisseur'],
   ['btn-pop-texture',   'pop-texture'],
+  ['btn-pop-sol',       'pop-sol'],
   ['btn-pop-revetement','pop-revetement'],
   ['btn-pop-musique',   'pop-musique'],
 ].forEach(([btnId, popId]) => {

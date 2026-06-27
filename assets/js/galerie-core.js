@@ -240,9 +240,25 @@ function _chargerOeuvres() {
       murBas.appendChild(makePorte("d"));
       zone.appendChild(murBas);
 
-      // ── Sol parquet avec silhouettes sur 3 plans de profondeur ──
+      // ── Sol : parquet (defaut CSS) ou personnalise par salle (couleur + parquet/uni) ──
       const sol = document.createElement("div");
       sol.className = "plancher-sol";
+      /* Si la salle definit un sol custom (peinture), on l'applique inline en
+         !important par-dessus le CSS d'origine. Sans champ -> aspect inchange. */
+      if (salle && (salle.couleur_sol || salle.sol_type)) {
+        var _solC = salle.couleur_sol || '#4a3018';
+        var _solBg;
+        if (salle.sol_type === 'uni') {
+          _solBg = _solC;
+        } else {
+          /* Parquet teinte : memes lames que l'apercu admin (.scene-plancher) sur la couleur choisie */
+          _solBg = 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 60px),'
+                 + 'repeating-linear-gradient(to bottom,transparent 0,transparent 14px,rgba(0,0,0,.15) 14px,rgba(0,0,0,.15) 16px),'
+                 + _solC;
+        }
+        sol.style.setProperty('background', _solBg, 'important');
+        sol.classList.add('sol-custom');
+      }
       const sv = document.createElement("div");
       sv.className = "silhouettes-sol";
       sv.innerHTML = genererSilhouettes(150); // placeholder — remplacé après layout

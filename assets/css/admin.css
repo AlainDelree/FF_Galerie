@@ -191,6 +191,7 @@ button{cursor:pointer;}
   border-radius:6px;border:0.5px solid var(--brd);background:transparent;color:var(--muted);cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;padding:0;line-height:1;}
 .ico-btn:hover{border-color:var(--gold);color:var(--gold);}
+.ico-btn svg{display:block;}
 .ico-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(200,160,80,.1);}
 .ico-btn-danger:hover{border-color:var(--danger);color:var(--danger);}
 @media (max-width:600px){
@@ -459,10 +460,10 @@ button{cursor:pointer;}
 .scene-porte{width:34px;height:25.6px;background:#0c0a07;border-top-left-radius:34px 38.4px;border-top-right-radius:34px 38.4px;box-shadow:inset 0 0 10px rgba(0,0,0,.7);position:relative;}
 .scene-porte::after{content:'';position:absolute;left:50%;top:30%;transform:translateX(-50%);width:13.6px;height:60%;background:linear-gradient(to bottom,rgba(255,255,255,.04),transparent);border-radius:34px 34px 0 0;}
 .scene-plancher{height:51px;border-radius:0 0 4px 4px;
-  background:
+  background: var(--sol-bg,
     repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 60px),
     repeating-linear-gradient(to bottom,transparent 0,transparent 14px,rgba(0,0,0,.15) 14px,rgba(0,0,0,.15) 16px),
-    linear-gradient(to bottom,#5a3a22,#3a2515);
+    linear-gradient(to bottom,#5a3a22,#3a2515));
   box-shadow:inset 0 8px 10px rgba(0,0,0,.4);}
 /* Sur écran étroit, réduire la marge latérale pour que le mur reste visible */
 @media (max-width:1100px){

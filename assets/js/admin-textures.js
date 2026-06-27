@@ -94,6 +94,7 @@ function renderColorSwatches(type) {
   if      (type === 'mur')       { containerId = 'sw-mur';       current = couleurMurActuel; }
   else if (type === 'mur-piece') { containerId = 'sw-mur-piece'; current = couleurMurPieceActuel; }
   else if (type === 'mur-bas')   { containerId = 'sw-mur-bas';   current = couleurMurBasActuel; }
+  else if (type === 'sol')       { containerId = 'sw-sol';       current = couleurSolActuel; }
   else                           { containerId = 'sw-cadres';    current = couleurCadresActuel; }
   var container   = $(containerId);
   if (!container) return;
@@ -112,6 +113,7 @@ function renderColorSwatches(type) {
       if      (type === 'mur')       setCouleurMur(col);
       else if (type === 'mur-piece') setCouleurMurPiece(col);
       else if (type === 'mur-bas')   setCouleurMurBas(col);
+      else if (type === 'sol')       setCouleurSol(col);
       else                           setCouleurCadres(col);
     });
     container.appendChild(sw);
@@ -124,9 +126,15 @@ function initSwatches() {
   renderColorSwatches('mur-piece');
   renderColorSwatches('mur-bas');
   renderColorSwatches('cadres');
+  renderColorSwatches('sol');
 
   document.querySelectorAll('#sw-texture .sw').forEach(function(sw) {
     sw.addEventListener('click', function() { swSelect(sw, 'texture'); setTexture(sw.dataset.val); });
+  });
+
+  /* Sol peinture : choix parquet / uni */
+  document.querySelectorAll('#sw-sol-type .sw').forEach(function(sw) {
+    sw.addEventListener('click', function() { setSolType(sw.dataset.val); });
   });
 
   /* Revêtement sol (sculpture) — même logique que texture mur */
@@ -165,6 +173,13 @@ function initSwatches() {
     btnPickerCad.addEventListener('click', function(e) {
       e.stopPropagation();
       ouvrirPickerCouleur('cadres');
+    });
+  }
+  var btnPickerSol = document.getElementById('btn-picker-sol');
+  if (btnPickerSol) {
+    btnPickerSol.addEventListener('click', function(e) {
+      e.stopPropagation();
+      ouvrirPickerCouleur('sol');
     });
   }
   // Slider épaisseur cadres
@@ -259,6 +274,41 @@ function setTexture(val) {
   appliquerApparence();
   _rafraichirApercusTDB();
   _autoSaveApparence('Texture sauvegardée ✓');
+}
+
+/* Sol peinture : construit le background CSS (parquet teinte par la couleur,
+   ou uni). Miroir de la logique publique dans galerie-core.js. */
+function solBgPeintureCSS(type, couleur) {
+  var c = couleur || '#4a3018';
+  if (type === 'uni') return c;
+  return 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 60px),'
+       + 'repeating-linear-gradient(to bottom,transparent 0,transparent 14px,rgba(0,0,0,.15) 14px,rgba(0,0,0,.15) 16px),'
+       + c;
+}
+
+/* Propage le sol via la variable CSS --sol-bg, lue par .scene-plancher
+   (apercu Arranger) ; cote public, applique par creerPlancher(). */
+function _propagerSol() {
+  document.documentElement.style.setProperty('--sol-bg', solBgPeintureCSS(solTypeActuel, couleurSolActuel));
+}
+
+function setCouleurSol(col) {
+  couleurSolActuel = col;
+  if (salleActive) { salleActive.couleur_sol = col; }
+  _propagerSol();
+  _rafraichirApercusTDB();
+  _autoSaveApparence('Couleur du sol sauvegardée ✓');
+}
+
+function setSolType(val) {
+  solTypeActuel = val;
+  if (salleActive) { salleActive.sol_type = val; }
+  document.querySelectorAll('#sw-sol-type .sw').forEach(function(s) {
+    s.classList.toggle('sel', s.dataset.val === val);
+  });
+  _propagerSol();
+  _rafraichirApercusTDB();
+  _autoSaveApparence('Type de sol sauvegardé ✓');
 }
 
 // RECADRAGE PHOTO (Cropper.js)
@@ -1034,6 +1084,7 @@ function _confirmerPickerCouleur() {
   if (_pickerCouleurType === 'mur') { pushColorHist('mur', hex); setCouleurMur(hex); }
   else if (_pickerCouleurType === 'mur-piece') { pushColorHist('mur-piece', hex); setCouleurMurPiece(hex); }
   else if (_pickerCouleurType === 'mur-bas') { pushColorHist('mur-bas', hex); setCouleurMurBas(hex); }
+  else if (_pickerCouleurType === 'sol') { pushColorHist('sol', hex); setCouleurSol(hex); }
   else if (_pickerCouleurType === 'support') { if (typeof window._supportPickerOnConfirm === 'function') window._supportPickerOnConfirm(hex); }
   else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
   fermerPickerCouleur();

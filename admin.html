@@ -6,7 +6,7 @@
 <title>FF Galerie — Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon-admin.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260626r">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260627s">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -117,12 +117,13 @@
         <button id="btn-retour-tdb" onclick="retourTableauBord()">← Salles</button>
         <span class="salle-badge" id="badge-salle">—</span>
         <div class="apparence-bar" id="apparence-bar">
-          <button class="ico-btn" id="btn-pop-mur" title="Couleur du mur" type="button">🎨</button>
-          <button class="ico-btn" id="btn-pop-mur-piece" title="Couleur de la pièce (décor autour)" type="button">🌑</button>
-          <button class="ico-btn" id="btn-pop-mur-bas" title="Couleur du mur du bas (plinthe + portes)" type="button">🟫</button>
-          <button class="ico-btn peinture-only" id="btn-pop-cadres" title="Couleur des cadres" type="button">🖼</button>
+          <button class="ico-btn" id="btn-pop-mur" title="Couleur du mur du fond" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><rect x="8" y="7" width="8" height="6" fill="#c8a050" stroke="none"/><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/></svg></button>
+          <button class="ico-btn" id="btn-pop-mur-piece" title="Couleur de la pièce (décor autour)" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><polygon points="2,2 22,2 16,7 8,7" fill="#c8a050" stroke="none"/><polygon points="2,2 8,7 8,13 2,18" fill="#c8a050" stroke="none"/><polygon points="22,2 16,7 16,13 22,18" fill="#c8a050" stroke="none"/><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/></svg></button>
+          <button class="ico-btn" id="btn-pop-mur-bas" title="Couleur du mur du bas (plinthe + portes)" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/><rect x="8" y="11" width="8" height="2" fill="#c8a050" stroke="none"/><rect x="9.5" y="9.5" width="2" height="3.5" rx="1" fill="#c8a050" stroke="none"/><rect x="12.5" y="9.5" width="2" height="3.5" rx="1" fill="#c8a050" stroke="none"/></svg></button>
+          <button class="ico-btn peinture-only" id="btn-pop-cadres" title="Couleur des cadres" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/><rect x="9" y="8.4" width="2.6" height="3.4" stroke="#c8a050" stroke-width="1"/><rect x="12.6" y="8.4" width="2.6" height="3.4" stroke="#c8a050" stroke-width="1"/></svg></button>
           <button class="ico-btn peinture-only" id="btn-pop-epaisseur" title="Épaisseur des cadres" type="button">📏</button>
-          <button class="ico-btn peinture-only" id="btn-pop-texture" title="Texture du mur" type="button">🧵</button>
+          <button class="ico-btn peinture-only" id="btn-pop-texture" title="Revêtement du mur" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/><line x1="9" y1="12.4" x2="12" y2="7.6" stroke="#c8a050" stroke-width="1"/><line x1="11" y1="12.4" x2="14" y2="7.6" stroke="#c8a050" stroke-width="1"/><line x1="13" y1="12.4" x2="15.4" y2="8.6" stroke="#c8a050" stroke-width="1"/></svg></button>
+          <button class="ico-btn peinture-only" id="btn-pop-sol" title="Sol (parquet / uni)" type="button"><svg viewBox="0 0 24 20" width="20" height="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><polygon points="8,13 16,13 22,18 2,18" fill="#c8a050" stroke="none"/><polygon points="2,2 22,2 22,18 2,18"/><line x1="2" y1="2" x2="8" y2="7"/><line x1="22" y1="2" x2="16" y2="7"/><line x1="22" y1="18" x2="16" y2="13"/><line x1="2" y1="18" x2="8" y2="13"/><rect x="8" y="7" width="8" height="6"/></svg></button>
           <button class="ico-btn sculpture-only" id="btn-pop-revetement" title="Revêtement du sol" type="button">🪨</button>
           <button class="ico-btn" id="btn-pop-musique" title="Musique de la galerie" type="button">🎵</button>
           <button class="ico-btn ico-btn-danger" id="btn-vider-salles" title="Vider une ou plusieurs salles" type="button">🧹</button>
@@ -207,6 +208,18 @@
         </div>
         <div class="swatches" id="sw-tex-systeme">
           <div class="pop-vide" id="tex-systeme-vide" style="display:none;font-size:.72rem;color:var(--muted);padding:.3rem 0;">Aucune texture système disponible.</div>
+        </div>
+      </div>
+
+      <div class="popover" id="pop-sol">
+        <div class="pop-titre">Sol</div>
+        <div class="swatches" id="sw-sol-type" style="margin-bottom:.45rem;">
+          <div class="sw sel" style="background:repeating-linear-gradient(90deg,#4a3018 0,#4a3018 5px,#3a2410 5px,#3a2410 6px);" data-val="parquet" title="Parquet"></div>
+          <div class="sw" style="background:#4a3018;" data-val="uni" title="Uni"></div>
+        </div>
+        <div class="pop-titre" style="font-size:.68rem;opacity:.75;margin-bottom:.2rem;">Couleur du sol</div>
+        <div class="swatches" id="sw-sol">
+          <button class="sw-plus" type="button" id="btn-picker-sol" title="Plus de couleurs…">+</button>
         </div>
       </div>
 
