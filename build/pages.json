@@ -2,6 +2,20 @@
   "_comment": "Configuration par page pour le script de propagation du <head>. Lancer build/propagate_head.py après modification.",
   "_fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap",
   "_goatcounter_ff": "frederiqueferette",
+  "_base_url": "https://frederiqueferette.be/",
+  "_artiste": {
+    "id": "https://frederiqueferette.be/#frederique-ferette",
+    "name": "Frédérique Ferette",
+    "givenName": "Frédérique",
+    "familyName": "Ferette",
+    "jobTitle": "Artiste peintre",
+    "description": "Artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+    "nationality": "Belge",
+    "birthDate": "1975-02-16",
+    "birthPlace": "Dinant, Belgique",
+    "url": "https://frederiqueferette.be/",
+    "image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+  },
 
   "pages": [
     {
