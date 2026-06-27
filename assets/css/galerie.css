@@ -775,3 +775,6 @@
 @media (max-width: 768px) {
   .nav-cote { display: none; }
 }
+
+/* Galerie : sans le menu du haut, garder le contrôle musique à droite (mobile) */
+body[data-page="galerie"] .controles { margin-left: auto; }
