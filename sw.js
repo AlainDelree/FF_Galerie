@@ -13,7 +13,7 @@
      invités ne sont JAMAIS interceptés ni mis en cache (réseau strict).
    =========================================================================== */
 
-const VERSION = '2026-06-27d';
+const VERSION = '2026-06-27e';
 const CACHE   = 'ff-galerie-' + VERSION;
 
 /* --- Shell applicatif : tout ce qui doit marcher hors connexion ----------- */
@@ -23,6 +23,7 @@ const SHELL = [
   '/contact.html',
   '/infos.html',
   '/apropos.html',
+  '/app.html',
   '/choix-cadres.html',
   '/offline.html',
   '/manifest.webmanifest',

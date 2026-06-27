@@ -16,7 +16,6 @@
     "url": "https://frederiqueferette.be/",
     "image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
   },
-
   "pages": [
     {
       "file": "index.html",
@@ -96,6 +95,22 @@
       "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
       "tw_title": "À propos — Frédérique Ferette",
       "tw_description": "À propos de Frédérique Ferette, artiste peintre belge.",
+      "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+    },
+    {
+      "file": "app.html",
+      "depth": 0,
+      "favicon": "favicon.ico",
+      "title": "L'application — Frédérique Ferette",
+      "description": "Installez la galerie de Frédérique Ferette comme une application : sur votre écran d'accueil et consultable hors connexion.",
+      "robots": "index, follow",
+      "canonical": "https://frederiqueferette.be/app.html",
+      "og_title": "L'application — Frédérique Ferette",
+      "og_description": "La galerie de Frédérique Ferette, installable et consultable hors connexion.",
+      "og_url": "https://frederiqueferette.be/app.html",
+      "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
+      "tw_title": "L'application — Frédérique Ferette",
+      "tw_description": "La galerie de Frédérique Ferette, installable et consultable hors connexion.",
       "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
     }
   ]

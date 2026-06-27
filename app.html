@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<!-- HEAD:BEGIN -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>L'application — Frédérique Ferette</title>
+    <!-- SEO -->
+    <meta name="description"        content="Installez la galerie de Frédérique Ferette comme une application : sur votre écran d'accueil et consultable hors connexion.">
+    <meta name="author"             content="Frédérique Ferette">
+    <meta name="robots"             content="index, follow">
+    <link rel="canonical"           href="https://frederiqueferette.be/app.html">
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Frédérique Ferette">
+    <meta property="og:locale"      content="fr_BE">
+    <meta property="og:title"       content="L'application — Frédérique Ferette">
+    <meta property="og:description" content="La galerie de Frédérique Ferette, installable et consultable hors connexion.">
+    <meta property="og:url"         content="https://frederiqueferette.be/app.html">
+    <meta property="og:image"       content="https://frederiqueferette.be/assets/images/toiles/toile-002.jpg">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:alt"   content="Toile de Frédérique Ferette">
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="L'application — Frédérique Ferette">
+    <meta name="twitter:description" content="La galerie de Frédérique Ferette, installable et consultable hors connexion.">
+    <meta name="twitter:image"       content="https://frederiqueferette.be/assets/images/toiles/toile-002.jpg">
+    <!-- PWA -->
+    <link rel="manifest"          href="manifest.webmanifest">
+    <meta name="theme-color"      content="#1a1a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Galerie Ferette">
+    <link rel="apple-touch-icon"  href="assets/images/icons/icon-192.png">
+    <script src="assets/js/pwa-register.js" defer></script>
+    <!-- Polices -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- HEAD:END -->
+    <link rel="stylesheet" href="assets/css/style.css?v=20260626p">
+  <link rel="stylesheet" href="assets/css/plan.css">
+  <style>
+    .app-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+    .app-titre {
+      font-family: 'Cinzel', serif; font-weight: 400;
+      font-size: clamp(1.4rem, 4vw, 2rem); letter-spacing: .3em; text-transform: uppercase;
+      background: linear-gradient(135deg,#c8a050 0%,#f0d080 40%,#c8a050 60%,#e8c060 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin: 0 0 .3rem; text-align: center;
+    }
+    .app-sous {
+      font-family: 'Lato', sans-serif; font-weight: 300; font-size: .9rem; letter-spacing: .18em;
+      color: var(--text-doux, #aaa); text-transform: uppercase; margin: 0 0 1.6rem; text-align: center;
+    }
+    .app-intro, .app-texte {
+      font-family: 'Lato', sans-serif; font-size: clamp(.9rem, 2.5vw, 1rem);
+      line-height: 1.8; color: var(--text, #e0d8cc);
+    }
+    .app-intro { margin: 0 0 1.8rem; }
+    .app-cta { text-align: center; margin: 1.8rem 0 2.4rem; }
+    .app-install-btn {
+      font-family: 'Lato', sans-serif; font-size: 1.05rem; font-weight: 700;
+      color: #1a1a1a; background: linear-gradient(135deg,#c8a050,#f0d080);
+      border: none; border-radius: 26px; padding: 14px 28px; cursor: pointer;
+      box-shadow: 0 6px 22px rgba(0,0,0,.45); transition: transform .12s, box-shadow .12s;
+    }
+    .app-install-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0,0,0,.5); }
+    .app-install-btn:disabled { cursor: default; }
+    .app-h2 {
+      font-family: 'Cinzel', serif; font-weight: 500; font-size: 1.05rem; letter-spacing: .12em;
+      color: #d8b365; margin: 2.2rem 0 .8rem; text-transform: uppercase;
+    }
+    .app-liste { list-style: none; padding: 0; margin: 0; }
+    .app-liste li {
+      font-family: 'Lato', sans-serif; font-size: clamp(.9rem,2.5vw,1rem); line-height: 1.7;
+      color: var(--text, #e0d8cc); padding: .55rem 0 .55rem 1.6rem; position: relative;
+      border-bottom: 1px solid rgba(200,160,80,.12);
+    }
+    .app-liste li:last-child { border-bottom: none; }
+    .app-liste li::before {
+      content: '◆'; position: absolute; left: 0; top: .6rem; color: #c8a050; font-size: .7rem;
+    }
+    .app-liste strong { color: #f0d080; font-weight: 600; }
+    .app-aide {
+      margin-top: .4rem; border: 1px solid rgba(200,160,80,.28); border-radius: 8px;
+      padding: 1rem 1.2rem; background: rgba(255,255,255,.02);
+    }
+    .app-aide p {
+      font-family: 'Lato', sans-serif; font-size: .9rem; line-height: 1.65;
+      color: var(--text, #e0d8cc); margin: .35rem 0;
+    }
+    .app-aide strong { color: #f0d080; }
+  </style>
+</head>
+<body class="theme-sombre" data-page="app">
+  <noscript>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center;">
+      <div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem;">Ce site nécessite JavaScript pour fonctionner.</p>
+        <p style="font-size:.9rem;color:#888;">Veuillez activer JavaScript dans votre navigateur.</p>
+      </div>
+    </div>
+  </noscript>
+
+  <div class="scene-entree">
+
+    <header class="entete">
+      <nav class="nav-pages">
+        <a href="index.html" class="lien-contact">Accueil</a>
+        <span class="nav-sep">|</span>
+        <a href="apropos.html" class="lien-contact">À propos</a>
+        <span class="nav-sep">|</span>
+        <a href="infos.html" class="lien-contact">Infos</a>
+        <span class="nav-sep">|</span>
+        <a href="contact.html" class="lien-contact">Contact</a>
+        <span class="nav-sep">|</span>
+        <a href="app.html" class="lien-contact actif">App</a>
+        <span class="nav-sep" id="sep-artistes" style="display:none">|</span>
+        <div class="nav-dropdown" id="nav-artistes" style="display:none">
+          <span class="lien-contact nav-dropdown-trigger">Artistes invités <span class="nav-arrow">▾</span></span>
+          <div class="nav-dropdown-menu" id="nav-artistes-menu"></div>
+        </div>
+      </nav>
+      <div class="controles">
+        <button class="btn-musique off" id="btnMusique" aria-label="Musique on/off">
+          <span id="iconeMusique">&#9835;</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-contenu">
+      <div class="app-wrap">
+
+        <h1 class="app-titre">L'application</h1>
+        <p class="app-sous">La galerie dans votre poche — même sans réseau</p>
+
+        <div class="separateur" style="margin-bottom:1.6rem;"></div>
+
+        <p class="app-intro">Installez la galerie de Frédérique Ferette comme une application sur votre téléphone ou votre ordinateur. Une fois installée, elle s'ouvre en plein écran et reste consultable <strong>hors connexion</strong>.</p>
+
+        <div class="app-cta">
+          <button id="btn-install-app" class="app-install-btn" data-label-installee="Application déjà installée ✓">📲&nbsp; Installer l'application</button>
+        </div>
+
+        <h2 class="app-h2">Ce que l'app offre</h2>
+        <ul class="app-liste">
+          <li><strong>Sur votre écran d'accueil</strong> — une icône comme une vraie app, en plein écran, sans la barre du navigateur.</li>
+          <li><strong>Consultable hors connexion</strong> — idéale en vernissage ou là où le réseau passe mal : la galerie reste navigable sans Internet.</li>
+          <li><strong>Rapide</strong> — les pages et les images se chargent depuis l'appareil.</li>
+        </ul>
+
+        <h2 class="app-h2">Comment ça marche</h2>
+        <p class="app-texte">À l'installation, la galerie est enregistrée sur votre appareil. Elle ne change pas toute seule : vous gardez une version stable, parfaite pour une exposition. Quand vous le souhaitez — et que vous avez du réseau — un bouton <strong>⟳</strong> dans l'app récupère la dernière version.</p>
+
+        <h2 class="app-h2">Comment l'installer</h2>
+        <div id="install-aide" class="app-aide">
+          <p><strong>Android (Chrome)</strong> — touchez « Installer l'application » ci-dessus, ou le menu ⋮ du navigateur → « Installer l'application ».</p>
+          <p><strong>iPhone / iPad (Safari)</strong> — touchez le bouton Partager, puis « Sur l'écran d'accueil ».</p>
+          <p><strong>Ordinateur (Chrome / Edge)</strong> — cliquez l'icône d'installation dans la barre d'adresse, ou le menu → « Installer… ».</p>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="pied">
+      <div class="signature-artiste" aria-label="Signature">FF</div>
+      <span class="mention">&copy; Frédérique Ferette</span>
+      <span class="mention mention-musique" style="font-size:.62rem;opacity:.38;margin-top:.15rem;"></span>
+    </footer>
+
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/nav-artistes.js"></script>
+  <script data-goatcounter="https://frederiqueferette.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
