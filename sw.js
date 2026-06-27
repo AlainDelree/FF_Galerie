@@ -13,7 +13,7 @@
      invités ne sont JAMAIS interceptés ni mis en cache (réseau strict).
    =========================================================================== */
 
-const VERSION = '2026-06-27c';
+const VERSION = '2026-06-27d';
 const CACHE   = 'ff-galerie-' + VERSION;
 
 /* --- Shell applicatif : tout ce qui doit marcher hors connexion ----------- */
@@ -64,7 +64,7 @@ const SHELL = [
 function estExclu(pathname) {
   return (
     pathname === '/sw.js' ||
-    pathname.startsWith('/admin') ||
+    pathname.includes('admin') ||           // admin.html + admin-*.js + admin.css
     pathname.startsWith('/artistes/') ||
     pathname.startsWith('/build/') ||
     pathname.startsWith('/tests/') ||
@@ -72,6 +72,14 @@ function estExclu(pathname) {
     pathname.includes('apercu') ||
     pathname.includes('galerie-edit')
   );
+}
+
+/* --- Requête émise DEPUIS une page admin/aperçu ? (referrer) -------------- */
+function estContexteAdmin(referrer) {
+  if (!referrer) return false;
+  return referrer.includes('/admin') ||
+         referrer.includes('apercu') ||
+         referrer.includes('galerie-edit');
 }
 
 /* --- Récupère toutes les URLs d'images des toiles depuis peinture.json ----- */
@@ -149,7 +157,8 @@ self.addEventListener('fetch', (event) => {
     return; // API GitHub, EmailJS, GoatCounter… : réseau direct, jamais caché
   }
 
-  if (estExclu(url.pathname)) return;          // admin, aperçu, invités, outils
+  // Exclusions : par chemin (assets admin) ET par contexte appelant (referrer).
+  if (estExclu(url.pathname) || estContexteAdmin(req.referrer)) return;
 
   event.respondWith(cacheFirst(req));          // tout le reste : snapshot
 });
