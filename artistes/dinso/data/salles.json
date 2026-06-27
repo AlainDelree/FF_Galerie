@@ -214,7 +214,7 @@
       "type": "sculpture",
       "couleur_mur": "#ffffff",
       "couleur_mur_piece": "#f0f0f0",
-      "couleur_mur_bas": "#111111",
+      "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
       "visible": true,
       "toiles": [],
