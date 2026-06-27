@@ -66,9 +66,37 @@
 
   window.addEventListener('appinstalled', function () {
     promptInstall = null;
-    toast('Application installée ✓');
+    toast('Installée ✓ — préparation hors connexion…');
     majEtatBoutonInstall();
+    precacheFull(function () { toast('Galerie disponible hors connexion ✓'); });
   });
+
+  /* --- Téléchargement complet du snapshot média (à la demande) ------------- */
+  function precacheFull(onDone) {
+    navigator.serviceWorker.ready.then(function (reg) {
+      var sw = reg.active || navigator.serviceWorker.controller;
+      if (!sw) { if (onDone) onDone(false); return; }
+      var ch = new MessageChannel();
+      var fini = false;
+      ch.port1.onmessage = function () { if (!fini) { fini = true; if (onDone) onDone(true); } };
+      sw.postMessage({ type: 'PRECACHE_FULL' }, [ch.port2]);
+      setTimeout(function () { if (!fini) { fini = true; if (onDone) onDone(true); } }, 60000);
+    }).catch(function () { if (onDone) onDone(false); });
+  }
+
+  function cablerPrepOffline() {
+    var b = document.getElementById('btn-offline-prep');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      if (!navigator.onLine) { toast('Pas de connexion'); return; }
+      b.disabled = true; b.style.opacity = '0.6'; b.textContent = 'Téléchargement…';
+      precacheFull(function () {
+        b.style.opacity = '1';
+        b.textContent = 'Disponible hors connexion ✓';
+        toast('Galerie disponible hors connexion ✓');
+      });
+    });
+  }
 
   function cablerBoutonInstall() {
     var b = document.getElementById('btn-install-app');
@@ -138,6 +166,7 @@
   /* ------------------------------------------------------------------------ */
   window.addEventListener('load', function () {
     cablerBoutonInstall();
+    cablerPrepOffline();
 
     navigator.serviceWorker.register('/sw.js').then(function (reg) {
       if (EST_APP) injecterBoutonMaj(reg);

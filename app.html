@@ -93,6 +93,15 @@
       color: var(--text, #e0d8cc); margin: .35rem 0;
     }
     .app-aide strong { color: #f0d080; }
+    .app-note {
+      font-family: 'Lato', sans-serif; font-size: .82rem; line-height: 1.6;
+      color: var(--text-doux, #aaa); text-align: center; margin: -1rem 0 0;
+    }
+    .app-lien-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      color: #d8b365; text-decoration: underline; font: inherit;
+    }
+    .app-lien-btn:disabled { cursor: default; text-decoration: none; }
   </style>
 </head>
 <body class="theme-sombre" data-page="app">
@@ -144,6 +153,8 @@
         <div class="app-cta">
           <button id="btn-install-app" class="app-install-btn" data-label-installee="Application déjà installée ✓">📲&nbsp; Installer l'application</button>
         </div>
+        <p class="app-note">L'installation télécharge la galerie complète (~25&nbsp;Mo) pour la consultation hors connexion.<br>
+        Déjà installée, ou envie de préparer sans installer ? <button id="btn-offline-prep" class="app-lien-btn" type="button">Télécharger pour le hors connexion</button></p>
 
         <h2 class="app-h2">Ce que l'app offre</h2>
         <ul class="app-liste">

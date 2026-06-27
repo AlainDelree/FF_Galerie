@@ -1,31 +1,34 @@
 /* ===========================================================================
-   FF_Galerie — Service Worker (PWA Phase 1 : consultation hors connexion)
+   FF_Galerie — Service Worker (PWA)
    ---------------------------------------------------------------------------
-   Modèle : SNAPSHOT figé, rafraîchi À LA DEMANDE.
-   - Tout (pages, CSS, JS, données, images) est servi depuis le cache
-     (cache-first) : l'app installée ne change JAMAIS toute seule.
-   - La mise à jour du contenu se fait uniquement quand l'utilisateur tape
-     « Mettre à jour la galerie » dans l'app → message REFRESH → re-télécharge
-     tout le snapshot, puis recharge.
-   - Le site web normal (non installé) bascule lui aussi cache-first ; pour le
-     garder frais automatiquement, bumper VERSION à chaque déploiement.
-   - L'ADMIN, l'API GitHub, EmailJS, les aperçus/édition et les galeries
-     invités ne sont JAMAIS interceptés ni mis en cache (réseau strict).
+   Deux caches :
+   - SHELL (versionné, léger)  : pages, CSS, JS, données, icônes, textures.
+     Pré-caché à l'installation du SW → tout visiteur l'a, c'est petit.
+     Remplacé à chaque déploiement (bump VERSION).
+   - MEDIA (persistant)        : images des toiles + musique (~24 Mo).
+     NE se télécharge PAS d'office. Deux façons de le remplir :
+       • au fil de l'eau : chaque image regardée est mise en cache ;
+       • en bloc : message PRECACHE_FULL (déclenché à l'installation de l'app
+         ou par le bouton « Préparer hors connexion »).
+     Survit aux changements de version → l'app installée reste hors-ligne
+     même après un déploiement de code.
+
+   Modèle de fraîcheur : cache-first partout (snapshot). L'app installée se met
+   à jour à la demande (bouton ⟳ → REFRESH). Le site web (non installé) prend
+   la nouvelle version au déploiement suivant.
+
+   ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION = '2026-06-27e';
-const CACHE   = 'ff-galerie-' + VERSION;
+const VERSION     = '2026-06-27f';
+const SHELL_CACHE = 'ff-shell-' + VERSION;
+const MEDIA_CACHE = 'ff-media';            // persistant, non versionné
 
-/* --- Shell applicatif : tout ce qui doit marcher hors connexion ----------- */
+/* --- SHELL léger (PAS les toiles, PAS la musique) ------------------------- */
 const SHELL = [
   '/', '/index.html',
-  '/galerie.html',
-  '/contact.html',
-  '/infos.html',
-  '/apropos.html',
-  '/app.html',
-  '/choix-cadres.html',
-  '/offline.html',
+  '/galerie.html', '/contact.html', '/infos.html', '/apropos.html',
+  '/app.html', '/choix-cadres.html', '/offline.html',
   '/manifest.webmanifest',
 
   '/assets/css/style.css',
@@ -56,16 +59,21 @@ const SHELL = [
   '/assets/images/textures/ecorce-grosse.jpg',
   '/assets/images/textures/ecorcelignes.jpg',
   '/assets/images/textures/texture-bleu.jpg',
-  '/assets/images/about/frederique-ferette.jpg',
-
-  '/assets/music/musique.mp3'
+  '/assets/images/about/frederique-ferette.jpg'
 ];
 
-/* --- Exclusions : jamais interceptées (réseau strict) --------------------- */
+/* --- Médias lourds (cache persistant, à la demande) ---------------------- */
+function estMedia(pathname) {
+  return (pathname.startsWith('/assets/images/toiles/') &&
+          /\.(jpe?g|png|webp)$/i.test(pathname)) ||
+         pathname === '/assets/music/musique.mp3';
+}
+
+/* --- Exclusions : jamais interceptées (réseau strict) -------------------- */
 function estExclu(pathname) {
   return (
     pathname === '/sw.js' ||
-    pathname.includes('admin') ||           // admin.html + admin-*.js + admin.css
+    pathname.includes('admin') ||
     pathname.startsWith('/artistes/') ||
     pathname.startsWith('/build/') ||
     pathname.startsWith('/tests/') ||
@@ -74,8 +82,6 @@ function estExclu(pathname) {
     pathname.includes('galerie-edit')
   );
 }
-
-/* --- Requête émise DEPUIS une page admin/aperçu ? (referrer) -------------- */
 function estContexteAdmin(referrer) {
   if (!referrer) return false;
   return referrer.includes('/admin') ||
@@ -83,7 +89,7 @@ function estContexteAdmin(referrer) {
          referrer.includes('galerie-edit');
 }
 
-/* --- Récupère toutes les URLs d'images des toiles depuis peinture.json ----- */
+/* --- Liste des images de toiles (depuis peinture.json) ------------------- */
 async function urlsImagesToiles() {
   const urls = new Set();
   try {
@@ -103,46 +109,48 @@ async function urlsImagesToiles() {
         }
       }
     }
-  } catch (e) { /* hors ligne : rien à ajouter */ }
+  } catch (e) { /* hors ligne */ }
   return [...urls];
 }
 
-/* --- Précache complet : shell + données + images (tolérant) --------------- */
-async function precacheTout(cache) {
+/* --- Pré-cache du shell (léger) ------------------------------------------ */
+async function precacheShell() {
+  const cache = await caches.open(SHELL_CACHE);
   await Promise.allSettled(
     SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
   );
-  const images = await urlsImagesToiles();
+}
+
+/* --- Pré-cache complet des médias (lourd, à la demande) ------------------ */
+async function precacheMedias() {
+  const cache = await caches.open(MEDIA_CACHE);
+  const urls = await urlsImagesToiles();
+  urls.push('/assets/music/musique.mp3');
   await Promise.allSettled(
-    images.map((url) =>
+    urls.map((url) =>
       cache.add(new Request(url, { cache: 'reload' })).catch(() => {})
     )
   );
 }
 
-/* === INSTALL : snapshot initial =========================================== */
+/* === INSTALL : shell léger seulement ===================================== */
 self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await precacheTout(cache);
-  })());
-  // Pas de skipWaiting : la nouvelle version attend (site web : activée auto par
-  // pwa-register ; app installée : activée uniquement via le bouton « Mettre à jour »).
+  event.waitUntil(precacheShell());
 });
 
-/* === ACTIVATE : purge des anciens caches ================================== */
+/* === ACTIVATE : purge des vieux shells, on GARDE le cache média ========== */
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const noms = await caches.keys();
     await Promise.all(
-      noms.filter((n) => n.startsWith('ff-galerie-') && n !== CACHE)
+      noms.filter((n) => n.startsWith('ff-shell-') && n !== SHELL_CACHE)
           .map((n) => caches.delete(n))
     );
     await self.clients.claim();
   })());
 });
 
-/* === FETCH : cache-first partout (snapshot) =============================== */
+/* === FETCH ================================================================ */
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -150,26 +158,30 @@ self.addEventListener('fetch', (event) => {
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
 
-  // Cross-origin
   if (url.origin !== self.location.origin) {
     if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-      event.respondWith(cacheFirst(req));
+      event.respondWith(cacheFirst(req, SHELL_CACHE));
     }
-    return; // API GitHub, EmailJS, GoatCounter… : réseau direct, jamais caché
+    return;
   }
 
-  // Exclusions : par chemin (assets admin) ET par contexte appelant (referrer).
   if (estExclu(url.pathname) || estContexteAdmin(req.referrer)) return;
 
-  event.respondWith(cacheFirst(req));          // tout le reste : snapshot
+  // Médias lourds → cache persistant (rempli au fil de l'eau ou en bloc).
+  if (estMedia(url.pathname)) {
+    event.respondWith(cacheFirst(req, MEDIA_CACHE));
+    return;
+  }
+
+  // Reste (shell) → cache versionné.
+  event.respondWith(cacheFirst(req, SHELL_CACHE));
 });
 
-/* --- Stratégie : cache-first (ignoreSearch → cohabite avec ?v=...) -------- */
-async function cacheFirst(req) {
-  const cache = await caches.open(CACHE);
+/* --- Stratégie : cache-first (ignoreSearch → cohabite avec ?v=...) ------- */
+async function cacheFirst(req, cacheName) {
+  const cache = await caches.open(cacheName);
   const hit = await cache.match(req, { ignoreSearch: true });
   if (hit) return hit;
-  // Pas en cache : on tente le réseau (utile en navigation normale en ligne).
   try {
     const rep = await fetch(req);
     if (rep && rep.ok && (rep.type === 'basic' || rep.type === 'cors' || rep.type === 'opaque')) {
@@ -178,30 +190,36 @@ async function cacheFirst(req) {
     return rep;
   } catch (e) {
     if (req.mode === 'navigate') {
-      const offline = await cache.match('/offline.html');
+      const shell = await caches.open(SHELL_CACHE);
+      const offline = await shell.match('/offline.html');
       if (offline) return offline;
     }
     return Response.error();
   }
 }
 
-/* === MESSAGES : bascule de version + rafraîchissement à la demande ========= */
+/* === MESSAGES ============================================================= */
 self.addEventListener('message', (event) => {
   const d = event.data || {};
 
-  if (d.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+  if (d.type === 'SKIP_WAITING') { self.skipWaiting(); return; }
+
+  // Téléchargement complet du snapshot média (à la demande / à l'installation).
+  if (d.type === 'PRECACHE_FULL') {
+    event.waitUntil((async () => {
+      await precacheMedias();
+      if (event.ports && event.ports[0]) event.ports[0].postMessage({ ok: true });
+    })());
     return;
   }
 
+  // Mise à jour à la demande (app installée) : shell frais + médias frais.
   if (d.type === 'REFRESH') {
     event.waitUntil((async () => {
-      const cache = await caches.open(CACHE);
-      await precacheTout(cache);               // re-télécharge tout le snapshot
-      // Réponse au port (si fourni) pour que la page sache que c'est fini.
-      if (event.ports && event.ports[0]) {
-        event.ports[0].postMessage({ ok: true });
-      }
+      await precacheShell();
+      await precacheMedias();
+      if (event.ports && event.ports[0]) event.ports[0].postMessage({ ok: true });
     })());
+    return;
   }
 });

@@ -45,7 +45,11 @@
     promptInstall = null;
     var b = document.getElementById('btn-install-app');
     if (b) b.style.display = 'none';
-    toast('Application installée ✓');
+    toast('Installée ✓ — préparation hors connexion…');
+    navigator.serviceWorker.ready.then(function (reg) {
+      var sw = reg.active;
+      if (sw) sw.postMessage({ type: 'PRECACHE_FULL' });
+    }).catch(function () {});
   });
 
   window.addEventListener('load', function () {
