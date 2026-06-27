@@ -626,7 +626,7 @@ function selectSalle(id) {
     document.documentElement.style.removeProperty('--sol-bg');
   }
   if (typeof renderColorSwatches === 'function') renderColorSwatches('sol');
-  document.querySelectorAll('#sw-sol-type .sw').forEach(function(s) {
+  document.querySelectorAll('#sw-sol-type .sol-type-btn').forEach(function(s) {
     s.classList.toggle('sel', s.dataset.val === solTypeActuel);
   });
   if (typeof appliquerApparence === 'function') appliquerApparence();

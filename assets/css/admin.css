@@ -192,6 +192,9 @@ button{cursor:pointer;}
   transition:border-color .15s,color .15s,background .15s;padding:0;line-height:1;}
 .ico-btn:hover{border-color:var(--gold);color:var(--gold);}
 .ico-btn svg{display:block;}
+.sol-type-btn{flex:1;font-size:.72rem;padding:.32rem .2rem;border:0.5px solid var(--brd,#d8cfc0);border-radius:6px;background:transparent;color:inherit;cursor:pointer;transition:border-color .12s,color .12s,background .12s;}
+.sol-type-btn:hover{border-color:var(--gold);}
+.sol-type-btn.sel{border-color:var(--gold);color:var(--gold);background:rgba(200,160,80,.12);}
 .ico-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(200,160,80,.1);}
 .ico-btn-danger:hover{border-color:var(--danger);color:var(--danger);}
 @media (max-width:600px){

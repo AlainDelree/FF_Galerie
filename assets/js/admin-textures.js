@@ -133,7 +133,7 @@ function initSwatches() {
   });
 
   /* Sol peinture : choix parquet / uni */
-  document.querySelectorAll('#sw-sol-type .sw').forEach(function(sw) {
+  document.querySelectorAll('#sw-sol-type .sol-type-btn').forEach(function(sw) {
     sw.addEventListener('click', function() { setSolType(sw.dataset.val); });
   });
 
@@ -303,7 +303,7 @@ function setCouleurSol(col) {
 function setSolType(val) {
   solTypeActuel = val;
   if (salleActive) { salleActive.sol_type = val; }
-  document.querySelectorAll('#sw-sol-type .sw').forEach(function(s) {
+  document.querySelectorAll('#sw-sol-type .sol-type-btn').forEach(function(s) {
     s.classList.toggle('sel', s.dataset.val === val);
   });
   _propagerSol();
