@@ -99,7 +99,7 @@
       "id": 7,
       "nom": "Cuisine",
       "couleur_mur": "#571b1b",
-      "couleur_mur_bas": "#5c3d2e",
+      "couleur_mur_bas": "#4a1c05",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
