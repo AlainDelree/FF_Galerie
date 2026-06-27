@@ -115,30 +115,52 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 
 ---
 
-## SEO statique (baké au build) — portée et pièges
+## SEO statique (baké au build) — automatisé + multi-artistes
 
-Mis en place le 27/06. Trois scripts de build, à **relancer manuellement** (le contenu
-ne se régénère pas tout seul quand Fred édite via l'admin) :
-- `build/propagate_head.py` — meta `<head>` (title/description/OG/canonical).
-- `build/gen_sitemap.py` — `sitemap.xml` depuis `pages.json` (pages indexables, `lastmod` Git).
+Mis en place le 27/06, **automatisé le 27/06** via `.github/workflows/seo.yml`.
+
+Trois scripts de build, désormais relancés **automatiquement** par l'Action à chaque
+push sur `main` (édition admin de Fred, publication/masquage/suppression d'un invité —
+tout passe par `main`). Un `workflow_dispatch` sert de bouton « Renouveler le référencement ».
+- `build/propagate_head.py` — meta `<head>` (title/description/OG/canonical), Fred uniquement.
+- `build/gen_sitemap.py` — génère **`sitemap.xml` ET `robots.txt`** depuis `pages.json`
+  (Fred) **+ `data/artistes.json`** (invités non-draft). Source de vérité = `artistes.json`.
 - `build/gen_seo.py` — JSON-LD `Person` (index) + `ItemList`/`VisualArtwork` (galerie)
-  + bloc `<noscript class="seo-toiles">` listant les toiles. Raison d'être : les crawlers
-  IA (GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot) ne rendent pas le JS → le contenu
-  injecté depuis le JSON leur est invisible sans ce bake.
+  + bloc `<noscript class="seo-toiles">`. **Pilotée par `artistes.json`** : Fred toujours
+  indexée ; invité non-draft indexé sous `artistes/<id>/` ; invité draft → marqueurs **vidés** ;
+  invité supprimé → fichiers absents, ignoré. Raison d'être : crawlers IA (GPTBot, ClaudeBot,
+  OAI-SearchBot, PerplexityBot) ne rendent pas le JS → contenu JSON invisible sans ce bake.
 
-**À relancer quand** : ajout/retrait de page (`gen_sitemap`), ajout/édition de toile ou de
-description (`gen_seo`), changement de meta (`propagate_head`). Sinon le SEO reste figé sur
-l'ancien état (sans casser le site, piloté par le JS). *Amélioration future possible : une
-GitHub Action qui relance les 3 scripts à chaque push et recommite.*
+**Anti-boucle de l'Action** : le recommit porte le tag `[seo]`, le job a un garde-fou
+`if: !contains(message, '[seo]')` → il ne se redéclenche pas lui-même (même logique que
+le tag `[admin]` de `deploy.yml`/`admin-deploy.yml`).
 
-**⚠️ PORTÉE = FRÉDÉRIQUE UNIQUEMENT.** Les artistes invités sont hors SEO **à dessein** :
-absents de `pages.json` (donc du sitemap), pas de marqueurs JSON-LD/noscript dans leurs HTML,
-et `robots.txt` fait `Disallow: /artistes/` (en plus de draft + noindex).
-- **Supprimer un artiste invité ne laisse AUCUN résidu SEO** → rien à nettoyer côté SEO.
-- **Mettre un artiste EN LIGNE = étape SEO dédiée** : l'ajouter à `pages.json`, générer son
-  sitemap/JSON-LD, retirer (ou affiner) le `Disallow: /artistes/`. Et **alors seulement**, sa
-  suppression future imposera un nettoyage SEO en retour. Ne pas oublier ce couple
-  activation/désactivation.
+**⚠️ Déploiement** : un push fait par le `GITHUB_TOKEN` par défaut ne re-déclenche pas
+`deploy.yml`. Pour que le SEO parte en ligne immédiatement, l'Action pousse avec le secret
+`SEO_PUSH_TOKEN` (PAT fine-grained, contents:write). **Si ce secret est absent, le SEO est
+quand même committé mais ne se déploie qu'au push humain suivant.** → secret à créer.
+
+**Identité schema.org d'un invité** : dérivée de `artistes.json` (nom, type, genre →
+jobTitle/artform). Enrichissable via un fichier optionnel `artistes/<id>/data/seo.json`
+(mêmes clés que le bloc `_artiste` de `pages.json` : givenName, familyName, birthDate…).
+
+**Cycle de vie invité = une seule ré-exécution idempotente** (plus de nettoyage SEO bespoke) :
+- **Reste en draft** → rien (noindex + `Disallow: /artistes/` + absent du sitemap + 0 JSON-LD).
+- **Publié** → l'Action l'inclut : Person + ItemList + noscript bakés, pages ajoutées au
+  sitemap, `Allow: /artistes/<id>/` ajouté dans robots (Allow plus spécifique l'emporte).
+- **Repassé en draft** → la **même** ré-exécution l'exclut : marqueurs vidés, retiré du
+  sitemap, `Allow` retiré (donc re-bloqué). Le ré-ajout du `noindex` reste fait par
+  `toggleDraftArtiste`. **Aucun code dédié à écrire.**
+- **Supprimé** → la **même** ré-exécution : fichiers déjà partis, sitemap/robots reconstruits
+  depuis `artistes.json` → **zéro résidu**, `supprimerArtiste` inchangé.
+
+**Marqueurs SEO** (`<!-- JSONLD:BEGIN/END -->`, `<!-- TOILES-SEO:BEGIN/END -->`) désormais
+présents dans les templates `templates/artiste-{index,galerie}.html` (futurs invités) ET
+ajoutés aux invités existants (daw, dinso). Gestion des photos en URL absolue : `abs_url()`
+ne préfixe que les chemins relatifs (les placeholders `https://…` restent intacts).
+
+Validé localement le 27/06 : sortie de Frédérique **byte-identique** (zéro churn), publication
+de Daw (22 toiles) → injection correcte, retour-draft → marqueurs vidés, 2 passes idempotentes.
 
 ---
 
