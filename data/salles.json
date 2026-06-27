@@ -59,6 +59,7 @@
       "id": 6,
       "nom": "Couloir",
       "couleur_mur": "#29275e",
+      "couleur_sol": "#38608a",
       "sol_type": "uni",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
