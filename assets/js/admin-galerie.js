@@ -495,6 +495,7 @@ function afficherPlan() {
       const restant = Math.max(0, 60 - elapsed);
       const badge = document.createElement('div');
       badge.className = 'chip-sync';
+      badge.dataset.syncSalle = s.id;
       badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
       chip.appendChild(badge);
     }

@@ -227,13 +227,23 @@ let timerAttenteChipInterval = null;
 function marquerSalleEnAttente(id) {
   if (!id) return;
   sallesEnAttente.set(id, Date.now());
+  /* Rendu complet UNE fois pour faire apparaitre le badge sur la chip. */
+  if (typeof afficherPlan === 'function') afficherPlan();
   if (timerAttenteChipInterval) return;
   timerAttenteChipInterval = setInterval(() => {
     const now = Date.now();
+    let expire = false;
     sallesEnAttente.forEach((ts, sid) => {
-      if (now - ts >= 65000) sallesEnAttente.delete(sid);
+      const restant = Math.max(0, 60 - Math.floor((now - ts) / 1000));
+      /* Maj du SEUL badge (pas de afficherPlan complet : il reconstruit
+         _renderCloneSalleRow et refermait la combobox du clonage a chaque tick). */
+      const badge = document.querySelector(`.chip-sync[data-sync-salle="${sid}"]`);
+      if (badge) badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
+      if (now - ts >= 65000) { sallesEnAttente.delete(sid); expire = true; }
     });
-    if (typeof afficherPlan === 'function') afficherPlan();
+    /* Rendu complet ponctuel seulement quand une salle sort de la liste
+       (pour retirer son badge proprement). */
+    if (expire && typeof afficherPlan === 'function') afficherPlan();
     if (sallesEnAttente.size === 0) {
       clearInterval(timerAttenteChipInterval);
       timerAttenteChipInterval = null;
