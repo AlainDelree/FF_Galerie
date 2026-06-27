@@ -115,6 +115,33 @@ cosmétiques. Site mûr avec une petite dette bien identifiée — pas un site f
 
 ---
 
+## SEO statique (baké au build) — portée et pièges
+
+Mis en place le 27/06. Trois scripts de build, à **relancer manuellement** (le contenu
+ne se régénère pas tout seul quand Fred édite via l'admin) :
+- `build/propagate_head.py` — meta `<head>` (title/description/OG/canonical).
+- `build/gen_sitemap.py` — `sitemap.xml` depuis `pages.json` (pages indexables, `lastmod` Git).
+- `build/gen_seo.py` — JSON-LD `Person` (index) + `ItemList`/`VisualArtwork` (galerie)
+  + bloc `<noscript class="seo-toiles">` listant les toiles. Raison d'être : les crawlers
+  IA (GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot) ne rendent pas le JS → le contenu
+  injecté depuis le JSON leur est invisible sans ce bake.
+
+**À relancer quand** : ajout/retrait de page (`gen_sitemap`), ajout/édition de toile ou de
+description (`gen_seo`), changement de meta (`propagate_head`). Sinon le SEO reste figé sur
+l'ancien état (sans casser le site, piloté par le JS). *Amélioration future possible : une
+GitHub Action qui relance les 3 scripts à chaque push et recommite.*
+
+**⚠️ PORTÉE = FRÉDÉRIQUE UNIQUEMENT.** Les artistes invités sont hors SEO **à dessein** :
+absents de `pages.json` (donc du sitemap), pas de marqueurs JSON-LD/noscript dans leurs HTML,
+et `robots.txt` fait `Disallow: /artistes/` (en plus de draft + noindex).
+- **Supprimer un artiste invité ne laisse AUCUN résidu SEO** → rien à nettoyer côté SEO.
+- **Mettre un artiste EN LIGNE = étape SEO dédiée** : l'ajouter à `pages.json`, générer son
+  sitemap/JSON-LD, retirer (ou affiner) le `Disallow: /artistes/`. Et **alors seulement**, sa
+  suppression future imposera un nettoyage SEO en retour. Ne pas oublier ce couple
+  activation/désactivation.
+
+---
+
 ## Méthode (rappel)
 - Travail sur `dev`, jamais de merge `main` sans accord explicite d'Alain.
 - `node --check` avant chaque push.
