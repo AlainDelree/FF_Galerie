@@ -20,9 +20,9 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-27j';
-const SHELL_CACHE = 'ff-shell-' + VERSION;
-const MEDIA_CACHE = 'ff-media';            // persistant, non versionné
+const VERSION     = '2026-06-28a';     // identifiant du CODE du SW (force la détection de MAJ)
+const SHELL_CACHE = 'ff-shell';        // STABLE : le contenu ne change qu'à la demande (⟳)
+const MEDIA_CACHE = 'ff-media';        // STABLE : images + musique, persistant
 
 /* --- SHELL léger (PAS les toiles, PAS la musique) ------------------------- */
 const SHELL = [
@@ -151,9 +151,15 @@ async function precacheMedias() {
   await Promise.allSettled(urls.map((url) => mettreEnCache(cache, url)));
 }
 
-/* === INSTALL : shell léger seulement ===================================== */
+/* === INSTALL : shell léger, UNIQUEMENT à la première installation ========= */
 self.addEventListener('install', (event) => {
-  event.waitUntil(precacheShell());
+  event.waitUntil((async () => {
+    const cache = await caches.open(SHELL_CACHE);
+    const cles = await cache.keys();
+    // Une simple mise à jour du SW ne télécharge RIEN : l'app s'ouvre
+    // instantanément, le contenu ne bouge qu'à la demande (⟳ → REFRESH).
+    if (cles.length === 0) await precacheShell();
+  })());
 });
 
 /* === ACTIVATE : purge des vieux shells, on GARDE le cache média ========== */

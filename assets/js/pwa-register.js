@@ -1,12 +1,11 @@
 /* ===========================================================================
    FF_Galerie — Enregistrement du Service Worker (PWA)
    ---------------------------------------------------------------------------
-   - Enregistre le SW sur les pages publiques.
-   - Site web (non installé)  : se met à jour tout seul au déploiement.
-     L'installation se fait depuis la page dédiée /app.html (bouton
-     #btn-install-app), pas via un bouton flottant.
-   - App installée (standalone): NE bouge jamais seule ; bouton « ⟳ Mettre à
-     jour » pour retélécharger le snapshot à la demande.
+   - App installée : s'ouvre instantanément depuis le cache. Elle ne télécharge
+     RIEN et ne se recharge JAMAIS toute seule à l'ouverture. La galerie ne se
+     met à jour que quand l'utilisateur tape « ⟳ Mettre à jour ».
+   - Site web (non installé) : prend la nouvelle version au déploiement suivant.
+   - Installation depuis la page /app.html (#btn-install-app).
    Best-effort : sur un navigateur sans support, on ne fait rien.
    =========================================================================== */
 (function () {
@@ -18,10 +17,13 @@
     window.navigator.standalone === true;
 
   var promptInstall = null;
-
+  var majDemandee   = false;   // true UNIQUEMENT lors d'une MAJ explicite (⟳) ou côté site web
   var rechargeFaite = false;
+
+  // L'app ne se recharge jamais d'elle-même : on ne recharge que si une MAJ a
+  // été explicitement déclenchée.
   navigator.serviceWorker.addEventListener('controllerchange', function () {
-    if (rechargeFaite) return;
+    if (!majDemandee || rechargeFaite) return;
     rechargeFaite = true;
     window.location.reload();
   });
@@ -45,25 +47,20 @@
     }, 2600);
   }
 
-  /* --- Installation : câble le bouton explicite #btn-install-app ----------- */
+  /* --- Installation : bouton explicite #btn-install-app -------------------- */
   function majEtatBoutonInstall() {
     var b = document.getElementById('btn-install-app');
     if (!b) return;
     if (EST_APP) {
-      b.dataset.etat = 'installee';
       b.textContent = b.dataset.labelInstallee || 'Application déjà installée ✓';
       b.disabled = true;
       b.style.opacity = '0.7';
     }
   }
-
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     promptInstall = e;
-    var b = document.getElementById('btn-install-app');
-    if (b) b.dataset.pret = '1';
   });
-
   window.addEventListener('appinstalled', function () {
     promptInstall = null;
     toast('Installée ✓ — préparation hors connexion…');
@@ -84,6 +81,23 @@
     }).catch(function () { if (onDone) onDone(false); });
   }
 
+  function cablerBoutonInstall() {
+    var b = document.getElementById('btn-install-app');
+    if (!b) return;
+    majEtatBoutonInstall();
+    if (EST_APP) return;
+    b.addEventListener('click', function () {
+      if (promptInstall) {
+        promptInstall.prompt();
+        promptInstall.userChoice.finally(function () { promptInstall = null; });
+      } else {
+        var aide = document.getElementById('install-aide');
+        if (aide) { aide.style.display = 'block'; aide.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        else toast('Menu du navigateur \u2192 « Installer l\u2019application »');
+      }
+    });
+  }
+
   function cablerPrepOffline() {
     var b = document.getElementById('btn-offline-prep');
     if (!b) return;
@@ -98,25 +112,31 @@
     });
   }
 
-  function cablerBoutonInstall() {
-    var b = document.getElementById('btn-install-app');
-    if (!b) return;
-    majEtatBoutonInstall();
-    if (EST_APP) return;
-    b.addEventListener('click', function () {
-      if (promptInstall) {
-        promptInstall.prompt();
-        promptInstall.userChoice.finally(function () { promptInstall = null; });
-      } else {
-        // iOS / desktop / prompt pas encore prêt : on renvoie vers les consignes.
-        var aide = document.getElementById('install-aide');
-        if (aide) { aide.style.display = 'block'; aide.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        else toast('Menu du navigateur \u2192 « Installer l\u2019application »');
-      }
+  /* --- Mise à jour à la demande (app installée) : bouton ⟳ ----------------- */
+  function demanderRefresh() {
+    return new Promise(function (resolve) {
+      var sw = navigator.serviceWorker.controller;
+      if (!sw) { resolve(); return; }
+      var ch = new MessageChannel();
+      var fini = false;
+      ch.port1.onmessage = function () { if (!fini) { fini = true; resolve(); } };
+      sw.postMessage({ type: 'REFRESH' }, [ch.port2]);
+      setTimeout(function () { if (!fini) { fini = true; resolve(); } }, 30000);
     });
   }
 
-  /* --- Mise à jour (app installée) : bouton ⟳ ------------------------------ */
+  function attendreWaiting(reg) {
+    return new Promise(function (resolve) {
+      if (reg.waiting) { resolve(); return; }
+      var sw = reg.installing;
+      if (!sw) { resolve(); return; }
+      sw.addEventListener('statechange', function () {
+        if (sw.state === 'installed' || sw.state === 'redundant') resolve();
+      });
+      setTimeout(resolve, 15000);
+    });
+  }
+
   function injecterBoutonMaj(reg) {
     if (document.getElementById('pwa-maj-btn')) return;
     var btn = document.createElement('button');
@@ -138,29 +158,21 @@
       if (enCours) return;
       if (!navigator.onLine) { toast('Pas de connexion'); return; }
       enCours = true; btn.style.opacity = '0.6'; btn.textContent = '…';
-      reg.update().catch(function () {}).then(function () {
-        return demanderRefresh();
-      }).then(function () {
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        else window.location.reload();
-      }).catch(function () {
-        enCours = false; btn.style.opacity = '1'; btn.textContent = '⟳';
-        toast('Échec de la mise à jour');
-      });
+      majDemandee = true;                       // autorise le rechargement final
+      reg.update().catch(function () {})
+        .then(function () { return attendreWaiting(reg); })
+        .then(function () { return demanderRefresh(); })   // re-télécharge le snapshot frais
+        .then(function () {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          else window.location.reload();
+        })
+        .catch(function () {
+          enCours = false; majDemandee = false;
+          btn.style.opacity = '1'; btn.textContent = '⟳';
+          toast('Échec de la mise à jour');
+        });
     });
     document.body.appendChild(btn);
-  }
-
-  function demanderRefresh() {
-    return new Promise(function (resolve) {
-      var sw = navigator.serviceWorker.controller;
-      if (!sw) { resolve(); return; }
-      var ch = new MessageChannel();
-      var fini = false;
-      ch.port1.onmessage = function () { if (!fini) { fini = true; resolve(); } };
-      sw.postMessage({ type: 'REFRESH' }, [ch.port2]);
-      setTimeout(function () { if (!fini) { fini = true; resolve(); } }, 25000);
-    });
   }
 
   /* ------------------------------------------------------------------------ */
@@ -176,7 +188,12 @@
         if (!sw) return;
         sw.addEventListener('statechange', function () {
           if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            if (!EST_APP) sw.postMessage({ type: 'SKIP_WAITING' });
+            if (!EST_APP) {
+              // Site web : prend la nouvelle version tout de suite (reste frais).
+              majDemandee = true;
+              demanderRefresh().finally(function () { sw.postMessage({ type: 'SKIP_WAITING' }); });
+            }
+            // App installée : on NE fait rien → mise à jour seulement via ⟳.
           }
         });
       });
