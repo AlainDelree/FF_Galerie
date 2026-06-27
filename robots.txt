@@ -1,13 +1,13 @@
-# frederiqueferette.be — robots.txt
-# Le contenu est ouvert au crawl (y compris crawlers IA : GPTBot, ClaudeBot,
-# OAI-SearchBot, PerplexityBot…), car ils ne rendent pas le JS : le contenu
-# statique baké (meta, JSON-LD, alt) est leur seule source.
+# frederiqueferette.be — robots.txt (généré par build/gen_sitemap.py)
+# Crawl ouvert (IA comprises : GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot…),
+# car elles ne rendent pas le JS : le statique baké (meta, JSON-LD, alt) est
+# leur seule source.
 
 User-agent: *
 Allow: /
 Disallow: /admin.html
-# Artistes invités encore en brouillon (draft + noindex). À retirer quand un
-# artiste passe en ligne.
+# Invités encore en brouillon (draft + noindex). Un Allow plus spécifique
+# ci-dessous ré-ouvre chaque invité publié.
 Disallow: /artistes/
 
 Sitemap: https://frederiqueferette.be/sitemap.xml
