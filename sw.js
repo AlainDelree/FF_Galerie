@@ -20,7 +20,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-27f';
+const VERSION     = '2026-06-27g';
 const SHELL_CACHE = 'ff-shell-' + VERSION;
 const MEDIA_CACHE = 'ff-media';            // persistant, non versionné
 
@@ -39,9 +39,14 @@ const SHELL = [
   '/assets/css/contact.css',
 
   '/assets/js/main.js',
+  '/assets/js/plan.js',
+  '/assets/js/nav-artistes.js',
+  '/assets/js/infos.js',
+  '/assets/js/contact.js',
   '/assets/js/galerie-core.js',
   '/assets/js/galerie-peinture.js',
   '/assets/js/galerie-sculpture.js',
+  '/assets/js/salle-immersive.js',
   '/assets/js/pwa-register.js',
 
   '/data/salles.json',

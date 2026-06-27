@@ -41,10 +41,8 @@
           const hasTop = row > 0;
           const hasBot = row < ROWS-1;
 
-          // Zone cliquable
-          p.push('<a href="'+GALERIE_PATH+'#salle-'+salle.id+'">');
+          // Salle (visuel)
           p.push('<rect class="plan-salle" x="'+rx+'" y="'+ry+'" width="'+ROOM_W+'" height="'+ROOM_H+'" rx="1"/>');
-          p.push('</a>');
 
           // Mur haut
           if (hasTop) {
@@ -88,11 +86,25 @@
           const lx = rx+ROOM_W/2, ly = ry+ROOM_H/2+5;
           p.push('<text class="plan-label" x="'+lx+'" y="'+ly+'">'+salle.nom+'</text>');
           p.push('<text class="plan-count" x="'+lx+'" y="'+(ly+14)+'">'+nb+' toile'+(nb!==1?'s':'')+'</text>');
+
+          // Zone cliquable transparente, au-dessus (navigation JS, fiable en PWA)
+          p.push('<rect class="plan-hit" data-salle="'+salle.id+'" x="'+rx+'" y="'+ry+'" width="'+ROOM_W+'" height="'+ROOM_H+'" fill="transparent" style="cursor:pointer"/>');
         });
 
         const svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la galerie">'+p.join('')+'</svg>';
         const wrap = document.getElementById('plan-svg-wrap');
-        if (wrap) wrap.innerHTML = svg;
+        if (wrap) {
+          wrap.innerHTML = svg;
+          wrap.addEventListener('click', function (ev) {
+            var t = ev.target, id = null;
+            if (t && t.getAttribute) id = t.getAttribute('data-salle');
+            if (!id && t && t.closest) {
+              var c = t.closest('[data-salle]');
+              if (c) id = c.getAttribute('data-salle');
+            }
+            if (id) window.location.href = GALERIE_PATH + '#salle-' + id;
+          });
+        }
 
         /* Préchargement des toiles pendant que l'utilisateur consulte le plan */
         const toilesPath = window.PLAN_TOILES_PATH || 'data/toiles.json';
