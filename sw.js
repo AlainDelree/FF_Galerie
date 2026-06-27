@@ -1,21 +1,19 @@
 /* ===========================================================================
    FF_Galerie — Service Worker (PWA Phase 1 : consultation hors connexion)
    ---------------------------------------------------------------------------
-   Modèle : offline-first, lecture seule.
-   - Le shell (pages/CSS/JS) est servi depuis le cache (cache-first).
-   - Les données (JSON) et images sont en stale-while-revalidate :
-     affichage instantané depuis le cache, rafraîchissement en tâche de fond
-     quand le réseau est là → le contenu de Frédérique se met à jour tout seul
-     dès qu'on est en ligne, et reste consultable hors connexion.
-   - L'ADMIN, l'API GitHub, EmailJS, les pages d'aperçu/édition et les galeries
+   Modèle : SNAPSHOT figé, rafraîchi À LA DEMANDE.
+   - Tout (pages, CSS, JS, données, images) est servi depuis le cache
+     (cache-first) : l'app installée ne change JAMAIS toute seule.
+   - La mise à jour du contenu se fait uniquement quand l'utilisateur tape
+     « Mettre à jour la galerie » dans l'app → message REFRESH → re-télécharge
+     tout le snapshot, puis recharge.
+   - Le site web normal (non installé) bascule lui aussi cache-first ; pour le
+     garder frais automatiquement, bumper VERSION à chaque déploiement.
+   - L'ADMIN, l'API GitHub, EmailJS, les aperçus/édition et les galeries
      invités ne sont JAMAIS interceptés ni mis en cache (réseau strict).
-
-   Mise à jour de l'app : bump de VERSION ci-dessous (+ cache-busters habituels).
-   Le navigateur re-télécharge ce fichier, réinstalle, et bascule au prochain
-   lancement (ou via le bandeau « nouvelle version » de pwa-register.js).
    =========================================================================== */
 
-const VERSION = '2026-06-27a';
+const VERSION = '2026-06-27b';
 const CACHE   = 'ff-galerie-' + VERSION;
 
 /* --- Shell applicatif : tout ce qui doit marcher hors connexion ----------- */
@@ -67,66 +65,60 @@ function estExclu(pathname) {
   return (
     pathname === '/sw.js' ||
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/artistes/') ||   // galeries invités (hors périmètre Phase 1)
+    pathname.startsWith('/artistes/') ||
     pathname.startsWith('/build/') ||
     pathname.startsWith('/tests/') ||
     pathname.startsWith('/tools/') ||
-    pathname.includes('apercu') ||          // pages d'aperçu admin
-    pathname.includes('galerie-edit')       // page d'édition admin
+    pathname.includes('apercu') ||
+    pathname.includes('galerie-edit')
   );
 }
 
-function estDonnee(pathname) {
-  return pathname.startsWith('/data/') && pathname.endsWith('.json');
+/* --- Récupère toutes les URLs d'images des toiles depuis peinture.json ----- */
+async function urlsImagesToiles() {
+  const urls = new Set();
+  try {
+    const rep = await fetch('/data/oeuvres/peinture.json', { cache: 'reload' });
+    if (rep && rep.ok) {
+      const data = await rep.json();
+      const toiles = (data && Array.isArray(data.toiles)) ? data.toiles : [];
+      for (const t of toiles) {
+        for (const v of Object.values(t)) {
+          if (typeof v === 'string' && /\.(jpe?g|png|webp)$/i.test(v)) {
+            const jpg = '/' + v.replace(/^\.?\//, '');
+            const sansExt = jpg.replace(/\.(jpe?g|png|webp)$/i, '');
+            urls.add(jpg);
+            urls.add(sansExt + '.webp');
+            urls.add(sansExt + '-thumb.webp');
+          }
+        }
+      }
+    }
+  } catch (e) { /* hors ligne : rien à ajouter */ }
+  return [...urls];
 }
 
-function estImage(pathname) {
-  return pathname.startsWith('/assets/images/') &&
-         /\.(jpe?g|png|webp|svg|gif|avif)$/i.test(pathname);
+/* --- Précache complet : shell + données + images (tolérant) --------------- */
+async function precacheTout(cache) {
+  await Promise.allSettled(
+    SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
+  );
+  const images = await urlsImagesToiles();
+  await Promise.allSettled(
+    images.map((url) =>
+      cache.add(new Request(url, { cache: 'reload' })).catch(() => {})
+    )
+  );
 }
 
-/* === INSTALL : précache tolérant ========================================== */
+/* === INSTALL : snapshot initial =========================================== */
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-
-    // 1) Shell — tolérant : un fichier manquant ne fait pas échouer l'install.
-    await Promise.allSettled(
-      SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
-    );
-
-    // 2) Images des toiles — lues depuis peinture.json (s'adapte aux ajouts de Fred).
-    try {
-      const rep = await fetch('/data/oeuvres/peinture.json', { cache: 'reload' });
-      if (rep && rep.ok) {
-        const data = await rep.json();
-        const toiles = (data && Array.isArray(data.toiles)) ? data.toiles : [];
-        const urls = new Set();
-        for (const t of toiles) {
-          // Récupère tout champ ressemblant à un chemin d'image.
-          for (const v of Object.values(t)) {
-            if (typeof v === 'string' && /\.(jpe?g|png|webp)$/i.test(v)) {
-              const base = v.replace(/^\.?\//, '');
-              const jpg  = '/' + base;
-              urls.add(jpg);
-              // Variantes dérivées (mur = thumb webp, plein écran = webp).
-              const sansExt = jpg.replace(/\.(jpe?g|png|webp)$/i, '');
-              urls.add(sansExt + '.webp');
-              urls.add(sansExt + '-thumb.webp');
-            }
-          }
-        }
-        await Promise.allSettled(
-          [...urls].map((url) => cache.add(new Request(url, { cache: 'reload' }))
-            .catch(() => {}))  // 404 sur une variante absente = ignoré
-        );
-      }
-    } catch (e) {
-      // Pas de réseau à l'install : le runtime cachera les images au fil de l'eau.
-    }
+    await precacheTout(cache);
   })());
-  // Pas de skipWaiting : la nouvelle version s'active au prochain lancement,
-  // ou immédiatement si pwa-register.js envoie SKIP_WAITING.
+  // Pas de skipWaiting : la nouvelle version attend (site web : activée auto par
+  // pwa-register ; app installée : activée uniquement via le bouton « Mettre à jour »).
 });
 
 /* === ACTIVATE : purge des anciens caches ================================== */
@@ -141,43 +133,33 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
-/* === FETCH : routage ====================================================== */
+/* === FETCH : cache-first partout (snapshot) =============================== */
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET') return;                 // écritures : réseau direct
+  if (req.method !== 'GET') return;
 
   let url;
-  try { url = new URL(req.url); } catch { return; }
+  try { url = new URL(req.url); } catch (e) { return; }
 
   // Cross-origin
   if (url.origin !== self.location.origin) {
-    // Polices Google en best-effort (pour garder la typo hors connexion).
     if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
       event.respondWith(cacheFirst(req));
     }
     return; // API GitHub, EmailJS, GoatCounter… : réseau direct, jamais caché
   }
 
-  // Même origine : exclusions dures (admin, aperçu, invités, outils)
-  if (estExclu(url.pathname)) return;
+  if (estExclu(url.pathname)) return;          // admin, aperçu, invités, outils
 
-  // Données + images : stale-while-revalidate
-  if (estDonnee(url.pathname) || estImage(url.pathname)) {
-    event.respondWith(staleWhileRevalidate(req));
-    return;
-  }
-
-  // Shell (HTML/CSS/JS/manifest) : cache-first
-  event.respondWith(cacheFirst(req));
+  event.respondWith(cacheFirst(req));          // tout le reste : snapshot
 });
 
-/* --- Stratégies ----------------------------------------------------------- */
-
-// ignoreSearch:true → un cache-buster ?v=... matche l'entrée précachée.
+/* --- Stratégie : cache-first (ignoreSearch → cohabite avec ?v=...) -------- */
 async function cacheFirst(req) {
   const cache = await caches.open(CACHE);
   const hit = await cache.match(req, { ignoreSearch: true });
   if (hit) return hit;
+  // Pas en cache : on tente le réseau (utile en navigation normale en ligne).
   try {
     const rep = await fetch(req);
     if (rep && rep.ok && (rep.type === 'basic' || rep.type === 'cors' || rep.type === 'opaque')) {
@@ -193,26 +175,23 @@ async function cacheFirst(req) {
   }
 }
 
-async function staleWhileRevalidate(req) {
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(req, { ignoreSearch: true });
-  const reseau = fetch(req).then((rep) => {
-    if (rep && rep.ok && (rep.type === 'basic' || rep.type === 'cors')) {
-      cache.put(req, rep.clone());
-    }
-    return rep;
-  }).catch(() => null);
-  if (hit) { reseau; return hit; }                  // sert le cache, rafraîchit en fond
-  const rep = await reseau;
-  if (rep) return rep;
-  if (req.mode === 'navigate') {
-    const offline = await cache.match('/offline.html');
-    if (offline) return offline;
-  }
-  return Response.error();
-}
-
-/* --- Bascule de version pilotée par la page ------------------------------- */
+/* === MESSAGES : bascule de version + rafraîchissement à la demande ========= */
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  const d = event.data || {};
+
+  if (d.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+
+  if (d.type === 'REFRESH') {
+    event.waitUntil((async () => {
+      const cache = await caches.open(CACHE);
+      await precacheTout(cache);               // re-télécharge tout le snapshot
+      // Réponse au port (si fourni) pour que la page sache que c'est fini.
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({ ok: true });
+      }
+    })());
+  }
 });
