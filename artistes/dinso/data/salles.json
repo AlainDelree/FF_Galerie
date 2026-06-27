@@ -212,7 +212,7 @@
       "id": 10,
       "nom": "Salle D",
       "type": "sculpture",
-      "couleur_mur": "#edeae2",
+      "couleur_mur": "#e4b048",
       "couleur_mur_piece": "#f0f0f0",
       "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
