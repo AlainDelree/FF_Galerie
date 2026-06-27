@@ -71,7 +71,7 @@
       "couleur_mur_bas": "#c8a050",
       "couleur_cadres": "#1c1c1c",
       "epaisseur_cadres": 8,
-      "texture": "damier",
+      "texture": "data/textures/miel.jpg",
       "visible": false,
       "toiles": [
         8,
