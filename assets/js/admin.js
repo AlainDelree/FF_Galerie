@@ -227,13 +227,23 @@ let timerAttenteChipInterval = null;
 function marquerSalleEnAttente(id) {
   if (!id) return;
   sallesEnAttente.set(id, Date.now());
+  /* Rendu complet UNE fois pour faire apparaitre le badge sur la chip. */
+  if (typeof afficherPlan === 'function') afficherPlan();
   if (timerAttenteChipInterval) return;
   timerAttenteChipInterval = setInterval(() => {
     const now = Date.now();
+    let expire = false;
     sallesEnAttente.forEach((ts, sid) => {
-      if (now - ts >= 65000) sallesEnAttente.delete(sid);
+      const restant = Math.max(0, 60 - Math.floor((now - ts) / 1000));
+      /* Maj du SEUL badge (pas de afficherPlan complet : il reconstruit
+         _renderCloneSalleRow et refermait la combobox du clonage a chaque tick). */
+      const badge = document.querySelector(`.chip-sync[data-sync-salle="${sid}"]`);
+      if (badge) badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
+      if (now - ts >= 65000) { sallesEnAttente.delete(sid); expire = true; }
     });
-    if (typeof afficherPlan === 'function') afficherPlan();
+    /* Rendu complet ponctuel seulement quand une salle sort de la liste
+       (pour retirer son badge proprement). */
+    if (expire && typeof afficherPlan === 'function') afficherPlan();
     if (sallesEnAttente.size === 0) {
       clearInterval(timerAttenteChipInterval);
       timerAttenteChipInterval = null;
@@ -266,6 +276,8 @@ let couleurMurBasActuel   = '#111111';   /* mur du bas (plinthe + portes) */
 let couleurCadresActuel = '#3a3a3a';
 let epaisseurCadresActuel = 2;
 let textureActuelle = 'none';
+let couleurSolActuel = '#4a3018';        /* sol peinture : couleur (parquet teinte ou uni) */
+let solTypeActuel = 'parquet';           /* 'parquet' | 'uni' */
 
 // ═══════════════════════════════════════════════
 // UTILITAIRES
@@ -711,6 +723,8 @@ async function chargerTout() {
          aperçu admin restait au gris/noir default malgré sauvegarde OK. */
       couleur_mur_piece: s.couleur_mur_piece,
       couleur_mur_bas:   s.couleur_mur_bas,
+      couleur_sol:       s.couleur_sol,
+      sol_type:          s.sol_type,
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
       epaisseur_cadres: s.epaisseur_cadres || 2,
       texture: s.texture || 'none',
@@ -1003,6 +1017,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerPopo
   ['btn-pop-cadres',    'pop-cadres'],
   ['btn-pop-epaisseur', 'pop-epaisseur'],
   ['btn-pop-texture',   'pop-texture'],
+  ['btn-pop-sol',       'pop-sol'],
   ['btn-pop-revetement','pop-revetement'],
   ['btn-pop-musique',   'pop-musique'],
 ].forEach(([btnId, popId]) => {

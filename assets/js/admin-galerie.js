@@ -495,6 +495,7 @@ function afficherPlan() {
       const restant = Math.max(0, 60 - elapsed);
       const badge = document.createElement('div');
       badge.className = 'chip-sync';
+      badge.dataset.syncSalle = s.id;
       badge.textContent = restant > 0 ? `⏳ ${restant}s` : '✓';
       chip.appendChild(badge);
     }
@@ -576,7 +577,7 @@ function _majApparenceSelonSalle() {
   if (!salleActive) return;
   var estSculpt = (salleActive.type === 'sculpture');
   /* Boutons spécifiques peinture (cadres + épaisseur + texture du mur) */
-  ['btn-pop-cadres', 'btn-pop-epaisseur', 'btn-pop-texture'].forEach(function(id) {
+  ['btn-pop-cadres', 'btn-pop-epaisseur', 'btn-pop-texture', 'btn-pop-sol'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = estSculpt ? 'none' : '';
   });
@@ -612,6 +613,23 @@ function selectSalle(id) {
   couleurCadresActuel = salleActive.couleur_cadres || '#3a3a3a';
   epaisseurCadresActuel = salleActive.epaisseur_cadres || 2;
   textureActuelle = salleActive.texture || 'none';
+  /* Sol peinture : on ne pousse --sol-bg que si la salle a un sol custom,
+     sinon on retire la var -> .scene-plancher garde son aspect CSS d'origine
+     (salles existantes inchangees). */
+  if (salleActive.couleur_sol || salleActive.sol_type) {
+    solTypeActuel    = salleActive.sol_type    || 'parquet';
+    couleurSolActuel = salleActive.couleur_sol || '#4a3018';
+    if (typeof solBgPeintureCSS === 'function')
+      document.documentElement.style.setProperty('--sol-bg', solBgPeintureCSS(solTypeActuel, couleurSolActuel));
+  } else {
+    solTypeActuel = 'parquet';
+    couleurSolActuel = '#4a3018';
+    document.documentElement.style.removeProperty('--sol-bg');
+  }
+  if (typeof renderColorSwatches === 'function') renderColorSwatches('sol');
+  document.querySelectorAll('#sw-sol-type .sol-type-btn').forEach(function(s) {
+    s.classList.toggle('sel', s.dataset.val === solTypeActuel);
+  });
   if (typeof appliquerApparence === 'function') appliquerApparence();
   selectedToile = null;
   selectedToilePl = null;
