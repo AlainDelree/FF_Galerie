@@ -202,6 +202,7 @@
       "id": 9,
       "nom": "Buanderie",
       "couleur_mur": "#25dbdb",
+      "couleur_sol": "#160303",
       "sol_type": "uni",
       "couleur_cadres": "#1c1c1c",
       "epaisseur_cadres": 2,
