@@ -375,6 +375,14 @@ function deconnecter() {
 async function apiGH(url, methode = 'GET', corps = null) {
   const opts = {
     method: methode,
+    /* CRUCIAL : 'no-store' contourne le cache HTTP du navigateur. GitHub renvoie
+       'Cache-Control: private, max-age=60' sur les GET authentifies → sans ça, un
+       GET /git/refs (ou /contents) est resservi GELE jusqu'a 60 s, donc on relit un
+       HEAD perime meme apres qu'un commit a avance. C'est ce qui faisait echouer
+       commitMulti en boucle (incident dev 27/06 12:53 : headLu fige sur 08e8270
+       pendant ~8 s alors que le vrai HEAD avait avance). Les ecritures (POST/PATCH)
+       ne sont pas cachees, mais 'no-store' y est inoffensif. */
+    cache: 'no-store',
     headers: {
       'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github+json',
