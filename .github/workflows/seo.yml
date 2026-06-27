@@ -1,0 +1,58 @@
+name: SEO build (sitemap + robots + JSON-LD + noscript)
+
+# Régénère tout le SEO statique à partir des données du repo, puis recommite
+# si quelque chose a changé. Déclenché :
+#   • automatiquement à chaque push sur main (édition admin de Fred, publication /
+#     masquage / suppression d'un invité — tous ces commits poussent sur main) ;
+#   • manuellement via "Run workflow" (le « bouton » Renouveler le référencement).
+#
+# Anti-boucle : le commit de régénération porte le tag [seo] ; le garde-fou `if`
+# ci-dessous saute alors le job, donc il ne se redéclenche pas lui-même.
+#
+# Déploiement : pour que le recommit [seo] relance deploy.yml, le push doit se
+# faire avec un PAT (secret SEO_PUSH_TOKEN, contents:write). Sans ce secret, le
+# SEO est quand même committé mais ne partira en ligne qu'au push humain suivant.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: seo-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  seo:
+    if: "!contains(github.event.head_commit.message, '[seo]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # gen_sitemap a besoin de l'historique (lastmod)
+          token: ${{ secrets.SEO_PUSH_TOKEN || github.token }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Régénérer le SEO statique
+        run: |
+          python3 build/propagate_head.py
+          python3 build/gen_sitemap.py
+          python3 build/gen_seo.py
+
+      - name: Committer si changement
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "SEO déjà à jour — rien à committer."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "SEO régénéré automatiquement [seo]"
+          git push
