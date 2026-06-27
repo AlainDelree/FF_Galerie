@@ -21,7 +21,8 @@
         }
       ],
       "positions_mobile": [],
-      "couleur_sol": "#4c7245"
+      "couleur_sol": "#4c7245",
+      "sol_type": "uni"
     },
     {
       "id": 6,
