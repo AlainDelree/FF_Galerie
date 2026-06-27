@@ -298,6 +298,12 @@
       pointer-events:none;
     }
     .silhouettes-sol { position:absolute; inset:0; z-index:4; overflow:visible; }
+    /* Sol personnalise (peinture) : le fond est pose inline (plat pour uni, lames
+       teintees pour parquet) par creerPlancher. On neutralise donc les lames et le
+       reflet par defaut (::before/::after) sinon ils reapparaissent par-dessus —
+       c'est ce qui faisait ressembler un sol "uni" a du parquet. */
+    .plancher-sol.sol-custom::before,
+    .plancher-sol.sol-custom::after { display:none; }
 
     /* ── Plancher galerie (ancien, conservé pour compatibilité) ── */
     .plancher-galerie {
