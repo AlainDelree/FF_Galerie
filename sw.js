@@ -20,7 +20,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-27h';
+const VERSION     = '2026-06-27i';
 const SHELL_CACHE = 'ff-shell-' + VERSION;
 const MEDIA_CACHE = 'ff-media';            // persistant, non versionné
 
