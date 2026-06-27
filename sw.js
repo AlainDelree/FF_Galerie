@@ -20,7 +20,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-27g';
+const VERSION     = '2026-06-27h';
 const SHELL_CACHE = 'ff-shell-' + VERSION;
 const MEDIA_CACHE = 'ff-media';            // persistant, non versionné
 
@@ -118,12 +118,29 @@ async function urlsImagesToiles() {
   return [...urls];
 }
 
+/* --- Mise en cache d'une URL en "dépliant" les redirections --------------
+   Cloudflare (html_handling) peut rediriger /x.html → /x. Une réponse
+   redirigée renvoyée à une navigation fait échouer la page dans une PWA.
+   On reconstruit donc une réponse propre (non redirigée) avant de cacher. */
+async function mettreEnCache(cache, url) {
+  try {
+    const rep = await fetch(new Request(url, { cache: 'reload' }));
+    if (!rep || !rep.ok) return;
+    let propre = rep;
+    if (rep.redirected) {
+      const corps = await rep.blob();
+      propre = new Response(corps, {
+        status: 200, statusText: 'OK', headers: rep.headers
+      });
+    }
+    await cache.put(new Request(url), propre);
+  } catch (e) { /* ignoré */ }
+}
+
 /* --- Pré-cache du shell (léger) ------------------------------------------ */
 async function precacheShell() {
   const cache = await caches.open(SHELL_CACHE);
-  await Promise.allSettled(
-    SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
-  );
+  await Promise.allSettled(SHELL.map((url) => mettreEnCache(cache, url)));
 }
 
 /* --- Pré-cache complet des médias (lourd, à la demande) ------------------ */
@@ -131,11 +148,7 @@ async function precacheMedias() {
   const cache = await caches.open(MEDIA_CACHE);
   const urls = await urlsImagesToiles();
   urls.push('/assets/music/musique.mp3');
-  await Promise.allSettled(
-    urls.map((url) =>
-      cache.add(new Request(url, { cache: 'reload' })).catch(() => {})
-    )
-  );
+  await Promise.allSettled(urls.map((url) => mettreEnCache(cache, url)));
 }
 
 /* === INSTALL : shell léger seulement ===================================== */
@@ -188,7 +201,11 @@ async function cacheFirst(req, cacheName) {
   const hit = await cache.match(req, { ignoreSearch: true });
   if (hit) return hit;
   try {
-    const rep = await fetch(req);
+    let rep = await fetch(req);
+    if (rep && rep.redirected) {           // déplie la redirection (cf. mettreEnCache)
+      const corps = await rep.blob();
+      rep = new Response(corps, { status: 200, statusText: 'OK', headers: rep.headers });
+    }
     if (rep && rep.ok && (rep.type === 'basic' || rep.type === 'cors' || rep.type === 'opaque')) {
       cache.put(req, rep.clone());
     }
