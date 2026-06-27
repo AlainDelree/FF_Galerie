@@ -342,11 +342,17 @@ function _creerCarteVue(facette, salle, lbl, opts) {
       var porteD = porteG.cloneNode(false);
       murInf.appendChild(porteG); murInf.appendChild(porteD);
       var plancher = document.createElement('div');
-      plancher.style.cssText = 'flex:1 1 auto;background:'
-        + 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 8%),'
-        + 'repeating-linear-gradient(to bottom,transparent 0,transparent 5px,rgba(0,0,0,.15) 5px,rgba(0,0,0,.15) 6px),'
-        + 'linear-gradient(to bottom,#5a3a22,#3a2515);'
-        + 'box-shadow:inset 0 4px 6px rgba(0,0,0,.4);';
+      /* Sol custom (peinture) : memes regles que l'edition et le public via
+         solBgPeintureCSS (plat=uni / lames teintees=parquet). Repli = parquet defaut. */
+      var _solBgCarte;
+      if ((salle.couleur_sol || salle.sol_type) && typeof solBgPeintureCSS === 'function') {
+        _solBgCarte = solBgPeintureCSS(salle.sol_type, salle.couleur_sol);
+      } else {
+        _solBgCarte = 'repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 8%),'
+          + 'repeating-linear-gradient(to bottom,transparent 0,transparent 5px,rgba(0,0,0,.15) 5px,rgba(0,0,0,.15) 6px),'
+          + 'linear-gradient(to bottom,#5a3a22,#3a2515)';
+      }
+      plancher.style.cssText = 'flex:1 1 auto;background:' + _solBgCarte + ';box-shadow:inset 0 4px 6px rgba(0,0,0,.4);';
       zb.appendChild(murInf); zb.appendChild(plancher);
       decor.appendChild(zb);
       wrap.appendChild(decor);
