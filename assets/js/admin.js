@@ -713,6 +713,8 @@ async function chargerTout() {
          aperçu admin restait au gris/noir default malgré sauvegarde OK. */
       couleur_mur_piece: s.couleur_mur_piece,
       couleur_mur_bas:   s.couleur_mur_bas,
+      couleur_sol:       s.couleur_sol,
+      sol_type:          s.sol_type,
       couleur_cadres: s.couleur_cadres || '#3a3a3a',
       epaisseur_cadres: s.epaisseur_cadres || 2,
       texture: s.texture || 'none',

@@ -231,6 +231,8 @@ function _clonerEsthetique(srcId, cibleId) {
   if (src.couleur_cadres    !== undefined) cible.couleur_cadres    = src.couleur_cadres;
   if (src.epaisseur_cadres  !== undefined) cible.epaisseur_cadres  = src.epaisseur_cadres;
   if (src.texture           !== undefined) cible.texture           = src.texture;
+  if (src.couleur_sol       !== undefined) cible.couleur_sol       = src.couleur_sol;
+  if (src.sol_type          !== undefined) cible.sol_type          = src.sol_type;
 
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
