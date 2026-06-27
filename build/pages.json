@@ -2,6 +2,20 @@
   "_comment": "Configuration par page pour le script de propagation du <head>. Lancer build/propagate_head.py après modification.",
   "_fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap",
   "_goatcounter_ff": "frederiqueferette",
+  "_base_url": "https://frederiqueferette.be/",
+  "_artiste": {
+    "id": "https://frederiqueferette.be/#frederique-ferette",
+    "name": "Frédérique Ferette",
+    "givenName": "Frédérique",
+    "familyName": "Ferette",
+    "jobTitle": "Artiste peintre",
+    "description": "Artiste peintre belge. Acrylique sur toile, pastels et techniques mixtes.",
+    "nationality": "Belge",
+    "birthDate": "1975-02-16",
+    "birthPlace": "Dinant, Belgique",
+    "url": "https://frederiqueferette.be/",
+    "image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
+  },
 
   "pages": [
     {
@@ -9,15 +23,15 @@
       "depth": 0,
       "favicon": "favicon.ico",
       "title": "Frédérique Ferette — Peintures",
-      "description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Acrylique sur toile, pastels et techniques mixtes.",
       "robots": "index, follow",
       "canonical": "https://frederiqueferette.be/",
       "og_title": "Frédérique Ferette — Peintures",
-      "og_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "og_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Acrylique sur toile, pastels et techniques mixtes.",
       "og_url": "https://frederiqueferette.be/",
       "og_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg",
       "tw_title": "Frédérique Ferette — Peintures",
-      "tw_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Huiles sur toile, pastels et techniques mixtes.",
+      "tw_description": "Découvrez les peintures de Frédérique Ferette, artiste peintre belge. Acrylique sur toile, pastels et techniques mixtes.",
       "tw_image": "https://frederiqueferette.be/assets/images/toiles/toile-002.jpg"
     },
     {
