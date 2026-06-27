@@ -67,7 +67,7 @@
       "id": 5,
       "nom": "Entrée",
       "couleur_mur": "#2a2420",
-      "couleur_mur_piece": "#3a3a3a",
+      "couleur_mur_piece": "#f4c098",
       "couleur_mur_bas": "#c8a050",
       "couleur_cadres": "#1c1c1c",
       "epaisseur_cadres": 8,
