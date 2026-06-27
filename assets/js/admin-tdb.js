@@ -216,23 +216,21 @@ function _clonerEsthetique(srcId, cibleId) {
   if (!src || !cible) return;
 
   var nomSrc = src.nom || ('Salle ' + srcId);
-  if (!confirm('Copier toute l\u0027esthétique de « ' + nomSrc + ' » vers cette salle ?\n\n' +
-    'Apparence (couleur, texture, thème) + présentations immersive/descriptive (activation et décors).\n' +
+  if (!confirm('Rendre cette salle identique à « ' + nomSrc + ' » (esthétique) ?\n\n' +
+    'Remplace couleurs (mur, pièce, bas-mur), revêtement, sol, cadres et thème + présentations immersive/descriptive.\n' +
+    'La cible devient identique à la source, y compris là où la source est restée au défaut.\n' +
     'Le placement des pièces n\u0027est pas affecté.')) return;
 
-  /* Apparence de salle — copier UNIQUEMENT les champs définis sur la source.
-     Sinon, un src.couleur_mur_piece undefined écrase la cible à undefined,
-     et la sauvegarde retire la clé du JSON → bug historique : cloner sur
-     une salle qui avait des couleurs personnalisées les faisait disparaître
-     silencieusement (commits 5aa8286, 7770199 dans l'historique dev). */
-  cible.couleur_mur       = src.couleur_mur;
-  if (src.couleur_mur_piece !== undefined) cible.couleur_mur_piece = src.couleur_mur_piece;
-  if (src.couleur_mur_bas   !== undefined) cible.couleur_mur_bas   = src.couleur_mur_bas;
-  if (src.couleur_cadres    !== undefined) cible.couleur_cadres    = src.couleur_cadres;
-  if (src.epaisseur_cadres  !== undefined) cible.epaisseur_cadres  = src.epaisseur_cadres;
-  if (src.texture           !== undefined) cible.texture           = src.texture;
-  if (src.couleur_sol       !== undefined) cible.couleur_sol       = src.couleur_sol;
-  if (src.sol_type          !== undefined) cible.sol_type          = src.sol_type;
+  /* Clone FIDÈLE : la cible devient identique à la source. Pour chaque champ
+     d\u0027apparence : si la source l\u0027a défini, on copie ; sinon on RETIRE la clé
+     de la cible pour qu\u0027elle retombe AUSSI sur le défaut → rendu cible == source.
+     (Historique : copier un undefined retirait la clé et "perdait" des couleurs de
+     la cible — commits 5aa8286, 7770199 ; ici c\u0027est désormais VOULU.) */
+  cible.couleur_mur = src.couleur_mur;
+  ['couleur_mur_piece', 'couleur_mur_bas', 'couleur_cadres', 'epaisseur_cadres', 'texture', 'couleur_sol', 'sol_type'].forEach(function(k) {
+    if (src[k] !== undefined) cible[k] = src[k];
+    else delete cible[k];
+  });
 
   /* Greffons (activation + décor) — copie profonde */
   cible.greffons = src.greffons ? JSON.parse(JSON.stringify(src.greffons)) : undefined;
