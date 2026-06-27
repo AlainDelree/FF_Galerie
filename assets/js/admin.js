@@ -375,6 +375,14 @@ function deconnecter() {
 async function apiGH(url, methode = 'GET', corps = null) {
   const opts = {
     method: methode,
+    /* CRUCIAL : 'no-store' contourne le cache HTTP du navigateur. GitHub renvoie
+       'Cache-Control: private, max-age=60' sur les GET authentifies → sans ça, un
+       GET /git/refs (ou /contents) est resservi GELE jusqu'a 60 s, donc on relit un
+       HEAD perime meme apres qu'un commit a avance. C'est ce qui faisait echouer
+       commitMulti en boucle (incident dev 27/06 12:53 : headLu fige sur 08e8270
+       pendant ~8 s alors que le vrai HEAD avait avance). Les ecritures (POST/PATCH)
+       ne sont pas cachees, mais 'no-store' y est inoffensif. */
+    cache: 'no-store',
     headers: {
       'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github+json',
@@ -431,10 +439,12 @@ async function commitMulti(fichiers, message) {
    3 tentatives reste TOUJOURS active, independamment de ce flag. */
 const ALERTER_RETENTATIVE = true;
 
-/* Backoff exponentiel + jitter (anti-livelock + menage les rate limits GitHub).
-   re-tentative 1 -> ~200ms, re-tentative 2 -> ~400ms, + jusqu'a 50% d'alea. */
-function _backoffMs(reTentative) {
-  const base = 100 * Math.pow(2, reTentative);
+/* Backoff exponentiel + jitter (anti-livelock + menage les rate limits GitHub),
+   plafonne a 2s : on patiente potentiellement plusieurs secondes le temps qu'un
+   replica GitHub en retard rattrape (cf. lectures perimees dans _commitMultiImpl).
+   etape 0 -> ~100ms, 1 -> ~200, 2 -> ~400, 3 -> ~800, 4 -> ~1600, 5+ -> ~2000, + jusqu'a 50% d'alea. */
+function _backoffMs(etape) {
+  const base = Math.min(100 * Math.pow(2, etape), 2000);
   return Math.round(base + Math.random() * base * 0.5);
 }
 
@@ -446,59 +456,88 @@ async function _commitMultiImpl(fichiers, message) {
     return { path: f.chemin, mode: '100644', type: 'blob', sha: blob.sha };
   }));
 
-  const MAX = 3;        /* 1 tentative initiale + 2 re-tentatives */
-  const journal = [];   /* trace de chaque tentative, jointe aux alertes (preuve) */
+  /* Deux causes d'echec DISTINCTES, donc deux budgets distincts :
+     - rebase  : HEAD a VRAIMENT bouge (un autre commit a gagne la course)
+                 -> on se rebase sur le nouveau HEAD et on reessaie. Legitime.
+     - perimee : on relit un HEAD qu'on SAIT deja rejete. GET /git/refs n'offre
+                 aucune garantie read-after-write : un replica GitHub en retard
+                 reannonce l'ancien HEAD. Reconstruire dessus echouera a coup sur
+                 -> inutile de fabriquer un commit orphelin de plus ; on patiente.
+     L'ancienne version confondait les deux : elle se rebasait en boucle sur le
+     meme parent perime et brulait ses 3 essais des qu'un GET refs laguait
+     (incident du 27/06 02:33 : 3 tentatives, toutes parent cb4cae4 deja mort). */
+  const MAX_REBASE = 4;   /* PATCH refuses sur des HEAD reellement differents */
+  const MAX_PERIMEE = 6;  /* re-lectures d'un HEAD deja rejete (lag de replica) */
+  const MAX_ITER = 15;    /* garde-fou dur anti-boucle */
 
-  for (let n = 1; n <= MAX; n++) {
-    if (n > 1) {
-      const delai = _backoffMs(n - 1);
+  const parentsRejetes = new Set(); /* headSha deja refuses par un PATCH non-fast-forward */
+  const journal = [];               /* trace de chaque iteration, jointe aux alertes (preuve) */
+  let rebases = 0, perimees = 0, etape = 0, alerteEmise = false;
+
+  for (let iter = 1; iter <= MAX_ITER; iter++) {
+    if (iter > 1) {
+      const delai = _backoffMs(etape++);
       if (journal.length) journal[journal.length - 1].delaiAvantSuivanteMs = delai;
       await new Promise(r => setTimeout(r, delai));
     }
 
-    /* (Re)lire HEAD : on repart toujours de la verite courante. */
+    /* (Re)lire HEAD : verite courante... ou replica en retard (cf. MAX_PERIMEE). */
     const ref = await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`);
     const headSha = ref.object.sha;
-    const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${headSha}`);
 
-    /* (Re)construire arbre + commit sur ce HEAD (blobs reutilises). */
+    /* HEAD relu == un parent qu'on a deja fait rejeter : lecture perimee.
+       Reconstruire dessus echouera a coup sur -> on n'essaie meme pas, on patiente. */
+    if (parentsRejetes.has(headSha)) {
+      perimees++;
+      journal.push({ iteration: iter, type: 'lecture_perimee', headLu: headSha });
+      console.warn('[commitMulti] lecture HEAD perimee ' + perimees + '/' + MAX_PERIMEE + ' (replica en retard), on patiente', journal);
+      if (perimees >= MAX_PERIMEE) break;
+      continue;
+    }
+
+    /* HEAD frais -> (re)construire arbre + commit sur ce HEAD (blobs reutilises). */
+    const baseCommit = await apiGH(`/repos/${REPO}/git/commits/${headSha}`);
     const tree = await apiGH(`/repos/${REPO}/git/trees`, 'POST', { base_tree: baseCommit.tree.sha, tree: blobs });
     const commit = await apiGH(`/repos/${REPO}/git/commits`, 'POST', { message, tree: tree.sha, parents: [headSha] });
 
     try {
       await apiGH(`/repos/${REPO}/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false });
-      journal.push({ tentative: n, headAttendu: headSha, commit: commit.sha, resultat: 'succes' });
-      if (n > 1) console.warn('[commitMulti] succes a la tentative ' + n + '/' + MAX + ' apres course concurrente', journal);
+      journal.push({ iteration: iter, type: 'commit', headAttendu: headSha, commit: commit.sha, resultat: 'succes' });
+      if (rebases > 0 || perimees > 0) console.warn('[commitMulti] succes apres course concurrente', journal);
       return; /* commit pose proprement par-dessus l etat reel */
     } catch (e) {
       const estCourse = e.message && (e.message.includes('fast forward') || e.message.includes('Update is not'));
       if (!estCourse) throw e; /* vraie erreur (token, reseau...) : on remonte */
 
-      journal.push({ tentative: n, headAttendu: headSha, commit: commit.sha, resultat: 'echec_course' });
-      console.warn('[commitMulti] course concurrente, tentative ' + n + '/' + MAX + ' rejetee', journal);
+      parentsRejetes.add(headSha);
+      rebases++;
+      journal.push({ iteration: iter, type: 'commit', headAttendu: headSha, commit: commit.sha, resultat: 'echec_course' });
+      console.warn('[commitMulti] course concurrente, rebase ' + rebases + '/' + MAX_REBASE + ' rejete', journal);
 
-      /* Alerte de curiosite : une seule fois, des que la 1re tentative echoue
-         (= on entre dans la 2e). Gatee par ALERTER_RETENTATIVE. */
-      if (n === 1 && ALERTER_RETENTATIVE && typeof rapporterErreur === 'function') {
+      /* Alerte de curiosite : une seule fois, des la 1re course reelle. Gatee par ALERTER_RETENTATIVE. */
+      if (!alerteEmise && ALERTER_RETENTATIVE && typeof rapporterErreur === 'function') {
+        alerteEmise = true;
         rapporterErreur(
           'Course concurrente detectee sur commitMulti (re-tentative en cours)',
           'bug',
           'Commit : ' + message + '\n\nJournal :\n' + JSON.stringify(journal, null, 2)
         ).catch(function(){});
       }
+
+      if (rebases >= MAX_REBASE) break;
     }
   }
 
-  /* Les 3 tentatives ont echoue : email TOUJOURS (hors flag) + erreur visible,
-     jamais d ecrasement silencieux. */
+  /* Budget epuise (rebases reels, lectures perimees, ou garde-fou) : email TOUJOURS
+     (hors flag) + erreur visible, jamais d ecrasement silencieux. */
   if (typeof rapporterErreur === 'function') {
     rapporterErreur(
-      'ECHEC commitMulti apres ' + MAX + ' tentatives (course concurrente persistante)',
+      'ECHEC commitMulti (course concurrente persistante)',
       'bloquant',
       'Commit : ' + message + '\n\nJournal complet :\n' + JSON.stringify(journal, null, 2)
     ).catch(function(){});
   }
-  throw new Error('commitMulti : ecriture impossible apres ' + MAX + ' tentatives (course concurrente). Reessayez dans un instant.');
+  throw new Error('commitMulti : ecriture impossible (course concurrente persistante). Reessayez dans un instant.');
 }
 
 async function uploaderPhoto(id, b64, ext, typeOeuvre) {
