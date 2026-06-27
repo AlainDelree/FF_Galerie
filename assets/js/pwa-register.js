@@ -1,10 +1,10 @@
 /* ===========================================================================
    FF_Galerie — Enregistrement du Service Worker (PWA)
    ---------------------------------------------------------------------------
-   - Site web (non installé)  : se met à jour tout seul quand une nouvelle
-     version est déployée (comportement de site normal).
-   - App installée (standalone): NE bouge jamais seule. Un bouton flottant
-     « ⟳ Mettre à jour » retélécharge le snapshot à la demande, puis recharge.
+   - Site web (non installé)  : se met à jour tout seul au déploiement, et
+     affiche un bouton « ⬇ Installer l'app » quand l'installation est possible.
+   - App installée (standalone): NE bouge jamais seule ; bouton « ⟳ Mettre à
+     jour » pour retélécharger le snapshot à la demande.
    Best-effort : sur un navigateur sans support, on ne fait rien.
    =========================================================================== */
 (function () {
@@ -22,7 +22,7 @@
     window.location.reload();
   });
 
-  // --- Petit toast éphémère ------------------------------------------------
+  // --- Toast éphémère ------------------------------------------------------
   function toast(txt) {
     var t = document.createElement('div');
     t.textContent = txt;
@@ -41,7 +41,52 @@
     }, 2200);
   }
 
-  // --- Bouton « Mettre à jour » (app installée uniquement) -----------------
+  /* ======================================================================
+     INSTALLATION (site web) — bouton « ⬇ Installer l'app »
+     ====================================================================== */
+  var promptInstall = null;
+
+  // Chrome déclenche ceci quand l'app est installable (et pas déjà installée).
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    promptInstall = e;
+    if (!EST_APP) injecterBoutonInstall();
+  });
+
+  window.addEventListener('appinstalled', function () {
+    promptInstall = null;
+    var b = document.getElementById('pwa-install-btn');
+    if (b) b.remove();
+    toast('Application installée');
+  });
+
+  function injecterBoutonInstall() {
+    if (document.getElementById('pwa-install-btn')) return;
+    var b = document.createElement('button');
+    b.id = 'pwa-install-btn';
+    b.type = 'button';
+    b.textContent = '⬇  Installer l\u2019app';
+    b.style.cssText = [
+      'position:fixed', 'left:50%', 'bottom:16px', 'transform:translateX(-50%)',
+      'z-index:99999', 'background:#c8a050', 'color:#1a1a1a',
+      'border:none', 'border-radius:22px', 'padding:11px 20px',
+      'font-family:Lato,system-ui,sans-serif', 'font-size:15px', 'font-weight:700',
+      'box-shadow:0 6px 24px rgba(0,0,0,.45)', 'cursor:pointer'
+    ].join(';');
+    b.addEventListener('click', function () {
+      if (!promptInstall) { b.remove(); return; }
+      promptInstall.prompt();
+      promptInstall.userChoice.finally(function () {
+        promptInstall = null;
+        b.remove();
+      });
+    });
+    document.body.appendChild(b);
+  }
+
+  /* ======================================================================
+     MISE À JOUR (app installée) — bouton « ⟳ »
+     ====================================================================== */
   function injecterBoutonMaj(reg) {
     if (document.getElementById('pwa-maj-btn')) return;
     var btn = document.createElement('button');
@@ -66,13 +111,9 @@
       enCours = true;
       btn.style.opacity = '0.6';
       btn.textContent = '…';
-
-      // 1) Cherche un éventuel nouveau code (sw.js).
       reg.update().catch(function () {}).then(function () {
-        // 2) Demande au SW actif de retélécharger le snapshot de contenu.
         return demanderRefresh();
       }).then(function () {
-        // 3) Si un nouveau SW attend, on bascule dessus (→ reload auto).
         if (reg.waiting) {
           reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         } else {
@@ -97,12 +138,11 @@
       var fini = false;
       ch.port1.onmessage = function () { if (!fini) { fini = true; resolve(); } };
       sw.postMessage({ type: 'REFRESH' }, [ch.port2]);
-      // Garde-fou : on ne reste pas bloqué si le SW ne répond pas.
       setTimeout(function () { if (!fini) { fini = true; resolve(); } }, 25000);
     });
   }
 
-  // -------------------------------------------------------------------------
+  /* ====================================================================== */
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('/sw.js').then(function (reg) {
 
@@ -113,8 +153,6 @@
         if (!sw) return;
         sw.addEventListener('statechange', function () {
           if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            // Site web : on prend la nouvelle version tout de suite (frais).
-            // App installée : on attend que l'utilisateur tape « Mettre à jour ».
             if (!EST_APP) sw.postMessage({ type: 'SKIP_WAITING' });
           }
         });
