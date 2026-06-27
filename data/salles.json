@@ -292,6 +292,7 @@
       "nom": "Salle de bain",
       "couleur_mur": "#f5f5f5",
       "couleur_mur_piece": "#f0f0f0",
+      "couleur_mur_bas": "#f0f0f0",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "none",
