@@ -4,6 +4,8 @@
       "id": 13,
       "nom": "Bureau",
       "couleur_mur": "#a51d2d",
+      "couleur_sol": "#4c7245",
+      "sol_type": "uni",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
@@ -20,9 +22,7 @@
           "h": 5
         }
       ],
-      "positions_mobile": [],
-      "couleur_sol": "#4c7245",
-      "sol_type": "uni"
+      "positions_mobile": []
     },
     {
       "id": 6,
@@ -292,12 +292,14 @@
     {
       "id": 11,
       "nom": "Salle de bain",
-      "couleur_mur": "#f5f5f5",
+      "couleur_mur": "#a51d2d",
       "couleur_mur_piece": "#f0f0f0",
       "couleur_mur_bas": "#f0f0f0",
+      "couleur_sol": "#4c7245",
+      "sol_type": "uni",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "none",
+      "texture": "assets/images/textures/texture-bleu.jpg",
       "visible": true,
       "toiles": [
         26,
