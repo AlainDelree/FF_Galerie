@@ -23,38 +23,6 @@
       "positions_mobile": []
     },
     {
-      "id": 5,
-      "nom": "Entrée",
-      "couleur_mur": "#2a2420",
-      "couleur_mur_piece": "#3a3a3a",
-      "couleur_mur_bas": "#c8a050",
-      "couleur_cadres": "#1c1c1c",
-      "epaisseur_cadres": 8,
-      "texture": "damier",
-      "visible": false,
-      "toiles": [
-        8,
-        9
-      ],
-      "positions": [
-        {
-          "id": 8,
-          "col": 7,
-          "row": 1,
-          "w": 4,
-          "h": 5
-        },
-        {
-          "id": 9,
-          "col": 2,
-          "row": 6,
-          "w": 7,
-          "h": 3
-        }
-      ],
-      "positions_mobile": []
-    },
-    {
       "id": 6,
       "nom": "Couloir",
       "couleur_mur": "#29275e",
@@ -88,6 +56,38 @@
           "col": 1,
           "row": 6,
           "w": 3,
+          "h": 3
+        }
+      ],
+      "positions_mobile": []
+    },
+    {
+      "id": 5,
+      "nom": "Entrée",
+      "couleur_mur": "#2a2420",
+      "couleur_mur_piece": "#3a3a3a",
+      "couleur_mur_bas": "#c8a050",
+      "couleur_cadres": "#1c1c1c",
+      "epaisseur_cadres": 8,
+      "texture": "damier",
+      "visible": false,
+      "toiles": [
+        8,
+        9
+      ],
+      "positions": [
+        {
+          "id": 8,
+          "col": 7,
+          "row": 1,
+          "w": 4,
+          "h": 5
+        },
+        {
+          "id": 9,
+          "col": 2,
+          "row": 6,
+          "w": 7,
           "h": 3
         }
       ],
