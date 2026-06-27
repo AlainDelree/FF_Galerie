@@ -70,6 +70,7 @@
       "couleur_mur_piece": "#1a1a1a",
       "couleur_mur_bas": "#111111",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": false,
       "toiles": [
@@ -361,21 +362,6 @@
       "positions_mobile": []
     },
     {
-      "id": 15,
-      "nom": "Salle K",
-      "type": "peinture",
-      "couleur_mur": "#2e2e2e",
-      "couleur_mur_piece": "#1a1a1a",
-      "couleur_mur_bas": "#111111",
-      "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 2,
-      "texture": "none",
-      "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": []
-    },
-    {
       "id": 16,
       "nom": "salle source",
       "type": "peinture",
@@ -383,6 +369,7 @@
       "couleur_mur_piece": "#1a1a1a",
       "couleur_mur_bas": "#111111",
       "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [],
