@@ -356,6 +356,20 @@
         }
       ],
       "positions_mobile": []
+    },
+    {
+      "id": 14,
+      "nom": "Salle J",
+      "type": "peinture",
+      "couleur_mur": "#2e2e2e",
+      "couleur_mur_piece": "#1a1a1a",
+      "couleur_mur_bas": "#111111",
+      "couleur_cadres": "#3a3a3a",
+      "texture": "none",
+      "visible": true,
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": []
     }
   ]
 }
