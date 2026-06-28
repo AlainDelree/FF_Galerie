@@ -31,7 +31,7 @@
       "couleur_mur_bas": "#c8a050",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 10,
-      "texture": "tissu",
+      "texture": "bois",
       "visible": false,
       "toiles": [
         8,
