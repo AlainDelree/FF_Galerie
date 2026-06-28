@@ -1417,9 +1417,13 @@ function afficherMurPlacement() {
     if (_posSel) _dimsPourCells = { w: _posSel.w, h: _posSel.h };
   }
   for (let r=1;r<=ROWS;r++) for (let c=1;c<=COLS;c++) {
-    if (occupancy[`${c},${r}`]) continue;
+    /* Sauter les cases occupées — SAUF celles de la toile sélectionnée sur le mur
+       (peintureSurMurSel) : elle doit pouvoir se déplacer vers sa propre position
+       actuelle, et les cases bloquées uniquement par elle doivent apparaître en vert. */
+    if (occupancy[`${c},${r}`] && occupancy[`${c},${r}`] !== peintureSurMurSel) continue;
     const cell = document.createElement('div'); cell.className='cellule';
-    if (_dimsPourCells) cell.classList.add(canPlace(c,r,_dimsPourCells.w,_dimsPourCells.h,null) ? 'cel-ok' : 'cel-ko');
+    /* excludeId = peintureSurMurSel : canPlace ignore la toile sélectionnée dans ses calculs */
+    if (_dimsPourCells) cell.classList.add(canPlace(c,r,_dimsPourCells.w,_dimsPourCells.h, peintureSurMurSel) ? 'cel-ok' : 'cel-ko');
     cell.style.gridColumn=c; cell.style.gridRow=r;
     cell.dataset.col=c; cell.dataset.row=r;
     cell.addEventListener('mouseenter', () => survolCellule(c,r,'mur-placement'));
