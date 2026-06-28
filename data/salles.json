@@ -109,6 +109,7 @@
       "couleur_mur": "#00ffff",
       "couleur_mur_piece": "#0044ff",
       "couleur_mur_bas": "#4a1c05",
+      "couleur_sol": "#ff00ff",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "data/textures/1000020592.jpg",
