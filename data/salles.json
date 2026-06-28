@@ -110,7 +110,7 @@
       "couleur_mur_bas": "#4a1c05",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "pierre",
+      "texture": "damier",
       "visible": true,
       "toiles": [
         4,
