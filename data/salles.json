@@ -106,7 +106,7 @@
     {
       "id": 7,
       "nom": "Salle fluo",
-      "couleur_mur": "#00ffff",
+      "couleur_mur": "#cc00ff",
       "couleur_mur_piece": "#0044ff",
       "couleur_mur_bas": "#4a1c05",
       "couleur_sol": "#ffdd00",
