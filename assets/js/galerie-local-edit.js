@@ -444,14 +444,13 @@
 
   /* ===================== Signature FF + appui long ======================= */
   function injecterSignature() {
-    var pied = document.querySelector('footer.pied') || document.querySelector('.pied');
-    if (!pied || document.getElementById('ff-sign')) return;
+    if (document.getElementById('ff-sign')) return;
     var sign = document.createElement('button');
     sign.id = 'ff-sign';
     sign.type = 'button';
     sign.textContent = 'FF';
     sign.setAttribute('aria-label', 'Signature');
-    pied.insertBefore(sign, pied.firstChild);
+    document.body.appendChild(sign);
 
     var timer = null;
     function debut(e) {
@@ -478,11 +477,13 @@
     var css = document.createElement('style');
     css.id = 'ff-edit-styles';
     css.textContent = [
-      '#ff-sign{font-family:"Playfair Display",serif;font-size:1.4rem;line-height:1;',
+      '#ff-sign{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));',
+        'z-index:60;font-family:"Playfair Display",serif;font-size:1.35rem;line-height:1;',
         'background:linear-gradient(135deg,#c8a050,#f0d080,#c8a050);-webkit-background-clip:text;',
         'background-clip:text;-webkit-text-fill-color:transparent;border:0;cursor:default;',
-        'padding:0 .2rem;opacity:.7;letter-spacing:.05em;-webkit-user-select:none;user-select:none;',
+        'padding:6px 4px;opacity:.6;letter-spacing:.04em;-webkit-user-select:none;user-select:none;',
         '-webkit-touch-callout:none;touch-action:none;}',
+      '.ff-edit-on #ff-sign{display:none;}',
       '.ff-edit-on .tableau-grille.ff-editable{cursor:grab;touch-action:none;}',
       '.ff-edit-on .tableau-grille.ff-editable:active{cursor:grabbing;}',
       '.tableau-grille.ff-dragging{opacity:.9;z-index:60;outline:2px dashed #f0d080;outline-offset:2px;}',
