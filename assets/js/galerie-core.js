@@ -631,6 +631,13 @@ function initGalerie() {
   _dataPromise
   .then(([oeuvresParType, sData]) => {
     const salles = sData.salles || [];
+    /* Surcouche locale (éditeur in-app hors ligne) : si l'éditeur est chargé,
+       il fusionne ses modifications locales par-dessus salles.json et mémorise
+       une copie « base ». Aucun effet si l'éditeur n'est pas présent. */
+    if (typeof window._FF_APPLY_LOCAL_LAYOUT === 'function') {
+      try { window._FF_APPLY_LOCAL_LAYOUT(salles); }
+      catch (e) { console.warn('[local-edit]', e); }
+    }
     TOTAL_SALLES = salles.length;
     const _hm = window.location.hash.match(/^#salle-(\d+)$/);
     conteneur.style.width = (TOTAL_SALLES * 100) + '%';

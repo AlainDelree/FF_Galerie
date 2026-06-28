@@ -159,6 +159,12 @@
       if (!navigator.onLine) { toast('Pas de connexion'); return; }
       enCours = true; btn.style.opacity = '0.6'; btn.textContent = '…';
       majDemandee = true;                       // autorise le rechargement final
+      // La MAJ ramène la version prod fraîche : on efface les modifs locales
+      // de l'éditeur in-app (surcouche jamais publiée).
+      try {
+        localStorage.removeItem('ff_local_layout');
+        sessionStorage.removeItem('ff_edit_mode');
+      } catch (e) {}
       reg.update().catch(function () {})
         .then(function () { return attendreWaiting(reg); })
         .then(function () { return demanderRefresh(); })   // re-télécharge le snapshot frais
