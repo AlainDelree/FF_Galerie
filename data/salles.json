@@ -58,11 +58,12 @@
     {
       "id": 6,
       "nom": "Couloir",
-      "couleur_mur": "#a51d2d",
-      "couleur_sol": "#3a3a3a",
+      "couleur_mur": "#29275e",
+      "couleur_sol": "#bccef4",
+      "sol_type": "uni",
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
-      "texture": "assets/images/textures/texture-bleu.jpg",
+      "texture": "assets/images/textures/ecorce-grosse.jpg",
       "visible": true,
       "toiles": [
         14,
