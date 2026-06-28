@@ -123,7 +123,7 @@
       d.salles[String(sid)] = { positions: positions };
     }
     ecrireStore(d);
-    majBadgeMasquees();
+    rafraichirAjout();
   }
 
   /* ===================== Carte des toiles (titres) ======================== */
@@ -148,25 +148,86 @@
     return t && t.photo ? t.photo : null;
   }
 
-  /* Liste des toiles masquées d'une salle : présentes en base mais absentes
-     des positions courantes (visibles). */
-  function idsMasquees(salleEl) {
-    var sid = salleIdDe(salleEl);
-    var mur = murDe(salleEl);
-    if (sid == null || !mur) return [];
-    var visibles = {};
-    tuilesDe(mur).forEach(function (t) {
-      if (!t.classList.contains('ff-hidden')) visibles[lirePos(t).id] = true;
+  /* ids des toiles VISIBLES sur le mur d'une salle. */
+  function idsVisibles(murEl) {
+    var v = {};
+    tuilesDe(murEl).forEach(function (t) {
+      if (!t.classList.contains('ff-hidden')) v[lirePos(t).id] = true;
     });
+    return v;
+  }
+  /* ids du catalogue non affichés sur ce mur (= ajoutables / réaffichables).
+     Tri : d'abord celles qui appartiennent en propre à cette salle (base),
+     puis le reste du catalogue. */
+  function idsAjoutables(salleEl) {
+    var mur = murDe(salleEl);
+    if (!mur || !_toilesMap) return [];
+    var sid = salleIdDe(salleEl);
+    var visibles = idsVisibles(mur);
     var base = window._FF_BASE_SALLES || [];
-    var salleBase = null;
-    for (var i = 0; i < base.length; i++) if (base[i].id === sid) { salleBase = base[i]; break; }
-    /* Référence = toiles affichées en prod (positions de base). Une toile est
-       « masquée » seulement si elle figurait dans la base mais n'est plus visible.
-       (Ajouter une toile non placée = hors périmètre v1.) */
-    var tousIds = (salleBase && salleBase.positions)
-      ? salleBase.positions.map(function (p) { return p.id; }) : [];
-    return tousIds.filter(function (id) { return !visibles[id]; });
+    var baseHere = {};
+    for (var i = 0; i < base.length; i++) {
+      if (base[i].id === sid) {
+        (base[i].positions || []).forEach(function (p) { baseHere[p.id] = true; });
+      }
+    }
+    var ids = Object.keys(_toilesMap).map(Number)
+      .filter(function (id) { return !visibles[id]; });
+    ids.sort(function (a, b) {
+      var pa = baseHere[a] ? 0 : 1, pb = baseHere[b] ? 0 : 1;
+      return (pa - pb) || (a - b);
+    });
+    return ids;
+  }
+
+  /* Taille (w,h) connue d'une toile : reprise de sa position de base, où qu'elle
+     soit (cette salle ou une autre), pour conserver ses proportions réelles. */
+  function tailleConnue(id) {
+    var base = window._FF_BASE_SALLES || [];
+    for (var i = 0; i < base.length; i++) {
+      var pos = base[i].positions || [];
+      for (var j = 0; j < pos.length; j++) {
+        if (pos[j].id === id) return { w: pos[j].w, h: pos[j].h };
+      }
+    }
+    return null;
+  }
+  /* Taille par défaut (toile jamais placée) déduite du ratio largeur/hauteur. */
+  function tailleDefaut(id) {
+    var t = _toilesMap && _toilesMap[id];
+    var d = t && t.dimensions;
+    if (d && d.largeur && d.hauteur) {
+      var r = d.largeur / d.hauteur;
+      if (r > 1.25) return { w: 4, h: 3 };   // paysage
+      if (r < 0.80) return { w: 3, h: 4 };   // portrait
+    }
+    return { w: 3, h: 3 };                    // ~carré / inconnu
+  }
+  function tailleAjout(id) {
+    var s = tailleConnue(id) || tailleDefaut(id);
+    return { w: clamp(s.w, 1, COLS), h: clamp(s.h, 1, ROWS) };
+  }
+
+  /* Première case libre (col,row) pour un bloc w×h, vu les positions occupées. */
+  function caseLibre(positions, w, h) {
+    var occ = [];
+    var r, c;
+    for (r = 0; r < ROWS; r++) { occ[r] = []; for (c = 0; c < COLS; c++) occ[r][c] = false; }
+    positions.forEach(function (p) {
+      for (var rr = p.row - 1; rr < p.row - 1 + p.h && rr < ROWS; rr++)
+        for (var cc = p.col - 1; cc < p.col - 1 + p.w && cc < COLS; cc++)
+          if (rr >= 0 && cc >= 0) occ[rr][cc] = true;
+    });
+    for (r = 0; r <= ROWS - h; r++) {
+      for (c = 0; c <= COLS - w; c++) {
+        var libre = true;
+        for (var rr = r; rr < r + h && libre; rr++)
+          for (var cc = c; cc < c + w && libre; cc++)
+            if (occ[rr][cc]) libre = false;
+        if (libre) return { col: c + 1, row: r + 1 };
+      }
+    }
+    return null;
   }
 
   /* ===================== État édition ===================================== */
@@ -276,27 +337,41 @@
     sauverSalle(salleEl);
     toast('Toile masquée');
   }
-  function reafficher(salleEl, id) {
+  /* Ajoute (ou réaffiche) une toile sur le mur de la salle. */
+  function ajouter(salleEl, id) {
     var mur = murDe(salleEl);
-    // déjà dans le DOM (masquée cette session) → on la ré-affiche directement
-    var dom = mur && mur.querySelector('.tableau-grille[data-id="' + id + '"]');
-    if (dom) {
+    var sid = salleIdDe(salleEl);
+    if (!mur || sid == null) return;
+
+    // Cas rapide : masquée pendant cette session (toujours dans le DOM) → on
+    // la ré-affiche sans recharger.
+    var dom = mur.querySelector('.tableau-grille[data-id="' + id + '"]');
+    if (dom && dom.classList.contains('ff-hidden')) {
       dom.classList.remove('ff-hidden');
       sauverSalle(salleEl);
-      ouvrirTiroir();                              // rafraîchit la liste
+      rafraichirAjout();
+      toast('Toile ajoutée');
       return;
     }
-    // sinon (masquée lors d'une session précédente, absente du DOM) :
-    // on la remet dans la surcouche depuis sa géométrie de base, puis on recharge.
-    var sid = salleIdDe(salleEl);
-    var base = basePositions(sid);
-    var pos = null;
-    for (var i = 0; i < base.length; i++) if (base[i].id === id) { pos = base[i]; break; }
+
+    // Cas général : on place la toile sur la première case libre, à sa taille
+    // connue (ou par défaut), puis on recharge pour que le moteur de rendu
+    // crée proprement la tuile.
+    var visibles = tuilesDe(mur)
+      .filter(function (t) { return !t.classList.contains('ff-hidden'); })
+      .map(lirePos);
+    var taille = tailleAjout(id);
+    var cible = caseLibre(visibles, taille.w, taille.h);
+    if (!cible) {
+      // pas de bloc à cette taille → on tente la plus petite taille
+      cible = caseLibre(visibles, 1, 1);
+      if (cible) { taille = { w: 1, h: 1 }; }
+    }
+    if (!cible) { toast('Pas de place libre sur ce mur'); return; }
+
+    visibles.push({ id: id, col: cible.col, row: cible.row, w: taille.w, h: taille.h });
     var d = storeSalles();
-    var cur = (d.salles[String(sid)] && d.salles[String(sid)].positions)
-              ? d.salles[String(sid)].positions.slice() : base.slice();
-    if (pos && !cur.some(function (p) { return p.id === id; })) cur.push(pos);
-    d.salles[String(sid)] = { positions: cur };
+    d.salles[String(sid)] = { positions: visibles };
     ecrireStore(d);
     rechargerEnGardantEtat(sid);
   }
@@ -347,7 +422,6 @@
     document.addEventListener('pointercancel', function () { drag = null; }, true);
 
     injecterBarre();
-    majBadgeMasquees();
     toast('Mode local — réarrangez, rien n\u2019est publié');
   }
   function quitterEdition() {
@@ -387,40 +461,41 @@
     bar.innerHTML =
       '<span class="ff-barre-titre">✎ Mode local <em>— non publié</em></span>' +
       '<span class="ff-barre-actions">' +
-        '<button type="button" id="ff-btn-masquees">Masquées <b id="ff-badge">0</b></button>' +
+        '<button type="button" id="ff-btn-ajouter">＋ Ajouter</button>' +
         '<button type="button" id="ff-btn-reset">Réinitialiser</button>' +
         '<button type="button" id="ff-btn-fin" class="ff-primaire">Terminer</button>' +
       '</span>';
     document.body.appendChild(bar);
     document.getElementById('ff-btn-fin').addEventListener('click', quitterEdition);
     document.getElementById('ff-btn-reset').addEventListener('click', resetSalle);
-    document.getElementById('ff-btn-masquees').addEventListener('click', basculerTiroir);
+    document.getElementById('ff-btn-ajouter').addEventListener('click', basculerAjout);
   }
-  function majBadgeMasquees() {
-    var b = document.getElementById('ff-badge');
-    if (!b) return;
-    var n = idsMasquees(salleActiveEl()).length;
-    b.textContent = n;
-    b.parentNode.style.opacity = n ? '1' : '.5';
+  /* Si le panneau d'ajout est ouvert, le reconstruire (après masquer/ajouter). */
+  function rafraichirAjout() {
+    if (document.getElementById('ff-tiroir')) ouvrirAjout();
   }
 
-  function basculerTiroir() {
+  function basculerAjout() {
     if (document.getElementById('ff-tiroir')) fermerTiroir();
-    else ouvrirTiroir();
+    else ouvrirAjout();
   }
   function fermerTiroir() {
     var t = document.getElementById('ff-tiroir'); if (t) t.remove();
   }
-  function ouvrirTiroir() {
+  function ouvrirAjout() {
     fermerTiroir();
+    if (!_toilesMap) {                 // carte pas encore chargée → on attend
+      chargerToilesMap().then(function () { if (enEdition) ouvrirAjout(); });
+      return;
+    }
     var salleEl = salleActiveEl();
-    var ids = idsMasquees(salleEl);
+    var ids = idsAjoutables(salleEl);
     var pan = document.createElement('div');
     pan.id = 'ff-tiroir';
-    var html = '<div class="ff-tiroir-tete"><span>Toiles masquées (cette salle)</span>' +
+    var html = '<div class="ff-tiroir-tete"><span>Ajouter une toile à cette salle</span>' +
                '<button type="button" id="ff-tiroir-x">✕</button></div>';
     if (!ids.length) {
-      html += '<p class="ff-tiroir-vide">Aucune toile masquée.</p>';
+      html += '<p class="ff-tiroir-vide">Toutes les toiles sont déjà affichées ici.</p>';
     } else {
       html += '<ul class="ff-tiroir-liste">';
       ids.forEach(function (id) {
@@ -428,7 +503,7 @@
         html += '<li data-id="' + id + '">' +
                   (ph ? '<img src="' + ph + '" alt="">' : '<span class="ff-vig"></span>') +
                   '<span class="ff-tiroir-nom">' + titreToile(id) + '</span>' +
-                  '<button type="button" class="ff-reafficher">Réafficher</button>' +
+                  '<button type="button" class="ff-placer">Placer</button>' +
                 '</li>';
       });
       html += '</ul>';
@@ -438,10 +513,10 @@
     document.body.appendChild(pan);
     document.getElementById('ff-tiroir-x').addEventListener('click', fermerTiroir);
     document.getElementById('ff-reset-tout').addEventListener('click', resetTout);
-    pan.querySelectorAll('.ff-reafficher').forEach(function (btn) {
+    pan.querySelectorAll('.ff-placer').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = parseInt(btn.closest('li').dataset.id, 10);
-        reafficher(salleEl, id);
+        ajouter(salleEl, id);
       });
     });
   }
@@ -520,7 +595,6 @@
       '#ff-barre button:hover{border-color:#c8a050;}',
       '#ff-barre button.ff-primaire{background:linear-gradient(135deg,#c8a050,#f0d080);',
         'color:#1a1a1a;border:0;font-weight:700;}',
-      '#ff-badge{display:inline-block;min-width:14px;}',
       // bouton masquer flottant
       '.ff-mini-action{position:fixed;z-index:100001;transform:translate(-50%,0);',
         'font-family:Lato,system-ui,sans-serif;font-size:12px;font-weight:700;color:#1a1a1a;',
@@ -540,7 +614,7 @@
       '.ff-tiroir-liste img,.ff-vig{width:44px;height:44px;border-radius:6px;object-fit:cover;',
         'background:#333;flex:0 0 auto;}',
       '.ff-tiroir-nom{flex:1 1 auto;font-size:13px;}',
-      '.ff-reafficher{font:inherit;font-size:12px;color:#1a1a1a;background:linear-gradient(135deg,#c8a050,#f0d080);',
+      '.ff-placer{font:inherit;font-size:12px;color:#1a1a1a;background:linear-gradient(135deg,#c8a050,#f0d080);',
         'border:0;border-radius:7px;padding:6px 10px;cursor:pointer;}',
       '.ff-tiroir-pied{padding:10px 14px;text-align:center;border-top:1px solid rgba(200,160,80,.25);}',
       '#ff-reset-tout{font:inherit;font-size:12px;color:#e8a;background:#262626;border:1px solid #633;',
