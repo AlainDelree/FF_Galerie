@@ -305,7 +305,7 @@
       "couleur_sol": "#a3a09b",
       "sol_type": "uni",
       "couleur_cadres": "#3a3a3a",
-      "epaisseur_cadres": 14,
+      "epaisseur_cadres": 4,
       "texture": "none",
       "visible": true,
       "toiles": [
