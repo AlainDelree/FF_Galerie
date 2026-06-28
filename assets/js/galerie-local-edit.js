@@ -176,6 +176,18 @@
   /* --- Drag ---------------------------------------------------------------- */
   var drag = null;   // { tuile, mur, startX, startY, moved, cellW, cellH, origRect }
 
+  /* Vrai si le rectangle p (col,row,w,h) chevauche une autre toile visible. */
+  function chevauche(tuile, p) {
+    var mur = tuile.closest('.mur-grille');
+    if (!mur) return false;
+    return tuilesDe(mur).some(function (x) {
+      if (x === tuile || x.classList.contains('ff-hidden')) return false;
+      var o = lirePos(x);
+      return !(p.col + p.w <= o.col || o.col + o.w <= p.col ||
+               p.row + p.h <= o.row || o.row + o.h <= p.row);
+    });
+  }
+
   function onPointerDown(e) {
     if (!enEdition) return;
     var t = e.target.closest && e.target.closest('.tableau-grille');
@@ -188,7 +200,8 @@
       tuile: t, mur: mur,
       startX: e.clientX, startY: e.clientY, moved: false,
       cellW: rMur.width / COLS, cellH: rMur.height / ROWS,
-      rMur: rMur, pointerId: e.pointerId
+      rMur: rMur, pointerId: e.pointerId,
+      origPos: lirePos(t)
     };
     try { t.setPointerCapture(e.pointerId); } catch (_) {}
   }
@@ -216,6 +229,7 @@
       var rowIdx = Math.round((rTile.top  - drag.rMur.top)  / drag.cellH);
       p.col = clamp(colIdx, 0, COLS - p.w) + 1;
       p.row = clamp(rowIdx, 0, ROWS - p.h) + 1;
+      if (chevauche(t, p)) { p = drag.origPos; toast('Emplacement occupé'); }
       t.style.transform = '';
       t.classList.remove('ff-dragging');
       ecrirePos(t, p);
