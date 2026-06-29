@@ -475,6 +475,10 @@ button{cursor:pointer;}
   .scene-porte{width:24px;height:19.2px;border-top-left-radius:24px 28.8px;border-top-right-radius:24px 28.8px;}
   .scene-porte::after{width:9.6px;border-radius:24px 24px 0 0;}
   .scene-plancher{height:32px;}
+  /* Bug fix : min-width:320px de la règle de base écrasait le width inline
+     calculé par JS (_ajusterMurPeinture) sur mobile → cellules rectangulaires.
+     Le JS garantit une taille raisonnable, min-width:0 lui laisse le contrôle. */
+  .placement-mur-bg{min-width:0;}
 }
 .grille-ov{position:absolute;inset:0;pointer-events:none;z-index:3;
   background-image:

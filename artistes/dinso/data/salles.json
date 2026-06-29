@@ -4,56 +4,30 @@
       "id": 1,
       "nom": "Salle I",
       "type": "sculpture",
-      "couleur_mur": "#99f1b7",
-      "couleur_mur_piece": "#c8a050",
-      "couleur_mur_bas": "#f0f0f0",
+      "couleur_mur": "#b8afae",
+      "couleur_mur_piece": "#ecf0b0",
+      "couleur_mur_bas": "#c5c5c5",
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        1,
-        9,
-        4
+        11
       ],
       "positions": [
         {
-          "id": 1,
-          "x": 19,
-          "y": 27,
-          "gabarit": "SOL"
-        },
-        {
-          "id": 9,
-          "x": 67,
-          "y": 52,
+          "id": 11,
+          "x": 21.064713064713068,
+          "y": 43.172839506172835,
           "gabarit": "M"
-        },
-        {
-          "id": 4,
-          "x": 47,
-          "y": 48,
-          "gabarit": "S"
         }
       ],
       "positions_mobile": [
         {
-          "id": 1,
-          "x": 25.608870461113206,
-          "y": 85.9090909090909,
-          "gabarit": "SOL"
-        },
-        {
-          "id": 3,
-          "x": 91.95778364116094,
-          "y": 51.25518341307815,
-          "gabarit": "L"
-        },
-        {
-          "id": 4,
-          "x": 50.71240105540898,
-          "y": 5,
-          "gabarit": "S"
+          "id": 11,
+          "x": 47.13852813852814,
+          "y": 45.7667493796526,
+          "gabarit": "M"
         }
       ],
       "greffons": {
@@ -94,32 +68,9 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        7,
-        10
-      ],
-      "positions": [
-        {
-          "id": 7,
-          "x": 32,
-          "y": 62,
-          "gabarit": "M"
-        },
-        {
-          "id": 10,
-          "x": 59,
-          "y": 40,
-          "gabarit": "L"
-        }
-      ],
-      "positions_mobile": [
-        {
-          "id": 7,
-          "x": 36,
-          "y": 37,
-          "gabarit": "M"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
@@ -159,26 +110,8 @@
       "epaisseur_cadres": 2,
       "texture": "carrelage",
       "visible": true,
-      "toiles": [
-        3,
-        5
-      ],
-      "positions": [
-        {
-          "id": 3,
-          "col": 6,
-          "row": 3,
-          "w": 2,
-          "h": 2
-        },
-        {
-          "id": 5,
-          "col": 9,
-          "row": 6,
-          "w": 2,
-          "h": 2
-        }
-      ],
+      "toiles": [],
+      "positions": [],
       "positions_mobile": [],
       "greffons": {
         "immersive": {

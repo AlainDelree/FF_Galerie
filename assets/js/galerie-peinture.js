@@ -161,6 +161,7 @@ GALERIE_RENDERERS['peinture'] = function(salleDiv, salle, si, salles, tData) {
       const t = toileMap[p.id]; if (!t) return;
       const art = document.createElement('article');
       art.className = 'tableau-grille';
+      art.dataset.id = p.id;
       art.style.gridColumn = `${p.col} / span ${p.w}`;
       art.style.gridRow    = `${p.row} / span ${p.h}`;
       art.tabIndex = 0;

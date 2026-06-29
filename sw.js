@@ -20,7 +20,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-28a';     // identifiant du CODE du SW (force la détection de MAJ)
+const VERSION     = '2026-06-28c';     // identifiant du CODE du SW (force la détection de MAJ)
 const SHELL_CACHE = 'ff-shell';        // STABLE : le contenu ne change qu'à la demande (⟳)
 const MEDIA_CACHE = 'ff-media';        // STABLE : images + musique, persistant
 
@@ -46,6 +46,7 @@ const SHELL = [
   '/assets/js/galerie-core.js',
   '/assets/js/galerie-peinture.js',
   '/assets/js/galerie-sculpture.js',
+  '/assets/js/galerie-local-edit.js',
   '/assets/js/salle-immersive.js',
   '/assets/js/pwa-register.js',
 

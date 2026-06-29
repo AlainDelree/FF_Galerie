@@ -223,6 +223,7 @@ function setCouleurMur(col) {
   appliquerApparence();
   _rafraichirApercusTDB();
   _autoSaveApparence('Couleurs sauvegardées ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 /* Couleur du mur de la PIÈCE (décor sombre autour du mur d'exposition) —
@@ -235,6 +236,7 @@ function setCouleurMurPiece(col) {
   document.documentElement.style.setProperty('--mur-piece-col', col);
   _rafraichirApercusTDB();
   _autoSaveApparence('Couleurs sauvegardées ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 /* Couleur du mur du bas (plinthe avec portes) — analogue à mur-piece.
@@ -246,6 +248,7 @@ function setCouleurMurBas(col) {
   document.documentElement.style.setProperty('--mur-bas-col', col);
   _rafraichirApercusTDB();
   _autoSaveApparence('Couleurs sauvegardées ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 function setCouleurCadres(col) {
@@ -255,6 +258,7 @@ function setCouleurCadres(col) {
   afficherMur();
   _rafraichirApercusTDB();
   _autoSaveApparence('Couleurs sauvegardées ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 function setEpaisseurCadres(ep) {
@@ -266,6 +270,7 @@ function setEpaisseurCadres(ep) {
   });
   _rafraichirApercusTDB();
   _autoSaveApparence('Épaisseur des cadres sauvegardée ✓');
+  /* Pas de fermerPopover ici : le slider doit rester ouvert pendant l'ajustement */
 }
 
 function setTexture(val) {
@@ -274,6 +279,7 @@ function setTexture(val) {
   appliquerApparence();
   _rafraichirApercusTDB();
   _autoSaveApparence('Texture sauvegardée ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 /* Sol peinture : construit le background CSS (parquet teinte par la couleur,
@@ -298,6 +304,7 @@ function setCouleurSol(col) {
   _propagerSol();
   _rafraichirApercusTDB();
   _autoSaveApparence('Couleur du sol sauvegardée ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 function setSolType(val) {
@@ -309,6 +316,7 @@ function setSolType(val) {
   _propagerSol();
   _rafraichirApercusTDB();
   _autoSaveApparence('Type de sol sauvegardé ✓');
+  if (typeof fermerPopover === 'function') fermerPopover();
 }
 
 // RECADRAGE PHOTO (Cropper.js)

@@ -1,5 +1,5 @@
 {
-  "next_id": 11,
+  "next_id": 12,
   "gabarits": [
     {
       "code": "S",
@@ -24,216 +24,29 @@
   ],
   "pieces": [
     {
-      "id": 1,
-      "photo": "artistes/dinso/assets/images/toiles/piece-001.jpg",
+      "id": 11,
+      "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
-      "titre": "Tiki",
+      "titre": "",
       "date": "",
       "style": "",
       "materiaux": [],
       "description": "",
       "dimensions": {
         "type": "portrait",
-        "largeur": 50,
-        "hauteur": 120,
-        "profondeur": 44
+        "largeur": 27,
+        "hauteur": 36,
+        "profondeur": 21
       },
       "visible": true,
-      "socle": 60,
-      "glb": "artistes/dinso/assets/models/piece-001.glb"
-    },
-    {
-      "id": 2,
-      "photo": "artistes/dinso/assets/images/toiles/piece-002.png",
-      "source_photo": "admin",
-      "titre": "Piranha",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 15,
-        "hauteur": 8,
-        "profondeur": 5
-      },
-      "visible": true,
-      "socle": 15,
-      "glb": "artistes/dinso/assets/models/piece-002.glb",
-      "sans_socle": true,
+      "socle": 36,
+      "glb": "artistes/dinso/assets/models/piece-011.glb",
       "support": {
         "type": "presentoir",
-        "couleur": "#2a1a10",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
-      "id": 3,
-      "photo": "artistes/dinso/assets/images/toiles/piece-003.png",
-      "source_photo": "admin",
-      "titre": "Statue",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 42,
-        "hauteur": 60,
-        "profondeur": 38
-      },
-      "visible": true,
-      "socle": 55,
-      "glb": "artistes/dinso/assets/models/piece-003.glb",
-      "support": {
-        "type": "presentoir",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
-      "id": 4,
-      "photo": "artistes/dinso/assets/images/toiles/piece-004.png",
-      "source_photo": "admin",
-      "titre": "Rose",
-      "date": "2001",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 11,
-        "hauteur": 15,
-        "profondeur": 8
-      },
-      "visible": true,
-      "socle": 15,
-      "glb": "artistes/dinso/assets/models/piece-004.glb",
-      "support": {
-        "type": "etagere",
-        "couleur": "#d4ae60",
-        "texture": "metal",
-        "taille": 30
-      }
-    },
-    {
-      "id": 5,
-      "photo": "artistes/dinso/assets/images/toiles/piece-005.png",
-      "source_photo": "admin",
-      "titre": "Cacahouette",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 33,
-        "hauteur": 16,
-        "profondeur": 8
-      },
-      "visible": true,
-      "socle": 43,
-      "glb": "artistes/dinso/assets/models/piece-005.glb"
-    },
-    {
-      "id": 6,
-      "photo": "artistes/dinso/assets/images/toiles/piece-006.png",
-      "source_photo": "admin",
-      "titre": "Escargot pointu",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 18,
-        "hauteur": 69,
-        "profondeur": 17
-      },
-      "visible": true,
-      "socle": 24,
-      "glb": "artistes/dinso/assets/models/piece-006.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
-      "id": 7,
-      "photo": "artistes/dinso/assets/images/toiles/piece-007.png",
-      "source_photo": "admin",
-      "titre": "Ammonite",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 35,
-        "hauteur": 30,
-        "profondeur": 16
-      },
-      "visible": true,
-      "socle": 46,
-      "glb": "artistes/dinso/assets/models/piece-007.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
-      "id": 9,
-      "photo": "artistes/dinso/assets/images/toiles/piece-009.png",
-      "source_photo": "admin",
-      "titre": "Flèche",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 105,
-        "hauteur": 47,
-        "profondeur": 13
-      },
-      "visible": true,
-      "socle": 137,
-      "glb": "artistes/dinso/assets/models/piece-009.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
-      "id": 10,
-      "photo": "artistes/dinso/assets/images/toiles/piece-010.jpg",
-      "source_photo": "admin",
-      "titre": "TikDD",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 25,
-        "hauteur": 90,
-        "profondeur": 30
-      },
-      "visible": true,
-      "glb": "",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
+        "couleur": "#2e2e2e",
+        "texture": "bois",
+        "taille": 50,
+        "hauteur": 135
       }
     }
   ]
