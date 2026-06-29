@@ -85,6 +85,42 @@
         "texture": "marbre",
         "taille": 40
       }
+    },
+    {
+      "id": 4,
+      "photo": "https://picsum.photos/id/1037/600/800",
+      "source_photo": "picsum",
+      "titre": "Sentier dans la forêt",
+      "date": "2022",
+      "style": "Paysage",
+      "materiaux": [
+        "Aquarelle"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "M",
+      "visible": true,
+      "support": {
+        "type": "etagere",
+        "couleur": "#d4ae60",
+        "texture": "metal",
+        "taille": 30
+      }
+    },
+    {
+      "id": 5,
+      "photo": "https://picsum.photos/id/1043/800/600",
+      "source_photo": "picsum",
+      "titre": "Côte rocheuse",
+      "date": "2023",
+      "style": "Marine",
+      "materiaux": [
+        "Acrylique"
+      ],
+      "description": "Test placeholder — image Picsum.",
+      "prix": "",
+      "taille": "XL",
+      "visible": true
     }
   ]
 }
