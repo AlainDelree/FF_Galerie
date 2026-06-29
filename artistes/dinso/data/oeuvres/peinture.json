@@ -26,28 +26,5 @@
       "label": "Étirée"
     }
   ],
-  "toiles": [
-    {
-      "id": 2,
-      "photo": "https://picsum.photos/id/1018/800/600",
-      "source_photo": "picsum",
-      "titre": "Lac sauvage",
-      "date": "2023",
-      "style": "Paysage",
-      "materiaux": [
-        "Acrylique"
-      ],
-      "description": "Test placeholder — image Picsum.",
-      "prix": "",
-      "taille": "XL",
-      "visible": true,
-      "support": {
-        "type": "presentoir",
-        "couleur": "#2a1a10",
-        "texture": "marbre",
-        "taille": 40
-      },
-      "sans_socle": true
-    }
-  ]
+  "toiles": []
 }
