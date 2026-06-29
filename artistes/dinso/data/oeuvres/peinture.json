@@ -64,27 +64,6 @@
         "taille": 40
       },
       "sans_socle": true
-    },
-    {
-      "id": 3,
-      "photo": "https://picsum.photos/id/1025/600/800",
-      "source_photo": "picsum",
-      "titre": "Portrait canin",
-      "date": "2024",
-      "style": "Portrait",
-      "materiaux": [
-        "Huile"
-      ],
-      "description": "Test placeholder — image Picsum.",
-      "prix": "",
-      "taille": "XS",
-      "visible": true,
-      "support": {
-        "type": "presentoir",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
     }
   ]
 }
