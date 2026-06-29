@@ -100,31 +100,6 @@
       }
     },
     {
-      "id": 4,
-      "photo": "artistes/dinso/assets/images/toiles/piece-004.png",
-      "source_photo": "admin",
-      "titre": "Rose",
-      "date": "2001",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 11,
-        "hauteur": 15,
-        "profondeur": 8
-      },
-      "visible": true,
-      "socle": 15,
-      "glb": "artistes/dinso/assets/models/piece-004.glb",
-      "support": {
-        "type": "etagere",
-        "couleur": "#d4ae60",
-        "texture": "metal",
-        "taille": 30
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
