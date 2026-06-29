@@ -12,23 +12,9 @@
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        9,
-        4,
         11
       ],
       "positions": [
-        {
-          "id": 9,
-          "x": 67,
-          "y": 52,
-          "gabarit": "M"
-        },
-        {
-          "id": 4,
-          "x": 47,
-          "y": 48,
-          "gabarit": "S"
-        },
         {
           "id": 11,
           "x": 21.064713064713068,
@@ -82,32 +68,9 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": true,
-      "toiles": [
-        7,
-        10
-      ],
-      "positions": [
-        {
-          "id": 7,
-          "x": 32,
-          "y": 62,
-          "gabarit": "M"
-        },
-        {
-          "id": 10,
-          "x": 59,
-          "y": 40,
-          "gabarit": "L"
-        }
-      ],
-      "positions_mobile": [
-        {
-          "id": 7,
-          "x": 36,
-          "y": 37,
-          "gabarit": "M"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
@@ -148,21 +111,13 @@
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        3,
-        5
+        3
       ],
       "positions": [
         {
           "id": 3,
           "col": 6,
           "row": 3,
-          "w": 2,
-          "h": 2
-        },
-        {
-          "id": 5,
-          "col": 9,
-          "row": 6,
           "w": 2,
           "h": 2
         }
