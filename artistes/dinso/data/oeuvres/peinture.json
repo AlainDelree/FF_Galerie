@@ -106,21 +106,6 @@
         "texture": "metal",
         "taille": 30
       }
-    },
-    {
-      "id": 5,
-      "photo": "https://picsum.photos/id/1043/800/600",
-      "source_photo": "picsum",
-      "titre": "Côte rocheuse",
-      "date": "2023",
-      "style": "Marine",
-      "materiaux": [
-        "Acrylique"
-      ],
-      "description": "Test placeholder — image Picsum.",
-      "prix": "",
-      "taille": "XL",
-      "visible": true
     }
   ]
 }

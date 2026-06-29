@@ -111,21 +111,13 @@
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        3,
-        5
+        3
       ],
       "positions": [
         {
           "id": 3,
           "col": 6,
           "row": 3,
-          "w": 2,
-          "h": 2
-        },
-        {
-          "id": 5,
-          "col": 9,
-          "row": 6,
           "w": 2,
           "h": 2
         }
