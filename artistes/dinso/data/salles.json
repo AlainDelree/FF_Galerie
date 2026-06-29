@@ -12,17 +12,11 @@
       "texture": "carrelage",
       "visible": true,
       "toiles": [
-        1,
         9,
-        4
+        4,
+        11
       ],
       "positions": [
-        {
-          "id": 1,
-          "x": 19,
-          "y": 27,
-          "gabarit": "SOL"
-        },
         {
           "id": 9,
           "x": 67,
@@ -34,6 +28,12 @@
           "x": 47,
           "y": 48,
           "gabarit": "S"
+        },
+        {
+          "id": 11,
+          "x": 21.064713064713068,
+          "y": 43.172839506172835,
+          "gabarit": "M"
         }
       ],
       "positions_mobile": [

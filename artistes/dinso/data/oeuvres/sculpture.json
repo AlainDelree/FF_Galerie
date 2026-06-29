@@ -40,7 +40,13 @@
       },
       "visible": true,
       "socle": 60,
-      "glb": "artistes/dinso/assets/models/piece-001.glb"
+      "glb": "artistes/dinso/assets/models/piece-001.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 2,
@@ -253,7 +259,13 @@
       },
       "visible": true,
       "socle": 36,
-      "glb": "artistes/dinso/assets/models/piece-011.glb"
+      "glb": "artistes/dinso/assets/models/piece-011.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     }
   ]
 }
