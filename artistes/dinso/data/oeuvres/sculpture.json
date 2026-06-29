@@ -75,31 +75,6 @@
       }
     },
     {
-      "id": 3,
-      "photo": "artistes/dinso/assets/images/toiles/piece-003.png",
-      "source_photo": "admin",
-      "titre": "Statue",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 42,
-        "hauteur": 60,
-        "profondeur": 38
-      },
-      "visible": true,
-      "socle": 55,
-      "glb": "artistes/dinso/assets/models/piece-003.glb",
-      "support": {
-        "type": "presentoir",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
