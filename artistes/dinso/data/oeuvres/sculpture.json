@@ -24,31 +24,6 @@
   ],
   "pieces": [
     {
-      "id": 1,
-      "photo": "artistes/dinso/assets/images/toiles/piece-001.jpg",
-      "source_photo": "admin",
-      "titre": "Tiki",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 50,
-        "hauteur": 120,
-        "profondeur": 44
-      },
-      "visible": true,
-      "socle": 60,
-      "glb": "artistes/dinso/assets/models/piece-001.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
