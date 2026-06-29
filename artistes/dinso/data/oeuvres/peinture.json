@@ -28,22 +28,6 @@
   ],
   "toiles": [
     {
-      "id": 1,
-      "photo": "https://picsum.photos/id/1015/600/800",
-      "source_photo": "picsum",
-      "titre": "Rivière de montagne",
-      "date": "2024",
-      "style": "Paysage",
-      "materiaux": [
-        "Huile",
-        "Toile"
-      ],
-      "description": "Test placeholder — image Picsum.",
-      "prix": "",
-      "taille": "M",
-      "visible": true
-    },
-    {
       "id": 2,
       "photo": "https://picsum.photos/id/1018/800/600",
       "source_photo": "picsum",
