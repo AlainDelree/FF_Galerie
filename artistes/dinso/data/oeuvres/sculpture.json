@@ -49,32 +49,6 @@
       }
     },
     {
-      "id": 2,
-      "photo": "artistes/dinso/assets/images/toiles/piece-002.png",
-      "source_photo": "admin",
-      "titre": "Piranha",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "paysage",
-        "largeur": 15,
-        "hauteur": 8,
-        "profondeur": 5
-      },
-      "visible": true,
-      "socle": 15,
-      "glb": "artistes/dinso/assets/models/piece-002.glb",
-      "sans_socle": true,
-      "support": {
-        "type": "presentoir",
-        "couleur": "#2a1a10",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
