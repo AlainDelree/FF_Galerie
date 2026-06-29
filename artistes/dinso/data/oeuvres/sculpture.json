@@ -144,31 +144,6 @@
       "glb": "artistes/dinso/assets/models/piece-005.glb"
     },
     {
-      "id": 6,
-      "photo": "artistes/dinso/assets/images/toiles/piece-006.png",
-      "source_photo": "admin",
-      "titre": "Escargot pointu",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 18,
-        "hauteur": 69,
-        "profondeur": 17
-      },
-      "visible": true,
-      "socle": 24,
-      "glb": "artistes/dinso/assets/models/piece-006.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
