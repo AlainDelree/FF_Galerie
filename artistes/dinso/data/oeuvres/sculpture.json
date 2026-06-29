@@ -219,30 +219,6 @@
       }
     },
     {
-      "id": 10,
-      "photo": "artistes/dinso/assets/images/toiles/piece-010.jpg",
-      "source_photo": "admin",
-      "titre": "TikDD",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 25,
-        "hauteur": 90,
-        "profondeur": 30
-      },
-      "visible": true,
-      "glb": "",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 11,
       "photo": "artistes/dinso/assets/images/toiles/piece-011.png",
       "source_photo": "admin",
