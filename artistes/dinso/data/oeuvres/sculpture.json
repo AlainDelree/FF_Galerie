@@ -262,9 +262,10 @@
       "glb": "artistes/dinso/assets/models/piece-011.glb",
       "support": {
         "type": "presentoir",
-        "couleur": "#c8f0bc",
+        "couleur": "#2e2e2e",
         "texture": "bois",
-        "taille": 40
+        "taille": 50,
+        "hauteur": 120
       }
     }
   ]
