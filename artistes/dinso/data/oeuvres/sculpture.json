@@ -261,9 +261,9 @@
       "socle": 36,
       "glb": "artistes/dinso/assets/models/piece-011.glb",
       "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
+        "type": "presentoir",
+        "couleur": "#c8f0bc",
+        "texture": "bois",
         "taille": 40
       }
     }
