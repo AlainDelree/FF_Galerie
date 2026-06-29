@@ -140,6 +140,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   viewer.setAttribute('camera-controls',  '');
   viewer.setAttribute('interaction-prompt', 'none');
   viewer.setAttribute('shadow-intensity', '1');
+  viewer.setAttribute('camera-orbit',     '0deg 75deg 105%');
   viewer.style.cssText =
     'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;' +
     '--poster-color:transparent;background:transparent;';
