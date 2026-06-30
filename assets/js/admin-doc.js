@@ -1,6 +1,6 @@
 /* admin-doc.js — Onglet Documentation (hub de docs Markdown)
  * Source : docs/aide/index.json + fichiers .md.
- * Rendu via marked.js (CDN, à la demande) ; PDF via html2pdf.js (à la demande).
+ * Rendu Markdown intégré (sans dépendance) ; PDF via html2pdf.js (à la demande).
  * Impression via feuille @media print (isolation de #doc-reader).
  */
 (function () {
@@ -25,13 +25,49 @@
       document.head.appendChild(s);
     });
   }
-  function ensureMarked() {
-    if (window.marked) return Promise.resolve();
-    return loadScript('https://cdnjs.cloudflare.com/ajax/libs/marked/16.3.0/lib/marked.umd.min.js');
-  }
   function ensureH2P() {
     if (window.html2pdf) return Promise.resolve();
     return loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+  }
+
+  /* Convertisseur Markdown → HTML intégré (sous-ensemble utilisé par nos docs :
+     titres #/##/###, gras **, italique * ou _, code `, liens, images, citations >,
+     listes - et 1., règles ---, paragraphes). Aucune dépendance externe. */
+  function mdToHtml(md) {
+    function e(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function inline(s) {
+      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function (m, a, u) { return '<img alt="' + a + '" src="' + u + '">'; });
+      s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, t, u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>'; });
+      s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, '$1<em>$2</em>');
+      s = s.replace(/(^|[^\w])_([^_]+)_/g, '$1<em>$2</em>');
+      return s;
+    }
+    var lines = String(md).replace(/\r\n/g, '\n').split('\n');
+    var out = [], i = 0, inUl = false, inOl = false;
+    function closeLists() { if (inUl) { out.push('</ul>'); inUl = false; } if (inOl) { out.push('</ol>'); inOl = false; } }
+    while (i < lines.length) {
+      var raw = lines[i];
+      if (/^\s*$/.test(raw)) { closeLists(); i++; continue; }
+      if (/^---+\s*$/.test(raw)) { closeLists(); out.push('<hr>'); i++; continue; }
+      var h = raw.match(/^(#{1,3})\s+(.*)$/);
+      if (h) { closeLists(); var lvl = h[1].length; out.push('<h' + lvl + '>' + inline(e(h[2])) + '</h' + lvl + '>'); i++; continue; }
+      if (/^\s*>\s?/.test(raw)) { closeLists(); out.push('<blockquote>' + inline(e(raw.replace(/^\s*>\s?/, ''))) + '</blockquote>'); i++; continue; }
+      var ul = raw.match(/^\s*[-*]\s+(.*)$/);
+      if (ul) { if (inOl) { out.push('</ol>'); inOl = false; } if (!inUl) { out.push('<ul>'); inUl = true; } out.push('<li>' + inline(e(ul[1])) + '</li>'); i++; continue; }
+      var ol = raw.match(/^\s*\d+\.\s+(.*)$/);
+      if (ol) { if (inUl) { out.push('</ul>'); inUl = false; } if (!inOl) { out.push('<ol>'); inOl = true; } out.push('<li>' + inline(e(ol[1])) + '</li>'); i++; continue; }
+      closeLists();
+      var para = [e(raw)]; i++;
+      while (i < lines.length && !/^\s*$/.test(lines[i]) &&
+             !/^(#{1,3}\s|\s*>\s?|\s*[-*]\s|\s*\d+\.\s|---+\s*$)/.test(lines[i])) {
+        para.push(e(lines[i])); i++;
+      }
+      out.push('<p>' + inline(para.join(' ')) + '</p>');
+    }
+    closeLists();
+    return out.join('\n');
   }
 
   function esc(s) { var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
@@ -139,10 +175,12 @@
     reader.style.display = '';
     var rb = document.querySelector('#vue-doc');
     if (rb) rb.scrollTop = 0;
-    ensureMarked()
-      .then(function () { return fetchMd(d); })
-      .then(function (md) { contenu.innerHTML = window.marked.parse(md); })
-      .catch(function () { contenu.innerHTML = '<p>Erreur de chargement du document.</p>'; });
+    fetchMd(d)
+      .then(function (md) { contenu.innerHTML = mdToHtml(md); })
+      .catch(function (err) {
+        contenu.innerHTML = '<p style="color:var(--danger);">Erreur de chargement du document (' +
+          (err && err.message ? err.message : 'inconnue') + ').</p>';
+      });
   }
 
   function fermerReader() {
@@ -176,12 +214,12 @@
     var d = _docById(id);
     if (!d) return;
     if (typeof toast === 'function') toast('Préparation du PDF…');
-    Promise.all([ensureMarked(), ensureH2P()])
+    ensureH2P()
       .then(function () { return fetchMd(d); })
       .then(function (md) {
         var wrap = document.createElement('div');
         wrap.className = 'doc-pdf-page';
-        wrap.innerHTML = '<h1 class="doc-pdf-h1">' + esc(d.titre) + '</h1>' + window.marked.parse(md);
+        wrap.innerHTML = '<h1 class="doc-pdf-h1">' + esc(d.titre) + '</h1>' + mdToHtml(md);
         document.body.appendChild(wrap);
         var opt = {
           margin: [12, 12, 16, 12],
