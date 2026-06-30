@@ -4,7 +4,15 @@
  * Impression via feuille @media print (isolation de #doc-reader).
  */
 (function () {
-  var BASE = 'docs/aide/';
+  /* Les .md/.json sont lus depuis raw.githubusercontent.com (fichiers bruts du
+     dépôt public) : Cloudflare (dev) ne sert pas les .md et GitHub Pages (prod)
+     peut les transformer via Jekyll — raw contourne les deux, sur dev ET prod.
+     REPO et BRANCH sont des globals définis dans admin.js (chargé avant). */
+  function rawBase() {
+    var repo = (typeof REPO !== 'undefined' && REPO) ? REPO : 'AlainDelree/FF_Galerie';
+    var br   = (typeof BRANCH !== 'undefined' && BRANCH) ? BRANCH : 'main';
+    return 'https://raw.githubusercontent.com/' + repo + '/' + br + '/docs/aide/';
+  }
   var _index = null;       /* [{id,fichier,titre,concerne,maj}] */
   var _cacheMd = {};       /* id -> markdown brut */
   var _inited = false;
@@ -89,7 +97,7 @@
 
   function fetchMd(doc) {
     if (_cacheMd[doc.id] != null) return Promise.resolve(_cacheMd[doc.id]);
-    return fetch(BASE + doc.fichier + '?v=' + Date.now())
+    return fetch(rawBase() + doc.fichier + "?v=" + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (t) { _cacheMd[doc.id] = t; return t; });
   }
@@ -102,7 +110,7 @@
     _inited = true;
     var statut = document.getElementById('doc-statut');
     if (statut) statut.textContent = 'Chargement…';
-    fetch(BASE + 'index.json?v=' + Date.now())
+    fetch(rawBase() + 'index.json?v=' + Date.now())
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (j) {
         _index = (j && j.docs) || [];
