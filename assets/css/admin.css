@@ -1536,3 +1536,12 @@ textarea.champ{resize:vertical;min-height:65px;}
   .doc-contenu a{color:#000;text-decoration:underline;}
   .doc-contenu img{break-inside:avoid;page-break-inside:avoid;}
 }
+
+/* Onglets : défilement horizontal quand ils ne tiennent pas (mobile).
+   Sinon, avec flex:1 + texte non rétrécissable, le dernier onglet
+   (« 📖 Documentation ») est coupé en portrait. */
+@media (max-width: 859px){
+  .onglets{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .onglets::-webkit-scrollbar{display:none;}
+  .onglet{flex:0 0 auto;white-space:nowrap;}
+}
