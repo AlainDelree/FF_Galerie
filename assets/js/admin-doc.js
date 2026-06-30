@@ -237,7 +237,7 @@
           margin: 0,
           filename: (d.id || 'document') + '.pdf',
           image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false, windowWidth: 900 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         };

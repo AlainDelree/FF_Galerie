@@ -1512,10 +1512,8 @@ textarea.champ{resize:vertical;min-height:65px;}
    en padding interne : correspondance 1:1 avec la page, pas de débordement. */
 .doc-pdf-page{width:210mm;box-sizing:border-box;background:#fff;color:#1a1a1a;
   font-family:'Lato',system-ui,sans-serif;font-size:11pt;line-height:1.5;
-  padding:14mm 14mm 16mm;overflow-wrap:break-word;word-break:break-word;
-  box-shadow:0 6px 30px rgba(0,0,0,.35);border-radius:4px;}
-#doc-pdf-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55);
-  display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:18px 0;}
+  padding:14mm 14mm 16mm;overflow-wrap:break-word;word-break:break-word;}
+#doc-pdf-overlay{position:fixed;inset:0;z-index:100000;background:#fff;overflow:auto;}
 .doc-pdf-page h1{font-family:'Playfair Display',serif;font-size:18pt;margin:0 0 .7rem;color:#111;}
 .doc-pdf-page h2{font-size:13pt;margin:1rem 0 .35rem;color:#7a5c12;}
 .doc-pdf-page p{margin:.4rem 0;}
