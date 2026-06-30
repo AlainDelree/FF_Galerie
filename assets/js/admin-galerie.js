@@ -1576,7 +1576,7 @@ function afficherStripPlacement() {
       badge.style.background = 'rgba(60,90,160,.85)';
     } else if (estAutreSalle) {
       badge.textContent = '📦 ' + estAutreSalle.nom;
-      badge.style.background = 'rgba(160,90,30,.85)';
+      badge.style.background = '#c0392b';
     } else {
       badge.textContent = '+ à placer';
     }
@@ -1586,7 +1586,7 @@ function afficherStripPlacement() {
        .pose (vert) et .sel (or) restent prioritaires via le garde. */
     if (!estPlace && !estSelMur && !estSelPlace) {
       if (estAutreVue)        item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
-      else if (estAutreSalle) item.style.borderColor = 'rgba(160,90,30,.85)';   /* autre salle */
+      else if (estAutreSalle) item.style.borderColor = '#c0392b';   /* autre salle */
       /* sinon : « à placer » → cadre gris par défaut (.pl-item) */
     }
 
