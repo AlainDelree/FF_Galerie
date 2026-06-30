@@ -22,14 +22,14 @@ L'objectif est d'obtenir une couverture complète de l'objet, vu sous tous les a
 - Chevauchez largement chaque photo avec la précédente (au moins ~60 %).
 - Gardez la pièce nette et l'éclairage constant.
 
-`![Disposition de prise de vue](docs/aide/img/realityscan-prise-de-vue.jpg)`
+![Disposition de prise de vue](docs/aide/img/realityscan-prise-de-vue.jpg)
 
 ## Étape 2 — Importer les photos dans RealityScan
 
 1. *(à préciser : créer un nouveau projet / glisser-déposer les photos)*
 2. *(capture de l'écran d'import)*
 
-`![Import des photos](docs/aide/img/realityscan-import.jpg)`
+![Import des photos](docs/aide/img/realityscan-import.jpg)
 
 ## Étape 3 — Aligner les photos
 
@@ -41,7 +41,7 @@ C'est l'étape clé pour une sculpture isolée. Le **mode Objet** indique au log
 
 *(à préciser : où activer Object Mode, réglages de la boîte de délimitation autour de la pièce)*
 
-`![Mode Objet](docs/aide/img/realityscan-object-mode.jpg)`
+![Mode Objet](docs/aide/img/realityscan-object-mode.jpg)
 
 ## Étape 5 — Générer le maillage (mesh)
 
@@ -57,7 +57,7 @@ C'est l'étape clé pour une sculpture isolée. Le **mode Objet** indique au log
 
 Vous obtenez un fichier **`.glb`**. C'est ce fichier que vous chargerez dans l'admin.
 
-`![Export GLB](docs/aide/img/realityscan-export.jpg)`
+![Export GLB](docs/aide/img/realityscan-export.jpg)
 
 ## Étape 8 — Ajouter la pièce dans l'admin
 
