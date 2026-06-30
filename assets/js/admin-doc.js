@@ -63,9 +63,29 @@
       if (h) { closeLists(); var lvl = h[1].length; out.push('<h' + lvl + '>' + inline(e(h[2])) + '</h' + lvl + '>'); i++; continue; }
       if (/^\s*>\s?/.test(raw)) { closeLists(); out.push('<blockquote>' + inline(e(raw.replace(/^\s*>\s?/, ''))) + '</blockquote>'); i++; continue; }
       var ul = raw.match(/^\s*[-*]\s+(.*)$/);
-      if (ul) { if (inOl) { out.push('</ol>'); inOl = false; } if (!inUl) { out.push('<ul>'); inUl = true; } out.push('<li>' + inline(e(ul[1])) + '</li>'); i++; continue; }
+      if (ul) {
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        if (!inUl) { out.push('<ul>'); inUl = true; }
+        var li = [e(ul[1])]; i++;
+        while (i < lines.length && !/^\s*$/.test(lines[i]) &&
+               !/^(#{1,3}\s|\s*>\s?|\s*[-*]\s|\s*\d+\.\s|---+\s*$)/.test(lines[i])) {
+          li.push(e(lines[i].trim())); i++;
+        }
+        out.push('<li>' + inline(li.join(' ')) + '</li>');
+        continue;
+      }
       var ol = raw.match(/^\s*\d+\.\s+(.*)$/);
-      if (ol) { if (inUl) { out.push('</ul>'); inUl = false; } if (!inOl) { out.push('<ol>'); inOl = true; } out.push('<li>' + inline(e(ol[1])) + '</li>'); i++; continue; }
+      if (ol) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (!inOl) { out.push('<ol>'); inOl = true; }
+        var lo = [e(ol[1])]; i++;
+        while (i < lines.length && !/^\s*$/.test(lines[i]) &&
+               !/^(#{1,3}\s|\s*>\s?|\s*[-*]\s|\s*\d+\.\s|---+\s*$)/.test(lines[i])) {
+          lo.push(e(lines[i].trim())); i++;
+        }
+        out.push('<li>' + inline(lo.join(' ')) + '</li>');
+        continue;
+      }
       closeLists();
       var para = [e(raw)]; i++;
       while (i < lines.length && !/^\s*$/.test(lines[i]) &&
