@@ -1582,6 +1582,14 @@ function afficherStripPlacement() {
     }
     item.appendChild(badge);
 
+    /* Code couleur du cadre selon le statut, cohérent avec le badge.
+       .pose (vert) et .sel (or) restent prioritaires via le garde. */
+    if (!estPlace && !estSelMur && !estSelPlace) {
+      if (estAutreVue)        item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
+      else if (estAutreSalle) item.style.borderColor = 'rgba(160,90,30,.85)';   /* autre salle */
+      /* sinon : « à placer » → cadre gris par défaut (.pl-item) */
+    }
+
     const n = document.createElement('div'); n.className='snom'; n.textContent=t.titre||'—'; item.appendChild(n);
 
     item.addEventListener('click', () => {
