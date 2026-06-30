@@ -225,16 +225,19 @@
     ensureH2P()
       .then(function () { return fetchMd(d); })
       .then(function (md) {
+        var overlay = document.createElement('div');
+        overlay.id = 'doc-pdf-overlay';
         var wrap = document.createElement('div');
         wrap.className = 'doc-pdf-page';
         wrap.innerHTML = '<h1 class="doc-pdf-h1">' + esc(d.titre) + '</h1>' + mdToHtml(md);
-        document.body.appendChild(wrap);
-        var nettoyer = function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+        overlay.appendChild(wrap);
+        document.body.appendChild(overlay);
+        var nettoyer = function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); };
         var opt = {
-          margin: [12, 12, 16, 12],
+          margin: [8, 8, 12, 8],
           filename: (d.id || 'document') + '.pdf',
           image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false, windowWidth: 794 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         };
