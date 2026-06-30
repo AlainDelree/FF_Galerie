@@ -72,7 +72,7 @@
              !/^(#{1,3}\s|\s*>\s?|\s*[-*]\s|\s*\d+\.\s|---+\s*$)/.test(lines[i])) {
         para.push(e(lines[i])); i++;
       }
-      out.push('<p>' + inline(para.join(' ')) + '</p>');
+      out.push('<p>' + inline(para.join('<br>')) + '</p>');
     }
     closeLists();
     return out.join('\n');
