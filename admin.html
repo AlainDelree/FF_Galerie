@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="assets/images/icons/icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260630a">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260630b">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -94,6 +94,7 @@
     <button class="onglet" data-vue="vue-pages">Autres pages</button>
     <button class="onglet" data-vue="vue-artistes" id="onglet-artistes" style="display:none">Artistes invités</button>
     <button class="onglet" data-vue="vue-backup">Backup</button>
+    <button class="onglet" data-vue="vue-doc">📖 Documentation</button>
   </nav>
 
   <!-- ── VUE GALERIE ── -->
@@ -645,6 +646,31 @@
     <div id="commits-contenu" style="flex:1;overflow-y:auto;"><div class="chargement"><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Chargement…</div></div>
   </div>
 
+  <!-- ══ ONGLET DOCUMENTATION ══ -->
+  <div id="vue-doc" class="vue" style="flex-direction:column;max-height:calc(100vh - 120px);overflow-y:auto;">
+    <div id="doc-liste">
+      <p style="color:var(--muted);font-size:.85rem;margin:.2rem 0 .7rem;">Guides d'utilisation. Cliquez sur un titre pour lire, ou utilisez 📥 (PDF) et 🖨 (imprimer).</p>
+      <div id="doc-statut" style="color:var(--muted);font-size:.85rem;"></div>
+      <table id="doc-table" class="doc-table">
+        <thead><tr>
+          <th>Nom</th><th>Concerne</th><th>Pages</th><th>Mis à jour</th><th>PDF</th><th>Imprimer</th>
+        </tr></thead>
+        <tbody id="doc-liste-corps"></tbody>
+      </table>
+      <div id="doc-cards" class="doc-cards"></div>
+    </div>
+    <div id="doc-reader" style="display:none;">
+      <div class="doc-reader-bar doc-no-print">
+        <button id="btn-doc-retour" class="doc-bar-btn">← Liste</button>
+        <div style="flex:1;"></div>
+        <button id="btn-doc-pdf" class="doc-bar-btn" title="Télécharger en PDF">📥 PDF</button>
+        <button id="btn-doc-print" class="doc-bar-btn" title="Imprimer">🖨 Imprimer</button>
+      </div>
+      <h2 id="doc-reader-titre" class="doc-reader-titre"></h2>
+      <div id="doc-contenu" class="doc-contenu"></div>
+    </div>
+  </div>
+
 </div><!-- /ecran-principal -->
 
 <!-- ══ FICHE CONSULTATION ══ -->
@@ -1142,6 +1168,12 @@
       await new Promise(resolve => {
         const s = document.createElement("script");
         s.src = "assets/js/admin-catalogue.js?v=" + Date.now();
+        s.onload = resolve;
+        document.body.appendChild(s);
+      });
+      await new Promise(resolve => {
+        const s = document.createElement("script");
+        s.src = "assets/js/admin-doc.js?v=" + Date.now();
         s.onload = resolve;
         document.body.appendChild(s);
       });

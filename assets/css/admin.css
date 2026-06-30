@@ -1464,3 +1464,75 @@ textarea.champ{resize:vertical;min-height:65px;}
 @media (max-width: 600px) {
   #support-panel { bottom: 80px; }
 }
+
+/* ══════════════════════════════════════════════════════
+   ONGLET DOCUMENTATION (admin-doc.js)
+   ══════════════════════════════════════════════════════ */
+.doc-table{width:100%;border-collapse:collapse;font-size:13px;}
+.doc-table thead th{text-align:left;padding:.5rem .6rem;color:var(--gold);
+  border-bottom:1px solid var(--brd);font-weight:600;white-space:nowrap;}
+.doc-table td{padding:.5rem .6rem;border-bottom:1px solid var(--brd);vertical-align:middle;}
+.doc-table .doc-nom{cursor:pointer;color:var(--text);font-weight:600;}
+.doc-table .doc-nom:hover{color:var(--gold);text-decoration:underline;}
+.doc-table .doc-concerne,.doc-table .doc-maj,.doc-table .doc-pages{color:var(--muted);white-space:nowrap;}
+.doc-table .doc-act{text-align:center;width:1%;}
+.doc-ico-btn{background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;
+  padding:.25rem .35rem;border-radius:6px;}
+.doc-ico-btn:hover{background:rgba(200,160,80,.18);}
+
+.doc-cards{display:none;}
+.doc-card{border:1px solid var(--brd);border-radius:10px;padding:.7rem .8rem;margin-bottom:.6rem;background:var(--bg2);}
+.doc-card-titre{font-weight:600;cursor:pointer;}
+.doc-card-titre:hover{color:var(--gold);}
+.doc-card-meta{font-size:.75rem;color:var(--muted);margin:.2rem 0 .55rem;}
+.doc-card-act{display:flex;align-items:center;gap:.5rem;}
+.doc-btn-lire{flex:1;padding:.4rem;border-radius:8px;border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;}
+
+.doc-reader-bar{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
+.doc-bar-btn{padding:.4rem .7rem;border-radius:8px;border:0.5px solid var(--brd);
+  background:var(--bg3);color:var(--text);cursor:pointer;font-size:.82rem;white-space:nowrap;}
+.doc-bar-btn:hover{border-color:var(--gold);color:var(--gold);}
+.doc-reader-titre{font-size:1.15rem;margin:.2rem 0 .8rem;color:var(--text);}
+.doc-contenu{font-size:.92rem;line-height:1.65;color:var(--text);max-width:760px;}
+.doc-contenu h1{font-size:1.3rem;margin:1.2rem 0 .6rem;}
+.doc-contenu h2{font-size:1.08rem;margin:1.3rem 0 .5rem;color:var(--gold);}
+.doc-contenu h3{font-size:.98rem;margin:1rem 0 .4rem;}
+.doc-contenu p{margin:.5rem 0;}
+.doc-contenu ul,.doc-contenu ol{margin:.5rem 0 .5rem 1.2rem;}
+.doc-contenu li{margin:.25rem 0;}
+.doc-contenu img{max-width:100%;height:auto;border-radius:8px;margin:.6rem 0;display:block;}
+.doc-contenu blockquote{border-left:3px solid var(--gold);margin:.7rem 0;padding:.3rem .9rem;
+  background:rgba(200,160,80,.08);color:var(--muted);border-radius:0 6px 6px 0;}
+.doc-contenu code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;}
+.doc-contenu a{color:var(--gold);}
+.doc-contenu hr{border:none;border-top:1px solid var(--brd);margin:1.2rem 0;}
+
+/* Conteneur PDF (hors écran, fond blanc) */
+.doc-pdf-page{position:fixed;left:-9999px;top:0;width:186mm;background:#fff;color:#1a1a1a;
+  font-family:'Lato',system-ui,sans-serif;font-size:11pt;line-height:1.55;padding:0;}
+.doc-pdf-page .doc-pdf-h1{font-family:'Playfair Display',serif;font-size:18pt;margin:0 0 .6rem;color:#111;}
+.doc-pdf-page h1{font-size:15pt;margin:1rem 0 .4rem;}
+.doc-pdf-page h2{font-size:13pt;margin:1rem 0 .35rem;color:#7a5c12;}
+.doc-pdf-page p{margin:.4rem 0;}
+.doc-pdf-page ul,.doc-pdf-page ol{margin:.4rem 0 .4rem 1.2rem;}
+.doc-pdf-page img{max-width:100%;height:auto;}
+.doc-pdf-page blockquote{border-left:3px solid #c8a050;margin:.6rem 0;padding:.2rem .8rem;background:#faf6ec;}
+.doc-pdf-page code{background:#eee;padding:.05rem .3rem;border-radius:3px;}
+
+@media (max-width:760px){
+  #doc-table{display:none;}
+  .doc-cards{display:block;}
+}
+
+/* Impression : n'imprimer que le lecteur de doc, sur fond blanc */
+@media print{
+  body * {visibility:hidden !important;}
+  #doc-reader, #doc-reader * {visibility:visible !important;}
+  #doc-reader{position:absolute;left:0;top:0;width:100%;background:#fff;color:#000;padding:0;}
+  .doc-no-print{display:none !important;}
+  .doc-reader-titre{color:#000;}
+  .doc-contenu{color:#000;max-width:none;}
+  .doc-contenu h2{color:#333;}
+  .doc-contenu a{color:#000;text-decoration:underline;}
+  .doc-contenu img{break-inside:avoid;page-break-inside:avoid;}
+}
