@@ -35,8 +35,8 @@ Ce guide explique comment transformer une série de photos d'une sculpture en un
 
 > 💡 Les surfaces très brillantes ou métalliques sont difficiles à reconstruire. Si la pièce est polie, un éclairage très diffusé (rideaux tirés, lumière indirecte) aide beaucoup.
 
--Object Mode (ce que tu as fait) reste le bon choix : l'objet est isolé du fond automatiquement, parfait pour un plateau tournant.
--AR Guidance, une aide à la prise de vue. Pendant que vous photographiez, l'appli affiche en réalité augmentée un nuage de points par-dessus l'objet, en temps réel, pour montrer les zones déjà bien couvertes et celles où il manque des photos. Très utile pour éviter les trous dans le modèle — particulièrement sur les pièces compliquées ou métalliques où certains angles passent mal.
+-Object Mode : l'objet est isolé du fond automatiquement, parfait pour un plateau tournant.
+-AR Guidance : une aide à la prise de vue. Pendant que vous photographiez, l'appli affiche en réalité augmentée un nuage de points par-dessus l'objet, en temps réel, pour montrer les zones déjà bien couvertes et celles où il manque des photos. Très utile pour éviter les trous dans le modèle — particulièrement sur les pièces compliquées ou métalliques où certains angles passent mal.
 -Standard Mode seulement si une œuvre est trop grande ou fixe pour la mettre sur une table.
 
 ## Étape 1 — Photographier la sculpture
