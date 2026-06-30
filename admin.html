@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="assets/images/icons/icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/admin.css?v=20260627t">
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260630a">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" integrity="sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir" crossorigin="anonymous"></script>
 </head>
@@ -1006,6 +1006,30 @@
         <button id="btn-crop-retour" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">← Retour</button>
         <button id="btn-crop-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Valider</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Choisir l'image de présentation depuis le modèle 3D (calqué sur l'overlay de recadrage) -->
+<div id="overlay-glb-poster">
+  <div class="crop-modal">
+    <div class="crop-hdr">
+      <span>Image de présentation — orientez l'objet 3D</span>
+      <button type="button" id="btn-close-glbposter">×</button>
+    </div>
+    <div class="glbposter-wrap" id="glbposter-wrap"></div>
+    <div class="crop-aide">Glissez pour tourner · molette / pincez pour zoomer · le réglage ci-dessous tourne horizontalement</div>
+    <div class="glbposter-controls">
+      <button type="button" class="crop-rot-btn" id="btn-glbp-g">↺ −15°</button>
+      <input type="range" id="glbp-slider" min="0" max="359" value="0" step="1" style="flex:1;min-width:120px;">
+      <button type="button" class="crop-rot-btn" id="btn-glbp-d">↻ +15°</button>
+      <input type="number" id="glbp-angle" value="0" min="0" max="359" class="glbp-angle-input">
+      <span style="color:var(--muted);font-size:.85rem;">°</span>
+      <button type="button" class="crop-rot-btn" id="btn-glbp-reset">⟲ Reset</button>
+    </div>
+    <div class="crop-ftr">
+      <button type="button" id="btn-glbp-annuler" style="padding:.55rem 1rem;border-radius:var(--r);border:0.5px solid var(--brd);background:transparent;color:var(--text);cursor:pointer;">Annuler</button>
+      <button type="button" id="btn-glbp-valider" style="padding:.55rem 1.2rem;border-radius:var(--r);border:none;background:var(--gold);color:#111;font-weight:600;cursor:pointer;">✓ Utiliser cette vue</button>
     </div>
   </div>
 </div>

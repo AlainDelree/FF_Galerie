@@ -699,6 +699,19 @@ textarea.champ{resize:vertical;min-height:65px;}
 .crop-ftr{display:flex;gap:.6rem;padding:.75rem 1rem;border-top:1px solid var(--brd);}
 .crop-ftr button{flex:1;}
 
+/* Sélecteur d'image de présentation depuis un GLB (réutilise .crop-modal / .crop-*) */
+#overlay-glb-poster{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;}
+#overlay-glb-poster.ouvert{display:flex;}
+.glbposter-wrap{flex:1;min-height:300px;background:#1a1a1a;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.glbposter-wrap model-viewer{width:min(90vmin,480px);height:min(90vmin,480px);
+  --poster-color:transparent;background:transparent;}
+.glbposter-controls{display:flex;align-items:center;gap:.5rem;
+  padding:.55rem .9rem 0;flex-wrap:wrap;justify-content:center;}
+.glbp-angle-input{width:62px;background:var(--bg3);border:0.5px solid var(--brd);
+  border-radius:6px;color:var(--text);padding:.25rem;text-align:center;font-size:.85rem;}
+
 /* ══ VUE INFOS & AGENDA ══ */
 .infos-adm-wrap {
   padding: .8rem;

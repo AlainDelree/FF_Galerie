@@ -113,29 +113,17 @@ function _appliquerStructureSculpture() {
   var btnRegen = document.createElement('button');
   btnRegen.type = 'button'; btnRegen.id = 'btn-regen-thumb';
   btnRegen.dataset.sculptDyn = '1';
-  btnRegen.textContent = '🔄 Recréer depuis le 3D';
+  btnRegen.textContent = "🎯 Choisir l'image depuis le 3D";
   btnRegen.style.cssText = 'display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:.1rem;padding:0;text-decoration:underline;margin-left:.8rem;';
-  btnRegen.addEventListener('click', async function() {
-    var glbPath = document.getElementById('inp-glb').value;
-    if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
-    btnRegen.disabled = true; btnRegen.textContent = '⏳ Génération…';
-    try {
-      var url = /^https?:\/\//.test(glbPath) ? glbPath : ('/' + glbPath.replace(/^\/+/, ''));
-      var resp = await fetch(url + '?v=' + Date.now());
-      if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
-      var blob = await resp.blob();
-      var blobUrl = URL.createObjectURL(blob);
-      var result = await genererThumbnailGLB(blobUrl);
-      URL.revokeObjectURL(blobUrl);
-      photoB64 = result.b64;
+  btnRegen.addEventListener('click', function() {
+    if (typeof ouvrirGlbPoster !== 'function') { toast('Outil 3D indisponible', 'err'); return; }
+    ouvrirGlbPoster(null, function(b64) {
+      photoB64 = b64;
       window.photoEstPng = true;
-      document.getElementById('photo-prev').src = 'data:image/png;base64,' + result.b64;
+      document.getElementById('photo-prev').src = 'data:image/png;base64,' + b64;
       document.getElementById('photo-prev').style.display = 'block';
-      toast('✓ Photo recréée depuis le 3D');
-    } catch (e) {
-      toast('Erreur : ' + e.message, 'err');
-    }
-    btnRegen.disabled = false; btnRegen.textContent = '🔄 Recréer depuis le 3D';
+      toast('✓ Image de présentation mise à jour');
+    });
   });
   photoGrp.insertBefore(btnRegen, zonePhoto);
 

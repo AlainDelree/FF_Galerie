@@ -190,6 +190,9 @@ $('btn-musique-changer')?.addEventListener('click', () => {
 
 /* Charge model-viewer une seule fois */
 let _mvLoaded = false;
+/* Blob URL du GLB courant (upload récent) — conservé pour le sélecteur
+   d'image de présentation, afin d'éviter un re-fetch. */
+let _glbBlobUrlCourant = null;
 function loadModelViewerAdmin() {
   return new Promise((ok) => {
     if (_mvLoaded || customElements.get('model-viewer')) { _mvLoaded = true; ok(); return; }
@@ -261,6 +264,115 @@ function genererThumbnailGLB(blobUrl) {
   });
 }
 
+// ═══════════════════════════════════════════════
+// SÉLECTEUR D'IMAGE DE PRÉSENTATION DEPUIS LE GLB
+// (overlay interactif calqué sur le recadrage photo)
+// ═══════════════════════════════════════════════
+let _glbPosterMv  = null;   /* model-viewer monté dans l'overlay */
+let _glbPosterCb  = null;   /* callback(b64) à la validation */
+let _glbPosterSync = false; /* garde anti-boucle slider <-> caméra */
+
+/* Met l'angle horizontal (deg) ; si fromCamera=false, applique à la caméra. */
+function _glbpSetAngle(deg, fromCamera) {
+  deg = ((Math.round(deg) % 360) + 360) % 360;
+  var sl = $('glbp-slider'), inp = $('glbp-angle');
+  if (sl)  sl.value  = deg;
+  if (inp) inp.value = deg;
+  if (!fromCamera && _glbPosterMv && _glbPosterMv.getCameraOrbit) {
+    var o = _glbPosterMv.getCameraOrbit();
+    var phiDeg = o.phi * 180 / Math.PI;
+    _glbPosterMv.cameraOrbit = deg + 'deg ' + phiDeg + 'deg ' + o.radius + 'm';
+    _glbPosterMv.jumpCameraToGoal();
+  }
+}
+
+/* Ouvre le sélecteur. srcOpt = blob/URL explicite ; sinon on prend le blob
+   du GLB fraîchement uploadé, sinon on fetch le chemin de #inp-glb. */
+async function ouvrirGlbPoster(srcOpt, callback) {
+  var src = srcOpt || _glbBlobUrlCourant;
+  if (!src) {
+    var glbPath = ($('inp-glb') || {}).value;
+    if (!glbPath) { toast('Aucun fichier 3D associé', 'err'); return; }
+    try {
+      var url = /^https?:\/\//.test(glbPath) ? glbPath : ('/' + glbPath.replace(/^\/+/, ''));
+      var resp = await fetch(url + '?v=' + Date.now());
+      if (!resp.ok) throw new Error('GLB introuvable (' + resp.status + ')');
+      var blob = await resp.blob();
+      src = URL.createObjectURL(blob);
+      _glbBlobUrlCourant = src; /* réutilisable */
+    } catch (e) { toast('Erreur : ' + e.message, 'err'); return; }
+  }
+  _glbPosterCb = callback;
+  $('overlay-glb-poster').classList.add('ouvert');
+  var wrap = $('glbposter-wrap');
+  wrap.innerHTML = '';
+  await loadModelViewerAdmin();
+  var mv = document.createElement('model-viewer');
+  mv.setAttribute('src', src);
+  mv.setAttribute('camera-controls', '');
+  mv.setAttribute('interaction-prompt', 'none');
+  mv.setAttribute('camera-orbit', '0deg 75deg 105%'); /* même cadrage que les vignettes galerie */
+  mv.setAttribute('shadow-intensity', '0');
+  wrap.appendChild(mv);
+  _glbPosterMv = mv;
+  mv.addEventListener('camera-change', function() {
+    if (_glbPosterSync) return;
+    _glbPosterSync = true;
+    var o = mv.getCameraOrbit();
+    _glbpSetAngle(o.theta * 180 / Math.PI, true);
+    _glbPosterSync = false;
+  });
+  _glbpSetAngle(0, true);
+}
+
+function fermerGlbPoster() {
+  $('overlay-glb-poster').classList.remove('ouvert');
+  if (_glbPosterMv) { _glbPosterMv.remove(); _glbPosterMv = null; }
+  _glbPosterCb = null;
+}
+
+/* ── Listeners du sélecteur (éléments statiques de admin.html) ── */
+(function() {
+  function _ang() { return parseInt(($('glbp-angle') || {}).value, 10) || 0; }
+  var sl = $('glbp-slider');
+  if (sl) sl.addEventListener('input', function() {
+    if (_glbPosterSync) return; _glbPosterSync = true;
+    _glbpSetAngle(parseInt(sl.value, 10) || 0, false); _glbPosterSync = false;
+  });
+  var inp = $('glbp-angle');
+  if (inp) inp.addEventListener('input', function() {
+    if (_glbPosterSync) return; _glbPosterSync = true;
+    _glbpSetAngle(parseInt(inp.value, 10) || 0, false); _glbPosterSync = false;
+  });
+  var bg = $('btn-glbp-g'); if (bg) bg.addEventListener('click', function() { _glbpSetAngle(_ang() - 15, false); });
+  var bd = $('btn-glbp-d'); if (bd) bd.addEventListener('click', function() { _glbpSetAngle(_ang() + 15, false); });
+  var br = $('btn-glbp-reset'); if (br) br.addEventListener('click', function() {
+    if (_glbPosterMv) { _glbPosterMv.cameraOrbit = '0deg 75deg 105%'; _glbPosterMv.jumpCameraToGoal(); }
+    _glbpSetAngle(0, true);
+  });
+  var ca = $('btn-glbp-annuler'); if (ca) ca.addEventListener('click', fermerGlbPoster);
+  var cl = $('btn-close-glbposter'); if (cl) cl.addEventListener('click', fermerGlbPoster);
+  var va = $('btn-glbp-valider');
+  if (va) va.addEventListener('click', async function() {
+    if (!_glbPosterMv) { fermerGlbPoster(); return; }
+    va.disabled = true; var old = va.textContent; va.textContent = '⏳ Capture…';
+    try {
+      var blob = await _glbPosterMv.toBlob({ mimeType: 'image/png' });
+      var b64 = await new Promise(function(res, rej) {
+        var r = new FileReader();
+        r.onload = function() { res(r.result.split(',')[1]); };
+        r.onerror = rej; r.readAsDataURL(blob);
+      });
+      var cb = _glbPosterCb;
+      fermerGlbPoster();
+      if (cb) cb(b64);
+    } catch (e) {
+      toast('Capture échouée : ' + e.message, 'err');
+      va.disabled = false; va.textContent = old;
+    }
+  });
+})();
+
 /* ── GLB file input handler ── */
 (function() {
   var inpGlb = document.getElementById('inp-glb-file');
@@ -295,8 +407,10 @@ function genererThumbnailGLB(blobUrl) {
     };
     reader.readAsDataURL(f);
 
-    /* Générer thumbnail */
+    /* Générer thumbnail (et conserver le blob pour le sélecteur d'image) */
+    if (_glbBlobUrlCourant) URL.revokeObjectURL(_glbBlobUrlCourant);
     var blobUrl = URL.createObjectURL(f);
+    _glbBlobUrlCourant = blobUrl;
     try {
       var result = await genererThumbnailGLB(blobUrl);
       photoB64 = result.b64;
@@ -333,7 +447,6 @@ function genererThumbnailGLB(blobUrl) {
       console.warn('Thumbnail GLB échoué:', e);
       toast('Thumbnail auto échoué — vous pouvez ajouter une photo manuellement', 'err', 4000);
     }
-    URL.revokeObjectURL(blobUrl);
     this.value = '';
   });
 
@@ -343,6 +456,7 @@ function genererThumbnailGLB(blobUrl) {
     btnSuppr.addEventListener('click', function(e) {
       e.stopPropagation();
       glbB64 = null; glbNom = null;
+      if (_glbBlobUrlCourant) { URL.revokeObjectURL(_glbBlobUrlCourant); _glbBlobUrlCourant = null; }
       $('inp-glb').value = '';
       $('glb-info').style.display = 'none';
       $('glb-ph').style.display = '';
