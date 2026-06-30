@@ -229,16 +229,17 @@
         wrap.className = 'doc-pdf-page';
         wrap.innerHTML = '<h1 class="doc-pdf-h1">' + esc(d.titre) + '</h1>' + mdToHtml(md);
         document.body.appendChild(wrap);
+        var nettoyer = function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
         var opt = {
           margin: [12, 12, 16, 12],
           filename: (d.id || 'document') + '.pdf',
           image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false, windowWidth: 794 },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          pagebreak: { mode: ['css', 'legacy'] }
         };
         return window.html2pdf().set(opt).from(wrap).save()
-          .then(function () { document.body.removeChild(wrap); });
+          .then(nettoyer, function (e) { nettoyer(); throw e; });
       })
       .catch(function (e) { if (typeof toast === 'function') toast('Échec PDF : ' + (e.message || e), 'err'); });
   }

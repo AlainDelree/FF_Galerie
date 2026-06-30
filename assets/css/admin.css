@@ -1468,6 +1468,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 /* ══════════════════════════════════════════════════════
    ONGLET DOCUMENTATION (admin-doc.js)
    ══════════════════════════════════════════════════════ */
+#vue-doc{padding:.4rem 1.1rem 1.2rem;}
 .doc-table{width:100%;border-collapse:collapse;font-size:13px;}
 .doc-table thead th{text-align:left;padding:.5rem .6rem;color:var(--gold);
   border-bottom:1px solid var(--brd);font-weight:600;white-space:nowrap;}
@@ -1507,8 +1508,9 @@ textarea.champ{resize:vertical;min-height:65px;}
 .doc-contenu a{color:var(--gold);}
 .doc-contenu hr{border:none;border-top:1px solid var(--brd);margin:1.2rem 0;}
 
-/* Conteneur PDF (hors écran, fond blanc) */
-.doc-pdf-page{position:fixed;left:-9999px;top:0;width:186mm;background:#fff;color:#1a1a1a;
+/* Conteneur PDF — positionné en haut/gauche derrière l'UI (z-index:-1) pour
+   que html2canvas le capture (un left:-9999px donnait un PDF blanc). */
+.doc-pdf-page{position:absolute;left:0;top:0;z-index:-1;width:794px;background:#fff;color:#1a1a1a;
   font-family:'Lato',system-ui,sans-serif;font-size:11pt;line-height:1.55;padding:0;}
 .doc-pdf-page .doc-pdf-h1{font-family:'Playfair Display',serif;font-size:18pt;margin:0 0 .6rem;color:#111;}
 .doc-pdf-page h1{font-size:15pt;margin:1rem 0 .4rem;}
