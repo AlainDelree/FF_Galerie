@@ -4,7 +4,7 @@ Ce guide explique comment transformer une série de photos d'une sculpture en un
 ### Préambule
 Ce guide décrit la méthode pour créer le rendu d'un objet 3D avec RealityScan sur GSM Android, mais ce n'est pas la seule méthode : un fichier .glb peut se créer de plusieurs manières, depuis un téléphone ou depuis un PC, selon le matériel dont on dispose.
 
-##### Voici d'abord quelques alternatives
+**Voici d'abord quelques alternatives**
     - Scaniverse — appli mobile iPhone et Android, entièrement gratuite (export .glb compris). La plus simple pour débuter, sur un téléphone récent.
     - Polycam — appli mobile iPhone et Android (+ web). Très facile, mais l'export .glb nécessite l'abonnement payant.
     - KIRI Engine — appli mobile iPhone et Android (+ web). Calcul dans le cloud, donc pas besoin de LiDAR. Intéressant pour les objets brillants ou métalliques, difficiles à scanner autrement. Gratuit limité, payant au-delà.
