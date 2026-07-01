@@ -263,7 +263,7 @@
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] }
+          pagebreak: { mode: ['css', 'legacy'], avoid: 'img' }
         };
         return window.html2pdf().set(opt).from(wrap).save()
           .then(nettoyer, function (e) { nettoyer(); throw e; });
