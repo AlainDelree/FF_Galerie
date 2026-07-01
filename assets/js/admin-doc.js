@@ -44,7 +44,11 @@
   function mdToHtml(md) {
     function e(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function inline(s) {
-      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function (m, a, u) { return '<img alt="' + a + '" src="' + u + '" style="max-width:400px;height:auto;display:block;margin:1rem 0">'; });
+      s = s.replace(/!\[([^\]]*)\](?:\[([A-Za-z]{1,4})\])?\(([^)\s]+)\)/g, function (m, a, sz, u) {
+        var TAILLES = { XS: 90, S: 180, M: 280, XL: 400 };            /* px ; XS = timbre-poste, XL = taille actuelle (défaut) */
+        var w = TAILLES[String(sz || 'XL').toUpperCase()] || 400;    /* balise inconnue → XL */
+        return '<img alt="' + a + '" src="' + u + '" style="max-width:' + w + 'px;height:auto;display:block;margin:1rem 0">';
+      });
       s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, t, u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>'; });
       s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
       s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -109,9 +113,9 @@
   /* Estimation automatique du nombre de pages : ~450 mots/page + ~0,5 page/image. */
   function estimePages(md) {
     if (!md) return 1;
-    var sansImg = md.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+    var sansImg = md.replace(/!\[[^\]]*\](?:\[[A-Za-z]{1,4}\])?\([^)]*\)/g, '');
     var mots = (sansImg.trim().match(/\S+/g) || []).length;
-    var imgs = (md.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length;
+    var imgs = (md.match(/!\[[^\]]*\](?:\[[A-Za-z]{1,4}\])?\([^)]*\)/g) || []).length;
     return Math.max(1, Math.ceil(mots / 450 + imgs * 0.5));
   }
 
