@@ -1,0 +1,12 @@
+# Config de référence pour le Worker « app.frederiqueferette.be ».
+# NOTE : la CI dev (deploy-dev.yml) déploie le Worker RACINE (ffgalerie) depuis
+# la racine du repo ; ce fichier-ci n'est PAS lu par elle. Il documente le
+# déploiement du Worker app (via dashboard Cloudflare, ou `wrangler deploy`
+# lancé depuis ce dossier si tu automatises plus tard).
+name = "ff-app"
+main = "worker.js"
+compatibility_date = "2026-06-08"
+
+# Domaine personnalisé : à ajouter dans le dashboard (Settings → Domains & Routes
+# → Add Custom Domain → app.frederiqueferette.be). Cloudflare crée le DNS tout seul.
+# routes = [ { pattern = "app.frederiqueferette.be", custom_domain = true } ]
