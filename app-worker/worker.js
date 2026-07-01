@@ -41,7 +41,7 @@ const MANIFEST = {
   description: "La galerie virtuelle de Frédérique Ferette, artiste peintre belge — consultable hors connexion.",
   lang: 'fr-BE',
   dir: 'ltr',
-  start_url: '/app.html?source=pwa',
+  start_url: '/?source=pwa',
   scope: '/',
   id: '/app.html',
   display: 'standalone',

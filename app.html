@@ -96,6 +96,16 @@
   </style>
 </head>
 <body class="theme-sombre" data-page="app">
+  <script>
+    /* App installée (mode standalone) : ne pas rester sur la page d'installation,
+       ouvrir directement la galerie. Sans effet dans un navigateur normal. */
+    (function () {
+      var standalone =
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+      if (standalone) window.location.replace('/');
+    })();
+  </script>
   <noscript>
     <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center;">
       <div>
