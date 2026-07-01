@@ -1501,7 +1501,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 .doc-contenu p{margin:.5rem 0;}
 .doc-contenu ul,.doc-contenu ol{margin:.5rem 0 .5rem 1.2rem;}
 .doc-contenu li{margin:.25rem 0;}
-.doc-contenu img{max-width:100%;height:auto;border-radius:8px;margin:.6rem 0;display:block;}
+.doc-contenu img{max-width:720px;height:auto;border-radius:8px;margin:.6rem 0;display:block;}
 .doc-contenu blockquote{border-left:3px solid var(--gold);margin:.7rem 0;padding:.3rem .9rem;
   background:rgba(200,160,80,.08);color:var(--muted);border-radius:0 6px 6px 0;}
 .doc-contenu code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;}
