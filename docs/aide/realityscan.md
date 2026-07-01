@@ -13,7 +13,7 @@ Ce guide décrit la méthode pour créer le rendu d'un objet 3D avec RealityScan
 ### Matériel
 RealityScan (Epic Games) existe en version PC (Windows) et en appli mobile (iPhone et Android). La version PC exige une carte graphique NVIDIA, mais la version téléphone n'exige rien de particulier ; les deux versions sont gratuites.
 
-**Ce qu'il vous faut** ![Dispositif mis en place](docs/aide/img/dispositif.jpg)
+**Ce qu'il vous faut** ![Dispositif mis en place][L](docs/aide/img/dispositif.jpg)
 
     - Un appareil photo ou un smartphone récent.
     - De quoi tourner autour de la sculpture, ou un plateau tournant pour la faire pivoter.
