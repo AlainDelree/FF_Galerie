@@ -29,10 +29,10 @@ RealityScan (Epic Games) existe en version PC (Windows) et en appli mobile (iPho
     - AR Guidance : une aide à la prise de vue. Pendant que vous photographiez, l'appli affiche en réalité augmentée un nuage de points par-dessus l'objet, en temps réel, pour montrer les zones déjà bien couvertes et celles où il manque des photos. Très utile pour éviter les trous dans le modèle — particulièrement sur les pièces compliquées ou métalliques où certains angles passent mal.
     - Standard Mode : seulement si une œuvre est trop grande ou fixe pour la mettre sur une table.
 
-**Je vous conseille le 1er mode (Object Mode).** ![Menu RealityScan](docs/aide/img/menu-mode.jpg)
+**Je vous conseille le 1er mode (Object Mode).** ![Menu RealityScan][S](docs/aide/img/menu-mode.jpg)
 
 ### Étape 2 — Photographier la sculpture
-L'objectif est d'obtenir une couverture la plus complète possible de l'objet sous tous les angles. ![Écran de capture](docs/aide/img/object-mode.jpg)
+L'objectif est d'obtenir une couverture la plus complète possible de l'objet sous tous les angles. ![Écran de capture][S](docs/aide/img/object-mode.jpg)
 
 #### Privilégier la diversité angulaire à la quantité brute :
     - Varier la distance à l'objet (proche pour les détails, plus loin pour le contexte global).
@@ -47,10 +47,10 @@ L'objectif est d'obtenir une couverture la plus complète possible de l'objet so
     - Pour que le programme puisse "lier" les photos entre elles, chaque photo doit chevaucher la suivante à 60 % minimum (70 % pour un objet brillant).
     - Gardez la pièce nette et l'éclairage constant.
 
-Le compteur en bas à gauche indique le nombre de photos prises (ex. : "0 / 300" — 300 est le maximum autorisé). ![Accès aux photos](docs/aide/img/object-mode-commente.jpg)
+Le compteur en bas à gauche indique le nombre de photos prises (ex. : "0 / 300" — 300 est le maximum autorisé). ![Accès aux photos][S](docs/aide/img/object-mode-commente.jpg)
 
 ### Étape 3 — Consulter les photos et vérifier la couverture
-Via l'icône en bas à gauche, vous pouvez consulter toutes les photos prises. Vous trouverez deux types de photos : les photos normales et les photos **"Unconnected"**. ![Photos unconnected](docs/aide/img/apercu-photos.jpg)
+Via l'icône en bas à gauche, vous pouvez consulter toutes les photos prises. Vous trouverez deux types de photos : les photos normales et les photos **"Unconnected"**. ![Photos unconnected][S](docs/aide/img/apercu-photos.jpg)
 
 Les photos Unconnected (étiquette rouge) n'ont pas pu être reliées aux autres — l'algorithme n'a pas trouvé assez de points communs avec les photos voisines. Vous pouvez les effacer, mais assurez-vous de reprendre des photos pour couvrir les parties de l'objet que ces images représentaient.
 
