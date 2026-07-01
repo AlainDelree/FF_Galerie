@@ -57,7 +57,7 @@ Les photos Unconnected (étiquette rouge) n'ont pas pu être reliées aux autres
 Une fois les photos faites, cliquez sur la flèche dans le rond bleu (→) pour passer à l'étape suivante.
 
 ### Étape 4 — Valider le nuage de points et envoyer pour reconstruction
-L'application affiche alors l'écran **"Review Scan"** avec une vue 3D du **nuage de points** — un ensemble de petits points qui esquissent la forme de l'objet. Plus ce nuage ressemble à votre sculpture, meilleur sera le résultat final. ![Nuage de points](docs/aide/img/nuage-de-point.jpg)
+L'application affiche alors l'écran **"Review Scan"** avec une vue 3D du **nuage de points** — un ensemble de petits points qui esquissent la forme de l'objet. Plus ce nuage ressemble à votre sculpture, meilleur sera le résultat final. ![Nuage de points](docs/aide/img/image-nuage-points.jpg)
 
 Sur cet écran, deux outils sont disponibles :
     - **Icône gomme (orange)** : permet de supprimer manuellement des points parasites (fond, table, éléments indésirables qui se sont glissés dans le scan).
