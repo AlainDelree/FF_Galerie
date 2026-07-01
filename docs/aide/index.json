@@ -1,6 +1,13 @@
 {
   "docs": [
     {
+      "id": "test-tailles",
+      "fichier": "test-tailles.md",
+      "titre": "🧪 Test tailles d'image (temporaire)",
+      "concerne": "tous",
+      "maj": "2026-07-01"
+    },
+    {
       "id": "realityscan",
       "fichier": "realityscan.md",
       "titre": "Créer un fichier 3D (.glb) avec RealityScan",
