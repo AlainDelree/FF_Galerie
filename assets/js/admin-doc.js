@@ -44,7 +44,7 @@
   function mdToHtml(md) {
     function e(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function inline(s) {
-      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function (m, a, u) { return '<img alt="' + a + '" src="' + u + '" style="max-width:100%;height:auto;display:block;margin:1rem 0">'; });
+      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function (m, a, u) { return '<img alt="' + a + '" src="' + u + '" style="max-width:400px;height:auto;display:block;margin:1rem 0">'; });
       s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, t, u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>'; });
       s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
       s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
