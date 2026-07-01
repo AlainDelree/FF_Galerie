@@ -1518,7 +1518,7 @@ textarea.champ{resize:vertical;min-height:65px;}
 .doc-pdf-page h2{font-size:13pt;margin:1rem 0 .35rem;color:#7a5c12;}
 .doc-pdf-page p{margin:.4rem 0;}
 .doc-pdf-page ul,.doc-pdf-page ol{margin:.4rem 0 .4rem 1.2rem;}
-.doc-pdf-page img{max-width:100%;height:auto;}
+.doc-pdf-page img{max-width:100%;height:auto;break-inside:avoid;page-break-inside:avoid;}
 .doc-pdf-page blockquote{border-left:3px solid #c8a050;margin:.6rem 0;padding:.2rem .8rem;background:#faf6ec;}
 .doc-pdf-page code{background:#eee;padding:.05rem .3rem;border-radius:3px;}
 
