@@ -263,10 +263,17 @@
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'], avoid: 'img' }
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'], avoid: 'img' }
         };
-        return window.html2pdf().set(opt).from(wrap).save()
-          .then(nettoyer, function (e) { nettoyer(); throw e; });
+        /* IMPORTANT : attendre que les images soient réellement chargées avant de
+           lancer html2pdf. Sinon leur hauteur est mesurée à ~0 au moment du calcul
+           des sauts de page → les coupures tombent au mauvais endroit et l'image
+           finit à cheval sur deux pages. */
+        return new Promise(function (resolve, reject) {
+          _attendreImagesPuis(wrap, function () {
+            window.html2pdf().set(opt).from(wrap).save().then(resolve, reject);
+          });
+        }).then(nettoyer, function (e) { nettoyer(); throw e; });
       })
       .catch(function (e) { if (typeof toast === 'function') toast('Échec PDF : ' + (e.message || e), 'err'); });
   }
