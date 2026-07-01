@@ -1494,7 +1494,7 @@ textarea.champ{resize:vertical;min-height:65px;}
   background:var(--bg3);color:var(--text);cursor:pointer;font-size:.82rem;white-space:nowrap;}
 .doc-bar-btn:hover{border-color:var(--gold);color:var(--gold);}
 .doc-reader-titre{font-size:1.15rem;margin:.2rem 0 .8rem;color:var(--text);}
-.doc-contenu{font-size:.92rem;line-height:1.65;color:var(--text);max-width:760px;}
+.doc-contenu{font-size:.92rem;line-height:1.65;color:var(--text);max-width:760px;width:100%;}
 .doc-contenu h1{font-size:1.3rem;margin:1.2rem 0 .6rem;}
 .doc-contenu h2{font-size:1.08rem;margin:1.3rem 0 .5rem;color:var(--gold);}
 .doc-contenu h3{font-size:.98rem;margin:1rem 0 .4rem;}
