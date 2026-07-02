@@ -493,24 +493,6 @@
       "taille": "M",
       "visible": true,
       "glb": ""
-    },
-    {
-      "id": 35,
-      "photo": "assets/images/toiles/toile-035.jpg",
-      "source_photo": "admin",
-      "titre": "Abre de double vie",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 40,
-        "hauteur": 50
-      },
-      "taille": "XS",
-      "visible": true,
-      "glb": ""
     }
   ]
 }
