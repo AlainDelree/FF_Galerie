@@ -34,18 +34,10 @@
       "texture": "data/textures/1000022969.jpg",
       "visible": false,
       "toiles": [
-        8,
         9,
         2
       ],
       "positions": [
-        {
-          "id": 8,
-          "col": 9,
-          "row": 3,
-          "w": 4,
-          "h": 5
-        },
         {
           "id": 9,
           "col": 1,
