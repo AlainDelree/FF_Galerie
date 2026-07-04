@@ -85,12 +85,14 @@
       "materiaux": [],
       "dimensions": {
         "type": "portrait",
-        "largeur": 60,
-        "hauteur": 80
+        "largeur": 55,
+        "hauteur": 75
       },
       "source_photo": "gsm",
       "visible": true,
-      "taille": "XL"
+      "taille": "M",
+      "glb": "",
+      "description": ""
     },
     {
       "id": 9,
