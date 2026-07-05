@@ -13,16 +13,25 @@
      Survit aux changements de version → l'app installée reste hors-ligne
      même après un déploiement de code.
 
-   Modèle de fraîcheur : cache-first partout (snapshot). L'app installée se met
-   à jour à la demande (bouton ⟳ → REFRESH). Le site web (non installé) prend
-   la nouvelle version au déploiement suivant.
+   Modèle de fraîcheur :
+   - SITE WEB (frederiqueferette.be) : données JSON en RÉSEAU D'ABORD (toujours
+     à jour ; repli cache si hors-ligne) ; le reste (pages/CSS/JS/médias) en
+     cache-first, mis à jour au déploiement suivant.
+   - APP INSTALLÉE (app.frederiqueferette.be) : cache-first partout (snapshot
+     figé), mise à jour à la demande (bouton ⟳ → REFRESH).
 
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-06-28c';     // identifiant du CODE du SW (force la détection de MAJ)
+const VERSION     = '2026-07-05a';     // identifiant du CODE du SW (force la détection de MAJ)
 const SHELL_CACHE = 'ff-shell';        // STABLE : le contenu ne change qu'à la demande (⟳)
 const MEDIA_CACHE = 'ff-media';        // STABLE : images + musique, persistant
+
+/* Est-on servi comme l'APP installée ou comme le SITE WEB ? Le SW ne voit pas le
+   display-mode d'un client ; mais l'app vit sur une origine dédiée
+   (app.frederiqueferette.be, via le worker ff-app), donc on distingue par le
+   hostname. Sur le site web (frederiqueferette.be, dev, localhost) → EST_APP=false. */
+const EST_APP = (self.location.hostname === 'app.frederiqueferette.be');
 
 /* --- SHELL léger (PAS les toiles, PAS la musique) ------------------------- */
 const SHELL = [
@@ -76,6 +85,11 @@ function estMedia(pathname) {
 }
 
 /* --- Exclusions : jamais interceptées (réseau strict) -------------------- */
+/* Données JSON (salles, œuvres, infos, contact…) : changent à chaque édition
+   admin. Sur le site web, elles doivent toujours être fraîches. */
+function estDonnees(pathname) {
+  return pathname.startsWith('/data/') && pathname.endsWith('.json');
+}
 function estExclu(pathname) {
   return (
     pathname === '/sw.js' ||
@@ -198,6 +212,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  /* Données JSON sur le SITE WEB (pas l'app installée) : RÉSEAU D'ABORD, pour
+     que la galerie reflète toujours la dernière édition admin (repli sur le
+     cache si hors-ligne). Sans ça, le SW servait l'ancienne version en
+     cache-first, et ignoreSearch défaisait le cache-buster ?v= → Fred éditait
+     mais voyait l'ancien, F5 compris. L'app installée garde le cache-first
+     (snapshot figé, MAJ via ⟳). */
+  if (!EST_APP && estDonnees(url.pathname)) {
+    event.respondWith(networkFirst(req, SHELL_CACHE));
+    return;
+  }
+
   // Reste (shell) → cache versionné.
   event.respondWith(cacheFirst(req, SHELL_CACHE));
 });
@@ -223,6 +248,30 @@ async function cacheFirst(req, cacheName) {
       const offline = await shell.match('/offline.html');
       if (offline) return offline;
     }
+    return Response.error();
+  }
+}
+
+/* --- Stratégie : réseau d'abord (données fraîches sur le site), repli cache -
+   Clé de cache normalisée SANS query (?v=...) pour mettre à jour l'unique repli
+   hors-ligne au lieu d'accumuler une entrée par timestamp. */
+async function networkFirst(req, cacheName) {
+  const cache = await caches.open(cacheName);
+  let cle;
+  try { const u = new URL(req.url); cle = u.origin + u.pathname; } catch (e) { cle = req; }
+  try {
+    let rep = await fetch(req, { cache: 'no-store' });
+    if (rep && rep.redirected) {
+      const corps = await rep.blob();
+      rep = new Response(corps, { status: 200, statusText: 'OK', headers: rep.headers });
+    }
+    if (rep && rep.ok && (rep.type === 'basic' || rep.type === 'cors')) {
+      cache.put(cle, rep.clone());
+    }
+    return rep;
+  } catch (e) {
+    const hit = (await cache.match(cle)) || (await cache.match(req, { ignoreSearch: true }));
+    if (hit) return hit;
     return Response.error();
   }
 }

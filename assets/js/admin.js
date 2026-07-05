@@ -1100,7 +1100,12 @@ async function _appliquerVisibiliteSalle(salleId, visibleVoulu) {
   if (!s) return;
   const masquee = (visibleVoulu === false);
   s.visible = visibleVoulu;
-  if (salleActive && salleActive.id === salleId && typeof _majBoutonVisible === 'function') _majBoutonVisible();
+  /* Maj immédiate (optimiste) de l'UI de la salle active : bouton œil ET carte
+     du tableau — le badge « Masquée » doit disparaître/apparaître dès le clic. */
+  if (salleActive && salleActive.id === salleId) {
+    if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
+    if (typeof afficherTableauBord === 'function') afficherTableauBord();
+  }
 
   let echec = false;
   try {
@@ -1123,7 +1128,10 @@ async function _appliquerVisibiliteSalle(salleId, visibleVoulu) {
   let vraiVisible = !visibleVoulu;
   try { const v = await _visibleSalleServeur(salleId); if (v !== null) vraiVisible = v; } catch (_) {}
   s.visible = vraiVisible;
-  if (salleActive && salleActive.id === salleId && typeof _majBoutonVisible === 'function') _majBoutonVisible();
+  if (salleActive && salleActive.id === salleId) {
+    if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
+    if (typeof afficherTableauBord === 'function') afficherTableauBord();
+  }
   if (typeof afficherPlan === 'function') afficherPlan();
   syncBadge('err');
 
