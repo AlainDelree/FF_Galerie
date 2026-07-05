@@ -442,20 +442,23 @@ function _creerCarteVue(facette, salle, lbl, opts) {
   card.appendChild(preview);
   card.appendChild(footer);
   /* Salle masquée du site public : badge « œil barré + Masquée » en overlay
-     dans le coin supérieur droit de l'APERÇU. Styles INLINE (immunisé à un
-     admin.css en cache) + z-index élevé (passe au-dessus de l'iframe d'aperçu).
-     Posé sur .tdb-preview, qui contient l'iframe, pour garantir le recouvrement. */
+     dans le coin supérieur droit de la VIGNETTE d'aperçu (le box sombre = wrap,
+     ~390px centré sur PC). L'ancrer sur wrap et non sur .tdb-preview (pleine
+     largeur de la carte) évite qu'il se retrouve loin de l'aperçu sur desktop.
+     Styles inline + z-index élevé → visible même admin.css en cache, et au-dessus
+     de l'iframe. Repli sur preview si pas de vignette (sécurité). */
   if (salle.visible === false) {
-    preview.style.position = 'relative';
+    var _cible = (typeof wrap !== 'undefined' && wrap) ? wrap : preview;
+    _cible.style.position = 'relative';
     var _masq = document.createElement('div');
     _masq.className = 'tdb-card-masquee';
     _masq.innerHTML = (typeof _svgOeil === 'function' ? _svgOeil(true, 13) : '') + '<span style="line-height:1;">Masqu\u00E9e</span>';
     _masq.title = 'Cette salle est masqu\u00E9e : invisible sur le site public';
-    _masq.style.cssText = 'position:absolute;top:7px;right:7px;z-index:30;display:flex;align-items:center;gap:4px;'
-      + 'background:rgba(192,57,43,.95);color:#fff;font-size:.6rem;font-weight:700;letter-spacing:.05em;'
+    _masq.style.cssText = 'position:absolute;top:6px;right:6px;z-index:30;display:flex;align-items:center;gap:4px;'
+      + 'background:rgba(192,57,43,.96);color:#fff;font-size:.58rem;font-weight:700;letter-spacing:.05em;'
       + 'text-transform:uppercase;padding:3px 8px 3px 6px;border-radius:999px;'
-      + 'box-shadow:0 1px 5px rgba(0,0,0,.45);pointer-events:none;';
-    preview.appendChild(_masq);
+      + 'box-shadow:0 1px 6px rgba(0,0,0,.5);pointer-events:none;';
+    _cible.appendChild(_masq);
   }
   return card;
 }
