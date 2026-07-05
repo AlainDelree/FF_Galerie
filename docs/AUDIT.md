@@ -217,3 +217,13 @@ pour les flèches latérales) ; réserve `+80px` retirée avec lui.
 **Contraste UI** : les cases de placement (disponible/occupé) étaient à ~30 %
 d'opacité — le vert virait au teal délavé sur mur sombre, confusion possible en
 extérieur/mobile. Opacité relevée + contour vif.
+
+
+**Accès admin — token de Fred migré (05/07/2026)** : le GSM de Fred utilisait
+jusqu'ici un token GitHub *classic* (portée large) pour s'authentifier auprès de
+l'admin ; il a été remplacé par un token *fine-grained* limité au dépôt
+`FF_Galerie`. Réduit fortement la surface de risque en cas de perte/compromission
+du téléphone (un fine-grained scopé ne peut pas toucher aux autres dépôts du
+compte). **À finaliser côté serveur** : révoquer l'ancien token *classic* sur
+GitHub s'il ne l'est pas déjà — changer le token stocké sur l'appareil ne révoque
+pas l'ancien, qui reste valide tant qu'il n'est pas explicitement supprimé.
