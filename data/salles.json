@@ -107,7 +107,7 @@
       "id": 7,
       "nom": "Salle fluo",
       "couleur_mur": "#b718de",
-      "couleur_mur_piece": "#0044ff",
+      "couleur_mur_piece": "#f0f0f0",
       "couleur_mur_bas": "#0d0d0d",
       "couleur_sol": "#ffee00",
       "sol_type": "uni",
