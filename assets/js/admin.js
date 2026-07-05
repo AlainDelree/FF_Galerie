@@ -1064,33 +1064,89 @@ $('btn-rename').addEventListener('click', async () => {
   finally { btnRn.disabled = false; }
 });
 
-/* Afficher / masquer la salle active sur le site public.
-   Bascule salleActive.visible (true/undefined = visible, false = masquée),
-   persiste, puis rafraîchit l'aperçu du plan (chip grisée). Le rendu public
-   filtre sur visible !== false (galerie-core.js), invités compris. */
+/* Lit la valeur `visible` RÉELLE d'une salle sur GitHub (source de vérité). */
+async function _visibleSalleServeur(salleId) {
+  const data = await lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+  const s = (data.salles || []).find(function(x) { return x.id === salleId; });
+  return s ? (s.visible !== false) : null;
+}
+
+/* Vérifie qu'un toggle a bien persisté sur GitHub. Retourne :
+     true  = valeur voulue confirmée sur le serveur,
+     false = le serveur a une AUTRE valeur (échec réel, save perdu),
+     null  = lecture impossible (réseau) → indéterminé, on ne crie pas au loup.
+   Petit retry car l'API contents peut retarder d'un poil après le commit. */
+async function _persistanceConfirmee(salleId, voulu) {
+  let derniere = undefined;
+  for (let k = 0; k < 3; k++) {
+    if (k > 0) await new Promise(function(r) { setTimeout(r, 600); });
+    try {
+      const v = await _visibleSalleServeur(salleId);
+      derniere = v;
+      if (v === voulu) return true;
+    } catch (_) { /* réseau : on retente */ }
+  }
+  return (derniere === undefined) ? null : false;
+}
+
+/* Toggle robuste de la visibilité d'une salle. Bascule + sauvegarde, PUIS
+   contrôle que la valeur a réellement persisté sur GitHub. En cas d'échec
+   (conflit de course qui fait lever sauvegarder, OU serveur qui n'a pas la
+   valeur voulue), on réaligne l'admin sur l'état RÉEL du serveur, on le signale
+   clairement, et on propose de relancer — jamais d'état faux affiché en silence.
+   Travaille par id (pas via salleActive, qui peut changer pendant l'await). */
+async function _appliquerVisibiliteSalle(salleId, visibleVoulu) {
+  const s = salles.find(function(x) { return x.id === salleId; });
+  if (!s) return;
+  const masquee = (visibleVoulu === false);
+  s.visible = visibleVoulu;
+  if (salleActive && salleActive.id === salleId && typeof _majBoutonVisible === 'function') _majBoutonVisible();
+
+  let echec = false;
+  try {
+    await sauvegarder('[admin] Salle "' + s.nom + '" ' + (masquee ? 'masquée' : 'affichée') + ' sur le site', null);
+    const ok = await _persistanceConfirmee(salleId, visibleVoulu);
+    if (ok === false) echec = true;
+  } catch (e) {
+    echec = true;
+  }
+
+  if (!echec) {
+    toast(masquee ? '✓ Salle masquée' : '✓ Salle affichée');
+    marquerSalleEnAttente(salleId);
+    if (typeof afficherPlan === 'function') afficherPlan();
+    return;
+  }
+
+  /* Échec : réaligner l'admin sur la vérité serveur (fallback réseau = valeur
+     d'AVANT le toggle, càd !visibleVoulu, puisqu'un save perdu = état inchangé). */
+  let vraiVisible = !visibleVoulu;
+  try { const v = await _visibleSalleServeur(salleId); if (v !== null) vraiVisible = v; } catch (_) {}
+  s.visible = vraiVisible;
+  if (salleActive && salleActive.id === salleId && typeof _majBoutonVisible === 'function') _majBoutonVisible();
+  if (typeof afficherPlan === 'function') afficherPlan();
+  syncBadge('err');
+
+  const quoi = masquee ? 'Le masquage' : "L'affichage";
+  toast('\u26A0\uFE0F ' + quoi + ' de \u00AB ' + s.nom + ' \u00BB n\'a PAS \u00E9t\u00E9 enregistr\u00E9', 'err', 5000);
+  const relancer = window.confirm(
+    quoi + ' de la salle \u00AB ' + s.nom + ' \u00BB n\'a pas pu \u00EAtre enregistr\u00E9 sur le site ' +
+    '(course concurrente : un autre enregistrement a gagn\u00E9 la course).\n\n' +
+    "L'admin a \u00E9t\u00E9 r\u00E9align\u00E9 sur l'\u00E9tat r\u00E9el du serveur. Relancer la modification maintenant ?"
+  );
+  if (relancer) return _appliquerVisibiliteSalle(salleId, visibleVoulu);
+}
+
+/* Bouton \u0153il : afficher / masquer la salle active sur le site public.
+   Le rendu public filtre sur visible !== false (galerie-core.js), invit\u00E9s compris. */
 $('btn-toggle-visible')?.addEventListener('click', async () => {
   if (!salleActive) return;
   const btnV = $('btn-toggle-visible');
-  const etaitVisible = salleActive.visible !== false;
-  salleActive.visible = !etaitVisible;
-  if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
+  const salleId = salleActive.id;
+  const visibleVoulu = (salleActive.visible === false);
   btnV.disabled = true;
-  const masquee = salleActive.visible === false;
-  try {
-    await sauvegarder(
-      `[admin] Salle "${salleActive.nom}" ${masquee ? 'masquée' : 'affichée'} sur le site`,
-      masquee ? '✓ Salle masquée' : '✓ Salle affichée'
-    );
-    marquerSalleEnAttente(salleActive?.id);
-    if (typeof afficherPlan === 'function') afficherPlan();
-  } catch (e) {
-    /* Rollback visuel si la sauvegarde échoue. */
-    salleActive.visible = etaitVisible ? true : false;
-    if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
-    toast('Erreur : ' + e.message, 'err');
-  } finally {
-    btnV.disabled = false;
-  }
+  try { await _appliquerVisibiliteSalle(salleId, visibleVoulu); }
+  finally { btnV.disabled = false; }
 });
 
 // Bouton arranger le mur
