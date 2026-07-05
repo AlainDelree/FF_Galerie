@@ -1,64 +1,6 @@
 {
   "salles": [
     {
-      "id": 1,
-      "nom": "Salle I",
-      "type": "sculpture",
-      "couleur_mur": "#b8afae",
-      "couleur_mur_piece": "#ecf0b0",
-      "couleur_mur_bas": "#c5c5c5",
-      "couleur_cadres": "#5c3d2e",
-      "epaisseur_cadres": 2,
-      "texture": "carrelage",
-      "visible": true,
-      "toiles": [
-        11
-      ],
-      "positions": [
-        {
-          "id": 11,
-          "x": 21.064713064713068,
-          "y": 43.172839506172835,
-          "gabarit": "M"
-        }
-      ],
-      "positions_mobile": [
-        {
-          "id": 11,
-          "x": 47.13852813852814,
-          "y": 45.7667493796526,
-          "gabarit": "M"
-        }
-      ],
-      "greffons": {
-        "immersive": {
-          "actif": true,
-          "decor": {
-            "fond": "#12100c",
-            "exposure": 1,
-            "sol": "#040404",
-            "socle_couleur": "#f0ece4",
-            "socle_use_piece": false,
-            "pan_a": "#7a2525",
-            "pan_b": "#1a3055",
-            "pan_c": "#2a5035",
-            "pan_d": "#a04820",
-            "piquet": "#c8a050",
-            "corde": "#8b0020"
-          }
-        },
-        "descriptive": {
-          "actif": true,
-          "decor": {
-            "pan_a": "#b4e4f4",
-            "pan_b": "#e0f0b0",
-            "pan_c": "#d8c4ec",
-            "pan_d": "#f4b0a8"
-          }
-        }
-      }
-    },
-    {
       "id": 2,
       "nom": "Salle B",
       "type": "sculpture",
