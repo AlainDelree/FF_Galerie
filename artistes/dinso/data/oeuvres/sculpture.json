@@ -1,5 +1,5 @@
 {
-  "next_id": 13,
+  "next_id": 14,
   "gabarits": [
     {
       "code": "S",
@@ -73,6 +73,25 @@
         "texture": "marbre",
         "taille": 40
       }
+    },
+    {
+      "id": 13,
+      "photo": "artistes/dinso/assets/images/toiles/piece-013.png",
+      "source_photo": "admin",
+      "titre": "",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 25,
+        "hauteur": 38,
+        "profondeur": 24
+      },
+      "visible": true,
+      "socle": 33,
+      "glb": "artistes/dinso/assets/models/piece-013.glb"
     }
   ]
 }
