@@ -584,16 +584,19 @@
       /* Historique 05/07 : une 1re tentative de "root cause fix" ici (percentages
          en chaîne : galerie-principale/conteneur-salles/salle à height:100%)
          s'est révélée FRAGILE en pratique (grand vide noir sous le plancher).
-         Cause RÉELLE identifiée ensuite : body utilisait vh (grand viewport)
-         alors que .salle utilisait svh (petit viewport) — deux unités
-         DIFFÉRENTES pouvant s'écarter de 50-100px sur mobile. Un calc() explicite
-         a servi de filet en attendant (plusieurs ajustements au pixel, jamais
-         parfait — dépend du device). Maintenant que body et .salle référencent
-         le MÊME viewport (svh, ligne suivante), la chaîne flex/pourcentages
-         d'origine devrait enfin se résoudre correctement : on la reprend, pour
-         que le plancher remplisse l'espace réellement disponible (jusqu'au bord
-         du pied de page) SANS estimation en dur — élimine le pixel-tuning. */
-      body { min-height:100svh; }
+         Cause identifiée : body utilisait vh (grand viewport, barre d'adresse
+         rétractée) alors que .salle utilisait svh (petit viewport, barre
+         dépliée) — deux unités DIFFÉRENTES pouvant s'écarter de 50-100px sur
+         mobile. Un calc() explicite a servi de filet en attendant (plusieurs
+         ajustements au pixel, jamais parfait). Solution définitive : dvh
+         (dynamic viewport height) au lieu de svh — technique DÉJÀ éprouvée et
+         mergée en prod sur ce même site pour ce problème exact (pages courtes
+         infos/contact/apropos, .scene-entree) : dvh suit l'écran RÉELLEMENT
+         visible à tout instant (barre dépliée ou repliée), donc aucun décalage
+         possible entre body et le reste, et la chaîne de pourcentages peut
+         enfin remplir l'espace exact jusqu'au pied de page, sans estimation
+         en dur. vh en repli pour les navigateurs sans dvh. */
+      body { min-height:100vh; min-height:100dvh; }
       .galerie-principale { height:auto !important; min-height:0 !important; overflow-x:clip; }
       .conteneur-salles { height:100% !important; min-height:0; align-items:stretch; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
