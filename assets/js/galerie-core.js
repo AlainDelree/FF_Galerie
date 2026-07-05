@@ -658,18 +658,19 @@ function initGalerie() {
       try { window._FF_APPLY_LOCAL_LAYOUT(salles); }
       catch (e) { console.warn('[local-edit]', e); }
     }
-    /* Filtre visibilité : la galerie publique n'affiche que les salles dont
-       visible !== false. En mode édition/arrangeur (_GALERIE_EDIT), on garde
-       TOUTES les salles pour que l'admin puisse encore agencer une salle
-       masquée. L'admin (apercu compris) sélectionne les salles via les chips,
-       pas via ce rendu, donc filtrer ici ne gêne pas l'édition. */
-    let sallesRendues = window._GALERIE_EDIT
+    /* Contexte admin = aperçu read-only (_GALERIE_INJECTED, galerie-apercu.html)
+       OU arrangeur (_GALERIE_EDIT, galerie-edit.html). Dans les deux cas on
+       affiche TOUTES les salles, masquées comprises, pour que Fred puisse les
+       voir et les éditer (une salle masquée reste marquée d'une bordure dans
+       l'aperçu, cf. plus bas). Seul le VRAI public filtre sur visible !== false. */
+    var _contexteAdmin = !!(window._GALERIE_INJECTED || window._GALERIE_EDIT);
+    let sallesRendues = _contexteAdmin
       ? salles
       : salles.filter(s => s.visible !== false);
-    /* Cas « toutes masquées » (hors édition) : on injecte une salle « travaux »
-       de repli — le visiteur voit un message au lieu d'un écran vide, et la nav
-       ne divise pas par TOTAL_SALLES = 0. */
-    if (!window._GALERIE_EDIT && sallesRendues.length === 0) {
+    /* Cas « toutes masquées » — uniquement côté public (jamais en admin) : on
+       injecte une salle « travaux » de repli, le visiteur voit un message au
+       lieu d'un écran vide, et la nav ne divise pas par TOTAL_SALLES = 0. */
+    if (!_contexteAdmin && sallesRendues.length === 0) {
       sallesRendues = [{
         id: '__travaux__',
         nom: 'Galerie en réaménagement',
@@ -725,6 +726,23 @@ function initGalerie() {
       salleDiv.appendChild(nomEl);
 
       renderer(salleDiv, salle, si, sallesRendues, tData);
+
+      /* Aperçu admin (read-only) : une salle masquée reste affichée mais
+         clairement signalée — bordure rouge + bandeau — pour que Fred voie
+         qu'elle n'est pas publique. Ne s'active jamais côté public (une salle
+         masquée n'y est pas rendue) ni dans l'arrangeur (canvas d'édition). */
+      if (salle.visible === false && window._GALERIE_INJECTED && !window._GALERIE_EDIT) {
+        salleDiv.style.position = 'relative';
+        salleDiv.style.outline = '4px dashed #c0392b';
+        salleDiv.style.outlineOffset = '-4px';
+        var _bandeau = document.createElement('div');
+        _bandeau.textContent = '\uD83D\uDEAB Salle masquée \u2014 non visible du public';
+        _bandeau.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:60;' +
+          'background:rgba(192,57,43,.92);color:#fff;font-family:Lato,sans-serif;' +
+          'font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-align:center;' +
+          'padding:.35rem .5rem;pointer-events:none;';
+        salleDiv.appendChild(_bandeau);
+      }
 
       conteneur.appendChild(salleDiv);
     });
