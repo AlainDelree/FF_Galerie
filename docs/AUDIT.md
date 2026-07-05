@@ -170,3 +170,50 @@ de Daw (22 toiles) → injection correcte, retour-draft → marqueurs vidés, 2 
 - Smoke-test sur `dev.frederiqueferette.be` (navigation privée) avant tout merge.
 - Bumper les `?v=` des fichiers modifiés.
 - Commits consolidés pendant les phases d'audit.
+
+---
+
+## Addendum — 05/07/2026 (salles masquables + fraîcheur du cache)
+
+**Nouvelle fonctionnalité — salles masquables** (mergée en prod) : `salle.visible`
+(`true`/absent = visible, `false` = masquée) filtre la galerie publique + le plan
+SVG + les deep-links ; le mode édition/arrangeur et l'aperçu admin restent non
+filtrés (ils rendent les données injectées telles quelles, pas une composition
+de galerie). Repli « travaux » si toutes les salles sont masquées côté public
+uniquement. `toRoman()` remplace la liste figée `NOMS_ROMAINS` (10 entrées max)
+par un calcul illimité — corrige un `undefined` latent au-delà de la 10ᵉ salle,
+même si ce code est aujourd'hui caché (`data-nav='c'` permanent, cf. section
+« Backlog cosmétique » plus bas).
+
+**Incident de concurrence, à nouveau** (même classe que 27/06, cf. plus haut) :
+un masquage de salle n'a produit aucun commit — perdu silencieusement pendant
+qu'un autre save (Claude) tournait sur la même branche. `commitMulti` lève bien
+après échec des tentatives, mais le handler du bouton ne vérifiait pas que la
+valeur avait réellement persisté. **Correctif** : après `sauvegarder()`, relecture
+de `salles.json` sur GitHub (`_persistanceConfirmee`, avec petit retry anti-lag
+de réplica) ; en cas d'échec réel, réalignement de l'admin sur l'état serveur +
+message clair + proposition de relancer. Leçon (renforcée) : un save optimiste
+sans vérification post-commit peut mentir à l'utilisateur, même quand la couche
+`commitMulti` sous-jacente est correcte.
+
+**Cache du site web servait des données périmées** : le service worker (enregistré
+par l'admin, scope `/`) précachait `/data/*.json` en cache-first avec
+`ignoreSearch:true` — ce qui **défaisait le cache-buster `?v=...`** des fetchs de
+la galerie. Résultat : une édition admin pouvait rester invisible sur le site,
+même après F5 (le SW répond avant le réseau). Les visiteurs purs n'étaient pas
+touchés (le SW n'est enregistré que par l'admin) — le bug ne frappait que
+Fred/Alain. **Correctif** : distinction par hostname (`app.frederiqueferette.be`
+= app installée → cache-first inchangé ; site web → réseau d'abord pour les
+données JSON, repli cache si hors-ligne). VERSION du SW bumpée pour forcer la
+mise à jour.
+
+**Bug de scroll GSM (régression)** : le bandeau de navigation mobile (bas d'écran)
+avait été réactivé par un ancien patch, avec une réserve de `+80px` dans le
+plancher pour lui laisser sa place. Combinée au `min-height:100svh` de `.salle`,
+cette réserve faisait dépasser la hauteur d'écran → scroll vertical involontaire.
+Bandeau retiré (portes + swipe suffisent, déjà le seul mode de nav sur mobile
+pour les flèches latérales) ; réserve `+80px` retirée avec lui.
+
+**Contraste UI** : les cases de placement (disponible/occupé) étaient à ~30 %
+d'opacité — le vert virait au teal délavé sur mur sombre, confusion possible en
+extérieur/mobile. Opacité relevée + contour vif.

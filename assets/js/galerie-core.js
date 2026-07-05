@@ -361,7 +361,12 @@ function _chargerOeuvres() {
         const svgLeft = (window.innerWidth - svgW) / 2;
         [0.09, 0.67, 0.86].forEach(pct => {
           const xSVG = (pct * window.innerWidth - svgLeft) / svgW * VW;
-          const mg   = 30; // marge SVG de chaque côté
+          /* Marge élargie (30 → 58) : les panneaux ont été agrandis à deux
+             reprises (05/07) — l'ancienne marge, calibrée pour les petits
+             panneaux d'origine, laisserait des silhouettes chevaucher les
+             panneaux désormais bien plus larges. Valeur approximative (pas
+             de rendu réel possible ici) : à vérifier visuellement. */
+          const mg   = 58; // marge SVG de chaque côté
           if (xSVG + mg > 0 && xSVG - mg < VW)
             EXCL.push({ x1: Math.max(0, xSVG - mg), x2: Math.min(VW, xSVG + mg) });
         });

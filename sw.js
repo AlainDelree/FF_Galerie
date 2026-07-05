@@ -23,7 +23,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-07-05a';     // identifiant du CODE du SW (force la détection de MAJ)
+const VERSION     = '2026-07-05b';     // identifiant du CODE du SW (force la détection de MAJ)
 const SHELL_CACHE = 'ff-shell';        // STABLE : le contenu ne change qu'à la demande (⟳)
 const MEDIA_CACHE = 'ff-media';        // STABLE : images + musique, persistant
 
@@ -85,11 +85,6 @@ function estMedia(pathname) {
 }
 
 /* --- Exclusions : jamais interceptées (réseau strict) -------------------- */
-/* Données JSON (salles, œuvres, infos, contact…) : changent à chaque édition
-   admin. Sur le site web, elles doivent toujours être fraîches. */
-function estDonnees(pathname) {
-  return pathname.startsWith('/data/') && pathname.endsWith('.json');
-}
 function estExclu(pathname) {
   return (
     pathname === '/sw.js' ||
@@ -212,13 +207,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  /* Données JSON sur le SITE WEB (pas l'app installée) : RÉSEAU D'ABORD, pour
-     que la galerie reflète toujours la dernière édition admin (repli sur le
-     cache si hors-ligne). Sans ça, le SW servait l'ancienne version en
-     cache-first, et ignoreSearch défaisait le cache-buster ?v= → Fred éditait
-     mais voyait l'ancien, F5 compris. L'app installée garde le cache-first
-     (snapshot figé, MAJ via ⟳). */
-  if (!EST_APP && estDonnees(url.pathname)) {
+  /* Site WEB (pas l'app installée) : TOUT le shell (pages, CSS, JS, données) en
+     RÉSEAU D'ABORD — un visiteur normal doit toujours voir la dernière version
+     déployée. Sans ça, un navigateur ayant déjà enregistré ce SW (ex. visite
+     antérieure de l'admin) continuait de servir l'ANCIEN galerie.html/css/js en
+     cache-first, malgré des cache-busters ?v= bumpés (ignoreSearch:true les
+     ignore) : la « régression » constatée après un fix n'en était pas une, le
+     SW servait simplement du code d'avant le fix. Repli sur le cache si
+     hors-ligne. Seuls les médias restent cache-first (poids, changent rarement).
+     L'app installée garde le cache-first partout (snapshot figé, MAJ via ⟳). */
+  if (!EST_APP) {
     event.respondWith(networkFirst(req, SHELL_CACHE));
     return;
   }

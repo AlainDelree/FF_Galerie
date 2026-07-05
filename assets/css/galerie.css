@@ -471,26 +471,37 @@
 
       /* Plan lointain — Accueil → (près du mur, entre lointain et mur-inf) */
       .pan-accueil           { left:86%; bottom:130px; }
-      .pan-accueil .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
-      .pan-accueil .pan-pole  { height:24px; }
-      .pan-accueil .pan-base  { width:26px; height:7px; }
+      .pan-accueil .pan-board { font-size:1.05rem; padding:6px 15px; border-width:2px; }
+      .pan-accueil .pan-pole  { height:39px; }
+      .pan-accueil .pan-base  { width:45px; height:12px; }
 
       /* Plan milieu — ← Infos (mi-parquet) */
       .pan-infos           { left:9%; bottom:88px; }
-      .pan-infos .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
-      .pan-infos .pan-pole  { height:24px; }
-      .pan-infos .pan-base  { width:26px; height:7px; }
+      .pan-infos .pan-board { font-size:1.05rem; padding:6px 15px; border-width:2px; }
+      .pan-infos .pan-pole  { height:39px; }
+      .pan-infos .pan-base  { width:45px; height:12px; }
 
       /* Plan avant — Contact ↓ (grand, bas sur le parquet) */
       .pan-contact           { left:67%; bottom:8px; }
-      .pan-contact .pan-board { font-size:.62rem; padding:3px 9px; }
-      .pan-contact .pan-pole  { height:30px; }
-      .pan-contact .pan-base  { width:30px; height:9px; }
+      .pan-contact .pan-board { font-size:1.25rem; padding:9px 20px; border-width:2.5px; }
+      .pan-contact .pan-pole  { height:50px; }
+      .pan-contact .pan-base  { width:54px; height:16px; }
 
       /* Corps */
       body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
-      .pied { flex-shrink:0; padding:.28rem 0; }
+      /* Pied : le header a été retiré (bouton musique relogé ici, cf. HTML)
+         -> on récupère toute sa hauteur. Ligne 1 = bouton + copyright ;
+         la ligne crédits (longue) passe systématiquement en dessous
+         (flex-basis:100%) pour ne jamais se chevaucher avec le bouton. */
+      .pied {
+        flex-shrink:0; padding:.3rem .6rem;
+        display:flex; align-items:center; justify-content:center;
+        flex-wrap:wrap; column-gap:.5rem; row-gap:.1rem;
+      }
+      .pied .controles { position:static !important; display:flex; }
+      .pied .btn-musique { width:1.5rem; height:1.5rem; font-size:.78rem; }
+      .pied .mention-musique { flex-basis:100%; text-align:center; }
 
       /* Mur : overhead = nom(43)+mur-inf(52)+plancher(175)+footer(34)+marge(6) = 310px */
       .mur.mur-grille {
@@ -570,26 +581,43 @@
       .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
+      /* Historique 05/07 : DEUX tentatives de "root cause fix" par chaîne de
+         pourcentages (galerie-principale/conteneur-salles/salle en height:100%)
+         ont échoué EN RÉEL, la seconde même après correction du décalage
+         d'unités vh/svh/dvh identifié entre les deux essais — un vrai vide noir
+         la 1re fois, un plancher minuscule + vide des deux côtés la 2e. Que la
+         cause exacte du 2e échec reste incertaine ou non, deux échecs réels sur
+         la même technique suffisent à l'abandonner DÉFINITIVEMENT, malgré une
+         théorie qui semblait pourtant tenir. Retour au calc() EXPLICITE (recette
+         déjà utilisée ailleurs dans ce fichier pour les mobiles sans scroll :
+         calc(100vh-310px) à 700-900px, calc(100svh-3rem) en paysage) — on ne
+         dépend plus d'aucune résolution de pourcentage dans une chaîne flex,
+         seulement d'une soustraction directe. dvh (au lieu de svh) pour la
+         précision : suit l'écran réellement visible, contrairement à svh qui
+         fige le pire cas. Overhead = pied de page réel, dernière valeur
+         calibrée avant la 2e tentative (~90px, "trop de noir" mais fonctionnel
+         sans être parfait). */
       .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
-         du parquet et du mur-bas. La réserve d'espace pour la nav-mobile fixe
-         est désormais portée par le min-height du plancher (jaune), qui remplit
-         ainsi jusqu'au bord bas — plus aucune bande de fond n'apparaît. */
-      .salle { height:auto !important; min-height:100svh; padding:.5rem .5rem 0; }
+         du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
+         restant jusqu'au bord bas via son min-height — plus aucune bande de
+         fond n'apparaît. */
+      .salle {
+        height:calc(100vh - 100px) !important;
+        height:calc(100dvh - 100px) !important;
+        padding:.5rem .5rem 0; overflow:hidden;
+      }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
-      /* Clip horizontal : empêche la zone-basse de déborder sur la salle adjacente */
-      .salle { overflow-x: clip; }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
       .zone-basse { flex:1; }
-      /* Plancher mobile : remplit l'espace jusqu'au bord bas. Le +80px de réserve
-         (≈ hauteur nav-mobile fixe + home indicator) garantit que le sol passe
-         SOUS la nav translucide au lieu de laisser apparaître le fond de salle. */
-      .plancher-sol { flex:1; min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
+      /* Plancher mobile : remplit l'espace jusqu'au bord bas. La nav-mobile en
+         bas a été retirée (portes + swipe suffisent) -> plus de réserve de place
+         pour elle ; seule reste la marge pour le home indicator (safe-area). */
+      .plancher-sol { flex:1; min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px)); max-height:none; }
       /* Navigation mobile */
-      .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
       body { overflow-x:hidden; }
       /* Mur grille sur mobile : laisse de la place pour les portes */
       .mur.mur-grille {
@@ -663,7 +691,13 @@
     @media (orientation:landscape) and (max-height:500px) {
       html, body { height:100svh; overflow:hidden; }
       body { display:flex; flex-direction:column; }
-      .pied { display:none; }
+      /* Pied : plus de display:none — le bouton musique vit maintenant dedans
+         (relogé depuis l'ex-header). On masque juste les mentions texte et on
+         fait flotter le bouton en position fixe (comme avant, quand il vivait
+         dans .entete) : .pied redevient un conteneur vide, ~0 hauteur. */
+      .pied { display:block; padding:0; border:0; background:transparent; }
+      .pied .mention { display:none; }
+      .pied .controles { position:fixed !important; right:.6rem; top:.5rem; z-index:101; }
 
       /* Header */
       .entete { padding:.18rem .8rem !important; flex-shrink:0; }
@@ -748,7 +782,6 @@
       .pm-fleche    { font-size:1.1rem; bottom:10px; }
 
       .plancher-sol { display:none !important; }
-      .nav-mobile   { display:none !important; }
 
       /* Modal cote a cote */
       .modal-overlay    { padding:.4rem; align-items:center; }
@@ -761,7 +794,7 @@
 
 /* ── Flèches latérales fixes (PC) ────────────────────────────────
    Navigation permanente entre salles, en complément des portes.
-   Cachées sur mobile (nav-mobile en bas suffit). */
+   Cachées sur mobile (portes + swipe suffisent ; plus de nav-mobile). */
 .nav-cote {
   position: fixed; top: 50%; transform: translateY(-50%);
   width: 2.6rem; height: 4rem; padding: 0;
