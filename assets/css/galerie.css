@@ -605,8 +605,8 @@
          restant jusqu'au bord bas via son min-height — plus aucune bande de
          fond n'apparaît. */
       .salle {
-        height:calc(100vh - 90px) !important;
-        height:calc(100dvh - 90px) !important;
+        height:calc(100vh - 100px) !important;
+        height:calc(100dvh - 100px) !important;
         padding:.5rem .5rem 0; overflow:hidden;
       }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
