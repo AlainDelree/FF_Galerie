@@ -593,7 +593,16 @@
          .salle réclamait 100% de l'écran SANS tenir compte du pied de page
          (l'entête, elle, a été supprimée entre-temps — musique déplacée dans
          le pied). Le calc() soustrait explicitement cet espace, plutôt que de
-         re-tenter une résolution automatique qui a déjà échoué une fois. */
+         re-tenter une résolution automatique qui a déjà échoué une fois.
+         Second correctif (même session) : body héritait min-height:100vh (règle
+         700px partagée) alors que .salle utilise 100svh — deux unités DIFFÉRENTES
+         (vh = grand viewport, barre d'adresse rétractée ; svh = petit viewport,
+         barre dépliée), qui peuvent différer de 50 à 100px sur mobile. body
+         s'imposait donc une hauteur minimale PLUS GRANDE que ce que .salle+pied
+         remplissaient réellement → vide noir entre le plancher et le pied,
+         bien plus large qu'un simple écart d'estimation du pied. Les deux
+         doivent référencer le MÊME viewport. */
+      body { min-height:100svh; }
       .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
@@ -606,11 +615,12 @@
          sans scroll (cf. calc(100vh-310px) à 700-900px, calc(100svh-3rem) en
          paysage) — déterministe, ne dépend d'aucune résolution de pourcentage
          dans une chaîne flex. overhead = pied de page réel (bouton + copyright
-         + ligne crédits + paddings). 70px (1re estimation) laissait encore un
-         petit résidu de scroll (~la 2e ligne de crédits), constaté en réel le
-         05/07 → ajusté à 92px. overflow:hidden absorbe un léger excédent
-         (mieux qu'un scroll ou un vide noir en cas d'estimation imparfaite). */
-      .salle { height:calc(100svh - 92px) !important; padding:.5rem .5rem 0; overflow:hidden; }
+         + ligne crédits + paddings), ≈ 60px. La valeur 92px précédente
+         compensait EN RÉALITÉ surtout le décalage d'unités vh/svh ci-dessus
+         (corrigé) — redescendue à une estimation plus juste du seul pied de
+         page, sinon le plancher restait trop court (grand vide noir signalé
+         le 05/07). overflow:hidden absorbe un léger excédent. */
+      .salle { height:calc(100svh - 60px) !important; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
