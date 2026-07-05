@@ -9,5 +9,6 @@ Disallow: /admin.html
 # Invités encore en brouillon (draft + noindex). Un Allow plus spécifique
 # ci-dessous ré-ouvre chaque invité publié.
 Disallow: /artistes/
+Allow: /artistes/dinso/
 
 Sitemap: https://frederiqueferette.be/sitemap.xml
