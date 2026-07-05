@@ -638,11 +638,47 @@ function initGalerie() {
       try { window._FF_APPLY_LOCAL_LAYOUT(salles); }
       catch (e) { console.warn('[local-edit]', e); }
     }
-    TOTAL_SALLES = salles.length;
+    /* Filtre visibilité : la galerie publique n'affiche que les salles dont
+       visible !== false. En mode édition/arrangeur (_GALERIE_EDIT), on garde
+       TOUTES les salles pour que l'admin puisse encore agencer une salle
+       masquée. L'admin (apercu compris) sélectionne les salles via les chips,
+       pas via ce rendu, donc filtrer ici ne gêne pas l'édition. */
+    let sallesRendues = window._GALERIE_EDIT
+      ? salles
+      : salles.filter(s => s.visible !== false);
+    /* Cas « toutes masquées » (hors édition) : on injecte une salle « travaux »
+       de repli — le visiteur voit un message au lieu d'un écran vide, et la nav
+       ne divise pas par TOTAL_SALLES = 0. */
+    if (!window._GALERIE_EDIT && sallesRendues.length === 0) {
+      sallesRendues = [{
+        id: '__travaux__',
+        nom: 'Galerie en réaménagement',
+        _message: 'La galerie est momentanément en cours de réaménagement. Merci de revenir bientôt \u2014 les salles seront de nouveau visibles très prochainement.'
+      }];
+    }
+    TOTAL_SALLES = sallesRendues.length;
     const _hm = window.location.hash.match(/^#salle-(\d+)$/);
     conteneur.style.width = (TOTAL_SALLES * 100) + '%';
 
-    salles.forEach((salle, si) => {
+    sallesRendues.forEach((salle, si) => {
+      /* Salle « travaux » synthétique : message centré, ni renderer ni portes. */
+      if (salle._message) {
+        const salleDiv = document.createElement('div');
+        salleDiv.className = 'salle salle-message';
+        salleDiv.id = 'salle-travaux';
+        salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
+        salleDiv.setAttribute('aria-label', salle.nom);
+        const nomEl = document.createElement('p');
+        nomEl.className = 'nom-salle';
+        nomEl.textContent = salle.nom;
+        salleDiv.appendChild(nomEl);
+        const msg = document.createElement('p');
+        msg.textContent = salle._message;
+        msg.style.cssText = 'color:var(--text-doux,#c9b98f);font-style:italic;text-align:center;padding:2rem 1.5rem;max-width:34rem;margin:auto;line-height:1.7;';
+        salleDiv.appendChild(msg);
+        conteneur.appendChild(salleDiv);
+        return;
+      }
       const type = salle.type || 'peinture';
       const renderer = GALERIE_RENDERERS[type];
       if (!renderer) {
@@ -668,7 +704,7 @@ function initGalerie() {
       nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
       salleDiv.appendChild(nomEl);
 
-      renderer(salleDiv, salle, si, salles, tData);
+      renderer(salleDiv, salle, si, sallesRendues, tData);
 
       conteneur.appendChild(salleDiv);
     });
@@ -677,7 +713,7 @@ function initGalerie() {
 
     const hashId = parseInt((_hm || [])[1]);
     if (hashId) {
-      const hashIdx = salles.findIndex(s => s.id === hashId) + 1;
+      const hashIdx = sallesRendues.findIndex(s => s.id === hashId) + 1;
       const cible   = hashIdx > 0 ? hashIdx : 1;
       conteneur.style.transition = 'none';
       allerSalle(cible);

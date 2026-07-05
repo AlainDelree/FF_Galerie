@@ -474,10 +474,13 @@ function afficherPlan() {
     var _nb = _ids.size;
     /* Type de la salle pour bordure colorée (peinture/sculpture) */
     var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    var _masquee = (s.visible === false);
     const chip = document.createElement('div');
-    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
+    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '') + (_masquee ? ' chip-masquee' : '');
+    if (_masquee) chip.style.opacity = '0.5';
 
-    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
+    var _mMark = _masquee ? '<div class="cb" style="color:#c0392b;font-weight:600;">\uD83D\uDEAB masquée</div>' : '';
+    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>` + _mMark;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
       const restant = Math.max(0, 60 - elapsed);
@@ -577,6 +580,20 @@ function _majApparenceSelonSalle() {
   if (btnMur) btnMur.title = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
   var popMurT = document.getElementById('pop-mur-titre');
   if (popMurT) popMurT.textContent = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+  _majBoutonVisible();
+}
+
+/* Synchronise l'icône du bouton « Visible sur le site » avec l'état de la
+   salle active : 👁 = visible, 🚫 = masquée (grisée + rouge). */
+function _majBoutonVisible() {
+  var btn = document.getElementById('btn-toggle-visible');
+  if (!btn || !salleActive) return;
+  var masquee = (salleActive.visible === false);
+  btn.textContent = masquee ? '🚫' : '👁';
+  btn.title = masquee
+    ? 'Salle MASQUÉE sur le site — cliquer pour l\'afficher'
+    : 'Salle visible sur le site — cliquer pour la masquer';
+  btn.classList.toggle('ico-btn-danger', masquee);
 }
 
 function selectSalle(id) {

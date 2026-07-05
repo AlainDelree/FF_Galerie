@@ -1064,6 +1064,35 @@ $('btn-rename').addEventListener('click', async () => {
   finally { btnRn.disabled = false; }
 });
 
+/* Afficher / masquer la salle active sur le site public.
+   Bascule salleActive.visible (true/undefined = visible, false = masquée),
+   persiste, puis rafraîchit l'aperçu du plan (chip grisée). Le rendu public
+   filtre sur visible !== false (galerie-core.js), invités compris. */
+$('btn-toggle-visible')?.addEventListener('click', async () => {
+  if (!salleActive) return;
+  const btnV = $('btn-toggle-visible');
+  const etaitVisible = salleActive.visible !== false;
+  salleActive.visible = !etaitVisible;
+  if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
+  btnV.disabled = true;
+  const masquee = salleActive.visible === false;
+  try {
+    await sauvegarder(
+      `[admin] Salle "${salleActive.nom}" ${masquee ? 'masquée' : 'affichée'} sur le site`,
+      masquee ? '✓ Salle masquée' : '✓ Salle affichée'
+    );
+    marquerSalleEnAttente(salleActive?.id);
+    if (typeof afficherPlan === 'function') afficherPlan();
+  } catch (e) {
+    /* Rollback visuel si la sauvegarde échoue. */
+    salleActive.visible = etaitVisible ? true : false;
+    if (typeof _majBoutonVisible === 'function') _majBoutonVisible();
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    btnV.disabled = false;
+  }
+});
+
 // Bouton arranger le mur
 $('btn-arranger-mur').addEventListener('click', () => entrerModePlacement());
 
