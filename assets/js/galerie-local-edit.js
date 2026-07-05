@@ -2,7 +2,9 @@
    FF_Galerie — Éditeur LOCAL de galerie (hors ligne, non publié)
    ---------------------------------------------------------------------------
    But : permettre à l'artiste de réarranger SA galerie directement dans
-   l'app (ou sur le site), SANS jamais rien repousser en ligne.
+   l'APP INSTALLÉE (arranger le snapshot hors ligne), SANS jamais rien
+   repousser en ligne. Réservé à l'app (décision du 05/07) : sur le site web,
+   ni signature ni entrée en édition — cf. estAppInstallee() dans demarrer().
 
    Principes :
    - Les modifications sont stockées dans localStorage ('ff_local_layout'),
@@ -566,7 +568,7 @@
     var css = document.createElement('style');
     css.id = 'ff-edit-styles';
     css.textContent = [
-      '#ff-sign{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));',
+      '#ff-sign{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));',
         'z-index:60;font-family:"Playfair Display",serif;font-size:1.35rem;line-height:1;',
         'background:linear-gradient(135deg,#c8a050,#f0d080,#c8a050);-webkit-background-clip:text;',
         'background-clip:text;-webkit-text-fill-color:transparent;border:0;cursor:default;',
@@ -630,7 +632,17 @@
   }
 
   /* ===================== Démarrage ======================================= */
+  function estAppInstallee() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+           window.navigator.standalone === true;
+  }
+
   function demarrer() {
+    /* Éditeur local réservé à l'APP INSTALLÉE (comme conçu à l'usage : arranger
+       hors ligne sur le snapshot figé). Sur le site web (y compris navigation
+       privée, où une PWA ne peut jamais être "installée") : ni signature FF, ni
+       possibilité d'entrer en édition — la fonctionnalité n'existe simplement pas. */
+    if (!estAppInstallee()) return;
     injecterStyles();
     injecterSignature();
     // Ré-entrée en édition après un reload déclenché par l'éditeur lui-même.

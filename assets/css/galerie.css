@@ -471,21 +471,21 @@
 
       /* Plan lointain — Accueil → (près du mur, entre lointain et mur-inf) */
       .pan-accueil           { left:86%; bottom:130px; }
-      .pan-accueil .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
-      .pan-accueil .pan-pole  { height:24px; }
-      .pan-accueil .pan-base  { width:26px; height:7px; }
+      .pan-accueil .pan-board { font-size:.7rem; padding:4px 10px; border-width:1.4px; }
+      .pan-accueil .pan-pole  { height:26px; }
+      .pan-accueil .pan-base  { width:30px; height:8px; }
 
       /* Plan milieu — ← Infos (mi-parquet) */
       .pan-infos           { left:9%; bottom:88px; }
-      .pan-infos .pan-board { font-size:.52rem; padding:2px 7px; border-width:1.2px; }
-      .pan-infos .pan-pole  { height:24px; }
-      .pan-infos .pan-base  { width:26px; height:7px; }
+      .pan-infos .pan-board { font-size:.7rem; padding:4px 10px; border-width:1.4px; }
+      .pan-infos .pan-pole  { height:26px; }
+      .pan-infos .pan-base  { width:30px; height:8px; }
 
       /* Plan avant — Contact ↓ (grand, bas sur le parquet) */
       .pan-contact           { left:67%; bottom:8px; }
-      .pan-contact .pan-board { font-size:.62rem; padding:3px 9px; }
-      .pan-contact .pan-pole  { height:30px; }
-      .pan-contact .pan-base  { width:30px; height:9px; }
+      .pan-contact .pan-board { font-size:.82rem; padding:6px 13px; border-width:1.8px; }
+      .pan-contact .pan-pole  { height:34px; }
+      .pan-contact .pan-base  { width:36px; height:11px; }
 
       /* Corps */
       body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
@@ -570,18 +570,26 @@
       .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
-      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
+      /* Root cause du scroll vertical (identifié le 05/07) : .galerie-principale
+         et .conteneur-salles posent min-height:0 à la base/en paysage (containment
+         flex correct), mais ce bloc l'annulait via min-height:unset — réactivant
+         le piège classique flexbox (« taille minimale auto = celle du contenu »).
+         Combiné au min-height:100svh de .salle (qui ignorait l'entête + le pied
+         de page), la chaîne débordait d'un écran = scroll. Fix : on garde
+         min-height:0 (hérité), et .salle passe de min-height:100svh à height:100%
+         pour remplir EXACTEMENT l'espace réellement disponible (déjà net de
+         l'entête/pied via le flex de body), comme le fait déjà le mode paysage
+         ci-dessous (recette éprouvée, reprise ici telle quelle). */
+      .galerie-principale { height:auto !important; overflow-x:clip; overflow-y:hidden; }
+      .conteneur-salles { height:100% !important; align-items:stretch; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
          du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
          restant jusqu'au bord bas via son min-height — plus aucune bande de
          fond n'apparaît. */
-      .salle { height:auto !important; min-height:100svh; padding:.5rem .5rem 0; }
+      .salle { height:100% !important; min-height:0; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
-      /* Clip horizontal : empêche la zone-basse de déborder sur la salle adjacente */
-      .salle { overflow-x: clip; }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
       .zone-basse { flex:1; }
       /* Plancher mobile : remplit l'espace jusqu'au bord bas. La nav-mobile en
