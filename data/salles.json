@@ -32,7 +32,7 @@
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "data/textures/1000022969.jpg",
-      "visible": false,
+      "visible": true,
       "toiles": [
         9,
         2,
