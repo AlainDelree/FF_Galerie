@@ -8,7 +8,7 @@
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/texture-bleu.jpg",
-      "visible": false,
+      "visible": true,
       "toiles": [
         13
       ],
