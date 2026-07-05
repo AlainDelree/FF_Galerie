@@ -48,7 +48,27 @@ function _chargerOeuvres() {
 
     let salleCourante = 1;
     let TOTAL_SALLES = 0; // défini dynamiquement après chargement JSON
-    const NOMS_ROMAINS = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+    /* Chiffres romains generes a la volee (plus de liste figee a 10 entrees :
+       au-dela de X la nav affichait 'undefined'). Le Proxy preserve la syntaxe
+       d'indexation NOMS_ROMAINS[i] partout (0-based -> toRoman(i+1)), y compris
+       quand la liste est passee a creerPlancher, sans toucher aux appelants. */
+    function toRoman(n) {
+      n = Math.floor(n);
+      if (!(n >= 1)) return '';
+      var map = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],
+                 [50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+      var r = '';
+      for (var k = 0; k < map.length; k++) {
+        while (n >= map[k][0]) { r += map[k][1]; n -= map[k][0]; }
+      }
+      return r;
+    }
+    const NOMS_ROMAINS = new Proxy({}, {
+      get: function(_t, prop) {
+        var i = Number(prop);
+        return Number.isInteger(i) ? toRoman(i + 1) : undefined;
+      }
+    });
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');

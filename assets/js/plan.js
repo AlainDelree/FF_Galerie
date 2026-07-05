@@ -12,7 +12,9 @@
     fetch(SALLES_PATH + '?v=' + Date.now())
       .then(r => r.json())
       .then(data => {
-        const salles = (data.salles || []).filter(s => s.nom);
+        /* Filtre visibilite : le plan SVG ne montre que les salles visibles
+           (visible !== false), coherent avec la galerie publique. */
+        const salles = (data.salles || []).filter(s => s.nom && s.visible !== false);
         if (!salles.length) return;
 
         const ROOM_W=155, ROOM_H=95, H_GAP=60, V_GAP=40, M=15, DOOR=36;
