@@ -581,46 +581,27 @@
       .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      /* Historique 05/07 : une tentative de "root cause fix" ici (percentages
+      /* Historique 05/07 : une 1re tentative de "root cause fix" ici (percentages
          en chaîne : galerie-principale/conteneur-salles/salle à height:100%)
-         s'est révélée FRAGILE en pratique (grand vide noir sous le plancher,
-         constaté en réel) — les hauteurs en % dans une chaîne flex à hauteur
-         "auto" ne se résolvent pas de façon fiable partout. Retour à la
-         structure ÉPROUVÉE (min-height:unset sur les ancêtres, comme avant),
-         MAIS .salle passe de min-height:100svh à une hauteur EXPLICITE en
-         calc() (cf. juste en dessous) : le scroll restant (~taille du pied de
-         page) n'était pas dû à la structure flex elle-même, mais au fait que
-         .salle réclamait 100% de l'écran SANS tenir compte du pied de page
-         (l'entête, elle, a été supprimée entre-temps — musique déplacée dans
-         le pied). Le calc() soustrait explicitement cet espace, plutôt que de
-         re-tenter une résolution automatique qui a déjà échoué une fois.
-         Second correctif (même session) : body héritait min-height:100vh (règle
-         700px partagée) alors que .salle utilise 100svh — deux unités DIFFÉRENTES
-         (vh = grand viewport, barre d'adresse rétractée ; svh = petit viewport,
-         barre dépliée), qui peuvent différer de 50 à 100px sur mobile. body
-         s'imposait donc une hauteur minimale PLUS GRANDE que ce que .salle+pied
-         remplissaient réellement → vide noir entre le plancher et le pied,
-         bien plus large qu'un simple écart d'estimation du pied. Les deux
-         doivent référencer le MÊME viewport. */
+         s'est révélée FRAGILE en pratique (grand vide noir sous le plancher).
+         Cause RÉELLE identifiée ensuite : body utilisait vh (grand viewport)
+         alors que .salle utilisait svh (petit viewport) — deux unités
+         DIFFÉRENTES pouvant s'écarter de 50-100px sur mobile. Un calc() explicite
+         a servi de filet en attendant (plusieurs ajustements au pixel, jamais
+         parfait — dépend du device). Maintenant que body et .salle référencent
+         le MÊME viewport (svh, ligne suivante), la chaîne flex/pourcentages
+         d'origine devrait enfin se résoudre correctement : on la reprend, pour
+         que le plancher remplisse l'espace réellement disponible (jusqu'au bord
+         du pied de page) SANS estimation en dur — élimine le pixel-tuning. */
       body { min-height:100svh; }
-      .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
-      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
+      .galerie-principale { height:auto !important; min-height:0 !important; overflow-x:clip; }
+      .conteneur-salles { height:100% !important; min-height:0; align-items:stretch; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
          du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
          restant jusqu'au bord bas via son min-height — plus aucune bande de
          fond n'apparaît. */
-      /* .salle en hauteur EXPLICITE (calc), pas min-height:100svh + flex-fill :
-         c'est la recette déjà utilisée ailleurs dans ce fichier pour les mobiles
-         sans scroll (cf. calc(100vh-310px) à 700-900px, calc(100svh-3rem) en
-         paysage) — déterministe, ne dépend d'aucune résolution de pourcentage
-         dans une chaîne flex. overhead = pied de page réel (bouton + copyright
-         + ligne crédits + paddings), ≈ 60px. La valeur 92px précédente
-         compensait EN RÉALITÉ surtout le décalage d'unités vh/svh ci-dessus
-         (corrigé) — redescendue à une estimation plus juste du seul pied de
-         page, sinon le plancher restait trop court (grand vide noir signalé
-         le 05/07). overflow:hidden absorbe un léger excédent. */
-      .salle { height:calc(100svh - 88px) !important; padding:.5rem .5rem 0; overflow:hidden; }
+      .salle { height:100% !important; min-height:0; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
