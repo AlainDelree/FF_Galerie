@@ -581,30 +581,36 @@
       .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      /* Root cause du scroll vertical (identifié le 05/07) : .galerie-principale
-         et .conteneur-salles posent min-height:0 à la base/en paysage (containment
-         flex correct), mais ce bloc l'annulait via min-height:unset — réactivant
-         le piège classique flexbox (« taille minimale auto = celle du contenu »).
-         Combiné au min-height:100svh de .salle (qui ignorait l'entête + le pied
-         de page), la chaîne débordait d'un écran = scroll. Fix : on garde
-         min-height:0 (hérité), et .salle passe de min-height:100svh à height:100%
-         pour remplir EXACTEMENT l'espace réellement disponible (déjà net de
-         l'entête/pied via le flex de body), comme le fait déjà le mode paysage
-         ci-dessous (recette éprouvée, reprise ici telle quelle).
-         Régression corrigée dans la foulée (constatée en nav. privée, plancher
-         minuscule) : body n'avait qu'un min-height:100vh (hérité), une hauteur
-         seulement MINIMALE laisse le calcul flexbox de répartition ambigu selon
-         les navigateurs — sans repère ferme, la zone-basse ne recevait quasi
-         rien à distribuer. body a maintenant une hauteur DÉFINIE. */
-      body { height:100vh; height:100svh; }
-      .galerie-principale { height:auto !important; overflow-x:clip; overflow-y:hidden; }
-      .conteneur-salles { height:100% !important; align-items:stretch; overflow:visible; }
+      /* Historique 05/07 : une tentative de "root cause fix" ici (percentages
+         en chaîne : galerie-principale/conteneur-salles/salle à height:100%)
+         s'est révélée FRAGILE en pratique (grand vide noir sous le plancher,
+         constaté en réel) — les hauteurs en % dans une chaîne flex à hauteur
+         "auto" ne se résolvent pas de façon fiable partout. Retour à la
+         structure ÉPROUVÉE (min-height:unset sur les ancêtres, comme avant),
+         MAIS .salle passe de min-height:100svh à une hauteur EXPLICITE en
+         calc() (cf. juste en dessous) : le scroll restant (~taille du pied de
+         page) n'était pas dû à la structure flex elle-même, mais au fait que
+         .salle réclamait 100% de l'écran SANS tenir compte du pied de page
+         (l'entête, elle, a été supprimée entre-temps — musique déplacée dans
+         le pied). Le calc() soustrait explicitement cet espace, plutôt que de
+         re-tenter une résolution automatique qui a déjà échoué une fois. */
+      .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
+      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
          du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
          restant jusqu'au bord bas via son min-height — plus aucune bande de
          fond n'apparaît. */
-      .salle { height:100% !important; min-height:0; padding:.5rem .5rem 0; overflow:hidden; }
+      /* .salle en hauteur EXPLICITE (calc), pas min-height:100svh + flex-fill :
+         c'est la recette déjà utilisée ailleurs dans ce fichier pour les mobiles
+         sans scroll (cf. calc(100vh-310px) à 700-900px, calc(100svh-3rem) en
+         paysage) — déterministe, ne dépend d'aucune résolution de pourcentage
+         dans une chaîne flex. overhead ≈ pied de page réel maintenant que
+         l'entête a été supprimé (bouton musique déplacé dans le pied) : bouton
+         + copyright (~24px) + ligne crédits (~14px) + padding pied (~10px) ≈
+         70px, avec marge de sécurité. overflow:hidden absorbe un léger excédent
+         (mieux qu'un scroll ou un vide noir en cas d'estimation imparfaite). */
+      .salle { height:calc(100svh - 70px) !important; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
