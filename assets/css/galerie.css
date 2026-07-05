@@ -620,7 +620,7 @@
          (corrigé) — redescendue à une estimation plus juste du seul pied de
          page, sinon le plancher restait trop court (grand vide noir signalé
          le 05/07). overflow:hidden absorbe un léger excédent. */
-      .salle { height:calc(100svh - 60px) !important; padding:.5rem .5rem 0; overflow:hidden; }
+      .salle { height:calc(100svh - 78px) !important; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
