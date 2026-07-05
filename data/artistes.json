@@ -2,12 +2,13 @@
   {
     "id": "daw",
     "nom": "Daw Wanpram",
-    "logo": "DW",
+    "logo": "DA",
     "lien": "artistes/daw/",
     "repoPath": "artistes/daw/data/",
     "prefix": "daw",
     "draft": true,
-    "type": "peinture"
+    "type": "peinture",
+    "genre": "f"
   },
   {
     "id": "dinso",
