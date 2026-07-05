@@ -50,31 +50,6 @@
       }
     },
     {
-      "id": 12,
-      "photo": "artistes/dinso/assets/images/toiles/piece-012.png",
-      "source_photo": "admin",
-      "titre": "",
-      "date": "",
-      "style": "",
-      "materiaux": [],
-      "description": "",
-      "dimensions": {
-        "type": "portrait",
-        "largeur": 24,
-        "hauteur": 38,
-        "profondeur": 24
-      },
-      "visible": true,
-      "socle": 32,
-      "glb": "artistes/dinso/assets/models/piece-012.glb",
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
-    },
-    {
       "id": 13,
       "photo": "artistes/dinso/assets/images/toiles/piece-013.png",
       "source_photo": "admin",
