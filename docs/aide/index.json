@@ -15,6 +15,13 @@
       "maj": "2026-06-30"
     },
     {
+      "id": "visibilite-salles",
+      "fichier": "visibilite-salles.md",
+      "titre": "Masquer ou afficher une salle (faire tourner votre galerie)",
+      "concerne": "tous",
+      "maj": "2026-07-05"
+    },
+    {
       "id": "connexion-token",
       "fichier": "connexion-token.md",
       "titre": "Se connecter : mot de passe et jeton, appareil par appareil",
