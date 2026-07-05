@@ -605,12 +605,12 @@
          c'est la recette déjà utilisée ailleurs dans ce fichier pour les mobiles
          sans scroll (cf. calc(100vh-310px) à 700-900px, calc(100svh-3rem) en
          paysage) — déterministe, ne dépend d'aucune résolution de pourcentage
-         dans une chaîne flex. overhead ≈ pied de page réel maintenant que
-         l'entête a été supprimé (bouton musique déplacé dans le pied) : bouton
-         + copyright (~24px) + ligne crédits (~14px) + padding pied (~10px) ≈
-         70px, avec marge de sécurité. overflow:hidden absorbe un léger excédent
+         dans une chaîne flex. overhead = pied de page réel (bouton + copyright
+         + ligne crédits + paddings). 70px (1re estimation) laissait encore un
+         petit résidu de scroll (~la 2e ligne de crédits), constaté en réel le
+         05/07 → ajusté à 92px. overflow:hidden absorbe un léger excédent
          (mieux qu'un scroll ou un vide noir en cas d'estimation imparfaite). */
-      .salle { height:calc(100svh - 70px) !important; padding:.5rem .5rem 0; overflow:hidden; }
+      .salle { height:calc(100svh - 92px) !important; padding:.5rem .5rem 0; overflow:hidden; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
