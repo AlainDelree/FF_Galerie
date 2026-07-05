@@ -581,30 +581,34 @@
       .etiquette-titre { font-size:.62rem; letter-spacing:.04em; }
     }
     @media (max-width:600px) {
-      /* Historique 05/07 : une 1re tentative de "root cause fix" ici (percentages
-         en chaîne : galerie-principale/conteneur-salles/salle à height:100%)
-         s'est révélée FRAGILE en pratique (grand vide noir sous le plancher).
-         Cause identifiée : body utilisait vh (grand viewport, barre d'adresse
-         rétractée) alors que .salle utilisait svh (petit viewport, barre
-         dépliée) — deux unités DIFFÉRENTES pouvant s'écarter de 50-100px sur
-         mobile. Un calc() explicite a servi de filet en attendant (plusieurs
-         ajustements au pixel, jamais parfait). Solution définitive : dvh
-         (dynamic viewport height) au lieu de svh — technique DÉJÀ éprouvée et
-         mergée en prod sur ce même site pour ce problème exact (pages courtes
-         infos/contact/apropos, .scene-entree) : dvh suit l'écran RÉELLEMENT
-         visible à tout instant (barre dépliée ou repliée), donc aucun décalage
-         possible entre body et le reste, et la chaîne de pourcentages peut
-         enfin remplir l'espace exact jusqu'au pied de page, sans estimation
-         en dur. vh en repli pour les navigateurs sans dvh. */
-      body { min-height:100vh; min-height:100dvh; }
-      .galerie-principale { height:auto !important; min-height:0 !important; overflow-x:clip; }
-      .conteneur-salles { height:100% !important; min-height:0; align-items:stretch; overflow:visible; }
+      /* Historique 05/07 : DEUX tentatives de "root cause fix" par chaîne de
+         pourcentages (galerie-principale/conteneur-salles/salle en height:100%)
+         ont échoué EN RÉEL, la seconde même après correction du décalage
+         d'unités vh/svh/dvh identifié entre les deux essais — un vrai vide noir
+         la 1re fois, un plancher minuscule + vide des deux côtés la 2e. Que la
+         cause exacte du 2e échec reste incertaine ou non, deux échecs réels sur
+         la même technique suffisent à l'abandonner DÉFINITIVEMENT, malgré une
+         théorie qui semblait pourtant tenir. Retour au calc() EXPLICITE (recette
+         déjà utilisée ailleurs dans ce fichier pour les mobiles sans scroll :
+         calc(100vh-310px) à 700-900px, calc(100svh-3rem) en paysage) — on ne
+         dépend plus d'aucune résolution de pourcentage dans une chaîne flex,
+         seulement d'une soustraction directe. dvh (au lieu de svh) pour la
+         précision : suit l'écran réellement visible, contrairement à svh qui
+         fige le pire cas. Overhead = pied de page réel, dernière valeur
+         calibrée avant la 2e tentative (~90px, "trop de noir" mais fonctionnel
+         sans être parfait). */
+      .galerie-principale { height:auto !important; min-height:unset !important; overflow-x:clip; }
+      .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
          du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
          restant jusqu'au bord bas via son min-height — plus aucune bande de
          fond n'apparaît. */
-      .salle { height:100% !important; min-height:0; padding:.5rem .5rem 0; overflow:hidden; }
+      .salle {
+        height:calc(100vh - 90px) !important;
+        height:calc(100dvh - 90px) !important;
+        padding:.5rem .5rem 0; overflow:hidden;
+      }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
