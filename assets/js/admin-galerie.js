@@ -1238,7 +1238,7 @@ function quitterModePlacement() {
 
 /* Met à jour le panneau de contrôle fixe selon la toile sélectionnée sur le mur */
 /* Adapte le panneau de contrôle (#pl-ctrl-cross) au type de salle active :
-   - PEINTURE : D-pad complet ↑↓←→ + ✕ + 👁 (déplacement par flèches utile)
+   - PEINTURE : D-pad complet ↑↓←→ + ✕ + 🔍 (déplacement par flèches utile)
    - SCULPTURE : ✕ Retirer seul (les pièces sont déplacées par drag sur le sol)
    On bascule en CSS classes pour préserver les boutons et leurs listeners
    (attachés au chargement dans admin.js → pas besoin de re-bind). */

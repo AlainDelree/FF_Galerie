@@ -1258,7 +1258,7 @@ $('btn-grille-pl').addEventListener('click', function() {
   /* ── Drag-and-drop du panneau de contrôle ──
      L'utilisateur peut déplacer librement le panneau pour ne pas masquer
      une toile du strip. Seuil de 6px avant d'activer le drag pour que les
-     clics sur les boutons ↑↓←→ ✕ 👁 restent fiables. Position préservée
+     clics sur les boutons ↑↓←→ ✕ 🔍 restent fiables. Position préservée
      pendant toute la session (jusqu'à reload). */
   (function _initDragPanelCtrl() {
     var panel = document.getElementById('pl-ctrl-panel');
