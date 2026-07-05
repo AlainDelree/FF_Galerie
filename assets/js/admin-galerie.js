@@ -474,10 +474,13 @@ function afficherPlan() {
     var _nb = _ids.size;
     /* Type de la salle pour bordure colorée (peinture/sculpture) */
     var _typeS = s.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
+    var _masquee = (s.visible === false);
     const chip = document.createElement('div');
-    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '');
+    chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '') + (_masquee ? ' chip-masquee' : '');
+    if (_masquee) chip.style.opacity = '0.5';
 
-    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>`;
+    var _mMark = _masquee ? '<div class="cb" style="color:#c0392b;font-weight:600;display:flex;align-items:center;gap:3px;">' + _svgOeil(true, 11) + ' masquée</div>' : '';
+    chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>` + _mMark;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
       const restant = Math.max(0, 60 - elapsed);
@@ -577,6 +580,36 @@ function _majApparenceSelonSalle() {
   if (btnMur) btnMur.title = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
   var popMurT = document.getElementById('pop-mur-titre');
   if (popMurT) popMurT.textContent = estSculpt ? 'Couleur du sol' : 'Couleur du mur';
+  _majBoutonVisible();
+}
+
+/* Synchronise l'icône du bouton « Visible sur le site » avec l'état de la
+   salle active : œil (visible) / œil barré (masquée), en rouge si masquée. */
+/* Icône œil (visible) / œil barré (masquée) — SVG inline, bien plus parlant
+   qu'un 🚫 générique pour la notion de visibilité. Réutilisée par le bouton
+   toggle, la chip du plan et le badge de la carte Arrangement (admin-tdb.js). */
+function _svgOeil(masquee, taille) {
+  var s = taille || 16;
+  var open = '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  if (masquee) {
+    return open +
+      '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>' +
+      '<path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>' +
+      '<path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>' +
+      '<line x1="2" y1="2" x2="22" y2="22"/></svg>';
+  }
+  return open + '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+function _majBoutonVisible() {
+  var btn = document.getElementById('btn-toggle-visible');
+  if (!btn || !salleActive) return;
+  var masquee = (salleActive.visible === false);
+  btn.innerHTML = _svgOeil(masquee, 18);
+  btn.title = masquee
+    ? 'Salle MASQUÉE sur le site — cliquer pour l\'afficher'
+    : 'Salle visible sur le site — cliquer pour la masquer';
+  btn.classList.toggle('ico-btn-danger', masquee);
 }
 
 function selectSalle(id) {
@@ -1205,7 +1238,7 @@ function quitterModePlacement() {
 
 /* Met à jour le panneau de contrôle fixe selon la toile sélectionnée sur le mur */
 /* Adapte le panneau de contrôle (#pl-ctrl-cross) au type de salle active :
-   - PEINTURE : D-pad complet ↑↓←→ + ✕ + 👁 (déplacement par flèches utile)
+   - PEINTURE : D-pad complet ↑↓←→ + ✕ + 🔍 (déplacement par flèches utile)
    - SCULPTURE : ✕ Retirer seul (les pièces sont déplacées par drag sur le sol)
    On bascule en CSS classes pour préserver les boutons et leurs listeners
    (attachés au chargement dans admin.js → pas besoin de re-bind). */

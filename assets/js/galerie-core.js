@@ -48,7 +48,27 @@ function _chargerOeuvres() {
 
     let salleCourante = 1;
     let TOTAL_SALLES = 0; // défini dynamiquement après chargement JSON
-    const NOMS_ROMAINS = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+    /* Chiffres romains generes a la volee (plus de liste figee a 10 entrees :
+       au-dela de X la nav affichait 'undefined'). Le Proxy preserve la syntaxe
+       d'indexation NOMS_ROMAINS[i] partout (0-based -> toRoman(i+1)), y compris
+       quand la liste est passee a creerPlancher, sans toucher aux appelants. */
+    function toRoman(n) {
+      n = Math.floor(n);
+      if (!(n >= 1)) return '';
+      var map = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],
+                 [50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+      var r = '';
+      for (var k = 0; k < map.length; k++) {
+        while (n >= map[k][0]) { r += map[k][1]; n -= map[k][0]; }
+      }
+      return r;
+    }
+    const NOMS_ROMAINS = new Proxy({}, {
+      get: function(_t, prop) {
+        var i = Number(prop);
+        return Number.isInteger(i) ? toRoman(i + 1) : undefined;
+      }
+    });
     const conteneur  = document.getElementById('conteneurSalles');
     const btnPrev    = document.getElementById('btnPrecedent');
     const btnNext    = document.getElementById('btnSuivant');
@@ -638,11 +658,54 @@ function initGalerie() {
       try { window._FF_APPLY_LOCAL_LAYOUT(salles); }
       catch (e) { console.warn('[local-edit]', e); }
     }
-    TOTAL_SALLES = salles.length;
+    /* Filtre visibilité — concerne UNIQUEMENT le vrai public (fetch de
+       salles.json). Le filtre sert à composer la galerie publique : masquer une
+       salle = ne pas l'y inclure. Il ne s'applique donc PAS quand l'admin
+       injecte des données :
+         - arrangeur (_GALERIE_EDIT) : on agence, toutes les salles ;
+         - aperçu (_GALERIE_INJECTED) : l'admin a DÉJÀ choisi quoi prévisualiser
+           (souvent une seule salle pour l'aperçu peinture). On rend exactement
+           ce qu'il fournit — sinon prévisualiser une salle masquée affichait le
+           message « travaux » au lieu de la salle (bug 05/07). La fidélité au
+           public = le RENDU de la salle, pas sa présence/absence.
+       Seul un fetch réel (ni EDIT ni INJECTED) filtre + retombe sur « travaux ». */
+    var _injecte = !!window._GALERIE_INJECTED;
+    let sallesRendues = (window._GALERIE_EDIT || _injecte)
+      ? salles
+      : salles.filter(s => s.visible !== false);
+    /* Repli « travaux » — public réel seulement : si toutes les salles sont
+       masquées, le visiteur voit un message au lieu d'un écran vide, et la nav
+       ne divise pas par TOTAL_SALLES = 0. */
+    if (!window._GALERIE_EDIT && !_injecte && sallesRendues.length === 0) {
+      sallesRendues = [{
+        id: '__travaux__',
+        nom: 'Galerie en réaménagement',
+        _message: 'La galerie est momentanément en cours de réaménagement. Merci de revenir bientôt \u2014 les salles seront de nouveau visibles très prochainement.'
+      }];
+    }
+    TOTAL_SALLES = sallesRendues.length;
     const _hm = window.location.hash.match(/^#salle-(\d+)$/);
     conteneur.style.width = (TOTAL_SALLES * 100) + '%';
 
-    salles.forEach((salle, si) => {
+    sallesRendues.forEach((salle, si) => {
+      /* Salle « travaux » synthétique : message centré, ni renderer ni portes. */
+      if (salle._message) {
+        const salleDiv = document.createElement('div');
+        salleDiv.className = 'salle salle-message';
+        salleDiv.id = 'salle-travaux';
+        salleDiv.style.width = (100 / TOTAL_SALLES) + '%';
+        salleDiv.setAttribute('aria-label', salle.nom);
+        const nomEl = document.createElement('p');
+        nomEl.className = 'nom-salle';
+        nomEl.textContent = salle.nom;
+        salleDiv.appendChild(nomEl);
+        const msg = document.createElement('p');
+        msg.textContent = salle._message;
+        msg.style.cssText = 'color:var(--text-doux,#c9b98f);font-style:italic;text-align:center;padding:2rem 1.5rem;max-width:34rem;margin:auto;line-height:1.7;';
+        salleDiv.appendChild(msg);
+        conteneur.appendChild(salleDiv);
+        return;
+      }
       const type = salle.type || 'peinture';
       const renderer = GALERIE_RENDERERS[type];
       if (!renderer) {
@@ -668,7 +731,7 @@ function initGalerie() {
       nomEl.textContent = salle.nom || ('Salle ' + NOMS_ROMAINS[salle.id - 1]);
       salleDiv.appendChild(nomEl);
 
-      renderer(salleDiv, salle, si, salles, tData);
+      renderer(salleDiv, salle, si, sallesRendues, tData);
 
       conteneur.appendChild(salleDiv);
     });
@@ -677,7 +740,7 @@ function initGalerie() {
 
     const hashId = parseInt((_hm || [])[1]);
     if (hashId) {
-      const hashIdx = salles.findIndex(s => s.id === hashId) + 1;
+      const hashIdx = sallesRendues.findIndex(s => s.id === hashId) + 1;
       const cible   = hashIdx > 0 ? hashIdx : 1;
       conteneur.style.transition = 'none';
       allerSalle(cible);
