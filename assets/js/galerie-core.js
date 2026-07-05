@@ -658,18 +658,25 @@ function initGalerie() {
       try { window._FF_APPLY_LOCAL_LAYOUT(salles); }
       catch (e) { console.warn('[local-edit]', e); }
     }
-    /* Filtre visibilité : la galerie publique n'affiche que les salles dont
-       visible !== false. En mode édition/arrangeur (_GALERIE_EDIT), on garde
-       TOUTES les salles pour que l'admin puisse encore agencer une salle
-       masquée. L'admin (apercu compris) sélectionne les salles via les chips,
-       pas via ce rendu, donc filtrer ici ne gêne pas l'édition. */
-    let sallesRendues = window._GALERIE_EDIT
+    /* Filtre visibilité — concerne UNIQUEMENT le vrai public (fetch de
+       salles.json). Le filtre sert à composer la galerie publique : masquer une
+       salle = ne pas l'y inclure. Il ne s'applique donc PAS quand l'admin
+       injecte des données :
+         - arrangeur (_GALERIE_EDIT) : on agence, toutes les salles ;
+         - aperçu (_GALERIE_INJECTED) : l'admin a DÉJÀ choisi quoi prévisualiser
+           (souvent une seule salle pour l'aperçu peinture). On rend exactement
+           ce qu'il fournit — sinon prévisualiser une salle masquée affichait le
+           message « travaux » au lieu de la salle (bug 05/07). La fidélité au
+           public = le RENDU de la salle, pas sa présence/absence.
+       Seul un fetch réel (ni EDIT ni INJECTED) filtre + retombe sur « travaux ». */
+    var _injecte = !!window._GALERIE_INJECTED;
+    let sallesRendues = (window._GALERIE_EDIT || _injecte)
       ? salles
       : salles.filter(s => s.visible !== false);
-    /* Cas « toutes masquées » (hors édition) : on injecte une salle « travaux »
-       de repli — le visiteur voit un message au lieu d'un écran vide, et la nav
+    /* Repli « travaux » — public réel seulement : si toutes les salles sont
+       masquées, le visiteur voit un message au lieu d'un écran vide, et la nav
        ne divise pas par TOTAL_SALLES = 0. */
-    if (!window._GALERIE_EDIT && sallesRendues.length === 0) {
+    if (!window._GALERIE_EDIT && !_injecte && sallesRendues.length === 0) {
       sallesRendues = [{
         id: '__travaux__',
         nom: 'Galerie en réaménagement',
