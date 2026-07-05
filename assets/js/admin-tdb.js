@@ -441,6 +441,16 @@ function _creerCarteVue(facette, salle, lbl, opts) {
 
   card.appendChild(preview);
   card.appendChild(footer);
+  /* Salle masquée du site public : badge « œil barré + Masquée » bien visible
+     dans le coin supérieur droit de la carte (plus parlant qu'une bordure). */
+  if (salle.visible === false) {
+    card.style.position = 'relative';
+    var _masq = document.createElement('div');
+    _masq.className = 'tdb-card-masquee';
+    _masq.innerHTML = (typeof _svgOeil === 'function' ? _svgOeil(true, 13) : '') + '<span>Masqu\u00E9e</span>';
+    _masq.title = 'Cette salle est masqu\u00E9e : invisible sur le site public';
+    card.appendChild(_masq);
+  }
   return card;
 }
 

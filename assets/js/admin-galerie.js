@@ -479,7 +479,7 @@ function afficherPlan() {
     chip.className = 'chip chip-' + _typeS + (_nb === 0 ? ' vide' : '') + (_masquee ? ' chip-masquee' : '');
     if (_masquee) chip.style.opacity = '0.5';
 
-    var _mMark = _masquee ? '<div class="cb" style="color:#c0392b;font-weight:600;">\uD83D\uDEAB masquée</div>' : '';
+    var _mMark = _masquee ? '<div class="cb" style="color:#c0392b;font-weight:600;display:flex;align-items:center;gap:3px;">' + _svgOeil(true, 11) + ' masquée</div>' : '';
     chip.innerHTML = `<div class="cn">${s.nom}</div><div class="cb">${_nb} ${_nb > 1 ? LBL.items : LBL.item}</div>` + _mMark;
     if (sallesEnAttente.has(s.id)) {
       const elapsed = Math.floor((Date.now() - sallesEnAttente.get(s.id)) / 1000);
@@ -584,12 +584,28 @@ function _majApparenceSelonSalle() {
 }
 
 /* Synchronise l'icône du bouton « Visible sur le site » avec l'état de la
-   salle active : 👁 = visible, 🚫 = masquée (grisée + rouge). */
+   salle active : œil (visible) / œil barré (masquée), en rouge si masquée. */
+/* Icône œil (visible) / œil barré (masquée) — SVG inline, bien plus parlant
+   qu'un 🚫 générique pour la notion de visibilité. Réutilisée par le bouton
+   toggle, la chip du plan et le badge de la carte Arrangement (admin-tdb.js). */
+function _svgOeil(masquee, taille) {
+  var s = taille || 16;
+  var open = '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  if (masquee) {
+    return open +
+      '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>' +
+      '<path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>' +
+      '<path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>' +
+      '<line x1="2" y1="2" x2="22" y2="22"/></svg>';
+  }
+  return open + '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
 function _majBoutonVisible() {
   var btn = document.getElementById('btn-toggle-visible');
   if (!btn || !salleActive) return;
   var masquee = (salleActive.visible === false);
-  btn.textContent = masquee ? '🚫' : '👁';
+  btn.innerHTML = _svgOeil(masquee, 18);
   btn.title = masquee
     ? 'Salle MASQUÉE sur le site — cliquer pour l\'afficher'
     : 'Salle visible sur le site — cliquer pour la masquer';
