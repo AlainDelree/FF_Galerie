@@ -17,7 +17,7 @@
     "lien": "artistes/dinso/",
     "repoPath": "artistes/dinso/data/",
     "prefix": "dinso",
-    "draft": true,
+    "draft": false,
     "genre": "m",
     "type": "sculpture"
   }
