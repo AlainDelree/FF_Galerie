@@ -67,7 +67,7 @@
       "couleur_cadres": "#5c3d2e",
       "epaisseur_cadres": 2,
       "texture": "parquet",
-      "visible": true,
+      "visible": false,
       "toiles": [],
       "positions": [],
       "positions_mobile": [],
