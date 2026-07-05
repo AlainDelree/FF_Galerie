@@ -590,7 +590,13 @@
          min-height:0 (hérité), et .salle passe de min-height:100svh à height:100%
          pour remplir EXACTEMENT l'espace réellement disponible (déjà net de
          l'entête/pied via le flex de body), comme le fait déjà le mode paysage
-         ci-dessous (recette éprouvée, reprise ici telle quelle). */
+         ci-dessous (recette éprouvée, reprise ici telle quelle).
+         Régression corrigée dans la foulée (constatée en nav. privée, plancher
+         minuscule) : body n'avait qu'un min-height:100vh (hérité), une hauteur
+         seulement MINIMALE laisse le calcul flexbox de répartition ambigu selon
+         les navigateurs — sans repère ferme, la zone-basse ne recevait quasi
+         rien à distribuer. body a maintenant une hauteur DÉFINIE. */
+      body { height:100vh; height:100svh; }
       .galerie-principale { height:auto !important; overflow-x:clip; overflow-y:hidden; }
       .conteneur-salles { height:100% !important; align-items:stretch; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
