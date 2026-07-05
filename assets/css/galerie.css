@@ -471,26 +471,37 @@
 
       /* Plan lointain — Accueil → (près du mur, entre lointain et mur-inf) */
       .pan-accueil           { left:86%; bottom:130px; }
-      .pan-accueil .pan-board { font-size:.7rem; padding:4px 10px; border-width:1.4px; }
-      .pan-accueil .pan-pole  { height:26px; }
-      .pan-accueil .pan-base  { width:30px; height:8px; }
+      .pan-accueil .pan-board { font-size:1.05rem; padding:6px 15px; border-width:2px; }
+      .pan-accueil .pan-pole  { height:39px; }
+      .pan-accueil .pan-base  { width:45px; height:12px; }
 
       /* Plan milieu — ← Infos (mi-parquet) */
       .pan-infos           { left:9%; bottom:88px; }
-      .pan-infos .pan-board { font-size:.7rem; padding:4px 10px; border-width:1.4px; }
-      .pan-infos .pan-pole  { height:26px; }
-      .pan-infos .pan-base  { width:30px; height:8px; }
+      .pan-infos .pan-board { font-size:1.05rem; padding:6px 15px; border-width:2px; }
+      .pan-infos .pan-pole  { height:39px; }
+      .pan-infos .pan-base  { width:45px; height:12px; }
 
       /* Plan avant — Contact ↓ (grand, bas sur le parquet) */
       .pan-contact           { left:67%; bottom:8px; }
-      .pan-contact .pan-board { font-size:.82rem; padding:6px 13px; border-width:1.8px; }
-      .pan-contact .pan-pole  { height:34px; }
-      .pan-contact .pan-base  { width:36px; height:11px; }
+      .pan-contact .pan-board { font-size:1.25rem; padding:9px 20px; border-width:2.5px; }
+      .pan-contact .pan-pole  { height:50px; }
+      .pan-contact .pan-base  { width:54px; height:16px; }
 
       /* Corps */
       body { display:flex; flex-direction:column; min-height:100vh; overflow:hidden; }
       .galerie-principale { flex:1 !important; min-height:0 !important; overflow:hidden; }
-      .pied { flex-shrink:0; padding:.28rem 0; }
+      /* Pied : le header a été retiré (bouton musique relogé ici, cf. HTML)
+         -> on récupère toute sa hauteur. Ligne 1 = bouton + copyright ;
+         la ligne crédits (longue) passe systématiquement en dessous
+         (flex-basis:100%) pour ne jamais se chevaucher avec le bouton. */
+      .pied {
+        flex-shrink:0; padding:.3rem .6rem;
+        display:flex; align-items:center; justify-content:center;
+        flex-wrap:wrap; column-gap:.5rem; row-gap:.1rem;
+      }
+      .pied .controles { position:static !important; display:flex; }
+      .pied .btn-musique { width:1.5rem; height:1.5rem; font-size:.78rem; }
+      .pied .mention-musique { flex-basis:100%; text-align:center; }
 
       /* Mur : overhead = nom(43)+mur-inf(52)+plancher(175)+footer(34)+marge(6) = 310px */
       .mur.mur-grille {
@@ -670,7 +681,13 @@
     @media (orientation:landscape) and (max-height:500px) {
       html, body { height:100svh; overflow:hidden; }
       body { display:flex; flex-direction:column; }
-      .pied { display:none; }
+      /* Pied : plus de display:none — le bouton musique vit maintenant dedans
+         (relogé depuis l'ex-header). On masque juste les mentions texte et on
+         fait flotter le bouton en position fixe (comme avant, quand il vivait
+         dans .entete) : .pied redevient un conteneur vide, ~0 hauteur. */
+      .pied { display:block; padding:0; border:0; background:transparent; }
+      .pied .mention { display:none; }
+      .pied .controles { position:fixed !important; right:.6rem; top:.5rem; z-index:101; }
 
       /* Header */
       .entete { padding:.18rem .8rem !important; flex-shrink:0; }
