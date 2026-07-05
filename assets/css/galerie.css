@@ -574,9 +574,9 @@
       .conteneur-salles { height:auto !important; min-height:unset !important; align-items:flex-start; overflow:visible; }
       /* Règle salle unifiée. padding-bottom RETIRÉ : il créait une bande du
          fond de la salle (couleur_mur_piece) visible sous le plancher, à côté
-         du parquet et du mur-bas. La réserve d'espace pour la nav-mobile fixe
-         est désormais portée par le min-height du plancher (jaune), qui remplit
-         ainsi jusqu'au bord bas — plus aucune bande de fond n'apparaît. */
+         du parquet et du mur-bas. Le plancher (jaune) remplit désormais l'espace
+         restant jusqu'au bord bas via son min-height — plus aucune bande de
+         fond n'apparaît. */
       .salle { height:auto !important; min-height:100svh; padding:.5rem .5rem 0; }
       /* Zone-basse déborde du padding salle pour être plein écran (0.5rem × 2) */
       .salle-grille .zone-basse { margin-left:-.5rem; margin-right:-.5rem; width:calc(100% + 1rem); }
@@ -584,12 +584,11 @@
       .salle { overflow-x: clip; }
       /* Zone-basse et plancher remplissent l'espace restant → plus de vide noir sous le parquet */
       .zone-basse { flex:1; }
-      /* Plancher mobile : remplit l'espace jusqu'au bord bas. Le +80px de réserve
-         (≈ hauteur nav-mobile fixe + home indicator) garantit que le sol passe
-         SOUS la nav translucide au lieu de laisser apparaître le fond de salle. */
-      .plancher-sol { flex:1; min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px) + 80px); max-height:none; }
+      /* Plancher mobile : remplit l'espace jusqu'au bord bas. La nav-mobile en
+         bas a été retirée (portes + swipe suffisent) -> plus de réserve de place
+         pour elle ; seule reste la marge pour le home indicator (safe-area). */
+      .plancher-sol { flex:1; min-height:calc(4.5rem + env(safe-area-inset-bottom, 0px)); max-height:none; }
       /* Navigation mobile */
-      .nav-mobile { display:flex !important; padding-bottom:calc(.8rem + env(safe-area-inset-bottom, 0px)); }
       body { overflow-x:hidden; }
       /* Mur grille sur mobile : laisse de la place pour les portes */
       .mur.mur-grille {
@@ -748,7 +747,6 @@
       .pm-fleche    { font-size:1.1rem; bottom:10px; }
 
       .plancher-sol { display:none !important; }
-      .nav-mobile   { display:none !important; }
 
       /* Modal cote a cote */
       .modal-overlay    { padding:.4rem; align-items:center; }
@@ -761,7 +759,7 @@
 
 /* ── Flèches latérales fixes (PC) ────────────────────────────────
    Navigation permanente entre salles, en complément des portes.
-   Cachées sur mobile (nav-mobile en bas suffit). */
+   Cachées sur mobile (portes + swipe suffisent ; plus de nav-mobile). */
 .nav-cote {
   position: fixed; top: 50%; transform: translateY(-50%);
   width: 2.6rem; height: 4rem; padding: 0;
