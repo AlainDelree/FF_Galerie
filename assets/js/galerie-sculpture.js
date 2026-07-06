@@ -739,11 +739,12 @@ if (window._GALERIE_EDIT) {
 
     /* ── Anti-chevauchement au sol : empreinte elliptique + blocage dur ── */
     var FLATTEN = 0.42; /* aplatissement de l'ellipse au sol : hauteur/largeur (réglable) */
+    var MARGIN  = 1.6;  /* l'empreinte déborde la largeur du socle pour bien ENTOURER la pièce (réglable) */
     function _footprint(wrap, y) {
       var r = plancher.getBoundingClientRect();
       var W = r.width || 1, H = r.height || 1;
       var s = 1 - (y / 100) * 0.42;                  /* perspective, identique au rendu */
-      var halfW = (wrap.offsetWidth * s) / 2;        /* demi-largeur visuelle en px */
+      var halfW = (wrap.offsetWidth * s * MARGIN) / 2; /* demi-largeur en px, avec marge autour de la pièce */
       var halfH = halfW * FLATTEN;                   /* demi-profondeur en px → ellipse couchée */
       return { rx: halfW / W * 100, ry: halfH / H * 100 };  /* en % de chaque axe (px-cohérent) */
     }
