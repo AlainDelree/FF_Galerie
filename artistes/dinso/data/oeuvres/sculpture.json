@@ -1,5 +1,5 @@
 {
-  "next_id": 15,
+  "next_id": 16,
   "gabarits": [
     {
       "code": "S",
@@ -92,6 +92,25 @@
       "visible": true,
       "socle": 43,
       "glb": "artistes/dinso/assets/models/piece-014.glb"
+    },
+    {
+      "id": 15,
+      "photo": "artistes/dinso/assets/images/toiles/piece-015.png",
+      "source_photo": "admin",
+      "titre": "La Boule",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 104,
+        "hauteur": 81,
+        "profondeur": 104
+      },
+      "visible": true,
+      "socle": 136,
+      "glb": "artistes/dinso/assets/models/piece-015.glb"
     }
   ]
 }
