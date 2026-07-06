@@ -738,13 +738,14 @@ if (window._GALERIE_EDIT) {
     });
 
     /* ── Anti-chevauchement au sol : empreinte elliptique + blocage dur ── */
-    var DEPTH_RATIO = 0.55; /* aplatissement profondeur/largeur de l'empreinte (réglable) */
+    var FLATTEN = 0.42; /* aplatissement de l'ellipse au sol : hauteur/largeur (réglable) */
     function _footprint(wrap, y) {
-      var cw = plancher.getBoundingClientRect().width || 1;
-      var wPct = (wrap.offsetWidth / cw) * 100;      /* largeur nominale en % du sol */
+      var r = plancher.getBoundingClientRect();
+      var W = r.width || 1, H = r.height || 1;
       var s = 1 - (y / 100) * 0.42;                  /* perspective, identique au rendu */
-      var rx = (wPct * s) / 2;
-      return { rx: rx, ry: rx * DEPTH_RATIO };
+      var halfW = (wrap.offsetWidth * s) / 2;        /* demi-largeur visuelle en px */
+      var halfH = halfW * FLATTEN;                   /* demi-profondeur en px → ellipse couchée */
+      return { rx: halfW / W * 100, ry: halfH / H * 100 };  /* en % de chaque axe (px-cohérent) */
     }
     function _chevauche(ax, ay, af, bx, by, bf) {
       var nx = (ax - bx) / (af.rx + bf.rx);
