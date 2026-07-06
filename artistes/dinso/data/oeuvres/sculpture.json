@@ -1,5 +1,5 @@
 {
-  "next_id": 17,
+  "next_id": 18,
   "gabarits": [
     {
       "code": "S",
@@ -130,6 +130,25 @@
       "visible": true,
       "socle": 49,
       "glb": "artistes/dinso/assets/models/piece-016.glb"
+    },
+    {
+      "id": 17,
+      "photo": "artistes/dinso/assets/images/toiles/piece-017.png",
+      "source_photo": "admin",
+      "titre": "Flèche",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 105,
+        "hauteur": 47,
+        "profondeur": 13
+      },
+      "visible": true,
+      "socle": 137,
+      "glb": "artistes/dinso/assets/models/piece-017.glb"
     }
   ]
 }
