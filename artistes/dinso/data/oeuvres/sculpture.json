@@ -1,5 +1,5 @@
 {
-  "next_id": 19,
+  "next_id": 20,
   "gabarits": [
     {
       "code": "S",
@@ -168,6 +168,25 @@
       "visible": true,
       "socle": 46,
       "glb": "artistes/dinso/assets/models/piece-018.glb"
+    },
+    {
+      "id": 19,
+      "photo": "artistes/dinso/assets/images/toiles/piece-019.png",
+      "source_photo": "admin",
+      "titre": "Lave",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 8,
+        "hauteur": 3,
+        "profondeur": 7
+      },
+      "visible": true,
+      "socle": 15,
+      "glb": "artistes/dinso/assets/models/piece-019.glb"
     }
   ]
 }
