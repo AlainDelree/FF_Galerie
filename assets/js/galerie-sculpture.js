@@ -642,36 +642,44 @@ function ouvrirVitrine(piece, pieces, opts) {
              : 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 26px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.06);');
 
   /* Fond : 6 lattes verticales (bois) ; panneau gris uni (vitrée) */
-  /* Fond + parois latérales CONVERGENTES (perspective de boîte) — bois ET vitrée */
+  /* Intérieur = vraie BOÎTE en perspective : fond UNI + parois + plafond + plancher
+     convergeant tous vers le même rectangle de fond (bois ET vitrée). */
   (function () {
-    var back = document.createElement('div');
-    back.style.cssText = 'position:absolute;inset:0;z-index:0;display:flex;pointer-events:none;overflow:hidden;';
-    if (estBois) {
-      for (var L = 0; L < 6; L++) {
-        var latte = document.createElement('div');
-        latte.style.cssText = 'flex:1;height:100%;box-shadow:inset -2px 0 3px rgba(0,0,0,.24);' +
-          'background:linear-gradient(90deg,' + _teinte(couleurV, -0.20) + ' 0%,' + _teinte(couleurV, -0.08) + ' 42%,' + _teinte(couleurV, -0.12) + ' 100%);';
-        back.appendChild(latte);
-      }
-    } else {
-      var grey = document.createElement('div');   /* fond dérivé de la couleur (comme le bois) */
-      grey.style.cssText = 'flex:1;height:100%;background:linear-gradient(180deg,' + _teinte(couleurV, -0.02) + ',' + _teinte(couleurV, -0.14) + ');';
-      back.appendChild(grey);
+    var IX = 16, IY = 9;                       /* retrait horizontal / vertical du fond */
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;';
+
+    var fond = document.createElement('div');  /* fond uni = le plus loin, le plus sombre */
+    fond.style.cssText = 'position:absolute;inset:0;background:' +
+      (estBois ? _teinte(couleurV, -0.20)
+               : ('linear-gradient(180deg,' + _teinte(couleurV, -0.10) + ',' + _teinte(couleurV, -0.22) + ')')) + ';';
+    box.appendChild(fond);
+
+    var wL = document.createElement('div');    /* paroi gauche : claire dehors → ombre au fond */
+    wL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:' + IX + '%;' +
+      'clip-path:polygon(0 0,100% ' + IY + '%,100% ' + (100 - IY) + '%,0 100%);' +
+      'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ',' + _teinte(couleurV, -0.32) + ');';
+    var wR = document.createElement('div');    /* paroi droite */
+    wR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:' + IX + '%;' +
+      'clip-path:polygon(0 ' + IY + '%,100% 0,100% 100%,0 ' + (100 - IY) + '%);' +
+      'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ',' + _teinte(couleurV, -0.32) + ');';
+    var plaf = document.createElement('div');  /* plafond : en ombre, fuit vers le fond */
+    plaf.style.cssText = 'position:absolute;top:0;left:0;right:0;height:' + IY + '%;' +
+      'clip-path:polygon(0 0,100% 0,' + (100 - IX) + '% 100%,' + IX + '% 100%);' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, -0.30) + ',' + _teinte(couleurV, -0.12) + ');';
+    var sol = document.createElement('div');   /* plancher : éclairé */
+    sol.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:' + IY + '%;' +
+      'clip-path:polygon(' + IX + '% 0,' + (100 - IX) + '% 0,100% 100%,0 100%);' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, -0.14) + ',' + _teinte(couleurV, 0.07) + ');';
+    box.appendChild(wL); box.appendChild(wR); box.appendChild(plaf); box.appendChild(sol);
+
+    if (!estBois) {                            /* voile de verre translucide sur l'intérieur */
+      var sheen = document.createElement('div');
+      sheen.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+        'background:linear-gradient(120deg,rgba(255,255,255,.10),transparent 30%,rgba(255,255,255,.05) 60%,transparent);';
+      box.appendChild(sheen);
     }
-    var wLbg = estBois
-      ? 'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
-      : 'background:linear-gradient(100deg,rgba(255,255,255,.18),transparent 32%),linear-gradient(90deg,' + _teinte(couleurV, 0.18) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
-    var wRbg = estBois
-      ? 'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
-      : 'background:linear-gradient(260deg,rgba(255,255,255,.18),transparent 32%),linear-gradient(270deg,' + _teinte(couleurV, 0.18) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
-    var wallL = document.createElement('div');
-    wallL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:16%;box-shadow:inset -4px 0 7px rgba(0,0,0,.34);' +
-      'clip-path:polygon(0 0,100% 8%,100% 92%,0 100%);' + wLbg;
-    var wallR = document.createElement('div');
-    wallR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:16%;box-shadow:inset 4px 0 7px rgba(0,0,0,.34);' +
-      'clip-path:polygon(0 8%,100% 0,100% 100%,0 92%);' + wRbg;
-    back.appendChild(wallL); back.appendChild(wallR);
-    cabinet.appendChild(back);
+    cabinet.appendChild(box);
   })();
 
   for (var plv = 1; plv <= nPv; plv++) {
