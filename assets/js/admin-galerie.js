@@ -1775,6 +1775,15 @@ function afficherStripPlacement() {
         img.src = t.photo;
       }
       si.appendChild(img);
+    } else if (t.est_vitrine) {
+      const phv = document.createElement('div');
+      phv.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(181,143,62,.18);border-radius:3px;';
+      phv.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="5" y="3" width="14" height="18" rx="1" stroke="#d8b25e" stroke-width="1.5" fill="none"/>' +
+        '<line x1="5" y1="9"  x2="19" y2="9"  stroke="#d8b25e" stroke-width="1.3"/>' +
+        '<line x1="5" y1="15" x2="19" y2="15" stroke="#d8b25e" stroke-width="1.3"/>' +
+        '<line x1="12" y1="3" x2="12" y2="21" stroke="#d8b25e" stroke-width="1"/></svg>';
+      si.appendChild(phv);
     } else {
       const ph = document.createElement('div');
       ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.5);border-radius:3px;';
@@ -2876,6 +2885,12 @@ function ouvrirPanneauSupport(pieceId) {
     return t.id === pieceId && ((t._type)||ADMIN_CFG.type) === 'sculpture';
   });
   if (!piece) return;
+  /* Une vitrine n'a pas de support (socle/étagère/présentoir) : elle est son
+     propre meuble. On ne propose donc pas le panneau. */
+  if (piece.est_vitrine) {
+    if (typeof fermerPanneauSupport === 'function') fermerPanneauSupport();
+    return;
+  }
   _supportPieceId = pieceId;
   _supportPieceType = 'sculpture';
 

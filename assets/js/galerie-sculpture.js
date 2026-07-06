@@ -1402,9 +1402,14 @@ if (window._GALERIE_EDIT) {
               _editPositions.push(np);
               var piece = pieces[np.id];
               if (!piece) return;
-              var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
-              var gabarit = gabarits[gCode] || gabarits['M'];
-              var wrap    = creerSocle(piece, gabarit, np, null);
+              var wrap;
+              if (piece.est_vitrine) {
+                wrap = creerVitrine(piece, np, pieces, {});
+              } else {
+                var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+                var gabarit = gabarits[gCode] || gabarits['M'];
+                wrap = creerSocle(piece, gabarit, np, null);
+              }
               wrap.style.cursor = "grab"; wrap.dataset.pieceId = piece.id;
               /* Bloquer clics immersifs sur le nouveau socle */
               wrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
@@ -1440,9 +1445,16 @@ if (window._GALERIE_EDIT) {
         });
         var gabarits2 = {};
         (_editTData.gabarits || []).forEach(function(g) { gabarits2[g.code] = g; });
-        var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
-        var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
-        var newWrap  = creerSocle(piece, gabarit2, pos, null);
+        var newWrap;
+        if (piece.est_vitrine) {
+          var pieces2 = {};
+          (_editTData.pieces || []).forEach(function(p) { pieces2[p.id] = p; });
+          newWrap = creerVitrine(piece, pos, pieces2, {});
+        } else {
+          var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+          var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
+          newWrap  = creerSocle(piece, gabarit2, pos, null);
+        }
         newWrap.style.cursor = "grab"; newWrap.dataset.pieceId = piece.id;
         newWrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
         if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
