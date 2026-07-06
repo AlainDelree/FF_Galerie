@@ -1,5 +1,5 @@
 {
-  "next_id": 20,
+  "next_id": 21,
   "gabarits": [
     {
       "code": "S",
@@ -187,6 +187,20 @@
       "visible": true,
       "socle": 15,
       "glb": "artistes/dinso/assets/models/piece-019.glb"
+    },
+    {
+      "id": 20,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "",
+      "style": "vitree",
+      "portes": "fermees",
+      "couleur": "#3d6040",
+      "planches": 4,
+      "places": 6,
+      "visible": true,
+      "glb": ""
     }
   ]
 }
