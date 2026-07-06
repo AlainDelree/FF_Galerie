@@ -573,58 +573,55 @@ function ouvrirVitrine(piece, pieces, opts) {
   head.appendChild(titre); head.appendChild(btnX);
   overlay.appendChild(head);
 
-  /* Corps = GROS PLAN de l'étagère : objets posés sur les planches, comme si on s'en approchait */
+  /* Corps = GROS PLAN d'une vitrine en relief : objets (photos) posés sur des planches en bois */
   var body = document.createElement('div');
   body.style.cssText = 'flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;' +
-    'padding:20px 14px;background:radial-gradient(ellipse at 50% 25%,rgba(240,208,128,.12),transparent 62%);';
+    'padding:24px 14px;background:radial-gradient(ellipse at 50% 22%,rgba(240,208,128,.10),transparent 62%);';
 
-  var contenu = piece.contenu || {};
+  var contenu  = piece.contenu || {};
   var couleurV = piece.couleur || '#6a4b28';
-  var nPv = Math.max(1, piece.planches || 3);
-  var nSv = Math.max(1, piece.places   || 4);
-  var maxW  = Math.min(window.innerWidth - 28, 640);
-  var slotW = Math.max(70, Math.floor((maxW - (nSv + 1) * 12) / nSv));
-  var slotH = Math.round(slotW * 1.15);
+  var nPv = Math.min(8, Math.max(1, piece.planches || 3));
+  var nSv = Math.min(8, Math.max(1, piece.places   || 4));
+  var maxW  = Math.min(window.innerWidth - 28, 620);
+  var postW = 14;
+  var slotW = Math.max(64, Math.floor((maxW - 2 * postW - (nSv + 1) * 10) / nSv));
+  var slotH = Math.round(slotW * 1.2);
 
-  var meubleG = document.createElement('div');
-  meubleG.style.cssText = 'display:flex;flex-direction:column-reverse;border-radius:6px;' +
-    'background:' + _teinte(couleurV, -0.10) + ';border:6px solid ' + _teinte(couleurV, -0.28) + ';' +
-    'box-shadow:0 24px 50px rgba(0,0,0,.6),inset 0 3px 0 rgba(255,255,255,.06);';
+  var cabinet = document.createElement('div');
+  cabinet.style.cssText = 'position:relative;box-sizing:border-box;display:flex;flex-direction:column-reverse;' +
+    'max-width:' + maxW + 'px;border-radius:6px;background:' + _teinte(couleurV, -0.18) + ';' +
+    'border-left:' + postW + 'px solid ' + _teinte(couleurV, -0.30) + ';' +
+    'border-right:' + postW + 'px solid ' + _teinte(couleurV, -0.30) + ';' +
+    'border-top:12px solid ' + _teinte(couleurV, -0.22) + ';' +
+    'border-bottom:14px solid ' + _teinte(couleurV, -0.30) + ';' +
+    'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 34px rgba(0,0,0,.5);';
 
   for (var plv = 1; plv <= nPv; plv++) {
-    var rowv = document.createElement('div');
-    rowv.style.cssText = 'display:flex;justify-content:center;gap:12px;padding:12px 12px 0;' +
-      'border-bottom:10px solid ' + _teinte(couleurV, 0.06) + ';';
+    var shelf = document.createElement('div');
+    shelf.style.cssText = 'position:relative;';
+
+    var niche = document.createElement('div');
+    niche.style.cssText = 'position:relative;display:flex;justify-content:space-evenly;align-items:flex-end;' +
+      'gap:10px;padding:18px 12px 6px;background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 42%);';
+    var light = document.createElement('div');
+    light.style.cssText = 'position:absolute;top:0;left:50%;width:82%;height:55%;transform:translateX(-50%);' +
+      'background:radial-gradient(ellipse at center top,rgba(255,240,200,.16),transparent 70%);pointer-events:none;';
+    niche.appendChild(light);
+
     for (var slv = 1; slv <= nSv; slv++) {
-      var slotv = document.createElement('div');
-      slotv.style.cssText = 'width:' + slotW + 'px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;';
+      var cell = document.createElement('div');
+      cell.style.cssText = 'width:' + slotW + 'px;display:flex;align-items:flex-end;justify-content:center;';
       var oev = pieces[contenu['' + (plv * 10 + slv)]];
-      if (oev) {
-        var mediav;
-        if (immActif && oev.glb) {
-          mediav = document.createElement('model-viewer');
-          mediav.setAttribute('src', /^https?:\/\//.test(oev.glb) ? oev.glb : ((GALERIE_CFG.assetsBase || '') + oev.glb));
-          mediav.setAttribute('camera-controls', ''); mediav.setAttribute('auto-rotate', '');
-          mediav.setAttribute('rotation-per-second', '15deg');   /* = salle immersive : 1 tour / 24 s */
-          mediav.setAttribute('interaction-prompt', 'none'); mediav.setAttribute('shadow-intensity', '1');
-          mediav.style.cssText = 'width:100%;height:' + slotH + 'px;--poster-color:transparent;background:transparent;';
-        } else if (oev.photo) {
-          mediav = document.createElement('img');
-          mediav.src = /^https?:\/\//.test(oev.photo) ? oev.photo : ((GALERIE_CFG.assetsBase || '') + oev.photo);
-          mediav.alt = oev.titre || ''; mediav.loading = 'lazy';
-          mediav.style.cssText = 'width:100%;height:' + slotH + 'px;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.55));';
-        } else {
-          mediav = document.createElement('div'); mediav.style.height = slotH + 'px';
-        }
-        slotv.appendChild(mediav);
-        var lblv = document.createElement('div');
-        lblv.textContent = oev.titre || '';
-        lblv.style.cssText = 'margin:6px 0 4px;font-size:11px;color:#e8dcc8;text-align:center;';
-        slotv.appendChild(lblv);
+      if (oev && oev.photo) {
+        var img = document.createElement('img');
+        img.src = /^https?:\/\//.test(oev.photo) ? oev.photo : ((GALERIE_CFG.assetsBase || '') + oev.photo);
+        img.alt = oev.titre || ''; img.loading = 'lazy';
+        img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;' +
+          'filter:drop-shadow(0 9px 7px rgba(0,0,0,.6));';
         if (descActif) {
-          slotv.style.cursor = 'pointer';
+          img.style.cursor = 'pointer';
           (function (oeu) {
-            slotv.addEventListener('click', function () {
+            img.addEventListener('click', function () {
               fermer();
               setTimeout(function () {
                 ouvrirSalleObservation(oeu, descDecor, false, immDecor,
@@ -633,14 +630,22 @@ function ouvrirVitrine(piece, pieces, opts) {
             });
           })(oev);
         }
+        cell.appendChild(img);
       } else {
-        slotv.style.height = (slotH + 24) + 'px';   /* emplacement vide */
+        cell.style.height = slotH + 'px';
       }
-      rowv.appendChild(slotv);
+      niche.appendChild(cell);
     }
-    meubleG.appendChild(rowv);
+    shelf.appendChild(niche);
+
+    var board = document.createElement('div');
+    board.style.cssText = 'height:13px;border-radius:0 0 2px 2px;position:relative;z-index:2;' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, 0.14) + ' 0%,' + _teinte(couleurV, 0.02) +
+      ' 42%,' + _teinte(couleurV, -0.16) + ' 100%);box-shadow:0 6px 10px rgba(0,0,0,.55);';
+    shelf.appendChild(board);
+    cabinet.appendChild(shelf);
   }
-  body.appendChild(meubleG);
+  body.appendChild(cabinet);
   overlay.appendChild(body);
 
   function fermer() {
@@ -677,8 +682,8 @@ function creerVitrine(piece, pos, pieces, opts) {
   wrapper.dataset.pieceId = piece.id;
 
   var couleur = piece.couleur || '#6a4b28';
-  var nP = Math.max(1, piece.planches || 3);
-  var nS = Math.max(1, piece.places   || 4);
+  var nP = Math.min(8, Math.max(1, piece.planches || 3));
+  var nS = Math.min(8, Math.max(1, piece.places   || 4));
   var contenu = piece.contenu || {};
 
   var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
