@@ -611,8 +611,23 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       });
     }
     var isMobile = _estMobile();
-    var positions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
-      ? salle.positions_mobile : (salle.positions || []);
+    var positions;
+    if (isMobile && salle.positions_mobile && salle.positions_mobile.length) {
+      // Base = placements mobiles explicites de la salle.
+      positions = salle.positions_mobile.slice();
+      // Filet de sécurité (hors mode édition) : une pièce placée sur PC mais pas
+      // encore placée en mobile est rendue à SA position PC, pour qu'elle ne
+      // s'évapore pas sur GSM (fin du fallback « tout-ou-rien » historique).
+      if (!window._GALERIE_EDIT) {
+        var _idsMob = {};
+        salle.positions_mobile.forEach(function (p) { _idsMob[p.id] = true; });
+        (salle.positions || []).forEach(function (p) {
+          if (!_idsMob[p.id]) positions.push(p);
+        });
+      }
+    } else {
+      positions = salle.positions || [];
+    }
     positions.slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
