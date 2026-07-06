@@ -623,6 +623,9 @@ button{cursor:pointer;}
 .vitrine-only{display:none;}
 #overlay-toile.vitrine-mode .modal-body > .grp:not(.vitrine-keep):not(.vitrine-only){display:none !important;}
 #overlay-toile.vitrine-mode .modal-body > .grp.vitrine-only{display:flex !important;}
+/* Les en-têtes de section sculpture (Objet/Socle/Détails, injectés dynamiquement)
+   ne sont pas des .grp -> les masquer aussi en mode vitrine. */
+#overlay-toile.vitrine-mode [data-sculpt-dyn]{display:none !important;}
 .champ{width:100%;padding:.8rem 1rem;background:var(--bg3);
   border:1px solid var(--brd);border-radius:var(--r);color:var(--text);outline:none;}
 .champ:focus{border-color:rgba(200,160,80,.4);}
