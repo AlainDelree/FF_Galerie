@@ -1378,6 +1378,17 @@ $('inp-vitrine-couleur-btn')?.addEventListener('click', function() {
   if (typeof ouvrirPickerCouleur === 'function') ouvrirPickerCouleur('vitrine');
 });
 
+/* Dimensions de la vitrine : borne 1-8 puis reconstruit la grille d'affectation. */
+['inp-vitrine-planches', 'inp-vitrine-places'].forEach(function(_vid) {
+  var _vel = document.getElementById(_vid);
+  if (!_vel) return;
+  _vel.addEventListener('change', function() {
+    var v = Math.min(8, Math.max(1, parseInt(this.value, 10) || 1));
+    this.value = v;
+    if (typeof _construireGrilleVitrine === 'function') _construireGrilleVitrine();
+  });
+});
+
 $('btn-annuler-toile').addEventListener('click', () => fermerModalToile());$('btn-sauver-toile').addEventListener('click', () => sauverToile());
 $('btn-supprimer-toile').addEventListener('click', () => supprimerToile());
 $('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
