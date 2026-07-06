@@ -625,26 +625,27 @@ function ouvrirVitrine(piece, pieces, opts) {
     var shelf = document.createElement('div');
     shelf.style.cssText = 'position:relative;z-index:1;';
 
+    /* Zone objets — ils REPOSENT sur la planche (base collée au plateau) */
     var niche = document.createElement('div');
     niche.style.cssText = 'position:relative;display:flex;justify-content:space-evenly;align-items:flex-end;' +
-      'gap:10px;padding:18px 12px 6px;' +
-      (estBois ? 'background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 42%);'
-               : 'background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(255,255,255,.03) 60%);');
+      'gap:10px;padding:20px 12px 0;' +
+      (estBois ? 'background:linear-gradient(180deg,rgba(0,0,0,.36) 0%,rgba(0,0,0,0) 40%);'
+               : 'background:linear-gradient(180deg,rgba(0,0,0,.24) 0%,rgba(255,255,255,.03) 55%);');
     var light = document.createElement('div');
-    light.style.cssText = 'position:absolute;top:0;left:50%;width:82%;height:55%;transform:translateX(-50%);' +
-      'background:radial-gradient(ellipse at center top,rgba(255,240,200,.16),transparent 70%);pointer-events:none;';
+    light.style.cssText = 'position:absolute;top:0;left:50%;width:82%;height:52%;transform:translateX(-50%);' +
+      'background:radial-gradient(ellipse at center top,rgba(255,240,200,.18),transparent 70%);pointer-events:none;';
     niche.appendChild(light);
 
     for (var slv = 1; slv <= nSv; slv++) {
       var cell = document.createElement('div');
-      cell.style.cssText = 'width:' + slotW + 'px;display:flex;align-items:flex-end;justify-content:center;';
+      cell.style.cssText = 'width:' + slotW + 'px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;';
       var oev = pieces[contenu['' + (plv * 10 + slv)]];
       if (oev && oev.photo) {
         var img = document.createElement('img');
         img.src = /^https?:\/\//.test(oev.photo) ? oev.photo : ((GALERIE_CFG.assetsBase || '') + oev.photo);
         img.alt = oev.titre || ''; img.loading = 'lazy';
-        img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;' +
-          'filter:drop-shadow(0 9px 7px rgba(0,0,0,.6));';
+        img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;position:relative;z-index:2;' +
+          'filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         if (descActif) {
           img.style.cursor = 'pointer';
           (function (oeu) {
@@ -658,6 +659,10 @@ function ouvrirVitrine(piece, pieces, opts) {
           })(oev);
         }
         cell.appendChild(img);
+        var contact = document.createElement('div');   /* ombre de contact sur le plateau */
+        contact.style.cssText = 'width:78%;height:9px;margin-top:-3px;border-radius:50%;z-index:1;' +
+          'background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 72%);';
+        cell.appendChild(contact);
       } else {
         cell.style.height = slotH + 'px';
       }
@@ -665,13 +670,24 @@ function ouvrirVitrine(piece, pieces, opts) {
     }
     shelf.appendChild(niche);
 
-    var board = document.createElement('div');
-    board.style.cssText = estBois
-      ? 'height:13px;border-radius:0 0 2px 2px;position:relative;z-index:2;box-shadow:0 6px 10px rgba(0,0,0,.55);' +
-        'background:linear-gradient(180deg,' + _teinte(couleurV, 0.14) + ' 0%,' + _teinte(couleurV, 0.02) + ' 42%,' + _teinte(couleurV, -0.16) + ' 100%);'
-      : 'height:7px;border-radius:1px;position:relative;z-index:2;box-shadow:0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.35);' +
-        'background:linear-gradient(180deg,rgba(232,240,242,.42),rgba(150,165,170,.15));';
-    shelf.appendChild(board);
+    if (estBois) {
+      /* PLATEAU (dessus du bois, vu un peu de dessus, léger veinage) + TRANCHE (épaisseur) */
+      var plateau = document.createElement('div');
+      plateau.style.cssText = 'position:relative;z-index:3;height:11px;box-shadow:inset 0 2px 3px rgba(0,0,0,.28);' +
+        'background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 3px,transparent 3px 9px),' +
+        'linear-gradient(180deg,' + _teinte(couleurV, -0.08) + ' 0%,' + _teinte(couleurV, 0.10) + ' 55%,' + _teinte(couleurV, 0.17) + ' 100%);';
+      var tranche = document.createElement('div');
+      tranche.style.cssText = 'position:relative;z-index:3;height:12px;border-radius:0 0 2px 2px;box-shadow:0 7px 11px rgba(0,0,0,.5);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, 0.02) + ',' + _teinte(couleurV, -0.20) + ');';
+      shelf.appendChild(plateau); shelf.appendChild(tranche);
+    } else {
+      /* étagère en VERRE : plateau translucide + arête avant brillante */
+      var vglass = document.createElement('div');
+      vglass.style.cssText = 'position:relative;z-index:3;height:9px;border-radius:1px;' +
+        'background:linear-gradient(180deg,rgba(236,245,247,.5),rgba(150,168,172,.14));' +
+        'box-shadow:0 6px 10px rgba(0,0,0,.4),inset 0 2px 0 rgba(255,255,255,.55),0 1px 0 rgba(255,255,255,.45);';
+      shelf.appendChild(vglass);
+    }
     cabinet.appendChild(shelf);
   }
 
@@ -689,31 +705,41 @@ function ouvrirVitrine(piece, pieces, opts) {
   }
   cabinet.appendChild(pieds);
 
-  /* Vitrée : reflets des côtés vitrés + doubles portes vitrées (ouvertes/fermées) */
+  /* Vitrée : côtés vitrés encadrés + reflets + doubles portes vitrées */
   if (!estBois) {
-    var gL = document.createElement('div');
-    gL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:22px;z-index:3;pointer-events:none;' +
-      'background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 60%,transparent);';
-    var gR = document.createElement('div');
-    gR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:22px;z-index:3;pointer-events:none;' +
-      'background:linear-gradient(270deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 60%,transparent);';
-    cabinet.appendChild(gL); cabinet.appendChild(gR);
+    ['left', 'right'].forEach(function (side) {
+      var g = document.createElement('div');
+      g.style.cssText = 'position:absolute;top:6px;bottom:6px;' + side + ':2px;width:20px;z-index:3;pointer-events:none;' +
+        'border-top:2px solid #111;border-bottom:2px solid #111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);' +
+        'background:linear-gradient(' + (side === 'left' ? '100deg' : '260deg') + ',rgba(255,255,255,.12),rgba(185,205,210,.05) 50%,rgba(255,255,255,.16));';
+      var r = document.createElement('div');
+      r.style.cssText = 'position:absolute;inset:0;background:linear-gradient(150deg,transparent 40%,rgba(255,255,255,.24) 48%,transparent 56%);';
+      g.appendChild(r);
+      cabinet.appendChild(g);
+    });
 
     var portes = document.createElement('div');
-    portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1500px;';
-    var dcss = 'position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;border:3px solid #111;' +
-      'background:linear-gradient(120deg,rgba(205,218,222,.18),rgba(205,218,222,.05) 45%,rgba(255,255,255,.14) 60%,rgba(205,218,222,.04));' +
-      'box-shadow:inset 0 0 22px rgba(255,255,255,.06);';
-    var dL = document.createElement('div');
-    dL.style.cssText = dcss + 'left:0;transform-origin:left center;border-right-width:1px;' + (portesOuv ? 'transform:rotateY(-108deg);' : '');
-    var dR = document.createElement('div');
-    dR.style.cssText = dcss + 'right:0;transform-origin:right center;border-left-width:1px;' + (portesOuv ? 'transform:rotateY(108deg);' : '');
-    var hL = document.createElement('div');
-    hL.style.cssText = 'position:absolute;right:5px;top:50%;transform:translateY(-50%);width:4px;height:36px;border-radius:2px;background:linear-gradient(180deg,#e0e0e0,#888);';
-    var hR = document.createElement('div');
-    hR.style.cssText = 'position:absolute;left:5px;top:50%;transform:translateY(-50%);width:4px;height:36px;border-radius:2px;background:linear-gradient(180deg,#e0e0e0,#888);';
-    dL.appendChild(hL); dR.appendChild(hR);
-    portes.appendChild(dL); portes.appendChild(dR);
+    portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1400px;';
+    var makeDoor = function (sideLeft) {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;border:3px solid #0e0e0e;' +
+        (sideLeft ? 'left:0;transform-origin:left center;border-right-width:1px;'
+                  : 'right:0;transform-origin:right center;border-left-width:1px;') +
+        'background:linear-gradient(120deg,rgba(200,214,218,.15),rgba(200,214,218,.04) 40%,rgba(255,255,255,.06) 55%);' +
+        'box-shadow:inset 0 0 26px rgba(255,255,255,.07);' +
+        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-62deg' : '62deg') + ');') : '');
+      var refl = document.createElement('div');   /* reflet diagonal fort → on VOIT le verre */
+      refl.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+        'background:linear-gradient(125deg,transparent 33%,rgba(255,255,255,.32) 46%,rgba(255,255,255,.06) 52%,transparent 62%);';
+      d.appendChild(refl);
+      var h = document.createElement('div');       /* poignée */
+      h.style.cssText = 'position:absolute;' + (sideLeft ? 'right:6px;' : 'left:6px;') + 'top:50%;transform:translateY(-50%);' +
+        'width:5px;height:40px;border-radius:3px;background:linear-gradient(180deg,#eee,#8a8a8a);box-shadow:0 0 3px rgba(0,0,0,.5);';
+      d.appendChild(h);
+      return d;
+    };
+    portes.appendChild(makeDoor(true));
+    portes.appendChild(makeDoor(false));
     cabinet.appendChild(portes);
   }
   cabinet.style.zIndex = '2';
