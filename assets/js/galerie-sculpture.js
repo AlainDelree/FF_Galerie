@@ -575,8 +575,13 @@ function ouvrirVitrine(piece, pieces, opts) {
 
   /* Corps = GROS PLAN d'une vitrine en relief : objets (photos) posés sur des planches en bois */
   var body = document.createElement('div');
-  body.style.cssText = 'flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;' +
-    'padding:24px 14px;background:radial-gradient(ellipse at 50% 22%,rgba(240,208,128,.10),transparent 62%);';
+  body.style.cssText = 'position:relative;flex:1;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;' +
+    'padding:20px 14px 0;background:radial-gradient(ellipse at 50% 18%,rgba(240,208,128,.10),transparent 60%);';
+  /* sol chaud : la vitrine repose dessus (sinon elle flotte dans le noir) */
+  var solV = document.createElement('div');
+  solV.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:30%;pointer-events:none;z-index:0;' +
+    'background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,#4a3418 22%,#6a4c24 70%,#7e5c30 100%);' +
+    'box-shadow:inset 0 18px 30px rgba(0,0,0,.45);';
 
   var contenu  = piece.contenu || {};
   var couleurV = piece.couleur || '#6a4b28';
@@ -585,7 +590,8 @@ function ouvrirVitrine(piece, pieces, opts) {
   var maxW  = Math.min(window.innerWidth - 28, 620);
   var postW = 14;
   var slotW = Math.max(64, Math.floor((maxW - 2 * postW - (nSv + 1) * 10) / nSv));
-  var slotH = Math.round(slotW * 1.2);
+  var availH = Math.max(220, (window.innerHeight || 700) - 130);
+  var slotH = Math.max(48, Math.min(Math.round(slotW * 1.2), Math.floor(availH / nPv) - 28));
 
   var cabinet = document.createElement('div');
   cabinet.style.cssText = 'position:relative;box-sizing:border-box;display:flex;flex-direction:column-reverse;' +
@@ -645,6 +651,14 @@ function ouvrirVitrine(piece, pieces, opts) {
     shelf.appendChild(board);
     cabinet.appendChild(shelf);
   }
+  cabinet.style.zIndex = '2';
+  cabinet.style.marginBottom = '32px';   /* repose sur le sol */
+  var ombreV = document.createElement('div');
+  ombreV.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:1;pointer-events:none;' +
+    'width:' + Math.round(maxW * 0.92) + 'px;height:26px;border-radius:50%;' +
+    'background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,.22) 45%,transparent 72%);';
+  body.appendChild(solV);
+  body.appendChild(ombreV);
   body.appendChild(cabinet);
   overlay.appendChild(body);
 
