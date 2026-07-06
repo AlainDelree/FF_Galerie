@@ -2127,13 +2127,6 @@ function lireFormToile() {
 }
 
 async function sauverToile() {
-  /* TEMP étape 1 : la persistance d'une vitrine (lecture des champs +
-     exemption du blocage photo) arrive à l'étape 2-3. On intercepte ici
-     pour éviter l'alerte "photo manquante" trompeuse pendant les tests. */
-  if (typeof _estVitrineEdition !== 'undefined' && _estVitrineEdition) {
-    toast('Vitrine : la sauvegarde arrive à l\u2019étape suivante (2-3).', 'ok', 3500);
-    return;
-  }
   const donnees = lireFormToile();
 
   /* Blocage : une pièce visible aux visiteurs DOIT avoir une photo/thumbnail.
@@ -2143,7 +2136,8 @@ async function sauverToile() {
     var tEdit = _trouverOeuvre(toileEnEdition, _typeEdition);
     if (tEdit && tEdit.photo) photoExistante = true;
   }
-  if (donnees.visible && !photoExistante) {
+  /* Les vitrines n'ont pas de photo (rendu procédural) — exemptées du blocage. */
+  if (!donnees.est_vitrine && donnees.visible && !photoExistante) {
     var _hasGlbNow = !!(donnees.glb || glbB64 ||
       (toileEnEdition !== null && _trouverOeuvre(toileEnEdition, _typeEdition) && _trouverOeuvre(toileEnEdition, _typeEdition).glb));
     var _msgPhoto = 'Impossible de rendre cette ' + LBL.item + ' visible sans photo valide.\n\n';
@@ -2180,7 +2174,7 @@ async function sauverToile() {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
+      const lbl2 = _estVitrineEdition ? 'vitrine' : (_estSculptEdition() ? 'pièce' : 'toile');
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
       /* Recherche par couple (id, type) — sinon en multi-types une édition
@@ -2230,7 +2224,7 @@ async function sauverToile() {
       }
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
-      const lbl2 = _estSculptEdition() ? 'pièce' : 'toile';
+      const lbl2 = _estVitrineEdition ? 'vitrine' : (_estSculptEdition() ? 'pièce' : 'toile');
       await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
     const idSauve = toileEnEdition === null
@@ -2957,7 +2951,7 @@ function majAlertePhotoManquante() {
   var el = document.getElementById('alerte-photo-manquante');
   if (!el) return;
   var sansPhoto = (Array.isArray(toiles) ? toiles : []).filter(function(t) {
-    return !t.photo;
+    return !t.photo && !t.est_vitrine;   /* vitrine = rendu procédural, pas de photo attendue */
   });
   if (sansPhoto.length === 0) {
     el.style.display = 'none';
