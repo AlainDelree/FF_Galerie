@@ -1368,8 +1368,17 @@ $('inp-type-oeuvre')?.addEventListener('change', function() {
   }
 });
 
-$('btn-annuler-toile').addEventListener('click', () => fermerModalToile());
-$('btn-sauver-toile').addEventListener('click', () => sauverToile());
+/* Couleur de la vitrine : ouvre le color picker (type 'vitrine') et applique le
+   retour via _majSwatchVitrine (admin-galerie.js). */
+$('inp-vitrine-couleur-btn')?.addEventListener('click', function() {
+  window._vitrinePickerCouleur = (typeof _vitrineCouleur !== 'undefined') ? _vitrineCouleur : '#6a4b28';
+  window._vitrinePickerOnConfirm = function(hex) {
+    if (typeof _majSwatchVitrine === 'function') _majSwatchVitrine(hex);
+  };
+  if (typeof ouvrirPickerCouleur === 'function') ouvrirPickerCouleur('vitrine');
+});
+
+$('btn-annuler-toile').addEventListener('click', () => fermerModalToile());$('btn-sauver-toile').addEventListener('click', () => sauverToile());
 $('btn-supprimer-toile').addEventListener('click', () => supprimerToile());
 $('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
 

@@ -21,6 +21,18 @@ var _typeEdition = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peintur
    'sculpture' et on lève ce flag en parallèle. */
 var _estVitrineEdition = false;
 
+/* Couleur courante de la vitrine en cours d'édition (pilotée par le color picker,
+   type 'vitrine' dans admin-textures.js). _majSwatchVitrine tient à jour la pastille
+   + le libellé hex du bouton et la variable. */
+var _vitrineCouleur = '#6a4b28';
+function _majSwatchVitrine(hex) {
+  _vitrineCouleur = (hex && /^#[0-9a-fA-F]{6}$/.test(hex)) ? hex.toLowerCase() : '#6a4b28';
+  var sw = document.getElementById('inp-vitrine-couleur-swatch');
+  var tx = document.getElementById('inp-vitrine-couleur-hex');
+  if (sw) sw.style.background = _vitrineCouleur;
+  if (tx) tx.textContent = _vitrineCouleur;
+}
+
 function _estSculptEdition() {
   return _typeEdition === 'sculpture';
 }
@@ -1827,12 +1839,12 @@ function ouvrirFormulaireEdition(id, typeOpt) {
      œuvre existante — il faudrait migrer entre fichiers JSON séparés). */
   var grpType = document.getElementById('grp-type-oeuvre');
   if (grpType) grpType.style.display = 'none';
-  _appliquerTypeFormulaire(t._type || ADMIN_CFG.type || 'peinture');
+  _appliquerTypeFormulaire(t.est_vitrine ? 'vitrine' : (t._type || ADMIN_CFG.type || 'peinture'));
   toileEnEdition = id; photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
   const salleDeLaToile = _salleContenantOeuvre(id, _typeEdition)?.id || salleActive?.id || null;
   construirePillsSalle(salleDeLaToile);
   salleCibleToile = salleDeLaToile;
-  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile';
+  $('modal-toile-tit').textContent = _estVitrineEdition ? 'Modifier la vitrine' : (_estSculptEdition() ? 'Modifier la pièce' : 'Modifier la toile');
   construireFavoris();
   if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   remplirFormToile(t);
@@ -1928,6 +1940,12 @@ function viderFormToile() {
   var btnRegen = document.getElementById('btn-regen-thumb');
   if (btnRegen) btnRegen.style.display = 'none';
   $('inp-visible').checked = true;
+  /* Réglages vitrine : valeurs par défaut */
+  if ($('inp-vitrine-style'))    $('inp-vitrine-style').value    = 'bois';
+  if ($('inp-vitrine-portes'))   $('inp-vitrine-portes').value   = 'fermees';
+  if ($('inp-vitrine-planches')) $('inp-vitrine-planches').value = 3;
+  if ($('inp-vitrine-places'))   $('inp-vitrine-places').value   = 4;
+  _majSwatchVitrine('#6a4b28');
   $('inp-larg').value = ''; $('inp-haut').value = '';
   if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = '';
   if ($('inp-sans-socle')) { $('inp-sans-socle').checked = false; $('inp-sans-socle').dispatchEvent(new Event('change')); }
@@ -1952,6 +1970,24 @@ function viderFormToile() {
 }
 
 function remplirFormToile(t) {
+  /* Vitrine : peupler uniquement les réglages vitrine + titre/visible.
+     (Le passage en mode vitrine est fait par ouvrirFormulaireEdition, qui
+     appelle _appliquerTypeFormulaire('vitrine') quand t.est_vitrine.) */
+  if (t.est_vitrine) {
+    $('inp-titre').value = t.titre || '';
+    $('inp-visible').checked = t.visible !== false;
+    if ($('inp-vitrine-style'))    $('inp-vitrine-style').value    = (t.style === 'vitree') ? 'vitree' : 'bois';
+    if ($('inp-vitrine-portes'))   $('inp-vitrine-portes').value   = (t.portes === 'ouvertes') ? 'ouvertes' : 'fermees';
+    if ($('inp-vitrine-planches')) $('inp-vitrine-planches').value = Math.min(8, Math.max(1, t.planches || 3));
+    if ($('inp-vitrine-places'))   $('inp-vitrine-places').value   = Math.min(8, Math.max(1, t.places   || 4));
+    _majSwatchVitrine(t.couleur || '#6a4b28');
+    /* contenu (œuvres par emplacement) : étape 4 */
+    salleCibleToile = _salleContenantOeuvre(t.id, typeDeLOeuvre(t))?.id || null;
+    document.querySelectorAll('.salle-pill').forEach(p => {
+      p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
+    });
+    return;
+  }
   $('inp-titre').value = t.titre || '';
   $('inp-date').value = t.date || '';
   $('inp-style').value = t.style || '';
@@ -2043,6 +2079,23 @@ function remplirFormToile(t) {
 }
 
 function lireFormToile() {
+  /* Mode vitrine : une pièce est_vitrine n'a ni dimensions, ni photo, ni socle.
+     'contenu' (œuvres par emplacement) est géré à l'étape 4 et préservé via le
+     spread ...toiles[idx] en édition (donc pas renvoyé ici). */
+  if (_estVitrineEdition) {
+    var _nP = Math.min(8, Math.max(1, parseInt($('inp-vitrine-planches').value, 10) || 3));
+    var _nS = Math.min(8, Math.max(1, parseInt($('inp-vitrine-places').value,   10) || 4));
+    return {
+      est_vitrine: true,
+      titre:    $('inp-titre').value.trim(),
+      style:    ($('inp-vitrine-style')  && $('inp-vitrine-style').value  === 'vitree')   ? 'vitree'   : 'bois',
+      portes:   ($('inp-vitrine-portes') && $('inp-vitrine-portes').value === 'ouvertes') ? 'ouvertes' : 'fermees',
+      couleur:  _vitrineCouleur || '#6a4b28',
+      planches: _nP,
+      places:   _nS,
+      visible:  $('inp-visible').checked
+    };
+  }
   let dim = null;
   if ($('sel-format').value === 'ronde50') {
     dim = { type: 'ronde', largeur: 50, hauteur: 50 };
