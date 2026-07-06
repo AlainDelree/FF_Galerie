@@ -593,22 +593,43 @@ function ouvrirVitrine(piece, pieces, opts) {
   var availH = Math.max(220, (window.innerHeight || 700) - 130);
   var slotH = Math.max(48, Math.min(Math.round(slotW * 1.2), Math.floor(availH / nPv) - 28));
 
+  var styleV   = (piece.style === 'vitree') ? 'vitree' : 'bois';
+  var estBois  = (styleV === 'bois');
+  var portesOuv = (piece.portes === 'ouvertes');
+  var postCol  = estBois ? _teinte(couleurV, -0.30) : '#141414';
+  var topCol   = estBois ? _teinte(couleurV, -0.22) : '#141414';
+  var backCol  = estBois ? _teinte(couleurV, -0.16) : '#8a8a86';   /* gris souris */
+
   var cabinet = document.createElement('div');
   cabinet.style.cssText = 'position:relative;box-sizing:border-box;display:flex;flex-direction:column-reverse;' +
-    'max-width:' + maxW + 'px;border-radius:6px;background:' + _teinte(couleurV, -0.18) + ';' +
-    'border-left:' + postW + 'px solid ' + _teinte(couleurV, -0.30) + ';' +
-    'border-right:' + postW + 'px solid ' + _teinte(couleurV, -0.30) + ';' +
-    'border-top:12px solid ' + _teinte(couleurV, -0.22) + ';' +
-    'border-bottom:14px solid ' + _teinte(couleurV, -0.30) + ';' +
-    'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 34px rgba(0,0,0,.5);';
+    'max-width:' + maxW + 'px;border-radius:' + (estBois ? '6px' : '4px') + ';background:' + backCol + ';' +
+    'border-left:' + postW + 'px solid ' + postCol + ';border-right:' + postW + 'px solid ' + postCol + ';' +
+    'border-top:12px solid ' + topCol + ';border-bottom:14px solid ' + postCol + ';' +
+    (estBois ? 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 34px rgba(0,0,0,.5);'
+             : 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 26px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.06);');
+
+  /* Fond : 6 lattes verticales (bois) ; panneau gris uni (vitrée) */
+  if (estBois) {
+    var back = document.createElement('div');
+    back.style.cssText = 'position:absolute;inset:0;z-index:0;display:flex;pointer-events:none;';
+    for (var L = 0; L < 6; L++) {
+      var latte = document.createElement('div');
+      latte.style.cssText = 'flex:1;height:100%;' + (L < 5 ? 'border-right:2px solid rgba(0,0,0,.30);' : '') +
+        'background:linear-gradient(90deg,' + _teinte(couleurV, -0.10) + ',' + _teinte(couleurV, -0.24) + ');';
+      back.appendChild(latte);
+    }
+    cabinet.appendChild(back);
+  }
 
   for (var plv = 1; plv <= nPv; plv++) {
     var shelf = document.createElement('div');
-    shelf.style.cssText = 'position:relative;';
+    shelf.style.cssText = 'position:relative;z-index:1;';
 
     var niche = document.createElement('div');
     niche.style.cssText = 'position:relative;display:flex;justify-content:space-evenly;align-items:flex-end;' +
-      'gap:10px;padding:18px 12px 6px;background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 42%);';
+      'gap:10px;padding:18px 12px 6px;' +
+      (estBois ? 'background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 42%);'
+               : 'background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(255,255,255,.03) 60%);');
     var light = document.createElement('div');
     light.style.cssText = 'position:absolute;top:0;left:50%;width:82%;height:55%;transform:translateX(-50%);' +
       'background:radial-gradient(ellipse at center top,rgba(255,240,200,.16),transparent 70%);pointer-events:none;';
@@ -645,11 +666,55 @@ function ouvrirVitrine(piece, pieces, opts) {
     shelf.appendChild(niche);
 
     var board = document.createElement('div');
-    board.style.cssText = 'height:13px;border-radius:0 0 2px 2px;position:relative;z-index:2;' +
-      'background:linear-gradient(180deg,' + _teinte(couleurV, 0.14) + ' 0%,' + _teinte(couleurV, 0.02) +
-      ' 42%,' + _teinte(couleurV, -0.16) + ' 100%);box-shadow:0 6px 10px rgba(0,0,0,.55);';
+    board.style.cssText = estBois
+      ? 'height:13px;border-radius:0 0 2px 2px;position:relative;z-index:2;box-shadow:0 6px 10px rgba(0,0,0,.55);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, 0.14) + ' 0%,' + _teinte(couleurV, 0.02) + ' 42%,' + _teinte(couleurV, -0.16) + ' 100%);'
+      : 'height:7px;border-radius:1px;position:relative;z-index:2;box-shadow:0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.35);' +
+        'background:linear-gradient(180deg,rgba(232,240,242,.42),rgba(150,165,170,.15));';
     shelf.appendChild(board);
     cabinet.appendChild(shelf);
+  }
+
+  /* Pieds */
+  var pieds = document.createElement('div');
+  pieds.style.cssText = 'position:absolute;left:0;right:0;bottom:-16px;height:16px;z-index:1;pointer-events:none;' +
+    'display:flex;justify-content:space-between;padding:0 10px;';
+  for (var fp = 0; fp < 4; fp++) {
+    var pied = document.createElement('div');
+    pied.style.cssText = estBois
+      ? 'width:16px;height:16px;border-radius:0 0 4px 4px;box-shadow:0 4px 5px rgba(0,0,0,.5);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, -0.24) + ',' + _teinte(couleurV, -0.40) + ');'
+      : 'width:8px;height:16px;box-shadow:0 4px 5px rgba(0,0,0,.55);background:linear-gradient(180deg,#3a3a3a,#0c0c0c);';
+    pieds.appendChild(pied);
+  }
+  cabinet.appendChild(pieds);
+
+  /* Vitrée : reflets des côtés vitrés + doubles portes vitrées (ouvertes/fermées) */
+  if (!estBois) {
+    var gL = document.createElement('div');
+    gL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:22px;z-index:3;pointer-events:none;' +
+      'background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 60%,transparent);';
+    var gR = document.createElement('div');
+    gR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:22px;z-index:3;pointer-events:none;' +
+      'background:linear-gradient(270deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 60%,transparent);';
+    cabinet.appendChild(gL); cabinet.appendChild(gR);
+
+    var portes = document.createElement('div');
+    portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1500px;';
+    var dcss = 'position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;border:3px solid #111;' +
+      'background:linear-gradient(120deg,rgba(205,218,222,.18),rgba(205,218,222,.05) 45%,rgba(255,255,255,.14) 60%,rgba(205,218,222,.04));' +
+      'box-shadow:inset 0 0 22px rgba(255,255,255,.06);';
+    var dL = document.createElement('div');
+    dL.style.cssText = dcss + 'left:0;transform-origin:left center;border-right-width:1px;' + (portesOuv ? 'transform:rotateY(-108deg);' : '');
+    var dR = document.createElement('div');
+    dR.style.cssText = dcss + 'right:0;transform-origin:right center;border-left-width:1px;' + (portesOuv ? 'transform:rotateY(108deg);' : '');
+    var hL = document.createElement('div');
+    hL.style.cssText = 'position:absolute;right:5px;top:50%;transform:translateY(-50%);width:4px;height:36px;border-radius:2px;background:linear-gradient(180deg,#e0e0e0,#888);';
+    var hR = document.createElement('div');
+    hR.style.cssText = 'position:absolute;left:5px;top:50%;transform:translateY(-50%);width:4px;height:36px;border-radius:2px;background:linear-gradient(180deg,#e0e0e0,#888);';
+    dL.appendChild(hL); dR.appendChild(hR);
+    portes.appendChild(dL); portes.appendChild(dR);
+    cabinet.appendChild(portes);
   }
   cabinet.style.zIndex = '2';
   cabinet.style.marginBottom = '32px';   /* repose sur le sol */
@@ -698,6 +763,10 @@ function creerVitrine(piece, pos, pieces, opts) {
   var couleur = piece.couleur || '#6a4b28';
   var nP = Math.min(8, Math.max(1, piece.planches || 3));
   var nS = Math.min(8, Math.max(1, piece.places   || 4));
+  var estBoisF = (piece.style !== 'vitree');
+  var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
+  var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
+  var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
   var contenu = piece.contenu || {};
 
   var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
@@ -726,8 +795,8 @@ function creerVitrine(piece, pos, pieces, opts) {
   var meuble = document.createElement('div');
   meuble.className = 'vitrine-meuble';
   meuble.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column-reverse;' +
-    'width:' + innerW + 'px;background:' + _teinte(couleur, -0.10) + ';' +
-    'border:' + Math.max(2, Math.round(u)) + 'px solid ' + _teinte(couleur, -0.28) + ';' +
+    'width:' + innerW + 'px;background:' + backF + ';' +
+    'border:' + Math.max(2, Math.round(u)) + 'px solid ' + frameF + ';' +
     'border-radius:3px;box-shadow:0 ' + Math.round(3 * u) + 'px ' + Math.round(6 * u) + 'px rgba(0,0,0,.55);';
 
   for (var pl = 1; pl <= nP; pl++) {
@@ -735,7 +804,7 @@ function creerVitrine(piece, pos, pieces, opts) {
     row.className = 'vitrine-planche';
     row.style.cssText = 'position:relative;display:flex;justify-content:space-around;align-items:flex-end;' +
       'padding:' + pad + 'px ' + pad + 'px 0;' +
-      'border-bottom:' + board + 'px solid ' + _teinte(couleur, 0.06) + ';';
+      'border-bottom:' + board + 'px solid ' + boardF + ';';
     for (var sl = 1; sl <= nS; sl++) {
       var slot = document.createElement('div');
       slot.className = 'vitrine-slot';
