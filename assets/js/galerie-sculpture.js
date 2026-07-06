@@ -573,51 +573,75 @@ function ouvrirVitrine(piece, pieces, opts) {
   head.appendChild(titre); head.appendChild(btnX);
   overlay.appendChild(head);
 
-  var grid = document.createElement('div');
-  grid.style.cssText = 'flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));' +
-    'gap:12px;padding:16px;align-content:start;' +
-    'background:radial-gradient(ellipse at 50% 18%,rgba(240,208,128,.10),transparent 60%);';
+  /* Corps = GROS PLAN de l'étagère : objets posés sur les planches, comme si on s'en approchait */
+  var body = document.createElement('div');
+  body.style.cssText = 'flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;' +
+    'padding:20px 14px;background:radial-gradient(ellipse at 50% 25%,rgba(240,208,128,.12),transparent 62%);';
 
   var contenu = piece.contenu || {};
-  Object.keys(contenu).sort().forEach(function (k) {
-    var oe = pieces[contenu[k]];
-    if (!oe) return;
-    var cell = document.createElement('div');
-    cell.style.cssText = 'position:relative;background:linear-gradient(180deg,#2c1f10,#1b1209);' +
-      'border:1px solid #241809;border-radius:8px;padding:10px 8px 12px;text-align:center;cursor:pointer;' +
-      'box-shadow:inset 0 6px 16px rgba(0,0,0,.5);';
-    var media;
-    if (immActif && oe.glb) {
-      media = document.createElement('model-viewer');
-      media.setAttribute('src', /^https?:\/\//.test(oe.glb) ? oe.glb : ((GALERIE_CFG.assetsBase || '') + oe.glb));
-      media.setAttribute('camera-controls', ''); media.setAttribute('auto-rotate', '');
-      media.setAttribute('interaction-prompt', 'none'); media.setAttribute('shadow-intensity', '1');
-      media.style.cssText = 'width:100%;height:120px;--poster-color:transparent;background:transparent;';
-    } else if (oe.photo) {
-      media = document.createElement('img');
-      media.src = /^https?:\/\//.test(oe.photo) ? oe.photo : ((GALERIE_CFG.assetsBase || '') + oe.photo);
-      media.alt = oe.titre || ''; media.loading = 'lazy';
-      media.style.cssText = 'width:100%;height:120px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));';
-    } else {
-      media = document.createElement('div'); media.style.height = '120px';
+  var couleurV = piece.couleur || '#6a4b28';
+  var nPv = Math.max(1, piece.planches || 3);
+  var nSv = Math.max(1, piece.places   || 4);
+  var maxW  = Math.min(window.innerWidth - 28, 640);
+  var slotW = Math.max(70, Math.floor((maxW - (nSv + 1) * 12) / nSv));
+  var slotH = Math.round(slotW * 1.15);
+
+  var meubleG = document.createElement('div');
+  meubleG.style.cssText = 'display:flex;flex-direction:column-reverse;border-radius:6px;' +
+    'background:' + _teinte(couleurV, -0.10) + ';border:6px solid ' + _teinte(couleurV, -0.28) + ';' +
+    'box-shadow:0 24px 50px rgba(0,0,0,.6),inset 0 3px 0 rgba(255,255,255,.06);';
+
+  for (var plv = 1; plv <= nPv; plv++) {
+    var rowv = document.createElement('div');
+    rowv.style.cssText = 'display:flex;justify-content:center;gap:12px;padding:12px 12px 0;' +
+      'border-bottom:10px solid ' + _teinte(couleurV, 0.06) + ';';
+    for (var slv = 1; slv <= nSv; slv++) {
+      var slotv = document.createElement('div');
+      slotv.style.cssText = 'width:' + slotW + 'px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;';
+      var oev = pieces[contenu['' + (plv * 10 + slv)]];
+      if (oev) {
+        var mediav;
+        if (immActif && oev.glb) {
+          mediav = document.createElement('model-viewer');
+          mediav.setAttribute('src', /^https?:\/\//.test(oev.glb) ? oev.glb : ((GALERIE_CFG.assetsBase || '') + oev.glb));
+          mediav.setAttribute('camera-controls', ''); mediav.setAttribute('auto-rotate', '');
+          mediav.setAttribute('rotation-per-second', '15deg');   /* = salle immersive : 1 tour / 24 s */
+          mediav.setAttribute('interaction-prompt', 'none'); mediav.setAttribute('shadow-intensity', '1');
+          mediav.style.cssText = 'width:100%;height:' + slotH + 'px;--poster-color:transparent;background:transparent;';
+        } else if (oev.photo) {
+          mediav = document.createElement('img');
+          mediav.src = /^https?:\/\//.test(oev.photo) ? oev.photo : ((GALERIE_CFG.assetsBase || '') + oev.photo);
+          mediav.alt = oev.titre || ''; mediav.loading = 'lazy';
+          mediav.style.cssText = 'width:100%;height:' + slotH + 'px;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.55));';
+        } else {
+          mediav = document.createElement('div'); mediav.style.height = slotH + 'px';
+        }
+        slotv.appendChild(mediav);
+        var lblv = document.createElement('div');
+        lblv.textContent = oev.titre || '';
+        lblv.style.cssText = 'margin:6px 0 4px;font-size:11px;color:#e8dcc8;text-align:center;';
+        slotv.appendChild(lblv);
+        if (descActif) {
+          slotv.style.cursor = 'pointer';
+          (function (oeu) {
+            slotv.addEventListener('click', function () {
+              fermer();
+              setTimeout(function () {
+                ouvrirSalleObservation(oeu, descDecor, false, immDecor,
+                  { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
+              }, 320);
+            });
+          })(oev);
+        }
+      } else {
+        slotv.style.height = (slotH + 24) + 'px';   /* emplacement vide */
+      }
+      rowv.appendChild(slotv);
     }
-    cell.appendChild(media);
-    var lbl = document.createElement('div');
-    lbl.textContent = oe.titre || '';
-    lbl.style.cssText = 'margin-top:8px;font-size:11px;color:#e8dcc8;';
-    cell.appendChild(lbl);
-    if (descActif) {
-      cell.addEventListener('click', function () {
-        fermer();
-        setTimeout(function () {
-          ouvrirSalleObservation(oe, descDecor, false, immDecor,
-            { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
-        }, 320);
-      });
-    }
-    grid.appendChild(cell);
-  });
-  overlay.appendChild(grid);
+    meubleG.appendChild(rowv);
+  }
+  body.appendChild(meubleG);
+  overlay.appendChild(body);
 
   function fermer() {
     overlay.style.opacity = '0';
@@ -667,22 +691,22 @@ function creerVitrine(piece, pos, pieces, opts) {
   /* Halo doré lent (attracteur) */
   var halo = document.createElement('div');
   halo.className = 'vitrine-halo';
-  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:150%;height:132%;' +
-    'transform:translate(-50%,-50%);border-radius:16px;pointer-events:none;z-index:-1;' +
-    'background:radial-gradient(ellipse at center,rgba(240,208,128,.40),rgba(240,208,128,.08) 55%,transparent 72%);';
+  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:172%;height:150%;' +
+    'transform:translate(-50%,-50%);border-radius:18px;pointer-events:none;z-index:0;' +
+    'background:radial-gradient(ellipse at center,rgba(240,208,128,.62),rgba(240,208,128,.16) 52%,transparent 72%);';
   wrapper.appendChild(halo);
   if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     halo.animate(
-      [{ opacity: 0.35, transform: 'translate(-50%,-50%) scale(0.92)' },
-       { opacity: 0.90, transform: 'translate(-50%,-50%) scale(1.06)' },
-       { opacity: 0.35, transform: 'translate(-50%,-50%) scale(0.92)' }],
+      [{ opacity: 0.45, transform: 'translate(-50%,-50%) scale(0.92)' },
+       { opacity: 1.00, transform: 'translate(-50%,-50%) scale(1.07)' },
+       { opacity: 0.45, transform: 'translate(-50%,-50%) scale(0.92)' }],
       { duration: 4000, iterations: Infinity, easing: 'ease-in-out' });
   }
 
   /* Meuble : planches empilées, bas → haut (column-reverse) */
   var meuble = document.createElement('div');
   meuble.className = 'vitrine-meuble';
-  meuble.style.cssText = 'position:relative;display:flex;flex-direction:column-reverse;' +
+  meuble.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column-reverse;' +
     'width:' + innerW + 'px;background:' + _teinte(couleur, -0.10) + ';' +
     'border:' + Math.max(2, Math.round(u)) + 'px solid ' + _teinte(couleur, -0.28) + ';' +
     'border-radius:3px;box-shadow:0 ' + Math.round(3 * u) + 'px ' + Math.round(6 * u) + 'px rgba(0,0,0,.55);';
