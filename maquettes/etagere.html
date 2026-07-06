@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Maquette — étagères &amp; anti-chevauchement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall1:#241a12; --wall2:#150e08; --floor:#8a6228; --floor-back:#3a2a16;
+    --gold:#c8a050; --gold-lt:#f0d080; --cream:#e8dcc8; --dim:#9a8b76;
+    --stone:#6d645a; --stone-lt:#8c8278; --stone-dk:#4a433b;
+    --ok:#5ec46a; --no:#e0564b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; background:#0c0906; color:var(--cream);
+    font-family:'Lato',system-ui,sans-serif; -webkit-font-smoothing:antialiased;}
+  body{max-width:460px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column;}
+
+  header{padding:14px 16px 8px;}
+  h1{font-family:'Cinzel',serif; font-weight:600; font-size:17px; letter-spacing:.02em;
+     margin:0 0 2px; color:var(--gold-lt);}
+  .sub{font-size:12px; color:var(--dim); line-height:1.35;}
+
+  .tabs{display:flex; gap:6px; padding:10px 12px 8px; overflow-x:auto;}
+  .tab{flex:0 0 auto; padding:8px 12px; border:1px solid #3a2e20; border-radius:999px;
+    background:#1a130c; color:var(--cream); font-size:12.5px; font-weight:700; cursor:pointer;
+    white-space:nowrap; transition:.15s;}
+  .tab.on{background:linear-gradient(180deg,var(--gold),#a9863f); color:#211705; border-color:var(--gold-lt);}
+
+  .stage-wrap{padding:0 12px;}
+  /* La "salle" : murs sombres + sol en fausse perspective */
+  .stage{position:relative; width:100%; height:58dvh; min-height:340px; overflow:hidden;
+    border-radius:10px; border:1px solid #2c2116;
+    background:linear-gradient(180deg,var(--wall2) 0%,var(--wall1) 42%);}
+  /* sol trapèze */
+  .sol{position:absolute; left:0; right:0; bottom:0; height:62%;
+    background:
+      repeating-linear-gradient(to right,transparent 0,transparent 13%,rgba(0,0,0,.10) 13%,rgba(0,0,0,.10) 13.4%),
+      linear-gradient(180deg,var(--floor-back) 0%,var(--floor) 78%);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+    box-shadow:inset 0 20px 40px rgba(0,0,0,.55);}
+  .sol::after{content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(180deg,transparent 0,transparent 9%,rgba(0,0,0,.16) 9%,rgba(0,0,0,.16) 9.5%);
+    opacity:.55;}
+  .plinth{position:absolute; left:0; right:0; bottom:62%; height:1px; background:rgba(0,0,0,.5);}
+  /* halo lumineux mural */
+  .glow{position:absolute; top:-10%; left:50%; width:70%; height:55%; transform:translateX(-50%);
+    background:radial-gradient(ellipse at center,rgba(240,208,128,.16),transparent 70%); pointer-events:none;}
+
+  /* ── un objet posé au sol (socle + oeuvre) ── */
+  .obj{position:absolute; transform-origin:bottom center; transform:translateX(-50%);
+    cursor:grab; touch-action:none; will-change:left,bottom,transform;}
+  .obj.drag{cursor:grabbing; z-index:999 !important;}
+  .socle{width:46px; height:34px; margin:0 auto; border-radius:3px 3px 2px 2px;
+    background:linear-gradient(180deg,var(--stone-lt),var(--stone) 55%,var(--stone-dk));
+    box-shadow:0 6px 12px rgba(0,0,0,.5); position:relative;}
+  .socle::before{content:""; position:absolute; left:-4px; right:-4px; bottom:-5px; height:8px;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.45),transparent 72%);}
+  .art{display:block; margin:0 auto -2px; filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
+  .halo{position:absolute; bottom:-7px; left:50%; transform:translateX(-50%);
+    border-radius:50%; pointer-events:none; opacity:0; transition:opacity .12s;
+    border:2px solid var(--ok); background:rgba(94,196,106,.14);}
+  .obj.showfoot .halo{opacity:.9;}
+  .obj.bad .halo{border-color:var(--no); background:rgba(224,86,75,.18);}
+  .tag{position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+    margin-bottom:4px; font-size:9px; color:var(--gold-lt); background:rgba(0,0,0,.5);
+    padding:1px 5px; border-radius:4px; white-space:nowrap; opacity:0; transition:.15s;}
+  .obj.lbl .tag{opacity:1;}
+
+  /* ── étagère ── */
+  .shelf{position:absolute; transform-origin:bottom center; transform:translateX(-50%);
+    cursor:pointer; touch-action:none;}
+  .shelf-body{position:relative; width:96px; background:linear-gradient(180deg,#6a4b28,#4a3419);
+    border:1px solid #2c1e0d; border-radius:3px; box-shadow:0 8px 18px rgba(0,0,0,.55);}
+  .level{position:relative; height:38px; border-bottom:5px solid #3a2913;
+    display:flex; align-items:flex-end; justify-content:space-around; padding:0 5px 2px;}
+  .level:last-child{border-bottom:none;}
+  .shelf-tap{position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    font-size:9px; color:var(--gold-lt); background:rgba(0,0,0,.45); padding:1px 6px; border-radius:4px;
+    opacity:.85; pointer-events:none;}
+
+  /* ── overlay vitrine (zoom) ── */
+  .vitrine{position:absolute; inset:0; background:linear-gradient(180deg,#0e0a06,#1c140c);
+    display:none; flex-direction:column; z-index:50; border-radius:10px; overflow:hidden;}
+  .vitrine.open{display:flex;}
+  .vitrine .vhead{padding:12px 14px; border-bottom:1px solid #33271a; display:flex;
+    align-items:center; gap:10px;}
+  .vback{font-size:13px; color:var(--gold-lt); background:#241a10; border:1px solid #3a2c1a;
+    border-radius:8px; padding:6px 10px; cursor:pointer;}
+  .vtitle{font-family:'Cinzel',serif; font-size:14px; color:var(--gold-lt);}
+  .vbody{flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px;
+    padding:16px; background:
+      radial-gradient(ellipse at 50% 30%,rgba(240,208,128,.10),transparent 60%);}
+  .vrow{display:flex; align-items:flex-end; justify-content:space-around;
+    background:linear-gradient(180deg,#3a2913,#2a1d0d); border-radius:4px;
+    border:1px solid #241809; padding:14px 8px 10px; box-shadow:inset 0 8px 20px rgba(0,0,0,.5);}
+  .vitem{text-align:center;}
+  .vitem .vlabel{margin-top:8px; font-size:10px; color:var(--cream);}
+  .vitem .vsub{font-size:9px; color:var(--dim);}
+
+  .cap{padding:10px 16px 4px;}
+  .cap .q{font-size:11px; color:var(--gold); font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; margin-bottom:3px;}
+  .cap .t{font-size:12.5px; color:var(--cream); line-height:1.45;}
+  .hint{font-size:11px; color:var(--dim); margin-top:5px; font-style:italic;}
+
+  .toggle{display:flex; gap:6px; margin:8px 0 2px;}
+  .toggle button{flex:1; padding:7px; font-size:12px; font-weight:700; border-radius:8px;
+    border:1px solid #3a2e20; background:#1a130c; color:var(--cream); cursor:pointer;}
+  .toggle button.on{background:#2c2114; color:var(--gold-lt); border-color:var(--gold);}
+  footer{padding:10px 16px 20px; font-size:10.5px; color:#6b5f4e; line-height:1.4;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Étagères &amp; anti-chevauchement</h1>
+  <div class="sub">Maquette jetable — 4 pistes à comparer sur GSM. Formes bidon, seul le principe compte.</div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab on" data-m="A">A · Étagère au sol</button>
+  <button class="tab" data-m="B">B · Zoom vitrine</button>
+  <button class="tab" data-m="C">C · Mixte / dédiée</button>
+  <button class="tab" data-m="D">D · Anti-chevauchement</button>
+</div>
+
+<div class="stage-wrap">
+  <div class="toggle" id="toggleC" style="display:none">
+    <button data-c="mix" class="on">Salle mixte</button>
+    <button data-c="ded">Salle vitrines</button>
+  </div>
+  <div class="stage" id="stage">
+    <div class="glow"></div>
+    <div class="sol"></div>
+    <div class="plinth"></div>
+    <div id="layer"></div>
+    <div class="vitrine" id="vitrine">
+      <div class="vhead">
+        <button class="vback" id="vback">‹ Retour salle</button>
+        <span class="vtitle">Vitrine — petits formats</span>
+      </div>
+      <div class="vbody" id="vbody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="cap" id="cap"></div>
+<footer>maquettes/etagere.html — sur <b>dev</b> uniquement, jamais fusionné vers main. noindex.</footer>
+
+<script>
+/* ══════════ Silhouettes d'œuvres (SVG bidon) ══════════ */
+const ART = {
+  chaise: (s=1)=>`<svg class="art" width="${34*s}" height="${44*s}" viewBox="0 0 34 44"><g fill="none" stroke="#d9c9a8" stroke-width="2.4" stroke-linecap="round"><path d="M10 6 v14 M10 20 h14 v-14"/><path d="M10 20 v10 M24 20 v10"/><path d="M17 30 v8"/><ellipse cx="17" cy="41" rx="9" ry="2.4" fill="#a9863f" stroke="none"/><path d="M11 38 l-4 4 M23 38 l4 4"/></g></svg>`,
+  papillon:(s=1)=>`<svg class="art" width="${40*s}" height="${34*s}" viewBox="0 0 40 34"><g fill="#c8a050" stroke="#f0d080" stroke-width="1"><path d="M20 17 C6 -2 -4 6 8 16 C-3 20 8 34 20 18 Z"/><path d="M20 17 C34 -2 44 6 32 16 C43 20 32 34 20 18 Z"/><line x1="20" y1="6" x2="20" y2="30" stroke="#5a4420" stroke-width="2"/></g></svg>`,
+  buste:(s=1)=>`<svg class="art" width="${30*s}" height="${40*s}" viewBox="0 0 30 40"><g fill="#cdbfa6"><circle cx="15" cy="11" r="8"/><path d="M4 40 C4 24 26 24 26 40 Z"/></g></svg>`,
+  vase:(s=1)=>`<svg class="art" width="${26*s}" height="${38*s}" viewBox="0 0 26 38"><path d="M8 2 h10 l-1 7 C24 14 24 30 13 36 C2 30 2 14 9 9 Z" fill="#b9895a" stroke="#e0c08a" stroke-width="1"/></svg>`,
+  cube:(s=1)=>`<svg class="art" width="${30*s}" height="${32*s}" viewBox="0 0 30 32"><g stroke="#e0c08a" stroke-width="1"><path d="M6 10 l9-6 9 6 -9 6Z" fill="#c8a878"/><path d="M6 10 v12 l9 6 V16Z" fill="#9c7a4e"/><path d="M24 10 v12 l-9 6 V16Z" fill="#b18a58"/></g></svg>`,
+  galet:(s=1)=>`<svg class="art" width="${34*s}" height="${22*s}" viewBox="0 0 34 22"><path d="M2 16 C0 6 12 0 20 3 C33 7 36 20 22 21 C12 22 4 22 2 16Z" fill="#8f9aa2" stroke="#c3ccd2" stroke-width="1"/></svg>`
+};
+
+const stage = document.getElementById('stage');
+const layer = document.getElementById('layer');
+const cap   = document.getElementById('cap');
+const vit   = document.getElementById('vitrine');
+const vbody = document.getElementById('vbody');
+const toggleC = document.getElementById('toggleC');
+
+/* perspective identique au vrai renderer : scale = 1 - y/100*0.42 */
+const persp = y => (1 - (y/100)*0.42);
+
+function placeObj(o){
+  o.el.style.left   = o.x + '%';
+  o.el.style.bottom = o.y + '%';
+  o.el.style.transform = 'translateX(-50%) scale('+ persp(o.y).toFixed(3) +')';
+  o.el.style.zIndex = Math.round((100 - o.y)*10);
+}
+
+function makeObj({x,y,art,scale=1,label='',foot=[24,10],drag=false}){
+  const el = document.createElement('div');
+  el.className = 'obj' + (label?' lbl':'');
+  el.innerHTML =
+    (label?`<span class="tag">${label}</span>`:'') +
+    ART[art](scale) +
+    `<div class="socle"></div>` +
+    `<div class="halo"></div>`;
+  layer.appendChild(el);
+  const o = {el, x, y, art, foot}; placeObj(o);
+  // dimensionne l'ellipse de halo (empreinte au sol projetée)
+  const halo = el.querySelector('.halo');
+  const stw = stage.clientWidth, sth = stage.clientHeight;
+  const rxpx = (foot[0]/100)*stw, rypx = (foot[1]/100)*sth*0.5;
+  halo.style.width  = (rxpx*2)+'px';
+  halo.style.height = (rypx*2)+'px';
+  if(drag) enableDrag(o);
+  return o;
+}
+
+function makeShelf({x,y,items,onTap}){
+  const el = document.createElement('div');
+  el.className = 'shelf';
+  el.style.left=x+'%'; el.style.bottom=y+'%';
+  el.style.transform='translateX(-50%) scale('+persp(y).toFixed(3)+')';
+  el.style.zIndex = Math.round((100 - y)*10);
+  const lvls = items.map(row=>`<div class="level">${row.map(a=>ART[a](0.5)).join('')}</div>`).join('');
+  el.innerHTML = `<div class="shelf-body">${lvls}<span class="shelf-tap">appuyer ↵</span></div>`;
+  layer.appendChild(el);
+  if(onTap){ el.addEventListener('click', onTap); }
+  return el;
+}
+
+/* ══════════ Anti-chevauchement (ellipse, perspective) ══════════ */
+let OBJS = [];
+function overlaps(a, b){
+  // demi-empreintes en % ; ry pondéré par la perspective (plus petit au fond)
+  const rxa=a.foot[0]/2, rya=(a.foot[1]/2)*persp(a.y);
+  const rxb=b.foot[0]/2, ryb=(b.foot[1]/2)*persp(b.y);
+  const dx=a.x-b.x, dy=a.y-b.y;
+  const nx=dx/(rxa+rxb), ny=dy/(rya+ryb);
+  return (nx*nx + ny*ny) < 1;              // test ellipse vs ellipse
+}
+function collides(o){ return OBJS.some(p=>p!==o && overlaps(o,p)); }
+
+function enableDrag(o){
+  o.el.addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    o.el.setPointerCapture(e.pointerId);
+    o.el.classList.add('drag');
+    OBJS.forEach(p=>p.el.classList.add('showfoot'));
+    const rect = stage.getBoundingClientRect();
+    const move = ev=>{
+      let nx = ((ev.clientX-rect.left)/rect.width)*100;
+      let ny = (1-(ev.clientY-rect.top)/rect.height)*100;
+      // borne au sol
+      nx=Math.max(6,Math.min(94,nx)); ny=Math.max(4,Math.min(56,ny));
+      const prevX=o.x, prevY=o.y;
+      o.x=nx; o.y=ny;
+      if(collides(o)){                       // BLOCAGE DUR : on refuse le pas
+        o.x=prevX; o.y=prevY;
+        o.el.classList.add('bad');
+      }else{
+        o.el.classList.remove('bad');
+      }
+      placeObj(o);
+    };
+    const up = ev=>{
+      o.el.releasePointerCapture(e.pointerId);
+      o.el.classList.remove('drag','bad');
+      OBJS.forEach(p=>p.el.classList.remove('showfoot'));
+      o.el.removeEventListener('pointermove',move);
+      o.el.removeEventListener('pointerup',up);
+    };
+    o.el.addEventListener('pointermove',move);
+    o.el.addEventListener('pointerup',up);
+  });
+}
+
+/* ══════════ Rendu des scénarios ══════════ */
+function clear(){ layer.innerHTML=''; OBJS=[]; vit.classList.remove('open'); toggleC.style.display='none'; }
+
+function openVitrine(title, rows){
+  document.querySelector('.vtitle').textContent = title;
+  vbody.innerHTML = rows.map(row=>
+    `<div class="vrow">${row.map(it=>
+      `<div class="vitem">${ART[it.art](1.15)}<div class="vlabel">${it.t}</div><div class="vsub">${it.s}</div></div>`
+    ).join('')}</div>`).join('');
+  vit.classList.add('open');
+}
+
+const SCENES = {
+  A(){
+    makeObj({x:24,y:40,art:'buste',scale:1.1});
+    makeObj({x:76,y:44,art:'papillon',scale:1});
+    makeShelf({x:52,y:16,items:[['chaise','vase','cube'],['galet','buste','vase']]});
+    cap.innerHTML = `<div class="q">Ce que tu vois</div>
+      <div class="t">Une <b>étagère posée au sol</b> parmi deux socles. Les petits objets (la chaise, les vases) vivent groupés sur ses niveaux au lieu de se perdre seuls sur un grand socle.</div>
+      <div class="hint">Question : à cette échelle, on distingue à peine les petites pièces. D'où la piste B.</div>`;
+  },
+  B(){
+    makeObj({x:26,y:42,art:'buste',scale:1.1});
+    makeShelf({x:62,y:18,items:[['chaise','vase','cube'],['galet','buste','vase']],
+      onTap:()=>openVitrine('Vitrine — petits formats',[
+        [{art:'chaise',t:'Chaise Bureau',s:'métal · 2024'},{art:'vase',t:'Écume',s:'grès'},{art:'cube',t:'Bloc I',s:'chêne'}],
+        [{art:'galet',t:'Galet',s:'marbre'},{art:'buste',t:'Étude',s:'plâtre'},{art:'vase',t:'Col long',s:'terre'}]
+      ])});
+    cap.innerHTML = `<div class="q">Ce que tu testes</div>
+      <div class="t">Tape l'étagère → un <b>écran vitrine</b> zoome sur ses œuvres, agrandies et légendées. Chaque petit format retrouve sa place et son titre.</div>
+      <div class="hint">C'est ta piste du clic-zoom. Reviens avec « ‹ Retour salle ».</div>`;
+  },
+  C(){
+    toggleC.style.display='flex';
+    renderC('mix');
+    cap.innerHTML = `<div class="q">L'arbitrage « faut-il des salles bis »</div>
+      <div class="t">Bascule entre une <b>salle mixte</b> (grandes pièces + étagères ensemble) et une <b>salle dédiée</b> aux vitrines. Regarde laquelle respire le mieux sur GSM.</div>`;
+  },
+  D(){
+    OBJS.push(makeObj({x:30,y:30,art:'buste',scale:1.1,foot:[26,12],drag:true}));
+    OBJS.push(makeObj({x:66,y:30,art:'vase', scale:1.2,foot:[22,10],drag:true}));
+    OBJS.push(makeObj({x:50,y:48,art:'papillon',scale:1,foot:[30,12],drag:true}));
+    cap.innerHTML = `<div class="q">Le drag libre + blocage dur</div>
+      <div class="t">Tire une pièce. Halo <b style="color:var(--ok)">vert</b> = ça passe, <b style="color:var(--no)">rouge</b> = ça mord une voisine et le pas est refusé. L'empreinte est une <b>ellipse</b>, rétrécie vers le fond par la perspective — comme les socles.</div>
+      <div class="hint">Chaque œuvre a sa propre taille d'empreinte (paramétrable) : le blocage suit tout seul.</div>`;
+  }
+};
+
+function renderC(kind){
+  layer.innerHTML=''; OBJS=[];
+  if(kind==='mix'){
+    makeObj({x:22,y:42,art:'buste',scale:1.15});
+    makeObj({x:80,y:46,art:'papillon',scale:1});
+    makeShelf({x:52,y:14,items:[['chaise','vase','cube'],['galet','buste','vase']]});
+  }else{
+    makeShelf({x:26,y:34,items:[['chaise','vase'],['cube','galet']]});
+    makeShelf({x:72,y:32,items:[['buste','vase'],['papillon','cube']]});
+    makeShelf({x:50,y:8, items:[['galet','chaise','vase'],['cube','buste','vase']]});
+  }
+}
+document.querySelectorAll('#toggleC button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#toggleC button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); renderC(b.dataset.c);
+  });
+});
+
+document.getElementById('vback').addEventListener('click',()=>vit.classList.remove('open'));
+
+function show(m){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.m===m));
+  clear(); SCENES[m]();
+}
+document.getElementById('tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(t) show(t.dataset.m);
+});
+
+show('A');
+</script>
+</body>
+</html>
