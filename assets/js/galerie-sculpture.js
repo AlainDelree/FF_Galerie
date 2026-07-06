@@ -533,6 +533,7 @@ function creerSocle(piece, gabarit, pos, opts) {
 function creerVitrine(piece, pos, pieces, opts) {
   var wrapper = document.createElement('div');
   wrapper.className             = 'socle-wrapper vitrine-wrapper';
+  wrapper.style.position        = 'absolute';   /* autonome, ne dépend pas de galerie.css */
   wrapper.style.left            = pos.x + '%';
   wrapper.style.bottom          = pos.y + '%';
   wrapper.style.transformOrigin = 'bottom center';
