@@ -609,27 +609,37 @@ function ouvrirVitrine(piece, pieces, opts) {
              : 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 26px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.06);');
 
   /* Fond : 6 lattes verticales (bois) ; panneau gris uni (vitrée) */
-  if (estBois) {
+  /* Fond + parois latérales CONVERGENTES (perspective de boîte) — bois ET vitrée */
+  (function () {
     var back = document.createElement('div');
     back.style.cssText = 'position:absolute;inset:0;z-index:0;display:flex;pointer-events:none;overflow:hidden;';
-    for (var L = 0; L < 6; L++) {
-      var latte = document.createElement('div');
-      latte.style.cssText = 'flex:1;height:100%;box-shadow:inset -2px 0 3px rgba(0,0,0,.24);' +
-        'background:linear-gradient(90deg,' + _teinte(couleurV, -0.20) + ' 0%,' + _teinte(couleurV, -0.08) + ' 42%,' + _teinte(couleurV, -0.12) + ' 100%);';
-      back.appendChild(latte);
+    if (estBois) {
+      for (var L = 0; L < 6; L++) {
+        var latte = document.createElement('div');
+        latte.style.cssText = 'flex:1;height:100%;box-shadow:inset -2px 0 3px rgba(0,0,0,.24);' +
+          'background:linear-gradient(90deg,' + _teinte(couleurV, -0.20) + ' 0%,' + _teinte(couleurV, -0.08) + ' 42%,' + _teinte(couleurV, -0.12) + ' 100%);';
+        back.appendChild(latte);
+      }
+    } else {
+      var grey = document.createElement('div');
+      grey.style.cssText = 'flex:1;height:100%;background:linear-gradient(180deg,#7c7c78,#98988f);';
+      back.appendChild(grey);
     }
-    /* Parois latérales — MÊME couleur, exposition différente → profondeur (côtés visibles) */
+    var wLbg = estBois
+      ? 'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
+      : 'background:linear-gradient(90deg,rgba(228,234,235,.85) 0%,#585854 100%);';
+    var wRbg = estBois
+      ? 'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
+      : 'background:linear-gradient(270deg,rgba(228,234,235,.85) 0%,#585854 100%);';
     var wallL = document.createElement('div');
-    wallL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:15%;' +
-      'box-shadow:inset -4px 0 7px rgba(0,0,0,.38);' +
-      'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
+    wallL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:16%;box-shadow:inset -4px 0 7px rgba(0,0,0,.34);' +
+      'clip-path:polygon(0 0,100% 12%,100% 88%,0 100%);' + wLbg;
     var wallR = document.createElement('div');
-    wallR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:15%;' +
-      'box-shadow:inset 4px 0 7px rgba(0,0,0,.38);' +
-      'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
+    wallR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:16%;box-shadow:inset 4px 0 7px rgba(0,0,0,.34);' +
+      'clip-path:polygon(0 12%,100% 0,100% 100%,0 88%);' + wRbg;
     back.appendChild(wallL); back.appendChild(wallR);
     cabinet.appendChild(back);
-  }
+  })();
 
   for (var plv = 1; plv <= nPv; plv++) {
     var shelf = document.createElement('div');
@@ -691,12 +701,15 @@ function ouvrirVitrine(piece, pieces, opts) {
         'background:linear-gradient(180deg,' + _teinte(couleurV, 0.00) + ',' + _teinte(couleurV, -0.22) + ');';
       shelf.appendChild(plateau); shelf.appendChild(tranche);
     } else {
-      /* étagère en VERRE : plateau translucide + arête avant brillante */
-      var vglass = document.createElement('div');
-      vglass.style.cssText = 'position:relative;z-index:3;height:9px;border-radius:1px;' +
-        'background:linear-gradient(180deg,rgba(236,245,247,.5),rgba(150,168,172,.14));' +
-        'box-shadow:0 6px 10px rgba(0,0,0,.4),inset 0 2px 0 rgba(255,255,255,.55),0 1px 0 rgba(255,255,255,.45);';
-      shelf.appendChild(vglass);
+      /* étagère en VERRE : plateau translucide VISIBLE (objets posés dessus) + arête brillante */
+      var vplateau = document.createElement('div');
+      vplateau.style.cssText = 'position:relative;z-index:3;height:13px;' +
+        'background:linear-gradient(180deg,rgba(205,222,225,.30) 0%,rgba(234,245,247,.5) 100%);' +
+        'box-shadow:inset 0 2px 3px rgba(255,255,255,.32),inset 0 -1px 0 rgba(255,255,255,.7);';
+      var vedge = document.createElement('div');
+      vedge.style.cssText = 'position:relative;z-index:3;height:5px;border-radius:0 0 2px 2px;' +
+        'background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(140,158,162,.25));box-shadow:0 6px 10px rgba(0,0,0,.4);';
+      shelf.appendChild(vplateau); shelf.appendChild(vedge);
     }
     cabinet.appendChild(shelf);
   }
@@ -715,19 +728,8 @@ function ouvrirVitrine(piece, pieces, opts) {
   });
   cabinet.appendChild(pieds);
 
-  /* Vitrée : côtés vitrés visibles aux bords + portes vitrées rentrées */
+  /* Vitrée : doubles portes vitrées (côtés/fond gérés par la couche back) */
   if (!estBois) {
-    ['left', 'right'].forEach(function (side) {
-      var g = document.createElement('div');
-      g.style.cssText = 'position:absolute;top:4px;bottom:4px;' + side + ':0;width:15px;z-index:3;pointer-events:none;' +
-        'border-top:2px solid #111;border-bottom:2px solid #111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);' +
-        'background:linear-gradient(' + (side === 'left' ? '100deg' : '260deg') + ',rgba(210,225,230,.20),rgba(185,205,210,.06) 55%,rgba(255,255,255,.22));';
-      var r = document.createElement('div');
-      r.style.cssText = 'position:absolute;inset:0;background:linear-gradient(160deg,transparent 34%,rgba(255,255,255,.32) 46%,transparent 58%);';
-      g.appendChild(r);
-      cabinet.appendChild(g);
-    });
-
     var portes = document.createElement('div');
     portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1400px;';
     var makeDoor = function (sideLeft) {
