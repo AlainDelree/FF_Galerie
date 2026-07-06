@@ -18,25 +18,27 @@
   .ctrls b{font-size:11px;color:#c8a050;text-transform:uppercase;letter-spacing:.05em;}
   .sw{width:26px;height:26px;border-radius:50%;border:2px solid #3a2e20;cursor:pointer;}
   .sw.on{border-color:#f0d080;box-shadow:0 0 0 2px rgba(240,208,128,.35);}
+  .imm{font-size:11px;font-weight:700;border-radius:999px;padding:6px 12px;cursor:pointer;
+    border:1px solid #3a2c1a;background:#243a24;color:#bfe9c4;}
+  .imm.off{background:#1a130c;color:#9a8b76;}
   .stage-wrap{padding:0 12px;}
-  /* sol en perspective, comme la vraie salle sculpture */
-  .plancher-sol{position:relative;width:100%;height:60dvh;min-height:360px;overflow:hidden;
-    border-radius:10px;border:1px solid #2c2116;
-    background:linear-gradient(180deg,#150e08 0%,#241a12 42%);}
+  .plancher-sol{position:relative;width:100%;height:58dvh;min-height:340px;overflow:hidden;
+    border-radius:10px;border:1px solid #2c2116;background:linear-gradient(180deg,#150e08 0%,#241a12 42%);}
   .sol{position:absolute;left:0;right:0;bottom:0;height:62%;
     background:repeating-linear-gradient(to right,transparent 0,transparent 13%,rgba(0,0,0,.10) 13%,rgba(0,0,0,.10) 13.4%),
       linear-gradient(180deg,#3a2a16 0%,#8a6228 78%);
     clip-path:polygon(50% 0,100% 100%,0 100%);box-shadow:inset 0 20px 40px rgba(0,0,0,.55);}
   .sol::after{content:"";position:absolute;inset:0;
     background:repeating-linear-gradient(180deg,transparent 0,transparent 9%,rgba(0,0,0,.16) 9%,rgba(0,0,0,.16) 9.5%);opacity:.55;}
+  .tip{padding:8px 16px 0;font-size:11px;color:#c8a050;font-style:italic;}
   footer{padding:10px 16px 20px;font-size:10.5px;color:#6b5f4e;line-height:1.4;}
   .err{color:#e0564b;padding:12px 16px;font-size:12px;white-space:pre-wrap;}
 </style>
 </head>
 <body class="theme-sombre" data-page="galerie">
 <header>
-  <h1>Test vitrine — rendu procédural réel</h1>
-  <div class="sub">Appelle le vrai <code>creerVitrine()</code> de galerie-sculpture.js avec des données injectées. Aucune donnée live touchée.</div>
+  <h1>Test vitrine — parcours réel</h1>
+  <div class="sub">Vrai code galerie-sculpture.js, données injectées. Aucune donnée live touchée.</div>
 </header>
 <div class="ctrls">
   <b>Couleur</b>
@@ -44,45 +46,53 @@
   <span class="sw" style="background:#3f342a" data-c="#3f342a"></span>
   <span class="sw" style="background:#8c8278" data-c="#8c8278"></span>
   <span class="sw" style="background:#2a3340" data-c="#2a3340"></span>
+  <button class="imm" id="immBtn">immersif ●</button>
 </div>
+<div class="tip">Tape l'étagère → vitrine. Immersif = objets 3D, sinon photos. Tape un objet → salle d'observation → « Vitrine » pour revenir.</div>
 <div class="stage-wrap">
   <div class="plancher-sol" id="floor"><div class="sol"></div></div>
 </div>
 <div id="err"></div>
-<footer>maquettes/test-vitrine.html — sur <b>dev</b> uniquement. noindex. Bump ?v= si galerie-sculpture.js change.</footer>
+<footer>maquettes/test-vitrine.html — sur <b>dev</b> uniquement. noindex.</footer>
 
-<!-- vrai code : core (consts GALERIE_CFG/RENDERERS, pas d'auto-init) + sculpture -->
 <script src="../assets/js/galerie-core.js?v=20260706e"></script>
-<script src="../assets/js/galerie-sculpture.js?v=20260706f"></script>
+<script src="../assets/js/galerie-sculpture.js?v=20260706g"></script>
 <script>
   try {
-    GALERIE_CFG.assetsBase = '../artistes/dinso/';   /* les photos test = pièces Dinso réelles */
-
-    /* Table des œuvres (par id) : la vitrine + son contenu (photos réelles) */
+    GALERIE_CFG.assetsBase = '../artistes/dinso/';
     var PIECES = {
       99: { id:99, est_vitrine:true, titre:'Vitrine test', planches:3, places:4, couleur:'#6a4b28',
-            /* index "planche·place" (bas→haut, gauche→droite) → id d'œuvre */
             contenu:{ '11':11,'12':13,'13':11,'14':13, '21':13,'22':11,'23':13, '31':11,'32':13 } },
-      11: { id:11, titre:'Chaise Bureau', photo:'assets/images/toiles/piece-011.png' },
-      13: { id:13, titre:'Papillon',      photo:'assets/images/toiles/piece-013.png' }
+      11: { id:11, titre:'Chaise Bureau', photo:'assets/images/toiles/piece-011.png', glb:'assets/models/piece-011.glb',
+            materiaux:['métal'], dimensions:{largeur:42,profondeur:40,hauteur:88} },
+      13: { id:13, titre:'Papillon', photo:'assets/images/toiles/piece-013.png', glb:'assets/models/piece-013.glb',
+            materiaux:['acier'], dimensions:{largeur:30,profondeur:12,hauteur:34} }
     };
     var POS = { id:99, x:50, y:30, gabarit:'XL' };
+    var couleur = '#6a4b28';
+    var immersif = true;
 
-    function rendre(couleur) {
+    function rendre() {
       var floor = document.getElementById('floor');
       var old = floor.querySelector('.vitrine-wrapper'); if (old) old.remove();
       PIECES[99].couleur = couleur;
-      var el = creerVitrine(PIECES[99], POS, PIECES, {});
-      floor.appendChild(el);
+      /* opts comme le renderer les passerait : immersif + descriptif actifs */
+      var opts = { immActif: immersif, descActif: true, immDecor: null, descDecor: null };
+      floor.appendChild(creerVitrine(PIECES[99], POS, PIECES, opts));
     }
-    rendre('#6a4b28');
+    rendre();
 
     document.querySelectorAll('.sw').forEach(function (b) {
       b.addEventListener('click', function () {
         document.querySelectorAll('.sw').forEach(function (x){ x.classList.remove('on'); });
-        b.classList.add('on');
-        rendre(b.dataset.c);
+        b.classList.add('on'); couleur = b.dataset.c; rendre();
       });
+    });
+    document.getElementById('immBtn').addEventListener('click', function () {
+      immersif = !immersif;
+      this.classList.toggle('off', !immersif);
+      this.textContent = immersif ? 'immersif ●' : 'photo ○';
+      rendre();
     });
   } catch (e) {
     document.getElementById('err').className = 'err';

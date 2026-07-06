@@ -108,7 +108,7 @@ function _appliquerBandesObservation(chambre, decor) {
   }
 }
 
-function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance) {
   /* Éviter les doublons */
   if (document.querySelector('.obs-overlay')) return;
 
@@ -192,7 +192,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   overlay.appendChild(btnFermer);
 
   /* ── Porte gauche → retour salle immersive (si greffon actif) ── */
-  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const porteG = document.createElement('div');
     porteG.className = 'porte-nav porte-nav--gauche';
     porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
@@ -211,6 +211,22 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
     overlay.appendChild(porteG);
   }
 
+  /* ── Porte gauche → provenance (ex. retour vitrine) ── */
+  if (provenance && typeof provenance.retour === 'function') {
+    var _lblProv = provenance.label || 'Retour';
+    var porteGP = document.createElement('div');
+    porteGP.className = 'porte-nav porte-nav--gauche';
+    porteGP.innerHTML = '<div class="porte-nav__arche"></div><span class="porte-nav__fleche">\u2190</span>' +
+      '<span class="porte-nav__label">' + _lblProv + '</span>';
+    porteGP.addEventListener('click', function () { fermer(); setTimeout(provenance.retour, 350); });
+    overlay.appendChild(porteGP);
+    var plaqueGP = document.createElement('div');
+    plaqueGP.className = 'plaque-nav plaque-nav--gauche';
+    plaqueGP.innerHTML = '<span class="plaque-nav__label">\u2190 ' + _lblProv + '</span>';
+    plaqueGP.addEventListener('click', function () { fermer(); setTimeout(provenance.retour, 350); });
+    overlay.appendChild(plaqueGP);
+  }
+
   /* ── Porte droite → retour galerie ── */
   const porteD = document.createElement('div');
   porteD.className = 'porte-nav porte-nav--droite';
@@ -221,7 +237,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   overlay.appendChild(porteD);
 
   /* ── Pancartes mobiles ── */
-  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const plaqueG = document.createElement('div');
     plaqueG.className = 'plaque-nav plaque-nav--gauche';
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
@@ -523,6 +539,100 @@ function creerSocle(piece, gabarit, pos, opts) {
 
   wrapper.appendChild(socle);
   return wrapper;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ÉCRAN VITRINE — clic sur une étagère → grille des œuvres qu'elle contient.
+   Immersif actif → objets 3D (model-viewer auto-rotate), sinon photos.
+   Clic sur un objet → salle d'observation (si descriptif), retour = vitrine.
+   ══════════════════════════════════════════════════════════════ */
+function ouvrirVitrine(piece, pieces, opts) {
+  if (document.querySelector('.vitrine-overlay')) return;
+  var immActif  = !!(opts && opts.immActif);
+  var descActif = !!(opts && opts.descActif);
+  var immDecor  = (opts && opts.immDecor)  || null;
+  var descDecor = (opts && opts.descDecor) || null;
+  if (immActif && typeof chargerModelViewer === 'function') chargerModelViewer();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'vitrine-overlay';
+  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
+  overlay.style.cssText =
+    'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;' +
+    'background:linear-gradient(180deg,#0e0a06,#1c140c);opacity:0;transition:opacity .35s ease;';
+
+  var head = document.createElement('div');
+  head.style.cssText = 'display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #33271a;';
+  var titre = document.createElement('h2');
+  titre.textContent = piece.titre || 'Vitrine';
+  titre.style.cssText = 'flex:1;margin:0;font-family:Cinzel,serif;font-size:18px;color:#f0d080;';
+  var btnX = document.createElement('button');
+  btnX.setAttribute('aria-label', 'Fermer'); btnX.innerHTML = '\u2715';
+  btnX.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);' +
+    'background:rgba(0,0,0,.35);color:#fff;font-size:16px;cursor:pointer;';
+  head.appendChild(titre); head.appendChild(btnX);
+  overlay.appendChild(head);
+
+  var grid = document.createElement('div');
+  grid.style.cssText = 'flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));' +
+    'gap:12px;padding:16px;align-content:start;' +
+    'background:radial-gradient(ellipse at 50% 18%,rgba(240,208,128,.10),transparent 60%);';
+
+  var contenu = piece.contenu || {};
+  Object.keys(contenu).sort().forEach(function (k) {
+    var oe = pieces[contenu[k]];
+    if (!oe) return;
+    var cell = document.createElement('div');
+    cell.style.cssText = 'position:relative;background:linear-gradient(180deg,#2c1f10,#1b1209);' +
+      'border:1px solid #241809;border-radius:8px;padding:10px 8px 12px;text-align:center;cursor:pointer;' +
+      'box-shadow:inset 0 6px 16px rgba(0,0,0,.5);';
+    var media;
+    if (immActif && oe.glb) {
+      media = document.createElement('model-viewer');
+      media.setAttribute('src', /^https?:\/\//.test(oe.glb) ? oe.glb : ((GALERIE_CFG.assetsBase || '') + oe.glb));
+      media.setAttribute('camera-controls', ''); media.setAttribute('auto-rotate', '');
+      media.setAttribute('interaction-prompt', 'none'); media.setAttribute('shadow-intensity', '1');
+      media.style.cssText = 'width:100%;height:120px;--poster-color:transparent;background:transparent;';
+    } else if (oe.photo) {
+      media = document.createElement('img');
+      media.src = /^https?:\/\//.test(oe.photo) ? oe.photo : ((GALERIE_CFG.assetsBase || '') + oe.photo);
+      media.alt = oe.titre || ''; media.loading = 'lazy';
+      media.style.cssText = 'width:100%;height:120px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));';
+    } else {
+      media = document.createElement('div'); media.style.height = '120px';
+    }
+    cell.appendChild(media);
+    var lbl = document.createElement('div');
+    lbl.textContent = oe.titre || '';
+    lbl.style.cssText = 'margin-top:8px;font-size:11px;color:#e8dcc8;';
+    cell.appendChild(lbl);
+    if (descActif) {
+      cell.addEventListener('click', function () {
+        fermer();
+        setTimeout(function () {
+          ouvrirSalleObservation(oe, descDecor, false, immDecor,
+            { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
+        }, 320);
+      });
+    }
+    grid.appendChild(cell);
+  });
+  overlay.appendChild(grid);
+
+  function fermer() {
+    overlay.style.opacity = '0';
+    setTimeout(function () {
+      overlay.remove();
+      document.body.style.overflow = ''; document.documentElement.style.overflow = '';
+    }, 300);
+  }
+  btnX.addEventListener('click', fermer);
+  var onKey = function (e) { if (e.key === 'Escape') { fermer(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
+  requestAnimationFrame(function () { overlay.style.opacity = '1'; });
 }
 
 /* ══════════════════════════════════════════════════════════════
