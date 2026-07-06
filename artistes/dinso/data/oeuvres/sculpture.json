@@ -1,5 +1,5 @@
 {
-  "next_id": 18,
+  "next_id": 19,
   "gabarits": [
     {
       "code": "S",
@@ -149,6 +149,25 @@
       "visible": true,
       "socle": 137,
       "glb": "artistes/dinso/assets/models/piece-017.glb"
+    },
+    {
+      "id": 18,
+      "photo": "artistes/dinso/assets/images/toiles/piece-018.png",
+      "source_photo": "admin",
+      "titre": "Coquille",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 35,
+        "hauteur": 30,
+        "profondeur": 16
+      },
+      "visible": true,
+      "socle": 46,
+      "glb": "artistes/dinso/assets/models/piece-018.glb"
     }
   ]
 }
