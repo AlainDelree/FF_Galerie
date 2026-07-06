@@ -11,32 +11,9 @@
       "epaisseur_cadres": 2,
       "texture": "carrelage",
       "visible": true,
-      "toiles": [
-        11,
-        13
-      ],
-      "positions": [
-        {
-          "id": 11,
-          "x": 21.064713064713068,
-          "y": 43.172839506172835,
-          "gabarit": "M"
-        },
-        {
-          "id": 13,
-          "x": 54.7671214837612,
-          "y": 50.21476642372721,
-          "gabarit": "M"
-        }
-      ],
-      "positions_mobile": [
-        {
-          "id": 11,
-          "x": 47.13852813852814,
-          "y": 45.7667493796526,
-          "gabarit": "M"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
+      "positions_mobile": [],
       "greffons": {
         "immersive": {
           "actif": true,
