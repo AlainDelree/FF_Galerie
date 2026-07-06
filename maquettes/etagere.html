@@ -31,11 +31,9 @@
   .tab.on{background:linear-gradient(180deg,var(--gold),#a9863f); color:#211705; border-color:var(--gold-lt);}
 
   .stage-wrap{padding:0 12px;}
-  /* La "salle" : murs sombres + sol en fausse perspective */
   .stage{position:relative; width:100%; height:58dvh; min-height:340px; overflow:hidden;
     border-radius:10px; border:1px solid #2c2116;
     background:linear-gradient(180deg,var(--wall2) 0%,var(--wall1) 42%);}
-  /* sol trapèze */
   .sol{position:absolute; left:0; right:0; bottom:0; height:62%;
     background:
       repeating-linear-gradient(to right,transparent 0,transparent 13%,rgba(0,0,0,.10) 13%,rgba(0,0,0,.10) 13.4%),
@@ -46,11 +44,9 @@
     background:repeating-linear-gradient(180deg,transparent 0,transparent 9%,rgba(0,0,0,.16) 9%,rgba(0,0,0,.16) 9.5%);
     opacity:.55;}
   .plinth{position:absolute; left:0; right:0; bottom:62%; height:1px; background:rgba(0,0,0,.5);}
-  /* halo lumineux mural */
   .glow{position:absolute; top:-10%; left:50%; width:70%; height:55%; transform:translateX(-50%);
     background:radial-gradient(ellipse at center,rgba(240,208,128,.16),transparent 70%); pointer-events:none;}
 
-  /* ── un objet posé au sol (socle + oeuvre) ── */
   .obj{position:absolute; transform-origin:bottom center; transform:translateX(-50%);
     cursor:grab; touch-action:none; will-change:left,bottom,transform;}
   .obj.drag{cursor:grabbing; z-index:999 !important;}
@@ -65,41 +61,67 @@
     border:2px solid var(--ok); background:rgba(94,196,106,.14);}
   .obj.showfoot .halo{opacity:.9;}
   .obj.bad .halo{border-color:var(--no); background:rgba(224,86,75,.18);}
-  .tag{position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
-    margin-bottom:4px; font-size:9px; color:var(--gold-lt); background:rgba(0,0,0,.5);
-    padding:1px 5px; border-radius:4px; white-space:nowrap; opacity:0; transition:.15s;}
-  .obj.lbl .tag{opacity:1;}
 
-  /* ── étagère ── */
   .shelf{position:absolute; transform-origin:bottom center; transform:translateX(-50%);
     cursor:pointer; touch-action:none;}
+  .shelf-halo{position:absolute; left:50%; top:50%; width:150%; height:130%;
+    transform:translate(-50%,-50%); border-radius:14px; pointer-events:none; z-index:-1;
+    background:radial-gradient(ellipse at center,rgba(240,208,128,.42),rgba(240,208,128,.10) 55%,transparent 72%);
+    animation:haloPulse 4s ease-in-out infinite;}
+  @keyframes haloPulse{0%,100%{opacity:.35; transform:translate(-50%,-50%) scale(.92);}
+                        50%{opacity:.9;  transform:translate(-50%,-50%) scale(1.06);}}
   .shelf-body{position:relative; width:96px; background:linear-gradient(180deg,#6a4b28,#4a3419);
     border:1px solid #2c1e0d; border-radius:3px; box-shadow:0 8px 18px rgba(0,0,0,.55);}
   .level{position:relative; height:38px; border-bottom:5px solid #3a2913;
     display:flex; align-items:flex-end; justify-content:space-around; padding:0 5px 2px;}
   .level:last-child{border-bottom:none;}
-  .shelf-tap{position:absolute; top:6px; left:50%; transform:translateX(-50%);
-    font-size:9px; color:var(--gold-lt); background:rgba(0,0,0,.45); padding:1px 6px; border-radius:4px;
-    opacity:.85; pointer-events:none;}
+  .plaque{position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+    font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:.03em; color:#2a1d0a;
+    background:linear-gradient(180deg,var(--gold-lt),#b58f3e); padding:2px 7px; border-radius:3px;
+    white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,.5);}
 
-  /* ── overlay vitrine (zoom) ── */
-  .vitrine{position:absolute; inset:0; background:linear-gradient(180deg,#0e0a06,#1c140c);
-    display:none; flex-direction:column; z-index:50; border-radius:10px; overflow:hidden;}
-  .vitrine.open{display:flex;}
-  .vitrine .vhead{padding:12px 14px; border-bottom:1px solid #33271a; display:flex;
-    align-items:center; gap:10px;}
-  .vback{font-size:13px; color:var(--gold-lt); background:#241a10; border:1px solid #3a2c1a;
+  .overlay{position:absolute; inset:0; display:none; flex-direction:column; z-index:50;
+    border-radius:10px; overflow:hidden;}
+  .overlay.open{display:flex;}
+  .vitrine{background:linear-gradient(180deg,#0e0a06,#1c140c);}
+  .fiche{background:linear-gradient(180deg,#0b0806,#171009); z-index:60;}
+  .vhead{padding:11px 13px; border-bottom:1px solid #33271a; display:flex;
+    align-items:center; gap:9px; flex-wrap:wrap;}
+  .vback{font-size:12.5px; color:var(--gold-lt); background:#241a10; border:1px solid #3a2c1a;
     border-radius:8px; padding:6px 10px; cursor:pointer;}
-  .vtitle{font-family:'Cinzel',serif; font-size:14px; color:var(--gold-lt);}
-  .vbody{flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px;
-    padding:16px; background:
-      radial-gradient(ellipse at 50% 30%,rgba(240,208,128,.10),transparent 60%);}
-  .vrow{display:flex; align-items:flex-end; justify-content:space-around;
-    background:linear-gradient(180deg,#3a2913,#2a1d0d); border-radius:4px;
-    border:1px solid #241809; padding:14px 8px 10px; box-shadow:inset 0 8px 20px rgba(0,0,0,.5);}
-  .vitem{text-align:center;}
-  .vitem .vlabel{margin-top:8px; font-size:10px; color:var(--cream);}
-  .vitem .vsub{font-size:9px; color:var(--dim);}
+  .vtitle{font-family:'Cinzel',serif; font-size:13.5px; color:var(--gold-lt); flex:1;}
+  .immbtn{font-size:11px; font-weight:700; border-radius:999px; padding:5px 10px; cursor:pointer;
+    border:1px solid #3a2c1a; background:#1a130c; color:var(--dim);}
+  .immbtn.on{background:#243a24; color:#bfe9c4; border-color:#3d6a41;}
+
+  .vgrid{flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:14px;
+    align-content:center; background:radial-gradient(ellipse at 50% 25%,rgba(240,208,128,.10),transparent 60%);}
+  .cell{background:linear-gradient(180deg,#2c1f10,#1b1209); border:1px solid #241809;
+    border-radius:6px; padding:12px 4px 8px; text-align:center; cursor:pointer;
+    box-shadow:inset 0 6px 16px rgba(0,0,0,.5); position:relative;}
+  .cell .spot{position:absolute; top:2px; left:50%; width:70%; height:40%; transform:translateX(-50%);
+    background:radial-gradient(ellipse at center,rgba(255,240,200,.14),transparent 70%); pointer-events:none;}
+  .disc{perspective:300px; height:52px; display:flex; align-items:flex-end; justify-content:center;}
+  .disc .art{margin-bottom:0;}
+  .vgrid.imm .disc .art{animation:turntable 5.5s ease-in-out infinite; transform-style:preserve-3d;}
+  @keyframes turntable{0%,100%{transform:rotateY(-26deg);}50%{transform:rotateY(26deg);}}
+  .badge{position:absolute; top:5px; right:5px; font-size:8px; font-weight:700; border-radius:4px;
+    padding:1px 4px;}
+  .badge.b3d{background:#243a24; color:#bfe9c4;}
+  .badge.bph{background:#2a2016; color:var(--dim);}
+  .cell .nm{margin-top:7px; font-size:10px; color:var(--cream);}
+  .cell .mt{font-size:8.5px; color:var(--dim);}
+
+  .fbody{flex:1; overflow:auto; padding:16px;}
+  .fstage{height:150px; display:flex; align-items:center; justify-content:center; perspective:400px;
+    background:radial-gradient(ellipse at 50% 40%,rgba(240,208,128,.14),transparent 62%);
+    border-radius:8px; border:1px solid #241809; margin-bottom:14px;}
+  .fstage .art{animation:turntable 6s ease-in-out infinite;}
+  .fname{font-family:'Cinzel',serif; font-size:18px; color:var(--gold-lt); margin:0 0 2px;}
+  .fmeta{font-size:11.5px; color:var(--dim); margin-bottom:10px;}
+  .fdesc{font-size:13px; line-height:1.5; color:var(--cream);}
+  .fchip{display:inline-block; font-size:10px; color:var(--gold); border:1px solid #4a3a20;
+    border-radius:999px; padding:2px 8px; margin:3px 5px 0 0;}
 
   .cap{padding:10px 16px 4px;}
   .cap .q{font-size:11px; color:var(--gold); font-weight:700; text-transform:uppercase;
@@ -112,17 +134,21 @@
     border:1px solid #3a2e20; background:#1a130c; color:var(--cream); cursor:pointer;}
   .toggle button.on{background:#2c2114; color:var(--gold-lt); border-color:var(--gold);}
   footer{padding:10px 16px 20px; font-size:10.5px; color:#6b5f4e; line-height:1.4;}
+
+  @media (prefers-reduced-motion: reduce){
+    .shelf-halo,.vgrid.imm .disc .art,.fstage .art{animation:none;}
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>Étagères &amp; anti-chevauchement</h1>
-  <div class="sub">Maquette jetable — 4 pistes à comparer sur GSM. Formes bidon, seul le principe compte.</div>
+  <div class="sub">Maquette jetable — formes bidon, seul le principe compte.</div>
 </header>
 
 <div class="tabs" id="tabs">
-  <button class="tab on" data-m="A">A · Étagère au sol</button>
-  <button class="tab" data-m="B">B · Zoom vitrine</button>
+  <button class="tab" data-m="A">A · Étagère au sol</button>
+  <button class="tab on" data-m="B">B · Parcours vitrine</button>
   <button class="tab" data-m="C">C · Mixte / dédiée</button>
   <button class="tab" data-m="D">D · Anti-chevauchement</button>
 </div>
@@ -137,12 +163,22 @@
     <div class="sol"></div>
     <div class="plinth"></div>
     <div id="layer"></div>
-    <div class="vitrine" id="vitrine">
+
+    <div class="overlay vitrine" id="vitrine">
       <div class="vhead">
-        <button class="vback" id="vback">‹ Retour salle</button>
-        <span class="vtitle">Vitrine — petits formats</span>
+        <button class="vback" data-close="vitrine">‹ Salle</button>
+        <span class="vtitle">Vitrine · petits formats</span>
+        <button class="immbtn on" id="immBtn">immersif ●</button>
       </div>
-      <div class="vbody" id="vbody"></div>
+      <div class="vgrid imm" id="vgrid"></div>
+    </div>
+
+    <div class="overlay fiche" id="fiche">
+      <div class="vhead">
+        <button class="vback" data-close="fiche">‹ Vitrine</button>
+        <span class="vtitle">Fiche de l'œuvre</span>
+      </div>
+      <div class="fbody" id="fbody"></div>
     </div>
   </div>
 </div>
@@ -151,7 +187,6 @@
 <footer>maquettes/etagere.html — sur <b>dev</b> uniquement, jamais fusionné vers main. noindex.</footer>
 
 <script>
-/* ══════════ Silhouettes d'œuvres (SVG bidon) ══════════ */
 const ART = {
   chaise: (s=1)=>`<svg class="art" width="${34*s}" height="${44*s}" viewBox="0 0 34 44"><g fill="none" stroke="#d9c9a8" stroke-width="2.4" stroke-linecap="round"><path d="M10 6 v14 M10 20 h14 v-14"/><path d="M10 20 v10 M24 20 v10"/><path d="M17 30 v8"/><ellipse cx="17" cy="41" rx="9" ry="2.4" fill="#a9863f" stroke="none"/><path d="M11 38 l-4 4 M23 38 l4 4"/></g></svg>`,
   papillon:(s=1)=>`<svg class="art" width="${40*s}" height="${34*s}" viewBox="0 0 40 34"><g fill="#c8a050" stroke="#f0d080" stroke-width="1"><path d="M20 17 C6 -2 -4 6 8 16 C-3 20 8 34 20 18 Z"/><path d="M20 17 C34 -2 44 6 32 16 C43 20 32 34 20 18 Z"/><line x1="20" y1="6" x2="20" y2="30" stroke="#5a4420" stroke-width="2"/></g></svg>`,
@@ -161,180 +196,156 @@ const ART = {
   galet:(s=1)=>`<svg class="art" width="${34*s}" height="${22*s}" viewBox="0 0 34 22"><path d="M2 16 C0 6 12 0 20 3 C33 7 36 20 22 21 C12 22 4 22 2 16Z" fill="#8f9aa2" stroke="#c3ccd2" stroke-width="1"/></svg>`
 };
 
-const stage = document.getElementById('stage');
-const layer = document.getElementById('layer');
-const cap   = document.getElementById('cap');
-const vit   = document.getElementById('vitrine');
-const vbody = document.getElementById('vbody');
-const toggleC = document.getElementById('toggleC');
+const stage=document.getElementById('stage'), layer=document.getElementById('layer'), cap=document.getElementById('cap');
+const vitrine=document.getElementById('vitrine'), fiche=document.getElementById('fiche');
+const vgrid=document.getElementById('vgrid'), fbody=document.getElementById('fbody');
+const toggleC=document.getElementById('toggleC');
 
-/* perspective identique au vrai renderer : scale = 1 - y/100*0.42 */
-const persp = y => (1 - (y/100)*0.42);
+const VITRINE_ITEMS = [
+  {art:'chaise', nm:'Chaise Bureau', mt:'métal soudé', an:'2024', dim:'42 × 40 × 88 cm', txt:"Petit format né d'une chute d'acier. Le siège pivote encore. Pensé pour être vu de près, en vitrine, plutôt que perdu sur un socle."},
+  {art:'vase',   nm:'Écume',         mt:'grès émaillé', an:'2023', dim:'14 × 14 × 24 cm', txt:"Col resserré, panse pleine. La glaçure retient la lumière chaude de la salle."},
+  {art:'cube',   nm:'Bloc I',        mt:'chêne massif', an:'2022', dim:'18 × 18 × 20 cm', txt:"Étude de plein et de vide. Les arêtes sont laissées brutes."},
+  {art:'galet',  nm:'Galet',         mt:'marbre poli',  an:'2024', dim:'22 × 12 × 9 cm',  txt:"Forme lissée à la main jusqu'à disparition de l'outil."},
+  {art:'buste',  nm:'Étude',         mt:'plâtre patiné',an:'2021', dim:'16 × 14 × 30 cm', txt:"Esquisse rapide, gardée telle quelle pour sa tension."},
+  {art:'vase',   nm:'Col long',      mt:'terre cuite',  an:'2023', dim:'12 × 12 × 34 cm', txt:"Élancé, presque instable — l'équilibre fait partie de l'œuvre."}
+];
+let immersif = true;
 
-function placeObj(o){
-  o.el.style.left   = o.x + '%';
-  o.el.style.bottom = o.y + '%';
-  o.el.style.transform = 'translateX(-50%) scale('+ persp(o.y).toFixed(3) +')';
-  o.el.style.zIndex = Math.round((100 - o.y)*10);
-}
+const persp=y=>(1-(y/100)*0.42);
+function placeObj(o){o.el.style.left=o.x+'%'; o.el.style.bottom=o.y+'%';
+  o.el.style.transform='translateX(-50%) scale('+persp(o.y).toFixed(3)+')';
+  o.el.style.zIndex=Math.round((100-o.y)*10);}
 
-function makeObj({x,y,art,scale=1,label='',foot=[24,10],drag=false}){
-  const el = document.createElement('div');
-  el.className = 'obj' + (label?' lbl':'');
-  el.innerHTML =
-    (label?`<span class="tag">${label}</span>`:'') +
-    ART[art](scale) +
-    `<div class="socle"></div>` +
-    `<div class="halo"></div>`;
+function makeObj({x,y,art,scale=1,foot=[24,10],drag=false}){
+  const el=document.createElement('div'); el.className='obj';
+  el.innerHTML=ART[art](scale)+`<div class="socle"></div><div class="halo"></div>`;
   layer.appendChild(el);
-  const o = {el, x, y, art, foot}; placeObj(o);
-  // dimensionne l'ellipse de halo (empreinte au sol projetée)
-  const halo = el.querySelector('.halo');
-  const stw = stage.clientWidth, sth = stage.clientHeight;
-  const rxpx = (foot[0]/100)*stw, rypx = (foot[1]/100)*sth*0.5;
-  halo.style.width  = (rxpx*2)+'px';
-  halo.style.height = (rypx*2)+'px';
+  const o={el,x,y,art,foot}; placeObj(o);
+  const halo=el.querySelector('.halo'), stw=stage.clientWidth, sth=stage.clientHeight;
+  halo.style.width=((foot[0]/100)*stw*2)+'px'; halo.style.height=((foot[1]/100)*sth*0.5*2)+'px';
   if(drag) enableDrag(o);
   return o;
 }
-
-function makeShelf({x,y,items,onTap}){
-  const el = document.createElement('div');
-  el.className = 'shelf';
+function makeShelf({x,y,items,plaque,onTap}){
+  const el=document.createElement('div'); el.className='shelf';
   el.style.left=x+'%'; el.style.bottom=y+'%';
   el.style.transform='translateX(-50%) scale('+persp(y).toFixed(3)+')';
-  el.style.zIndex = Math.round((100 - y)*10);
-  const lvls = items.map(row=>`<div class="level">${row.map(a=>ART[a](0.5)).join('')}</div>`).join('');
-  el.innerHTML = `<div class="shelf-body">${lvls}<span class="shelf-tap">appuyer ↵</span></div>`;
+  el.style.zIndex=Math.round((100-y)*10);
+  const lvls=items.map(r=>`<div class="level">${r.map(a=>ART[a](0.5)).join('')}</div>`).join('');
+  el.innerHTML=`<div class="shelf-halo"></div><div class="shelf-body">${lvls}`+
+               (plaque?`<div class="plaque">${plaque}</div>`:'')+`</div>`;
   layer.appendChild(el);
-  if(onTap){ el.addEventListener('click', onTap); }
+  if(onTap) el.addEventListener('click',onTap);
   return el;
 }
 
-/* ══════════ Anti-chevauchement (ellipse, perspective) ══════════ */
-let OBJS = [];
-function overlaps(a, b){
-  // demi-empreintes en % ; ry pondéré par la perspective (plus petit au fond)
+function renderVgrid(){
+  vgrid.classList.toggle('imm',immersif);
+  vgrid.innerHTML=VITRINE_ITEMS.map((it,i)=>
+    `<div class="cell" data-i="${i}">
+       <span class="spot"></span>
+       <span class="badge ${immersif?'b3d':'bph'}">${immersif?'3D':'photo'}</span>
+       <div class="disc">${ART[it.art](0.9)}</div>
+       <div class="nm">${it.nm}</div><div class="mt">${it.mt}</div>
+     </div>`).join('');
+}
+function openVitrine(){ renderVgrid(); vitrine.classList.add('open'); }
+document.getElementById('immBtn').addEventListener('click',function(){
+  immersif=!immersif; this.classList.toggle('on',immersif);
+  this.textContent = immersif?'immersif ●':'photo ○';
+  renderVgrid();
+});
+vgrid.addEventListener('click',e=>{const c=e.target.closest('.cell'); if(c) openFiche(+c.dataset.i);});
+
+function openFiche(i){
+  const it=VITRINE_ITEMS[i];
+  fbody.innerHTML=`<div class="fstage">${ART[it.art](2.2)}</div>
+    <h2 class="fname">${it.nm}</h2>
+    <div class="fmeta">${it.mt} · ${it.an}</div>
+    <div><span class="fchip">${it.dim}</span><span class="fchip">${immersif?'modèle 3D':'photo'}</span></div>
+    <p class="fdesc">${it.txt}</p>`;
+  fiche.classList.add('open');
+}
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click',()=>document.getElementById(b.dataset.close).classList.remove('open'));
+});
+
+let OBJS=[];
+function overlaps(a,b){
   const rxa=a.foot[0]/2, rya=(a.foot[1]/2)*persp(a.y);
   const rxb=b.foot[0]/2, ryb=(b.foot[1]/2)*persp(b.y);
-  const dx=a.x-b.x, dy=a.y-b.y;
-  const nx=dx/(rxa+rxb), ny=dy/(rya+ryb);
-  return (nx*nx + ny*ny) < 1;              // test ellipse vs ellipse
+  const nx=(a.x-b.x)/(rxa+rxb), ny=(a.y-b.y)/(rya+ryb);
+  return (nx*nx+ny*ny)<1;
 }
-function collides(o){ return OBJS.some(p=>p!==o && overlaps(o,p)); }
-
+function collides(o){return OBJS.some(p=>p!==o&&overlaps(o,p));}
 function enableDrag(o){
-  o.el.addEventListener('pointerdown', e=>{
-    e.preventDefault();
-    o.el.setPointerCapture(e.pointerId);
-    o.el.classList.add('drag');
+  o.el.addEventListener('pointerdown',e=>{
+    e.preventDefault(); o.el.setPointerCapture(e.pointerId); o.el.classList.add('drag');
     OBJS.forEach(p=>p.el.classList.add('showfoot'));
-    const rect = stage.getBoundingClientRect();
-    const move = ev=>{
-      let nx = ((ev.clientX-rect.left)/rect.width)*100;
-      let ny = (1-(ev.clientY-rect.top)/rect.height)*100;
-      // borne au sol
+    const rect=stage.getBoundingClientRect();
+    const move=ev=>{
+      let nx=((ev.clientX-rect.left)/rect.width)*100, ny=(1-(ev.clientY-rect.top)/rect.height)*100;
       nx=Math.max(6,Math.min(94,nx)); ny=Math.max(4,Math.min(56,ny));
-      const prevX=o.x, prevY=o.y;
-      o.x=nx; o.y=ny;
-      if(collides(o)){                       // BLOCAGE DUR : on refuse le pas
-        o.x=prevX; o.y=prevY;
-        o.el.classList.add('bad');
-      }else{
-        o.el.classList.remove('bad');
-      }
+      const px=o.x,py=o.y; o.x=nx; o.y=ny;
+      if(collides(o)){o.x=px; o.y=py; o.el.classList.add('bad');} else {o.el.classList.remove('bad');}
       placeObj(o);
     };
-    const up = ev=>{
-      o.el.releasePointerCapture(e.pointerId);
-      o.el.classList.remove('drag','bad');
+    const up=()=>{o.el.releasePointerCapture(e.pointerId); o.el.classList.remove('drag','bad');
       OBJS.forEach(p=>p.el.classList.remove('showfoot'));
-      o.el.removeEventListener('pointermove',move);
-      o.el.removeEventListener('pointerup',up);
-    };
-    o.el.addEventListener('pointermove',move);
-    o.el.addEventListener('pointerup',up);
+      o.el.removeEventListener('pointermove',move); o.el.removeEventListener('pointerup',up);};
+    o.el.addEventListener('pointermove',move); o.el.addEventListener('pointerup',up);
   });
 }
 
-/* ══════════ Rendu des scénarios ══════════ */
-function clear(){ layer.innerHTML=''; OBJS=[]; vit.classList.remove('open'); toggleC.style.display='none'; }
-
-function openVitrine(title, rows){
-  document.querySelector('.vtitle').textContent = title;
-  vbody.innerHTML = rows.map(row=>
-    `<div class="vrow">${row.map(it=>
-      `<div class="vitem">${ART[it.art](1.15)}<div class="vlabel">${it.t}</div><div class="vsub">${it.s}</div></div>`
-    ).join('')}</div>`).join('');
-  vit.classList.add('open');
-}
-
-const SCENES = {
+function clear(){layer.innerHTML=''; OBJS=[]; vitrine.classList.remove('open'); fiche.classList.remove('open'); toggleC.style.display='none';}
+const SCENES={
   A(){
-    makeObj({x:24,y:40,art:'buste',scale:1.1});
-    makeObj({x:76,y:44,art:'papillon',scale:1});
-    makeShelf({x:52,y:16,items:[['chaise','vase','cube'],['galet','buste','vase']]});
-    cap.innerHTML = `<div class="q">Ce que tu vois</div>
-      <div class="t">Une <b>étagère posée au sol</b> parmi deux socles. Les petits objets (la chaise, les vases) vivent groupés sur ses niveaux au lieu de se perdre seuls sur un grand socle.</div>
-      <div class="hint">Question : à cette échelle, on distingue à peine les petites pièces. D'où la piste B.</div>`;
+    makeObj({x:24,y:40,art:'buste',scale:1.1}); makeObj({x:76,y:44,art:'papillon',scale:1});
+    makeShelf({x:52,y:16,items:[['chaise','vase','cube'],['galet','buste','vase']],plaque:'Vitrine · 6 pièces'});
+    cap.innerHTML=`<div class="q">Ce que tu vois</div>
+      <div class="t">Une <b>étagère au sol</b> parmi deux socles, avec plaque et <b>halo lent</b>. Les petits objets sont groupés au lieu de se perdre seuls.</div>
+      <div class="hint">À cette échelle on les distingue mal → le parcours de l'onglet B.</div>`;
   },
   B(){
-    makeObj({x:26,y:42,art:'buste',scale:1.1});
-    makeShelf({x:62,y:18,items:[['chaise','vase','cube'],['galet','buste','vase']],
-      onTap:()=>openVitrine('Vitrine — petits formats',[
-        [{art:'chaise',t:'Chaise Bureau',s:'métal · 2024'},{art:'vase',t:'Écume',s:'grès'},{art:'cube',t:'Bloc I',s:'chêne'}],
-        [{art:'galet',t:'Galet',s:'marbre'},{art:'buste',t:'Étude',s:'plâtre'},{art:'vase',t:'Col long',s:'terre'}]
-      ])});
-    cap.innerHTML = `<div class="q">Ce que tu testes</div>
-      <div class="t">Tape l'étagère → un <b>écran vitrine</b> zoome sur ses œuvres, agrandies et légendées. Chaque petit format retrouve sa place et son titre.</div>
-      <div class="hint">C'est ta piste du clic-zoom. Reviens avec « ‹ Retour salle ».</div>`;
+    makeObj({x:24,y:42,art:'buste',scale:1.1});
+    makeShelf({x:64,y:18,items:[['chaise','vase','cube'],['galet','buste','vase']],plaque:'Vitrine · 6 pièces',onTap:openVitrine});
+    cap.innerHTML=`<div class="q">Le parcours complet</div>
+      <div class="t"><b>1.</b> Le halo lent attire l'œil sur l'étagère → tape-la.<br>
+      <b>2.</b> La <b>vitrine immersive</b> s'ouvre : objets en 3D (plateau tournant) si la salle est immersive, sinon photos — bascule avec le bouton <i>immersif</i>.<br>
+      <b>3.</b> Tape un objet → sa <b>fiche descriptive</b> (titre, matière, dimensions, texte).</div>
+      <div class="hint">Même profondeur qu'une grande pièce : salle → immersif → fiche.</div>`;
   },
-  C(){
-    toggleC.style.display='flex';
-    renderC('mix');
-    cap.innerHTML = `<div class="q">L'arbitrage « faut-il des salles bis »</div>
-      <div class="t">Bascule entre une <b>salle mixte</b> (grandes pièces + étagères ensemble) et une <b>salle dédiée</b> aux vitrines. Regarde laquelle respire le mieux sur GSM.</div>`;
-  },
+  C(){toggleC.style.display='flex'; renderC('mix');
+    cap.innerHTML=`<div class="q">Salle mixte (ton choix)</div>
+      <div class="t">Grandes pièces au sol + étagères ensemble. La bascule montre l'alternative « salle 100&nbsp;% vitrines » pour comparaison.</div>`;},
   D(){
     OBJS.push(makeObj({x:30,y:30,art:'buste',scale:1.1,foot:[26,12],drag:true}));
-    OBJS.push(makeObj({x:66,y:30,art:'vase', scale:1.2,foot:[22,10],drag:true}));
+    OBJS.push(makeObj({x:66,y:30,art:'vase',scale:1.2,foot:[22,10],drag:true}));
     OBJS.push(makeObj({x:50,y:48,art:'papillon',scale:1,foot:[30,12],drag:true}));
-    cap.innerHTML = `<div class="q">Le drag libre + blocage dur</div>
-      <div class="t">Tire une pièce. Halo <b style="color:var(--ok)">vert</b> = ça passe, <b style="color:var(--no)">rouge</b> = ça mord une voisine et le pas est refusé. L'empreinte est une <b>ellipse</b>, rétrécie vers le fond par la perspective — comme les socles.</div>
-      <div class="hint">Chaque œuvre a sa propre taille d'empreinte (paramétrable) : le blocage suit tout seul.</div>`;
+    cap.innerHTML=`<div class="q">Drag libre + blocage dur</div>
+      <div class="t">Tire une pièce. Halo <b style="color:var(--ok)">vert</b> = ça passe, <b style="color:var(--no)">rouge</b> = le pas est refusé. Empreinte <b>elliptique</b>, rétrécie vers le fond par la perspective.</div>`;
   }
 };
-
 function renderC(kind){
   layer.innerHTML=''; OBJS=[];
   if(kind==='mix'){
-    makeObj({x:22,y:42,art:'buste',scale:1.15});
-    makeObj({x:80,y:46,art:'papillon',scale:1});
-    makeShelf({x:52,y:14,items:[['chaise','vase','cube'],['galet','buste','vase']]});
+    makeObj({x:22,y:42,art:'buste',scale:1.15}); makeObj({x:80,y:46,art:'papillon',scale:1});
+    makeShelf({x:52,y:14,items:[['chaise','vase','cube'],['galet','buste','vase']],plaque:'Vitrine',onTap:openVitrine});
   }else{
-    makeShelf({x:26,y:34,items:[['chaise','vase'],['cube','galet']]});
-    makeShelf({x:72,y:32,items:[['buste','vase'],['papillon','cube']]});
-    makeShelf({x:50,y:8, items:[['galet','chaise','vase'],['cube','buste','vase']]});
+    makeShelf({x:26,y:34,items:[['chaise','vase'],['cube','galet']],plaque:'Vitrine A',onTap:openVitrine});
+    makeShelf({x:72,y:32,items:[['buste','vase'],['papillon','cube']],plaque:'Vitrine B',onTap:openVitrine});
+    makeShelf({x:50,y:8,items:[['galet','chaise','vase'],['cube','buste','vase']],plaque:'Vitrine C',onTap:openVitrine});
   }
 }
-document.querySelectorAll('#toggleC button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('#toggleC button').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on'); renderC(b.dataset.c);
-  });
-});
+document.querySelectorAll('#toggleC button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#toggleC button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); renderC(b.dataset.c);
+}));
 
-document.getElementById('vback').addEventListener('click',()=>vit.classList.remove('open'));
-
-function show(m){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.m===m));
-  clear(); SCENES[m]();
-}
-document.getElementById('tabs').addEventListener('click',e=>{
-  const t=e.target.closest('.tab'); if(t) show(t.dataset.m);
-});
-
-show('A');
+function show(m){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.m===m));
+  clear(); SCENES[m]();}
+document.getElementById('tabs').addEventListener('click',e=>{const t=e.target.closest('.tab'); if(t) show(t.dataset.m);});
+show('B');
 </script>
 </body>
 </html>
