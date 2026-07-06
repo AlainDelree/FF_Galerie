@@ -546,6 +546,39 @@ function creerSocle(piece, gabarit, pos, opts) {
    Immersif actif → objets 3D (model-viewer auto-rotate), sinon photos.
    Clic sur un objet → salle d'observation (si descriptif), retour = vitrine.
    ══════════════════════════════════════════════════════════════ */
+/* Subterfuge anti-lévitation : détecte le bas réel de l'objet (pixels opaques)
+   et descend l'image du vide transparent, pour qu'elle se pose sur la planche. */
+function _poserImg(img) {
+  var tries = 0;
+  function ground() {
+    if (++tries > 45) return;
+    try {
+      var nW = img.naturalWidth, nH = img.naturalHeight;
+      if (!nW || !nH) return;
+      var boxW = img.clientWidth || 0, boxH = img.clientHeight || 0;
+      if (boxH < 4) { requestAnimationFrame(ground); return; }
+      var sw = Math.min(nW, 100), sh = Math.max(1, Math.round(nH * sw / nW));
+      var c = document.createElement('canvas'); c.width = sw; c.height = sh;
+      var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, sw, sh);
+      var d;
+      try { d = ctx.getImageData(0, 0, sw, sh).data; } catch (e) { return; }
+      var last = sh - 1, y, x, op;
+      for (y = sh - 1; y >= 0; y--) {
+        op = false;
+        for (x = 0; x < sw; x += 2) { if (d[(y * sw + x) * 4 + 3] > 16) { op = true; break; } }
+        if (op) { last = y; break; }
+      }
+      var fBottom = (sh - 1 - last) / sh;
+      if (fBottom <= 0.01) return;
+      var scale = Math.min(boxW / nW, boxH / nH);
+      var dy = fBottom * (nH * scale);
+      if (dy > 1) img.style.transform = 'translateY(' + Math.round(dy) + 'px)';
+    } catch (e) {}
+  }
+  if (img.complete && img.naturalWidth) requestAnimationFrame(ground);
+  else img.addEventListener('load', function () { tries = 0; requestAnimationFrame(ground); });
+}
+
 function ouvrirVitrine(piece, pieces, opts) {
   if (document.querySelector('.vitrine-overlay')) return;
   var immActif  = !!(opts && opts.immActif);
@@ -590,8 +623,8 @@ function ouvrirVitrine(piece, pieces, opts) {
   var maxW  = Math.min(window.innerWidth - 28, 620);
   var postW = 14;
   var slotW = Math.max(64, Math.floor((maxW - 2 * postW - (nSv + 1) * 10) / nSv));
-  var availH = Math.max(220, (window.innerHeight || 700) - 130);
-  var slotH = Math.max(48, Math.min(Math.round(slotW * 1.2), Math.floor(availH / nPv) - 28));
+  var availH = Math.max(240, (window.innerHeight || 700) - 120);
+  var slotH = Math.max(40, Math.min(Math.round(slotW * 1.2), Math.floor((availH - 96) / nPv) - 50));
 
   var styleV   = (piece.style === 'vitree') ? 'vitree' : 'bois';
   var estBois  = (styleV === 'bois');
@@ -666,6 +699,7 @@ function ouvrirVitrine(piece, pieces, opts) {
         img.alt = oev.titre || ''; img.loading = 'lazy';
         img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;object-position:center bottom;' +
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
+        _poserImg(img);
         if (descActif) {
           img.style.cursor = 'pointer';
           (function (oeu) {
