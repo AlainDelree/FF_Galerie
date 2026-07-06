@@ -738,44 +738,44 @@ if (window._GALERIE_EDIT) {
     });
 
     /* ── Anti-chevauchement au sol : empreinte elliptique + blocage dur ── */
-    var FLATTEN = 0.42; /* aplatissement de l'ellipse au sol : hauteur/largeur (réglable) */
-    var MARGIN  = 1.6;  /* l'empreinte déborde la largeur du socle pour bien ENTOURER la pièce (réglable) */
-    function _footprint(wrap, y) {
-      var r = plancher.getBoundingClientRect();
-      var W = r.width || 1, H = r.height || 1;
-      var s = 1 - (y / 100) * 0.42;                  /* perspective, identique au rendu */
-      var halfW = (wrap.offsetWidth * s * MARGIN) / 2; /* demi-largeur en px, avec marge autour de la pièce */
-      var halfH = halfW * FLATTEN;                   /* demi-profondeur en px → ellipse couchée */
-      return { rx: halfW / W * 100, ry: halfH / H * 100 };  /* en % de chaque axe (px-cohérent) */
+    var MARGIN = 1.12; /* l'ellipse déborde un peu l'encombrement de la pièce (réglable) */
+    /* Ellipse VERTICALE englobant toute la pièce (socle + objet), centrée dessus.
+       Renvoie centre + demi-axes en px, relatifs au plancher. */
+    function _boxOf(wrap, xPct, yPct) {
+      var pr = plancher.getBoundingClientRect();
+      var W = pr.width || 1, H = pr.height || 1;
+      var s = 1 - (yPct / 100) * 0.42;               /* perspective, identique au rendu */
+      var w = wrap.offsetWidth * s, h = wrap.offsetHeight * s;
+      var cx = (xPct / 100) * W;
+      var cy = (H - (yPct / 100) * H) - h / 2;       /* centre = demi-hauteur au-dessus de la base */
+      return { cx: cx, cy: cy, rx: (w / 2) * MARGIN, ry: (h / 2) * MARGIN };
     }
-    function _chevauche(ax, ay, af, bx, by, bf) {
-      var nx = (ax - bx) / (af.rx + bf.rx);
-      var ny = (ay - by) / (af.ry + bf.ry);
+    function _overlap(a, b) {
+      var nx = (a.cx - b.cx) / (a.rx + b.rx);
+      var ny = (a.cy - b.cy) / (a.ry + b.ry);
       return (nx * nx + ny * ny) < 1;                /* test ellipse vs ellipse normalisé */
     }
-    function _autresEmpreintes(wrapExclu) {
+    function _autresBoxes(wrapExclu) {
       var arr = [];
       document.querySelectorAll('.socle-wrapper').forEach(function(w) {
         if (w === wrapExclu) return;
         var pid = w.dataset.pieceId;
         var q = _editPositions.find(function(z) { return String(z.id) === String(pid); });
-        if (q) arr.push({ x: q.x, y: q.y, f: _footprint(w, q.y) });
+        if (q) arr.push(_boxOf(w, q.x, q.y));
       });
       return arr;
     }
-    function _mord(x, y, f, autres) {
-      return autres.some(function(o) { return _chevauche(x, y, f, o.x, o.y, o.f); });
+    function _mord(box, autres) {
+      return autres.some(function(o) { return _overlap(box, o); });
     }
-    /* Halo d'empreinte pendant le drag : vert = libre, rouge = mord une voisine */
+    /* Halo elliptique autour de la pièce : vert = libre, rouge = mord une voisine */
     var _foot = document.createElement('div');
     _foot.style.cssText = 'position:absolute;pointer-events:none;border-radius:50%;' +
-      'transform:translate(-50%,50%);display:none;z-index:9998;transition:background .1s,border-color .1s;';
+      'transform:translate(-50%,-50%);display:none;z-index:9998;transition:background .1s,border-color .1s;';
     plancher.appendChild(_foot);
-    function _halo(x, y, f, mord) {
-      var r = plancher.getBoundingClientRect();
-      _foot.style.left = x + '%'; _foot.style.bottom = y + '%';
-      _foot.style.width = (2 * f.rx / 100 * r.width) + 'px';
-      _foot.style.height = (2 * f.ry / 100 * r.height) + 'px';
+    function _halo(box, mord) {
+      _foot.style.left = box.cx + 'px'; _foot.style.top = box.cy + 'px';
+      _foot.style.width = (2 * box.rx) + 'px'; _foot.style.height = (2 * box.ry) + 'px';
       _foot.style.border = '2px solid ' + (mord ? '#e0564b' : '#5ec46a');
       _foot.style.background = mord ? 'rgba(224,86,75,.16)' : 'rgba(94,196,106,.14)';
       _foot.style.display = 'block';
@@ -798,7 +798,7 @@ if (window._GALERIE_EDIT) {
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
       _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y,
-                    autres: _autresEmpreintes(wrap), lastX: pos.x, lastY: pos.y };
+                    autres: _autresBoxes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.cursor = 'grabbing';
       wrap.style.zIndex = '9999';
@@ -815,14 +815,14 @@ if (window._GALERIE_EDIT) {
       var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
       var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
       var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
-      var f = _footprint(_dragging.el, newY);
-      var mord = _mord(newX, newY, f, _dragging.autres);
+      var box = _boxOf(_dragging.el, newX, newY);
+      var mord = _mord(box, _dragging.autres);
       if (!mord) {                       /* libre → on avance */
         _dragging.el.style.left = newX + '%';
         _dragging.el.style.bottom = newY + '%';
         _dragging.lastX = newX; _dragging.lastY = newY;
       }                                  /* sinon blocage dur : on reste à la dernière position valide */
-      _halo(_dragging.lastX, _dragging.lastY, _footprint(_dragging.el, _dragging.lastY), mord);
+      _halo(_boxOf(_dragging.el, _dragging.lastX, _dragging.lastY), mord);
     });
 
     document.addEventListener('mouseup', function(e) {
@@ -859,7 +859,7 @@ if (window._GALERIE_EDIT) {
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
       _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y,
-                    autres: _autresEmpreintes(wrap), lastX: pos.x, lastY: pos.y };
+                    autres: _autresBoxes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.zIndex = '9999';
     }, { passive: true });
@@ -875,14 +875,14 @@ if (window._GALERIE_EDIT) {
       var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
       var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
       var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
-      var f = _footprint(_dragging.el, newY);
-      var mord = _mord(newX, newY, f, _dragging.autres);
+      var box = _boxOf(_dragging.el, newX, newY);
+      var mord = _mord(box, _dragging.autres);
       if (!mord) {
         _dragging.el.style.left = newX + '%';
         _dragging.el.style.bottom = newY + '%';
         _dragging.lastX = newX; _dragging.lastY = newY;
       }
-      _halo(_dragging.lastX, _dragging.lastY, _footprint(_dragging.el, _dragging.lastY), mord);
+      _halo(_boxOf(_dragging.el, _dragging.lastX, _dragging.lastY), mord);
     }, { passive: false });
     document.addEventListener('touchend', function(e) {
       if (!_dragging) return;
