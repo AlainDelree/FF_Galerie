@@ -1,5 +1,5 @@
 {
-  "next_id": 14,
+  "next_id": 15,
   "gabarits": [
     {
       "code": "S",
@@ -73,6 +73,25 @@
         "texture": "marbre",
         "taille": 40
       }
+    },
+    {
+      "id": 14,
+      "photo": "artistes/dinso/assets/images/toiles/piece-014.png",
+      "source_photo": "admin",
+      "titre": "Cacahouette",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 33,
+        "hauteur": 16,
+        "profondeur": 8
+      },
+      "visible": true,
+      "socle": 43,
+      "glb": "artistes/dinso/assets/models/piece-014.glb"
     }
   ]
 }
