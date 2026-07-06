@@ -1790,7 +1790,7 @@ function ouvrirFormulaireNouvel(typeOpt) {
   var _typeSalleAct = salleActive ? (salleActive.type || ADMIN_CFG.type || 'peinture') : null;
   salleCibleToile = (salleActive && _typeSalleAct === typeEffectif) ? salleActive.id : null;
   photoB64 = null; glbB64 = null; glbNom = null; window.photoEstPng = false;
-  $('modal-toile-tit').textContent = _estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile';
+  $('modal-toile-tit').textContent = _estVitrineEdition ? 'Nouvelle vitrine' : (_estSculptEdition() ? 'Nouvelle pièce' : 'Nouvelle toile');
   construireFavoris();
   if (typeof peuplerSelectFormatCodes === 'function') peuplerSelectFormatCodes();
   viderFormToile();

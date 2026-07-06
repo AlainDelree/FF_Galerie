@@ -83,11 +83,18 @@ function listeOeuvres(opts) {
   /* ─── Filtrage ─── */
   var items = toutesOeuvres.slice();
 
-  /* Filtre par type d'œuvre (3b-2 cohabitation multi-types) */
+  /* Filtre par type d'œuvre (3b-2 cohabitation multi-types).
+     'vitrine' = pseudo-type d'affichage : les vitrines sont stockées en
+     _type='sculpture' mais listées dans leur propre colonne. Les autres colonnes
+     (dont Sculptures) excluent donc les vitrines. */
   if (typeFiltre) {
-    items = items.filter(function(t) {
-      return ((t._type) || ADMIN_CFG.type || 'peinture') === typeFiltre;
-    });
+    if (typeFiltre === 'vitrine') {
+      items = items.filter(function(t) { return t.est_vitrine; });
+    } else {
+      items = items.filter(function(t) {
+        return ((t._type) || ADMIN_CFG.type || 'peinture') === typeFiltre && !t.est_vitrine;
+      });
+    }
   }
 
   if (filtre === 'salle' && salleRef) {
@@ -181,7 +188,7 @@ function listeOeuvres(opts) {
     var _isSculpt = typeFiltre
       ? (typeFiltre === 'sculpture')
       : (typeof ADMIN_CFG !== 'undefined' && ADMIN_CFG.type === 'sculpture');
-    empty.textContent = 'Aucune ' + (_isSculpt ? 'pièce' : 'toile');
+    empty.textContent = (typeFiltre === 'vitrine') ? 'Aucune vitrine' : ('Aucune ' + (_isSculpt ? 'pièce' : 'toile'));
     container.appendChild(empty);
     return;
   }
