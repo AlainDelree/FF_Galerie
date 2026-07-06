@@ -737,6 +737,49 @@ if (window._GALERIE_EDIT) {
       if (best) wrap.dataset.pieceId = best.id;
     });
 
+    /* ── Anti-chevauchement au sol : empreinte elliptique + blocage dur ── */
+    var DEPTH_RATIO = 0.55; /* aplatissement profondeur/largeur de l'empreinte (réglable) */
+    function _footprint(wrap, y) {
+      var cw = plancher.getBoundingClientRect().width || 1;
+      var wPct = (wrap.offsetWidth / cw) * 100;      /* largeur nominale en % du sol */
+      var s = 1 - (y / 100) * 0.42;                  /* perspective, identique au rendu */
+      var rx = (wPct * s) / 2;
+      return { rx: rx, ry: rx * DEPTH_RATIO };
+    }
+    function _chevauche(ax, ay, af, bx, by, bf) {
+      var nx = (ax - bx) / (af.rx + bf.rx);
+      var ny = (ay - by) / (af.ry + bf.ry);
+      return (nx * nx + ny * ny) < 1;                /* test ellipse vs ellipse normalisé */
+    }
+    function _autresEmpreintes(wrapExclu) {
+      var arr = [];
+      document.querySelectorAll('.socle-wrapper').forEach(function(w) {
+        if (w === wrapExclu) return;
+        var pid = w.dataset.pieceId;
+        var q = _editPositions.find(function(z) { return String(z.id) === String(pid); });
+        if (q) arr.push({ x: q.x, y: q.y, f: _footprint(w, q.y) });
+      });
+      return arr;
+    }
+    function _mord(x, y, f, autres) {
+      return autres.some(function(o) { return _chevauche(x, y, f, o.x, o.y, o.f); });
+    }
+    /* Halo d'empreinte pendant le drag : vert = libre, rouge = mord une voisine */
+    var _foot = document.createElement('div');
+    _foot.style.cssText = 'position:absolute;pointer-events:none;border-radius:50%;' +
+      'transform:translate(-50%,50%);display:none;z-index:9998;transition:background .1s,border-color .1s;';
+    plancher.appendChild(_foot);
+    function _halo(x, y, f, mord) {
+      var r = plancher.getBoundingClientRect();
+      _foot.style.left = x + '%'; _foot.style.bottom = y + '%';
+      _foot.style.width = (2 * f.rx / 100 * r.width) + 'px';
+      _foot.style.height = (2 * f.ry / 100 * r.height) + 'px';
+      _foot.style.border = '2px solid ' + (mord ? '#e0564b' : '#5ec46a');
+      _foot.style.background = mord ? 'rgba(224,86,75,.16)' : 'rgba(94,196,106,.14)';
+      _foot.style.display = 'block';
+    }
+    function _cacherHalo() { _foot.style.display = 'none'; }
+
     /* Variables drag */
     var _dragging = null; /* { el, pos, startX, startY } */
     var _moved = false;
@@ -752,7 +795,8 @@ if (window._GALERIE_EDIT) {
       if (!pid) return;
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
-      _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+      _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y,
+                    autres: _autresEmpreintes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.cursor = 'grabbing';
       wrap.style.zIndex = '9999';
@@ -769,8 +813,14 @@ if (window._GALERIE_EDIT) {
       var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
       var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
       var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
-      _dragging.el.style.left = newX + '%';
-      _dragging.el.style.bottom = newY + '%';
+      var f = _footprint(_dragging.el, newY);
+      var mord = _mord(newX, newY, f, _dragging.autres);
+      if (!mord) {                       /* libre → on avance */
+        _dragging.el.style.left = newX + '%';
+        _dragging.el.style.bottom = newY + '%';
+        _dragging.lastX = newX; _dragging.lastY = newY;
+      }                                  /* sinon blocage dur : on reste à la dernière position valide */
+      _halo(_dragging.lastX, _dragging.lastY, _footprint(_dragging.el, _dragging.lastY), mord);
     });
 
     document.addEventListener('mouseup', function(e) {
@@ -778,14 +828,12 @@ if (window._GALERIE_EDIT) {
       var wrap = _dragging.el;
       var pos = _dragging.pos;
       if (_moved) {
-        var rect = plancher.getBoundingClientRect();
-        var dx = ((e.clientX - _dragging.startX) / rect.width) * 100;
-        var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
-        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
-        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        pos.x = _dragging.lastX;   /* dernière position VALIDE (anti-chevauchement) */
+        pos.y = _dragging.lastY;
         /* Notifier le parent */
         _sendPositions();
       }
+      _cacherHalo();
       wrap.style.cursor = 'grab';
       var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
       wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
@@ -808,7 +856,8 @@ if (window._GALERIE_EDIT) {
       var pid = _findPieceId(wrap);
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
-      _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y };
+      _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y,
+                    autres: _autresEmpreintes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.zIndex = '9999';
     }, { passive: true });
@@ -822,22 +871,27 @@ if (window._GALERIE_EDIT) {
       var rect = plancher.getBoundingClientRect();
       var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
       var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
-      _dragging.el.style.left = Math.max(5, Math.min(95, _dragging.origX + dx)) + '%';
-      _dragging.el.style.bottom = Math.max(5, Math.min(95, _dragging.origY + dy)) + '%';
+      var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
+      var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
+      var f = _footprint(_dragging.el, newY);
+      var mord = _mord(newX, newY, f, _dragging.autres);
+      if (!mord) {
+        _dragging.el.style.left = newX + '%';
+        _dragging.el.style.bottom = newY + '%';
+        _dragging.lastX = newX; _dragging.lastY = newY;
+      }
+      _halo(_dragging.lastX, _dragging.lastY, _footprint(_dragging.el, _dragging.lastY), mord);
     }, { passive: false });
     document.addEventListener('touchend', function(e) {
       if (!_dragging) return;
       var wrap = _dragging.el;
       var pos = _dragging.pos;
       if (_moved) {
-        var touch = e.changedTouches[0];
-        var rect = plancher.getBoundingClientRect();
-        var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
-        var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
-        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
-        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        pos.x = _dragging.lastX;   /* dernière position VALIDE (anti-chevauchement) */
+        pos.y = _dragging.lastY;
         _sendPositions();
       }
+      _cacherHalo();
       var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
       wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
       wrap.style.transform = 'translateX(-50%) scale(' + scale + ')';
