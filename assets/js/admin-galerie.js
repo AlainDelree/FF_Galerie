@@ -15,6 +15,12 @@ const LBL = _isSculpt
    (œuvre cliquée ou bouton "+" d'une colonne dédiée). */
 var _typeEdition = (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture') || 'peinture';
 
+/* Mode vitrine : une vitrine EST une pièce sculpture (même fichier
+   sculpture.json, même map pieces), le sélecteur "Vitrine" n'est qu'un mode
+   d'édition — pas un type de fichier distinct. On garde donc _typeEdition à
+   'sculpture' et on lève ce flag en parallèle. */
+var _estVitrineEdition = false;
+
 function _estSculptEdition() {
   return _typeEdition === 'sculpture';
 }
@@ -285,7 +291,10 @@ function _appliquerStructurePeinture() {
 /* Bascule l'affichage des champs .peinture-only / .sculpture-only ET
    applique la restructuration DOM appropriée. */
 function _appliquerTypeFormulaire(type) {
-  _typeEdition = type || ADMIN_CFG.type || 'peinture';
+  var estVitrine = (type === 'vitrine');
+  _estVitrineEdition = estVitrine;
+  /* Une vitrine reste une pièce sculpture côté données (fichier + map pieces). */
+  _typeEdition = estVitrine ? 'sculpture' : (type || ADMIN_CFG.type || 'peinture');
   var estSculpt = (_typeEdition === 'sculpture');
   /* Restructuration DOM */
   if (estSculpt) _appliquerStructureSculpture();
@@ -299,6 +308,8 @@ function _appliquerTypeFormulaire(type) {
     form.querySelectorAll('.sculpture-only').forEach(function(el) {
       el.style.display = estSculpt ? '' : 'none';
     });
+    /* Mode vitrine : masque les champs "pièce", montre le bloc vitrine (piloté par CSS). */
+    form.classList.toggle('vitrine-mode', estVitrine);
     /* Code couleur peinture/sculpture sur le modal (repérage visuel) */
     var modal = form.querySelector('.modal');
     if (modal) {
@@ -306,9 +317,11 @@ function _appliquerTypeFormulaire(type) {
       modal.classList.toggle('type-sculpture',  estSculpt);
     }
   }
-  /* Synchroniser le sélecteur */
+  /* Synchroniser le sélecteur — sur la valeur AFFICHÉE ('vitrine' inclus),
+     pas sur _typeEdition (qui vaut 'sculpture' en mode vitrine). */
+  var selVal = estVitrine ? 'vitrine' : _typeEdition;
   var selType = document.getElementById('inp-type-oeuvre');
-  if (selType && selType.value !== _typeEdition) selType.value = _typeEdition;
+  if (selType && selType.value !== selVal) selType.value = selVal;
 }
 
 /* Helper : type de la salle active (peinture/sculpture).
@@ -2061,6 +2074,13 @@ function lireFormToile() {
 }
 
 async function sauverToile() {
+  /* TEMP étape 1 : la persistance d'une vitrine (lecture des champs +
+     exemption du blocage photo) arrive à l'étape 2-3. On intercepte ici
+     pour éviter l'alerte "photo manquante" trompeuse pendant les tests. */
+  if (typeof _estVitrineEdition !== 'undefined' && _estVitrineEdition) {
+    toast('Vitrine : la sauvegarde arrive à l\u2019étape suivante (2-3).', 'ok', 3500);
+    return;
+  }
   const donnees = lireFormToile();
 
   /* Blocage : une pièce visible aux visiteurs DOIT avoir une photo/thumbnail.

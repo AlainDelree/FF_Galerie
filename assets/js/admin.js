@@ -1358,9 +1358,11 @@ $('inp-type-oeuvre')?.addEventListener('change', function() {
     if (tit) {
       var enEdit = (typeof toileEnEdition !== 'undefined' && toileEnEdition !== null);
       if (enEdit) {
-        tit.textContent = (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
+        tit.textContent = (this.value === 'vitrine') ? 'Modifier la vitrine'
+                        : (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
       } else {
-        tit.textContent = (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
+        tit.textContent = (this.value === 'vitrine') ? 'Nouvelle vitrine'
+                        : (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
       }
     }
   }
