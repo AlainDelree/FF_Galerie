@@ -2094,7 +2094,7 @@ async function sauverToile() {
     var _hasGlbNow = !!(donnees.glb || glbB64 ||
       (toileEnEdition !== null && _trouverOeuvre(toileEnEdition, _typeEdition) && _trouverOeuvre(toileEnEdition, _typeEdition).glb));
     var _msgPhoto = 'Impossible de rendre cette ' + LBL.item + ' visible sans photo valide.\n\n';
-    if (_isSculptEdition() && _hasGlbNow) {
+    if (_estSculptEdition() && _hasGlbNow) {
       _msgPhoto += 'Régénérez le thumbnail depuis le 3D, ou téléchargez votre propre image.\n\n';
     } else {
       _msgPhoto += 'Téléchargez une photo (image .jpg ou .png).\n\n';
