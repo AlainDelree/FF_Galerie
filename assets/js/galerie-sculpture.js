@@ -621,22 +621,22 @@ function ouvrirVitrine(piece, pieces, opts) {
         back.appendChild(latte);
       }
     } else {
-      var grey = document.createElement('div');
-      grey.style.cssText = 'flex:1;height:100%;background:linear-gradient(180deg,#7c7c78,#98988f);';
+      var grey = document.createElement('div');   /* fond dérivé de la couleur (comme le bois) */
+      grey.style.cssText = 'flex:1;height:100%;background:linear-gradient(180deg,' + _teinte(couleurV, -0.02) + ',' + _teinte(couleurV, -0.14) + ');';
       back.appendChild(grey);
     }
     var wLbg = estBois
       ? 'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
-      : 'background:linear-gradient(90deg,rgba(228,234,235,.85) 0%,#585854 100%);';
+      : 'background:linear-gradient(100deg,rgba(255,255,255,.18),transparent 32%),linear-gradient(90deg,' + _teinte(couleurV, 0.18) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
     var wRbg = estBois
       ? 'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);'
-      : 'background:linear-gradient(270deg,rgba(228,234,235,.85) 0%,#585854 100%);';
+      : 'background:linear-gradient(260deg,rgba(255,255,255,.18),transparent 32%),linear-gradient(270deg,' + _teinte(couleurV, 0.18) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
     var wallL = document.createElement('div');
     wallL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:16%;box-shadow:inset -4px 0 7px rgba(0,0,0,.34);' +
-      'clip-path:polygon(0 0,100% 12%,100% 88%,0 100%);' + wLbg;
+      'clip-path:polygon(0 0,100% 8%,100% 92%,0 100%);' + wLbg;
     var wallR = document.createElement('div');
     wallR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:16%;box-shadow:inset 4px 0 7px rgba(0,0,0,.34);' +
-      'clip-path:polygon(0 12%,100% 0,100% 100%,0 88%);' + wRbg;
+      'clip-path:polygon(0 8%,100% 0,100% 100%,0 92%);' + wRbg;
     back.appendChild(wallL); back.appendChild(wallR);
     cabinet.appendChild(back);
   })();
@@ -748,6 +748,13 @@ function ouvrirVitrine(piece, pieces, opts) {
       h.style.cssText = 'position:absolute;' + (sideLeft ? 'right:6px;' : 'left:6px;') + 'top:50%;transform:translateY(-50%);' +
         'width:5px;height:40px;border-radius:3px;background:linear-gradient(180deg,#eee,#8a8a8a);box-shadow:0 0 3px rgba(0,0,0,.5);';
       d.appendChild(h);
+      [26, 74].forEach(function (topPct) {          /* 2 charnières inox sur l'axe (arête extérieure) */
+        var hinge = document.createElement('div');
+        hinge.style.cssText = 'position:absolute;' + (sideLeft ? 'left:-3px;' : 'right:-3px;') + 'top:' + topPct + '%;' +
+          'transform:translateY(-50%);width:8px;height:15px;border-radius:2px;z-index:2;' +
+          'background:linear-gradient(180deg,#dcdcdc,#8f8f8f,#c4c4c4);box-shadow:0 0 2px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.15);';
+        d.appendChild(hinge);
+      });
       return d;
     };
     portes.appendChild(makeDoor(true));
