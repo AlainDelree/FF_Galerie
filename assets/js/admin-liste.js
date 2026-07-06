@@ -262,6 +262,19 @@ function listeOeuvres(opts) {
       }
       img.src = _srcVignette;
       thumb.appendChild(img);
+    } else if (t.est_vitrine) {
+      /* Vitrine = rendu procedural, pas de photo -> icone meuble (pas l'appareil
+         barre qui signale une erreur). */
+      var phv = document.createElement('span');
+      phv.className = 'lo-thumb-ph';
+      phv.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+      phv.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.8;">' +
+        '<rect x="5" y="3" width="14" height="18" rx="1" stroke="#b58f3e" stroke-width="1.5" fill="none"/>' +
+        '<line x1="5" y1="9"  x2="19" y2="9"  stroke="#b58f3e" stroke-width="1.3"/>' +
+        '<line x1="5" y1="15" x2="19" y2="15" stroke="#b58f3e" stroke-width="1.3"/>' +
+        '<line x1="12" y1="3" x2="12" y2="21" stroke="#b58f3e" stroke-width="1"/></svg>';
+      phv.title = 'Vitrine';
+      thumb.appendChild(phv);
     } else {
       var ph = document.createElement('span');
       ph.className = 'lo-thumb-ph';
@@ -289,7 +302,9 @@ function listeOeuvres(opts) {
       /* Le type vient de l'œuvre elle-même (multi-types) ou retombe sur
          ADMIN_CFG.type pour les admins mono-type historiques. */
       var typeItem = (t._type) || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture');
-      if (typeItem === 'sculpture' && t.dimensions && t.dimensions.hauteur) {
+      if (t.est_vitrine) {
+        lblTaille = 'Vitrine' + (t.planches && t.places ? ' · ' + t.planches + '×' + t.places : '');
+      } else if (typeItem === 'sculpture' && t.dimensions && t.dimensions.hauteur) {
         lblTaille = t.dimensions.hauteur + ' cm';
       } else if (typeItem !== 'sculpture' && t.taille) {
         lblTaille = t.taille;
