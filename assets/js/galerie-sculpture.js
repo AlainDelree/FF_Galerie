@@ -526,6 +526,107 @@ function creerSocle(piece, gabarit, pos, opts) {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   VITRINE (étagère) — pièce spéciale est_vitrine, rendu procédural.
+   Contenu = œuvres liées par index "planche*10+place" (bas→haut, gauche→droite).
+   La vitrine est un .socle-wrapper → héritage placement + anti-chevauchement.
+   ══════════════════════════════════════════════════════════════ */
+function creerVitrine(piece, pos, pieces, opts) {
+  var wrapper = document.createElement('div');
+  wrapper.className             = 'socle-wrapper vitrine-wrapper';
+  wrapper.style.left            = pos.x + '%';
+  wrapper.style.bottom          = pos.y + '%';
+  wrapper.style.transformOrigin = 'bottom center';
+  var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
+  wrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
+  wrapper.style.zIndex    = String(Math.round((100 - pos.y) * 10));
+  wrapper.dataset.pieceId = piece.id;
+
+  var couleur = piece.couleur || '#6a4b28';
+  var nP = Math.max(1, piece.planches || 3);
+  var nS = Math.max(1, piece.places   || 4);
+  var contenu = piece.contenu || {};
+
+  var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
+  var slotW = Math.round(15 * u);
+  var slotH = Math.round(17 * u);
+  var board = Math.max(4, Math.round(2.5 * u));
+  var pad   = Math.max(3, Math.round(3 * u));
+  var innerW = nS * slotW + (nS + 1) * pad;
+
+  /* Halo doré lent (attracteur) */
+  var halo = document.createElement('div');
+  halo.className = 'vitrine-halo';
+  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:150%;height:132%;' +
+    'transform:translate(-50%,-50%);border-radius:16px;pointer-events:none;z-index:-1;' +
+    'background:radial-gradient(ellipse at center,rgba(240,208,128,.40),rgba(240,208,128,.08) 55%,transparent 72%);';
+  wrapper.appendChild(halo);
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    halo.animate(
+      [{ opacity: 0.35, transform: 'translate(-50%,-50%) scale(0.92)' },
+       { opacity: 0.90, transform: 'translate(-50%,-50%) scale(1.06)' },
+       { opacity: 0.35, transform: 'translate(-50%,-50%) scale(0.92)' }],
+      { duration: 4000, iterations: Infinity, easing: 'ease-in-out' });
+  }
+
+  /* Meuble : planches empilées, bas → haut (column-reverse) */
+  var meuble = document.createElement('div');
+  meuble.className = 'vitrine-meuble';
+  meuble.style.cssText = 'position:relative;display:flex;flex-direction:column-reverse;' +
+    'width:' + innerW + 'px;background:' + _teinte(couleur, -0.10) + ';' +
+    'border:' + Math.max(2, Math.round(u)) + 'px solid ' + _teinte(couleur, -0.28) + ';' +
+    'border-radius:3px;box-shadow:0 ' + Math.round(3 * u) + 'px ' + Math.round(6 * u) + 'px rgba(0,0,0,.55);';
+
+  for (var pl = 1; pl <= nP; pl++) {
+    var row = document.createElement('div');
+    row.className = 'vitrine-planche';
+    row.style.cssText = 'position:relative;display:flex;justify-content:space-around;align-items:flex-end;' +
+      'padding:' + pad + 'px ' + pad + 'px 0;' +
+      'border-bottom:' + board + 'px solid ' + _teinte(couleur, 0.06) + ';';
+    for (var sl = 1; sl <= nS; sl++) {
+      var slot = document.createElement('div');
+      slot.className = 'vitrine-slot';
+      slot.style.cssText = 'width:' + slotW + 'px;height:' + slotH + 'px;display:flex;' +
+        'align-items:flex-end;justify-content:center;';
+      var oid = contenu['' + (pl * 10 + sl)];
+      var oe  = (oid != null) ? pieces[oid] : null;
+      if (oe && oe.photo) {
+        var im = document.createElement('img');
+        im.alt = oe.titre || ''; im.loading = 'lazy'; im.decoding = 'async';
+        im.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;' +
+          'filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));';
+        im.src = /^https?:\/\//.test(oe.photo) ? oe.photo : (GALERIE_CFG.assetsBase + oe.photo);
+        im.onerror = function () { this.style.display = 'none'; };
+        slot.appendChild(im);
+      }
+      row.appendChild(slot);
+    }
+    meuble.appendChild(row);
+  }
+  wrapper.appendChild(meuble);
+
+  /* Plaque façon musée */
+  var nOeuvres = Object.keys(contenu).length;
+  var plaque = document.createElement('div');
+  plaque.className = 'vitrine-plaque';
+  plaque.textContent = 'Vitrine · ' + nOeuvres + ' pièce' + (nOeuvres > 1 ? 's' : '');
+  plaque.style.cssText = 'position:absolute;bottom:-' + Math.round(6 * u) + 'px;left:50%;' +
+    'transform:translateX(-50%);font-family:Cinzel,serif;font-size:' + Math.max(8, Math.round(4 * u)) + 'px;' +
+    'color:#2a1d0a;white-space:nowrap;background:linear-gradient(180deg,#f0d080,#b58f3e);' +
+    'padding:1px 6px;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5);';
+  wrapper.appendChild(plaque);
+
+  /* Clic → écran vitrine (étape 2b, à brancher). En édition on arrange, pas d'ouverture. */
+  wrapper.style.cursor = 'pointer';
+  wrapper.addEventListener('click', function (e) {
+    if (window._GALERIE_EDIT) return;
+    e.stopPropagation();
+    if (typeof ouvrirVitrine === 'function') ouvrirVitrine(piece, pieces, opts);
+  });
+
+  return wrapper;
+}
+
+/* ══════════════════════════════════════════════════════════════
    RENDERER SCULPTURE — enregistré dans GALERIE_RENDERERS
    ══════════════════════════════════════════════════════════════ */
 GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
@@ -618,6 +719,10 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
       const gabarit = gabarits[gCode] || gabarits['M'];
       if (!piece) return;
+      if (piece.est_vitrine) {
+        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
+        return;
+      }
       plancherSol.appendChild(creerSocle(piece, gabarit, pos, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
     });
   }
