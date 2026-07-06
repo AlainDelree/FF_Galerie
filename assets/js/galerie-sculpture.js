@@ -611,13 +611,23 @@ function ouvrirVitrine(piece, pieces, opts) {
   /* Fond : 6 lattes verticales (bois) ; panneau gris uni (vitrée) */
   if (estBois) {
     var back = document.createElement('div');
-    back.style.cssText = 'position:absolute;inset:0;z-index:0;display:flex;pointer-events:none;';
+    back.style.cssText = 'position:absolute;inset:0;z-index:0;display:flex;pointer-events:none;overflow:hidden;';
     for (var L = 0; L < 6; L++) {
       var latte = document.createElement('div');
-      latte.style.cssText = 'flex:1;height:100%;box-shadow:inset -2px 0 3px rgba(0,0,0,.26);' +
-        'background:linear-gradient(90deg,' + _teinte(couleurV, -0.22) + ' 0%,' + _teinte(couleurV, -0.10) + ' 42%,' + _teinte(couleurV, -0.14) + ' 100%);';
+      latte.style.cssText = 'flex:1;height:100%;box-shadow:inset -2px 0 3px rgba(0,0,0,.24);' +
+        'background:linear-gradient(90deg,' + _teinte(couleurV, -0.20) + ' 0%,' + _teinte(couleurV, -0.08) + ' 42%,' + _teinte(couleurV, -0.12) + ' 100%);';
       back.appendChild(latte);
     }
+    /* Parois latérales — MÊME couleur, exposition différente → profondeur (côtés visibles) */
+    var wallL = document.createElement('div');
+    wallL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:15%;' +
+      'box-shadow:inset -4px 0 7px rgba(0,0,0,.38);' +
+      'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
+    var wallR = document.createElement('div');
+    wallR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:15%;' +
+      'box-shadow:inset 4px 0 7px rgba(0,0,0,.38);' +
+      'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ' 0%,' + _teinte(couleurV, -0.34) + ' 100%);';
+    back.appendChild(wallL); back.appendChild(wallR);
     cabinet.appendChild(back);
   }
 
