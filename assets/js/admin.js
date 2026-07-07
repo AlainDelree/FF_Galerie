@@ -1199,7 +1199,7 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   const btn = $('btn-sauver-placement');
   btn.disabled = true; btn.textContent = 'En cours…';
   try {
-    const lbl = _isSculpt ? 'pièces' : 'toiles';
+    const lbl = (typeof _estSculptSalleActive === 'function' ? _estSculptSalleActive() : _isSculpt) ? 'pièces' : 'toiles';
     salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
     await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'), null);
     toast('✓ Placement enregistré');

@@ -305,3 +305,37 @@ paysage = vitrine face au visiteur ; portrait = à ~90° (quasi parallèle à un
 latéral) avec oblique légère (« / » à gauche, « \ » à droite) pour rester lisible.
 Conclusion du propriétaire : « ce ne sera pas beau » → non retenu. La vitrine reste
 toujours **face au visiteur**. Ne pas re-proposer.
+
+
+---
+
+**État au 07/07/2026 — Vitrine ADMIN complète (dev) + 2 chantiers à venir**
+
+L'admin vitrine est **complet et validé par Alain** sur `dev` (création via sélecteur
+de type, garnissage dans l'Arranger, contenu indépendant PC/GSM, règle « un objet =
+une salle » dans tous les sens, strip complet avec badges, générateur d'invité
+modernisé multi-type + galerie-edit + 4 aperçus). **Pas encore mergé sur `main`.**
+Compte de test `artistes/testtester/` en dev — à EXCLURE au merge (fichiers HTML vus
+comme « code » par le script, mais l'artiste n'est pas dans `data/artistes.json` prod
+→ seraient orphelins).
+
+**CHANTIER À VENIR (A) — Alignement « GSM prime / GSM as master ».** Aujourd'hui le
+site est PC-primaire : `positions` est la base, `positions_mobile` en hérite / le
+mobile retombe sur `positions` s'il est vide (idem `contenu`/`contenu_mobile` des
+vitrines). Alain veut **inverser** : GSM devient la base dont PC hérite.
+- *Partie A (UI, sans risque)* : ordre des cartes GSM avant PC (peinture **et**
+  sculpture) + switch de l'Arrangeur qui démarre sur GSM.
+- *Partie B (DANGEREUSE)* : inverser le sens du fallback pour `positions` ET le
+  contenu des vitrines. **EXIGE une migration** : recopier `positions`→
+  `positions_mobile` et `contenu`→`contenu_mobile` de TOUTES les salles existantes
+  AVANT de basculer — sinon les galeries prod de Fred/Dinso (contenu en
+  `positions`/`contenu`, `positions_mobile` souvent vide) s'afficheraient **VIDES**
+  côté GSM et casseraient. Chantier long, à cadrer + migrer + tester avant merge.
+
+**CHANTIER À VENIR (B) — Scénarios d'animation.** Réglage **propriétaire uniquement**
+(Fred/Dinso, admin, zéro UI visiteur), stocké au niveau **salle** (comme les greffons
+immersif/descriptif). Séquence type : vitrine fermée → animation d'ouverture au clic
+→ révélation des objets → bascule descriptive (réutilise la salle d'observation
+existante). Couche d'animation AU-DESSUS des vitrines (ne touche pas leur contrat de
+données ; le renderer dessine déjà selon `portes` fermées/ouvertes). À cadrer :
+scénario par vitrine ou par salle ? déclencheur clic visiteur ou automatique ?

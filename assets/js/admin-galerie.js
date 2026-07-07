@@ -45,6 +45,15 @@ function _estSculptEdition() {
 var _vitrineContenu    = {};
 var _vitrinePickSlot   = null;
 var _vitrineArrPieceId = null;
+var _vitrineArrVue     = 'pc';   /* vue en cours de garnissage : 'pc' ou 'gsm' */
+
+/* Contenu effectif d'une vitrine pour une vue donnée (GSM hérite de PC tant que
+   contenu_mobile n'existe pas). */
+function _vitrineContenuVue(piece, vue) {
+  if (!piece) return {};
+  if (vue === 'gsm') return piece.contenu_mobile || piece.contenu || {};
+  return piece.contenu || {};
+}
 
 function _vitrinePhotoSrc(t) {
   if (!t) return '';
@@ -97,7 +106,8 @@ function _construireGrilleVitrine(host, nP, nS) {
       var slot = document.createElement('button');
       slot.type = 'button';
       slot.dataset.pp = pp;
-      slot.style.cssText = 'flex:1 1 0;min-width:0;aspect-ratio:1/1;border:1px dashed var(--brd);' +
+      slot.style.cssText = 'flex:1 1 0;min-width:0;max-width:120px;aspect-ratio:1/1;max-height:120px;' +
+        'border:1px dashed var(--brd);' +
         'border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;' +
         'overflow:hidden;cursor:pointer;padding:2px;color:var(--muted);font-size:1.1rem;';
       var oid = _vitrineContenu['' + pp];
@@ -197,11 +207,40 @@ function _ouvrirPickerVitrine(pp) {
         ';text-align:center;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       card.appendChild(nom);
       var statut = document.createElement('div');
-      statut.textContent = dejaPP ? 'déjà présent' : 'disponible';
-      statut.style.cssText = 'font-size:.62rem;text-align:center;line-height:1.1;' +
-        (dejaPP ? 'color:var(--gold);font-weight:600;' : 'color:var(--muted);');
+      var _loc = dejaPP ? null : _localisationOeuvre(t.id);
+      var _txt, _col;
+      if (dejaPP)                          { _txt = 'déjà présent';                         _col = 'color:var(--gold);font-weight:600;'; }
+      else if (_loc && _loc.type==='vitrine'){ _txt = 'en vitrine · ' + _loc.nom;             _col = 'color:#c88a3a;font-weight:600;'; }
+      else if (_loc && _loc.type==='sol')  { _txt = 'au sol · ' + (_loc.nom || ('Salle ' + _loc.salle)); _col = 'color:#c88a3a;font-weight:600;'; }
+      else                                 { _txt = 'disponible';                            _col = 'color:var(--muted);'; }
+      statut.textContent = _txt;
+      statut.style.cssText = 'font-size:.62rem;text-align:center;line-height:1.1;' + _col;
       card.appendChild(statut);
       card.addEventListener('click', function() {
+        /* Un objet ne peut être qu'à UN seul endroit (comme dans la réalité).
+           S'il est déjà posé au sol OU dans une autre vitrine, on confirme —
+           le retrait effectif se fait à l'enregistrement. */
+        var autreVitrine = null;
+        (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+          if (autreVitrine) return;
+          if (v.est_vitrine && v.id !== _vitrineArrPieceId) {
+            var cv = _vitrineContenuVue(v, _vitrineArrVue);
+            if (Object.keys(cv).some(function(k) { return cv[k] === t.id; })) autreVitrine = v;
+          }
+        });
+        var sallePosee = null;
+        (Array.isArray(salles) ? salles : []).forEach(function(s) {
+          if (sallePosee) return;
+          if (s.type && s.type !== 'sculpture') return;
+          var dans = (s.positions || []).some(function(p) { return p.id === t.id; }) ||
+                     (s.positions_mobile || []).some(function(p) { return p.id === t.id; });
+          if (dans) sallePosee = s;
+        });
+        var lieu = autreVitrine ? ('la vitrine \u00ab ' + (autreVitrine.titre || ('#' + autreVitrine.id)) + ' \u00bb')
+                 : sallePosee   ? ('le sol de \u00ab ' + (sallePosee.nom || 'une salle') + ' \u00bb') : null;
+        if (lieu && !confirm('\u00ab ' + (t.titre || ('#' + t.id)) + ' \u00bb est déjà dans ' + lieu + '.\n\nLa mettre ici l\u2019en retirera.\n\nContinuer ?')) {
+          return;
+        }
         /* Une œuvre = un seul emplacement : la retirer d'un éventuel autre slot. */
         Object.keys(_vitrineContenu).forEach(function(k) { if (_vitrineContenu[k] === t.id) delete _vitrineContenu[k]; });
         _vitrineContenu['' + _vitrinePickSlot] = t.id;
@@ -237,11 +276,17 @@ function ouvrirPanneauVitrine(pieceId) {
   if (!piece) return;
   if (typeof fermerPanneauSupport === 'function') fermerPanneauSupport();
   _vitrineArrPieceId = pieceId;
-  _vitrineContenu = (piece.contenu && typeof piece.contenu === 'object')
-    ? JSON.parse(JSON.stringify(piece.contenu)) : {};
+  /* Garnissage de la VUE COURANTE (PC ou GSM) : contenu indépendant par vue. */
+  _vitrineArrVue = (typeof _placementVue !== 'undefined' && _placementVue === 'gsm') ? 'gsm' : 'pc';
+  var _src = _vitrineContenuVue(piece, _vitrineArrVue);
+  _vitrineContenu = (_src && typeof _src === 'object') ? JSON.parse(JSON.stringify(_src)) : {};
   var nom = document.getElementById('vitrine-panel-nom');
-  if (nom) nom.textContent = piece.titre || ('#' + pieceId);
+  if (nom) nom.textContent = (piece.titre || ('#' + pieceId)) + '  ·  ' + (_vitrineArrVue === 'gsm' ? 'GSM' : 'PC');
   _vitrineRebuildGrille();
+  /* Couper tout drag/sélection en cours dans l'iframe : sinon la vitrine
+     « suit » la souris pendant que le panneau est ouvert. */
+  var ifrV = document.getElementById('edit-galerie-iframe');
+  if (ifrV && ifrV.contentWindow) ifrV.contentWindow.postMessage({ type: 'annuler-drag-selection' }, '*');
   var panel = document.getElementById('vitrine-panel');
   if (!panel) return;
   panel.style.display = 'block';
@@ -277,32 +322,160 @@ async function _sauverPanneauVitrine() {
     return t.id === _vitrineArrPieceId && t.est_vitrine;
   });
   if (!piece) { fermerPanneauVitrine(); return; }
-  piece.contenu = JSON.parse(JSON.stringify(_vitrineContenu || {}));
-  var retires = _vitrineRetirerContenuDuSol(piece.contenu);
-  await sauvegarder('[admin] Garnissage vitrine #' + piece.id, '✓ Vitrine mise à jour');
-  /* Mise à jour visuelle de l'Arranger sans re-fetch (données fraîches en mémoire) :
-     retirer du sol les œuvres passées en vitrine, puis re-render la vitrine. */
+  var vue = _vitrineArrVue;
+  var maj = JSON.parse(JSON.stringify(_vitrineContenu || {}));
+  /* Écrire dans la vue courante. En passant en GSM la 1re fois, on matérialise
+     contenu_mobile (avant, GSM héritait de contenu). */
+  if (vue === 'gsm') piece.contenu_mobile = maj;
+  else               piece.contenu = maj;
+  /* Une œuvre = un seul endroit : la retirer des autres vitrines et du sol, par
+     vue au sein de la salle, entièrement dans les autres salles. */
+  _vitrineRetirerContenuAutresVitrines(piece.id, maj, vue);
+  var retires = _vitrineRetirerContenuDuSol(maj, piece.id, vue);
+  /* Visuel INSTANTANÉ (données en mémoire déjà à jour) : fermer le panneau,
+     re-render les vitrines / retirer du sol, rafraîchir le strip — puis
+     sauvegarder GitHub en arrière-plan (le commit prend quelques secondes). */
   var iframe = document.getElementById('edit-galerie-iframe');
   if (iframe && iframe.contentWindow) {
     retires.forEach(function(rid) {
       iframe.contentWindow.postMessage({ type: 'retirer-piece', id: rid }, '*');
     });
-    iframe.contentWindow.postMessage({ type: 'support-updated', piece: piece }, '*');
+    var vus = {};
+    var posSalle = salleActive ? (salleActive.positions || []).concat(salleActive.positions_mobile || []) : [];
+    posSalle.forEach(function(p) {
+      if (vus[p.id]) return; vus[p.id] = true;
+      var pc = _oeuvreParId(p.id);
+      if (pc && pc.est_vitrine) iframe.contentWindow.postMessage({ type: 'support-updated', piece: pc }, '*');
+    });
   }
   fermerPanneauVitrine();
+  if (typeof afficherStripPlacement === 'function') afficherStripPlacement();
+  /* Sauvegarde en arrière-plan : le toast de succès est géré par sauvegarder(). */
+  await sauvegarder('[admin] Garnissage vitrine #' + piece.id, '✓ Vitrine mise à jour');
+  /* Réaligner le snapshot après save pour éviter un faux « modifications non
+     sauvegardées » à la navigation (délai : laisser retirer-piece se poser). */
+  setTimeout(function() {
+    if (typeof _refreshArrangerSnapshot === 'function') _refreshArrangerSnapshot();
+  }, 200);
 }
 
-/* Retire du SOL (positions/positions_mobile de toutes les salles sculpture) les
-   œuvres affectées à une vitrine — évite le double rendu (socle + vitrine).
-   Retourne la liste des ids effectivement retirés (au moins d'une position). */
-function _vitrineRetirerContenuDuSol(contenu) {
+/* Retire un objet de toutes les vitrines : par vue au sein de la salle courante
+   (contenu_mobile matérialisé au besoin), des deux vues dans les autres salles.
+   Renvoie la vitrine (1re trouvée) qui contenait l'objet, ou null. */
+function _retirerObjetDesVitrines(objId, salleCouranteId, vue) {
+  var trouvee = null;
+  function retirerDe(mapObj) {
+    if (!mapObj) return false;
+    var c = false;
+    Object.keys(mapObj).forEach(function(k) { if (mapObj[k] === objId) { delete mapObj[k]; c = true; } });
+    return c;
+  }
+  (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+    if (!v.est_vitrine) return;
+    var contient = (v.contenu && Object.keys(v.contenu).some(function(k) { return v.contenu[k] === objId; })) ||
+                   (v.contenu_mobile && Object.keys(v.contenu_mobile).some(function(k) { return v.contenu_mobile[k] === objId; }));
+    if (contient && !trouvee) trouvee = v;
+    var memeSalle = salleCouranteId && _salleDeVitrine(v.id) === salleCouranteId;
+    if (memeSalle) {
+      if (vue === 'gsm') {
+        if (!v.contenu_mobile && v.contenu) v.contenu_mobile = JSON.parse(JSON.stringify(v.contenu));
+        retirerDe(v.contenu_mobile);
+      } else {
+        retirerDe(v.contenu);
+      }
+    } else {
+      retirerDe(v.contenu);
+      retirerDe(v.contenu_mobile);
+    }
+  });
+  return trouvee;
+}
+
+/* Localisation actuelle d'une œuvre : {type:'vitrine',nom,salle} |
+   {type:'sol',salle,nom} | null (disponible). */
+function _localisationOeuvre(id) {
+  var vit = null;
+  (Array.isArray(toiles) ? toiles : []).forEach(function(t) {
+    if (vit || !t.est_vitrine) return;
+    var inC = (t.contenu && Object.keys(t.contenu).some(function(k) { return t.contenu[k] === id; })) ||
+              (t.contenu_mobile && Object.keys(t.contenu_mobile).some(function(k) { return t.contenu_mobile[k] === id; }));
+    if (inC) vit = t;
+  });
+  if (vit) return { type: 'vitrine', nom: (vit.titre || ('#' + vit.id)) };
+  var sol = null;
+  (Array.isArray(salles) ? salles : []).forEach(function(s) {
+    if (sol) return;
+    if (s.type && s.type !== 'sculpture') return;
+    if ((s.positions || []).some(function(p) { return p.id === id; }) ||
+        (s.positions_mobile || []).some(function(p) { return p.id === id; })) sol = s;
+  });
+  if (sol) return { type: 'sol', salle: sol.id, nom: sol.nom };
+  return null;
+}
+
+/* Salle (id) où une vitrine est posée (positions ou positions_mobile). */
+function _salleDeVitrine(vitrineId) {
+  var res = null;
+  (Array.isArray(salles) ? salles : []).forEach(function(s) {
+    if (res) return;
+    if (s.type && s.type !== 'sculpture') return;
+    if ((s.positions || []).some(function(p) { return p.id === vitrineId; }) ||
+        (s.positions_mobile || []).some(function(p) { return p.id === vitrineId; })) res = s.id;
+  });
+  return res;
+}
+
+/* Retire les œuvres de `contenu` des AUTRES vitrines. Par vue au sein de la même
+   salle (contenu_mobile matérialisé au besoin), des deux vues dans les autres. */
+function _vitrineRetirerContenuAutresVitrines(currentId, contenu, vue) {
+  var ids = Object.keys(contenu || {}).map(function(k) { return contenu[k]; }).filter(function(v) { return v != null; });
+  if (!ids.length) return false;
+  var idSet = {}; ids.forEach(function(i) { idSet[i] = true; });
+  var salleCourante = _salleDeVitrine(currentId);
+  var change = false;
+  function retirerDe(mapObj) {
+    if (!mapObj) return false;
+    var c = false;
+    Object.keys(mapObj).forEach(function(k) { if (idSet[mapObj[k]]) { delete mapObj[k]; c = true; } });
+    return c;
+  }
+  (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+    if (!v.est_vitrine || v.id === currentId) return;
+    var memeSalle = salleCourante && _salleDeVitrine(v.id) === salleCourante;
+    if (memeSalle) {
+      if (vue === 'gsm') {
+        if (!v.contenu_mobile) v.contenu_mobile = v.contenu ? JSON.parse(JSON.stringify(v.contenu)) : {};
+        if (retirerDe(v.contenu_mobile)) change = true;
+      } else {
+        if (retirerDe(v.contenu)) change = true;
+      }
+    } else {
+      if (retirerDe(v.contenu))        change = true;   /* autre salle : les deux vues */
+      if (retirerDe(v.contenu_mobile)) change = true;
+    }
+  });
+  return change;
+}
+
+/* Retire du SOL les œuvres affectées à une vitrine — évite le double rendu.
+   Un objet appartient à une SALLE ; au sein de la salle de la vitrine, PC/GSM
+   sont indépendants : on ne retire que de la VUE éditée (un objet en vitrine côté
+   PC peut rester au sol côté GSM). Dans les AUTRES salles, on retire des deux vues.
+   Retourne la liste des ids effectivement retirés. */
+function _vitrineRetirerContenuDuSol(contenu, vitrinePieceId, vue) {
   var ids = Object.keys(contenu || {}).map(function(k) { return contenu[k]; }).filter(function(v) { return v != null; });
   if (!ids.length) return [];
   var idSet = {}; ids.forEach(function(i) { idSet[i] = true; });
+
+  var salleVitrineId = _salleDeVitrine(vitrinePieceId);
+  var cleVue = (vue === 'gsm') ? 'positions_mobile' : 'positions';
+
   var retires = {};
   (Array.isArray(salles) ? salles : []).forEach(function(s) {
     if (s.type && s.type !== 'sculpture') return;
-    ['positions', 'positions_mobile'].forEach(function(key) {
+    var estSalleVitrine = (salleVitrineId !== null && s.id === salleVitrineId);
+    var vues = estSalleVitrine ? [cleVue] : ['positions', 'positions_mobile'];
+    vues.forEach(function(key) {
       if (Array.isArray(s[key])) {
         s[key] = s[key].filter(function(p) {
           if (idSet[p.id]) { retires[p.id] = true; return false; }
@@ -1810,16 +1983,36 @@ function afficherStripPlacement() {
   const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
   const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
+  /* Œuvres présentes dans une vitrine POSÉE DANS LA VUE COURANTE : on les GARDE
+     dans le strip et on les marque « présentes » (vert), comme posées au sol.
+     Indépendance PC/GSM : une vitrine posée seulement côté PC n'impacte pas le
+     strip côté GSM. Map id → vitrine (pour le nom). */
+  const _vueCourante = (_sculptSalle ? _getPositions() : (salleActive.positions || []));
+  const _vitrinesIci = new Set(_vueCourante.filter(function(p) {
+    var pc = _oeuvreParId(p.id); return pc && pc.est_vitrine;
+  }).map(function(p) { return p.id; }));
+  const _vueStrip = (typeof _placementVue !== 'undefined' && _placementVue === 'gsm') ? 'gsm' : 'pc';
+  const enVitrineIci = new Map();
+  toiles.forEach(function(t) {
+    if (t.est_vitrine && _vitrinesIci.has(t.id)) {
+      var c = _vitrineContenuVue(t, _vueStrip);
+      Object.keys(c).forEach(function(k) { if (c[k] != null && !enVitrineIci.has(c[k])) enVitrineIci.set(c[k], t); });
+    }
+  });
+
   /* Le strip liste TOUTES les œuvres du type de la salle (peinture ou sculpture),
      pas seulement les placées ou sélectionnées : ça donne une vue d'ensemble du
      stock pour pouvoir glisser/placer librement, comme dans l'arrangeur sculpture. */
   const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
     .filter(function(id) { return idsValides.has(id); });
 
-  /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
+  /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = ailleurs (autre salle ou vitrine) */
   const _rang = function(id) {
     if (poseeIds.has(id)) return 0;
-    return _salleDOrigine(id) ? 2 : 1;
+    if (_salleDOrigine(id)) return 2;
+    var _l = _localisationOeuvre(id);
+    if (_l && _l.type === 'vitrine') return 2;
+    return 1;
   };
   tousIds.sort(function(a, b) {
     var ra = _rang(a), rb = _rang(b);
@@ -1835,12 +2028,13 @@ function afficherStripPlacement() {
   tousIds.forEach(id => {
     const t = toilesType.find(x=>x.id===id); if(!t) return;
     const estPlace = poseeIds.has(id);
+    const estEnVitrineIci = enVitrineIci.has(id);   /* présent ici via une vitrine */
     const estSelMur = peintureSurMurSel === id;
     const estSelPlace = selectedToilePl?.id === id;
 
     const item = document.createElement('div');
     item.className = 'pl-item'
-      + (estPlace ? ' pose' : '')
+      + ((estPlace || estEnVitrineIci) ? ' pose' : '')
       + (estSelMur || estSelPlace ? ' sel' : '');
 
     const si = document.createElement('div'); si.className='simg';
@@ -1894,14 +2088,19 @@ function afficherStripPlacement() {
     }
 
     // Badge état
-    const estAutreSalle = _salleDOrigine(id);
+    const estAutreSalle = !estEnVitrineIci && _salleDOrigine(id);
     /* Posée dans l'AUTRE vue (PC↔GSM) de la même salle ? */
     const autreVue = (_placementVue === 'gsm') ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
-    const estAutreVue = autreVue.some(function(p) { return p.id === id; });
+    const estAutreVue = !estEnVitrineIci && autreVue.some(function(p) { return p.id === id; });
+    /* Sinon : dans une vitrine (ailleurs) ? */
+    const _locObj = (!estPlace && !estEnVitrineIci && !estAutreVue && !estAutreSalle) ? _localisationOeuvre(id) : null;
+    const enVitrineAilleurs = (_locObj && _locObj.type === 'vitrine') ? _locObj : null;
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
     if (estPlace) {
       badge.textContent = _sculptSalle ? '🔒 sur le sol' : '🔒 sur le mur';
+    } else if (estEnVitrineIci) {
+      badge.textContent = '🗄 ' + (enVitrineIci.get(id).titre || 'vitrine');
     } else if (estAutreVue) {
       /* Dans cette salle mais sur l'autre vue (ex: posée en PC, absente en GSM) */
       badge.textContent = (_placementVue === 'gsm') ? '🖥 posée en PC' : '📱 posée en GSM';
@@ -1909,6 +2108,9 @@ function afficherStripPlacement() {
     } else if (estAutreSalle) {
       badge.textContent = '📦 ' + estAutreSalle.nom;
       badge.style.background = '#c0392b';
+    } else if (enVitrineAilleurs) {
+      badge.textContent = '🗄 ' + enVitrineAilleurs.nom;
+      badge.style.background = '#a06a1f';
     } else {
       badge.textContent = '+ à placer';
     }
@@ -1916,9 +2118,10 @@ function afficherStripPlacement() {
 
     /* Code couleur du cadre selon le statut, cohérent avec le badge.
        .pose (vert) et .sel (or) restent prioritaires via le garde. */
-    if (!estPlace && !estSelMur && !estSelPlace) {
-      if (estAutreVue)        item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
-      else if (estAutreSalle) item.style.borderColor = '#c0392b';   /* autre salle */
+    if (!estPlace && !estEnVitrineIci && !estSelMur && !estSelPlace) {
+      if (estAutreVue)             item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
+      else if (estAutreSalle)      item.style.borderColor = '#c0392b';   /* autre salle */
+      else if (enVitrineAilleurs)  item.style.borderColor = '#a06a1f';   /* en vitrine ailleurs */
       /* sinon : « à placer » → cadre gris par défaut (.pl-item) */
     }
 
@@ -2879,6 +3082,21 @@ function placerPieceSolViaIframe(x, y) {
   var gab = _gabaritSculpt(piece.dimensions?.hauteur);
   var pos = _getPositions();
 
+  /* Un objet = une place : s'il est dans une vitrine, confirmer puis l'en retirer
+     (par vue au sein de la salle courante, des deux vues dans les autres). */
+  var _vueP = (typeof _placementVue !== 'undefined' && _placementVue === 'gsm') ? 'gsm' : 'pc';
+  var _dejaVitrine = null;
+  (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+    if (_dejaVitrine || !v.est_vitrine) return;
+    var inC = (v.contenu && Object.keys(v.contenu).some(function(k) { return v.contenu[k] === piece.id; })) ||
+              (v.contenu_mobile && Object.keys(v.contenu_mobile).some(function(k) { return v.contenu_mobile[k] === piece.id; }));
+    if (inC) _dejaVitrine = v;
+  });
+  if (_dejaVitrine && !confirm('\u00ab ' + (piece.titre || ('#' + piece.id)) + ' \u00bb est dans la vitrine \u00ab ' + (_dejaVitrine.titre || ('#' + _dejaVitrine.id)) + ' \u00bb.\n\nLa poser au sol l\u2019en retirera.\n\nContinuer ?')) {
+    return;
+  }
+  if (_dejaVitrine) _retirerObjetDesVitrines(piece.id, salleActive.id, _vueP);
+
   /* Retirer la pièce de toute AUTRE salle (déplacement entre salles) — UNIQUEMENT
      du même type. Cohabitation : sculpture #N et peinture #N ont le même id. */
   var _typeSalleActP = salleActive.type || ADMIN_CFG.type || 'sculpture';
@@ -2915,6 +3133,15 @@ function placerPieceSolViaIframe(x, y) {
   }
 
   selectedToilePl = null;
+  /* Re-render les vitrines de la salle courante si l'une a perdu l'objet. */
+  if (_dejaVitrine && iframe && iframe.contentWindow) {
+    var _vusV = {};
+    (salleActive.positions || []).concat(salleActive.positions_mobile || []).forEach(function(p) {
+      if (_vusV[p.id]) return; _vusV[p.id] = true;
+      var pcv = _oeuvreParId(p.id);
+      if (pcv && pcv.est_vitrine) iframe.contentWindow.postMessage({ type: 'support-updated', piece: pcv }, '*');
+    });
+  }
   afficherStripPlacement();
   toast('"' + (piece.titre || '—') + '" placée');
 }
