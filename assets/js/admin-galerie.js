@@ -296,6 +296,8 @@ function ouvrirPanneauVitrine(pieceId) {
     if (bc) bc.addEventListener('click', fermerPanneauVitrine);
     var bs = document.getElementById('vitrine-panel-save');
     if (bs) bs.addEventListener('click', _sauverPanneauVitrine);
+    var br = document.getElementById('vitrine-panel-retirer');
+    if (br) br.addEventListener('click', _retirerVitrineDeLaSalle);
   }
   /* Masquer le strip général : pendant le garnissage on n'y touche pas
      (on choisit via l'emplacement), et le voir prête à confusion. */
@@ -315,6 +317,32 @@ function fermerPanneauVitrine() {
   if (strip) strip.style.display = '';
   var aide = document.getElementById('pl-aide');
   if (aide) aide.style.visibility = '';
+}
+
+/* Depose : retire la vitrine de la salle courante sans la detruire. Son
+   garnissage (contenu / contenu_mobile) est conserve ; la piece reste dans
+   sculpture.json et redevient disponible. Retrait des DEUX vues + liste maitre. */
+async function _retirerVitrineDeLaSalle() {
+  var pid = _vitrineArrPieceId;
+  var piece = (Array.isArray(toiles) ? toiles : []).find(function(t) {
+    return t.id === pid && t.est_vitrine;
+  });
+  if (!piece || !salleActive) { fermerPanneauVitrine(); return; }
+  var nom = piece.titre || ('#' + pid);
+  if (!window.confirm('Retirer la vitrine \u00ab ' + nom + ' \u00bb de la salle \u00ab ' + (salleActive.nom || '') + ' \u00bb ?\n\nSon garnissage est conserve : tu pourras la reposer ailleurs.')) return;
+  salleActive.positions        = (salleActive.positions        || []).filter(function(p) { return p.id !== pid; });
+  salleActive.positions_mobile = (salleActive.positions_mobile || []).filter(function(p) { return p.id !== pid; });
+  salleActive.toiles           = (salleActive.toiles           || []).filter(function(id) { return id !== pid; });
+  var iframe = document.getElementById('edit-galerie-iframe');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({ type: 'retirer-piece', id: pid }, '*');
+  }
+  fermerPanneauVitrine();
+  if (typeof afficherStripPlacement === 'function') afficherStripPlacement();
+  await sauvegarder('[admin] Vitrine retiree de la salle #' + pid, '\u2713 Vitrine retiree de la salle');
+  setTimeout(function() {
+    if (typeof _refreshArrangerSnapshot === 'function') _refreshArrangerSnapshot();
+  }, 200);
 }
 
 async function _sauverPanneauVitrine() {
