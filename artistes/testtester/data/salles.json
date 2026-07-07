@@ -12,16 +12,9 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        9,
         6
       ],
       "positions": [
-        {
-          "id": 9,
-          "x": 22,
-          "y": 39,
-          "gabarit": "M"
-        },
         {
           "id": 6,
           "x": 63,
@@ -29,14 +22,7 @@
           "gabarit": "M"
         }
       ],
-      "positions_mobile": [
-        {
-          "id": 9,
-          "x": 22,
-          "y": 39,
-          "gabarit": "M"
-        }
-      ]
+      "positions_mobile": []
     },
     {
       "id": 2,
@@ -50,13 +36,20 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        11
+        11,
+        9
       ],
       "positions": [
         {
           "id": 11,
           "x": 52.59679767103348,
           "y": 22.629009762900978,
+          "gabarit": "M"
+        },
+        {
+          "id": 9,
+          "x": 13,
+          "y": 33,
           "gabarit": "M"
         }
       ],
