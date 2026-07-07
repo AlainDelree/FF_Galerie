@@ -4,7 +4,7 @@
       "id": 1,
       "nom": "Salle A",
       "type": "sculpture",
-      "couleur_mur": "#bd6916",
+      "couleur_mur": "#ffc183",
       "couleur_mur_piece": "#aaaaaa",
       "couleur_mur_bas": "#254470",
       "texture": "none",
