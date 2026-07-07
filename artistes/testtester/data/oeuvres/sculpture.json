@@ -1,5 +1,5 @@
 {
-  "next_id": 7,
+  "next_id": 8,
   "gabarits": [
     {
       "code": "S",
@@ -136,6 +136,25 @@
       "visible": true,
       "socle": 46,
       "glb": "artistes/testtester/assets/models/piece-006.glb"
+    },
+    {
+      "id": 7,
+      "photo": "artistes/testtester/assets/images/toiles/piece-007.png",
+      "source_photo": "admin",
+      "titre": "Escargot pointu",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "portrait",
+        "largeur": 18,
+        "hauteur": 69,
+        "profondeur": 17
+      },
+      "visible": true,
+      "socle": 24,
+      "glb": "artistes/testtester/assets/models/piece-007.glb"
     }
   ]
 }
