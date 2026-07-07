@@ -1,5 +1,5 @@
 {
-  "next_id": 12,
+  "next_id": 13,
   "gabarits": [
     {
       "code": "S",
@@ -222,6 +222,20 @@
         "texture": "marbre",
         "taille": 40
       }
+    },
+    {
+      "id": 12,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "",
+      "style": "bois",
+      "portes": "fermees",
+      "couleur": "#6a4b28",
+      "planches": 3,
+      "places": 4,
+      "visible": true,
+      "glb": ""
     }
   ]
 }
