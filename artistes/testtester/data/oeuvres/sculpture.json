@@ -1,0 +1,25 @@
+{
+  "gabarits": [
+    {
+      "code": "S",
+      "label": "Petit",
+      "largeur_cm": 20
+    },
+    {
+      "code": "M",
+      "label": "Moyen",
+      "largeur_cm": 35
+    },
+    {
+      "code": "L",
+      "label": "Grand",
+      "largeur_cm": 55
+    },
+    {
+      "code": "SOL",
+      "label": "Au sol",
+      "largeur_cm": 70
+    }
+  ],
+  "pieces": []
+}

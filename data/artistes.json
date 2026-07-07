@@ -19,5 +19,16 @@
     "draft": true,
     "genre": "m",
     "type": "sculpture"
+  },
+  {
+    "id": "testtester",
+    "nom": "Test Tester",
+    "logo": "TT",
+    "lien": "artistes/testtester/",
+    "repoPath": "artistes/testtester/data/",
+    "prefix": "testtester",
+    "draft": false,
+    "genre": "n",
+    "type": "peinture"
   }
 ]
