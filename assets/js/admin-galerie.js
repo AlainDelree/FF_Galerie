@@ -2837,7 +2837,9 @@ function afficherSolPlacement() {
 
     if (e.data.type === 'piece-deselected') {
       fermerPanneauSupport();
-      if (typeof fermerPanneauVitrine === 'function') fermerPanneauVitrine();
+      /* On NE ferme PAS le panneau vitrine ici : un piece-deselected parasite
+         suit parfois la sélection et le refermait aussitôt. Il se ferme via ✕,
+         Enregistrer, retrait de la pièce, ou sélection d'une autre pièce. */
     }
 
     if (e.data.type === 'sol-click') {
@@ -2940,6 +2942,8 @@ function _supportDefaut() {
 }
 
 function ouvrirPanneauSupport(pieceId) {
+  /* Si un panneau vitrine était ouvert (autre pièce), le fermer. */
+  if (typeof fermerPanneauVitrine === 'function') fermerPanneauVitrine();
   /* Filtre par type sculpture : ce panneau n'existe que pour les sculptures.
      En cohabitation, peinture #N et sculpture #N ont le même id — il faut
      impérativement filtrer sinon on récupère la mauvaise œuvre. */
