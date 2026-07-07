@@ -1,5 +1,5 @@
 {
-  "next_id": 3,
+  "next_id": 4,
   "gabarits": [
     {
       "code": "S",
@@ -60,6 +60,25 @@
       "visible": true,
       "socle": 136,
       "glb": "artistes/testtester/assets/models/piece-002.glb"
+    },
+    {
+      "id": 3,
+      "photo": "artistes/testtester/assets/images/toiles/piece-003.png",
+      "source_photo": "admin",
+      "titre": "Lion",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 37,
+        "hauteur": 28,
+        "profondeur": 19
+      },
+      "visible": true,
+      "socle": 49,
+      "glb": "artistes/testtester/assets/models/piece-003.glb"
     }
   ]
 }
