@@ -385,3 +385,9 @@ Plan d'exécution :
 une vitrine vers une autre salle ou la *supprimer* : il manque un moyen de la
 **sortir d'une salle sans la détruire** (dépose). Même zone (`admin-galerie.js`,
 placement vitrine), indépendant de GSM-prime.
+
+**→ FAIT (07/07) :** bouton « ⊘ Retirer cette vitrine de la salle » en pied du
+panneau de garnissage (`_retirerVitrineDeLaSalle`). Retire la vitrine des DEUX
+vues (positions + positions_mobile) + liste maître ; conserve la pièce et son
+garnissage (contenu/contenu_mobile) → dépose, pas suppression. Confirmation +
+commit arrière-plan.
