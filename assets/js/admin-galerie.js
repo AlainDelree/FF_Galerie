@@ -47,12 +47,12 @@ var _vitrinePickSlot   = null;
 var _vitrineArrPieceId = null;
 var _vitrineArrVue     = 'pc';   /* vue en cours de garnissage : 'pc' ou 'gsm' */
 
-/* Contenu effectif d'une vitrine pour une vue donnée (GSM hérite de PC tant que
-   contenu_mobile n'existe pas). */
+/* Contenu effectif d'une vitrine pour une vue donnée (GSM-prime : GSM = source,
+   PC hérite de GSM tant que contenu (PC) n'existe pas). */
 function _vitrineContenuVue(piece, vue) {
   if (!piece) return {};
-  if (vue === 'gsm') return piece.contenu_mobile || piece.contenu || {};
-  return piece.contenu || {};
+  if (vue === 'pc') return (piece.contenu && Object.keys(piece.contenu).length) ? piece.contenu : (piece.contenu_mobile || {});
+  return piece.contenu_mobile || {};
 }
 
 function _vitrinePhotoSrc(t) {
@@ -1424,7 +1424,7 @@ function majBoutons() {
 // ═══════════════════════════════════════════════
 let grilleVisiblePl = false;
 let selectedToilePl = null; // toile sélectionnée dans le strip du mode placement
-let _placementVue = 'pc'; // 'pc' ou 'gsm'
+let _placementVue = 'gsm'; // 'pc' ou 'gsm' (GSM-prime : GSM par défaut)
 let _arrangerSnapshot = null; // snapshot positions avant ouverture Arranger
 
 /* Retourne les positions actives selon le mode vue */
@@ -1527,15 +1527,15 @@ function ouvrirArrangerApresConfirm() {
       };
     })
   };
-  const nbPlacees = (salleActive.positions||[]).length;
+  const nbPlacees = (_estSculptSalleActive() ? _getPositions() : (salleActive.positions||[])).length;
   /* _placementVue est déjà positionné par entrerVue() selon la carte cliquée
-     (pc ou gsm). Ne pas l'écraser ici. Défaut pc si non défini. */
-  if (typeof _placementVue === 'undefined' || !_placementVue) _placementVue = 'pc';
-  /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC
-     (cohérent avec l'iframe) pour que le strip marque bien "sur le sol". */
-  if (_placementVue === 'gsm' && salleActive
-      && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
-    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+     (pc ou gsm). Ne pas l'écraser ici. Défaut gsm si non défini (GSM-prime). */
+  if (typeof _placementVue === 'undefined' || !_placementVue) _placementVue = 'gsm';
+  /* GSM-prime : en PC (surcouche), si pas encore de positions PC, copie depuis GSM
+     (source, cohérent avec l'iframe) pour que le strip marque bien "sur le sol". */
+  if (_placementVue === 'pc' && salleActive
+      && (!salleActive.positions || !salleActive.positions.length)) {
+    salleActive.positions = JSON.parse(JSON.stringify(salleActive.positions_mobile || []));
   }
   var _vueGsm = (_placementVue === 'gsm');
   var btnSw = document.getElementById('btn-switch-vue');
@@ -1701,7 +1701,7 @@ function quitterModePlacement() {
   selectedToilePl = null;
   selectedToile = null;
   peintureSurMurSel = null;
-  salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+  salles.forEach(s => { var _seen = {}, _out = []; (s.positions || []).concat(s.positions_mobile || []).forEach(function(p){ if (p && !_seen[p.id]) { _seen[p.id] = 1; _out.push(p.id); } }); s.toiles = _out; });
   afficherPlan();
   toilesSelectionnees.clear(); majBoutons();
   if (typeof afficherTableauBord === 'function') {

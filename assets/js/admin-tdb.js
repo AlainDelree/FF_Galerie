@@ -35,7 +35,7 @@ var TYPES_SALLE = {
      positions_mobile (sur mobile le rendu bascule en mode flux), mur
      PC/GSM identiques (aspect-ratio 12/8). Une seule vue suffit. */
   peinture:  { vues: ['galerie-pc'], greffons: [] },
-  sculpture: { vues: ['galerie-pc', 'galerie-gsm'], greffons: ['immersive', 'descriptive'] }
+  sculpture: { vues: ['galerie-gsm', 'galerie-pc'], greffons: ['immersive', 'descriptive'] }
 };
 
 /* ─── Méta-données par facette ─── */
@@ -46,7 +46,9 @@ var FACETTES_META = {
     ratio: '16/9',
     vue:   'pc',
     badge: function(salle, lbl) {
-      return (salle.positions || []).length + ' ' + lbl + ' placées';
+      var hasCustom = !!(salle.positions && salle.positions.length);
+      var pos = hasCustom ? salle.positions : (salle.positions_mobile || []);
+      return pos.length + ' ' + lbl + (hasCustom ? ' placées' : ' (= GSM)');
     }
   },
   'galerie-gsm': {
@@ -55,9 +57,7 @@ var FACETTES_META = {
     ratio: '9/19',
     vue:   'gsm',
     badge: function(salle, lbl) {
-      var hasCustom = !!(salle.positions_mobile && salle.positions_mobile.length);
-      var pos = hasCustom ? salle.positions_mobile : (salle.positions || []);
-      return pos.length + ' ' + lbl + (hasCustom ? '' : ' (= PC)');
+      return (salle.positions_mobile || []).length + ' ' + lbl + ' placées';
     }
   },
   'immersive': {
