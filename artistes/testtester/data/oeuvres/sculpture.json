@@ -249,7 +249,10 @@
       "planches": 5,
       "places": 3,
       "visible": true,
-      "glb": ""
+      "glb": "",
+      "contenu_mobile": {
+        "51": 4
+      }
     }
   ]
 }
