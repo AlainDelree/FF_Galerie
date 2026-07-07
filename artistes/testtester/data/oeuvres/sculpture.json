@@ -242,23 +242,6 @@
       "places": 4,
       "visible": true,
       "glb": ""
-    },
-    {
-      "id": 11,
-      "photo": "",
-      "source_photo": "admin",
-      "est_vitrine": true,
-      "titre": "Vitrine Salle II",
-      "style": "vitree",
-      "portes": "ouvertes",
-      "couleur": "#f4b0a8",
-      "planches": 5,
-      "places": 3,
-      "visible": true,
-      "glb": "",
-      "contenu": {
-        "51": 2
-      }
     }
   ]
 }
