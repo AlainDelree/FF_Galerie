@@ -40,9 +40,7 @@
       },
       "visible": true,
       "socle": 43,
-      "glb": "artistes/testtester/assets/models/piece-001.glb",
-      "support": null,
-      "sans_socle": false
+      "glb": "artistes/testtester/assets/models/piece-001.glb"
     },
     {
       "id": 2,
@@ -67,8 +65,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 3,
@@ -87,9 +84,7 @@
       },
       "visible": true,
       "socle": 49,
-      "glb": "artistes/testtester/assets/models/piece-003.glb",
-      "support": null,
-      "sans_socle": false
+      "glb": "artistes/testtester/assets/models/piece-003.glb"
     },
     {
       "id": 4,
@@ -114,8 +109,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 5,
@@ -135,8 +129,12 @@
       "visible": true,
       "socle": 46,
       "glb": "artistes/testtester/assets/models/piece-005.glb",
-      "support": null,
-      "sans_socle": false
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 6,
@@ -161,8 +159,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 7,
@@ -182,8 +179,12 @@
       "visible": true,
       "socle": 24,
       "glb": "artistes/testtester/assets/models/piece-007.glb",
-      "support": null,
-      "sans_socle": false
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 8,
@@ -208,8 +209,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 9,
@@ -227,9 +227,7 @@
       "contenu": {
         "31": 1,
         "33": 3
-      },
-      "support": null,
-      "sans_socle": false
+      }
     },
     {
       "id": 10,
@@ -243,9 +241,7 @@
       "planches": 3,
       "places": 4,
       "visible": true,
-      "glb": "",
-      "support": null,
-      "sans_socle": false
+      "glb": ""
     },
     {
       "id": 11,
@@ -262,9 +258,7 @@
       "glb": "",
       "contenu": {
         "51": 2
-      },
-      "support": null,
-      "sans_socle": false
+      }
     }
   ]
 }
