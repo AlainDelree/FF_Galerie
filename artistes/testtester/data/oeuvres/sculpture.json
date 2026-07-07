@@ -210,20 +210,6 @@
         "texture": "marbre",
         "taille": 40
       }
-    },
-    {
-      "id": 10,
-      "photo": "",
-      "source_photo": "admin",
-      "est_vitrine": true,
-      "titre": "Salle II",
-      "style": "vitree",
-      "portes": "fermees",
-      "couleur": "#28386a",
-      "planches": 3,
-      "places": 4,
-      "visible": true,
-      "glb": ""
     }
   ]
 }
