@@ -336,7 +336,10 @@ async function creerArtiste() {
 let _tplCache = null;
 async function chargerTemplates() {
   if (_tplCache) return _tplCache;
-  const noms = ['index', 'galerie', 'galerie-edit', 'infos', 'contact', 'admin'];
+  const noms = ['index', 'galerie', 'galerie-edit',
+                'galerie-apercu', 'galerie-apercu-peinture',
+                'descriptive-apercu', 'immersive-apercu',
+                'infos', 'contact', 'admin'];
   const resultats = await Promise.all(
     noms.map(n => fetch('templates/artiste-' + n + '.html?v=' + Date.now()).then(r => {
       if (!r.ok) throw new Error('Template introuvable : artiste-' + n + '.html');
@@ -407,6 +410,10 @@ async function genererFichiers(a) {
     { chemin: base + "index.html",       contenu: r(tpls.index)   },
     { chemin: base + "galerie.html",     contenu: r(tpls.galerie) },
     { chemin: base + "galerie-edit.html", contenu: r(tpls['galerie-edit']) },
+    { chemin: base + "galerie-apercu.html",          contenu: r(tpls['galerie-apercu']) },
+    { chemin: base + "galerie-apercu-peinture.html", contenu: r(tpls['galerie-apercu-peinture']) },
+    { chemin: base + "descriptive-apercu.html",      contenu: r(tpls['descriptive-apercu']) },
+    { chemin: base + "immersive-apercu.html",        contenu: r(tpls['immersive-apercu']) },
     { chemin: base + "infos.html",       contenu: r(tpls.infos)   },
     { chemin: base + "contact.html",     contenu: r(tpls.contact) },
     { chemin: base + "admin.html",       contenu: r(tpls.admin)   },
