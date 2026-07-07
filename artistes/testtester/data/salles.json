@@ -12,7 +12,8 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        9
+        9,
+        8
       ],
       "positions": [
         {
@@ -20,6 +21,12 @@
           "x": 22,
           "y": 39,
           "gabarit": "M"
+        },
+        {
+          "id": 8,
+          "x": 59,
+          "y": 33,
+          "gabarit": "L"
         }
       ],
       "positions_mobile": []
