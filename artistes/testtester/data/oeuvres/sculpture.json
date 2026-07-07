@@ -1,5 +1,5 @@
 {
-  "next_id": 10,
+  "next_id": 11,
   "gabarits": [
     {
       "code": "S",
@@ -184,6 +184,20 @@
       "style": "bois",
       "portes": "ouvertes",
       "couleur": "#6a4b28",
+      "planches": 3,
+      "places": 4,
+      "visible": true,
+      "glb": ""
+    },
+    {
+      "id": 10,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "Salle II",
+      "style": "vitree",
+      "portes": "fermees",
+      "couleur": "#28386a",
       "planches": 3,
       "places": 4,
       "visible": true,
