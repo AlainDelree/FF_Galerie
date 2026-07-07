@@ -212,24 +212,6 @@
       }
     },
     {
-      "id": 9,
-      "photo": "",
-      "source_photo": "admin",
-      "est_vitrine": true,
-      "titre": "Vitrine Salle I",
-      "style": "bois",
-      "portes": "ouvertes",
-      "couleur": "#6a4b28",
-      "planches": 3,
-      "places": 4,
-      "visible": true,
-      "glb": "",
-      "contenu": {
-        "31": 1,
-        "33": 3
-      }
-    },
-    {
       "id": 10,
       "photo": "",
       "source_photo": "admin",
