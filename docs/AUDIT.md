@@ -280,3 +280,28 @@ niveau **salle** (même nature que les `greffons` immersif/descriptif), PAS sur 
 vitrine : couche de séquençage AU-DESSUS des vitrines, qui ne touche pas leur contrat
 de données. Le renderer dessine déjà selon `portes` (fermées/ouvertes) → un futur
 scénario n'aura qu'à animer cette transition.
+
+
+---
+
+**Vitrine — admin complété (07/07/2026) + décision orientation ABANDONNÉE**
+
+Admin vitrine opérationnel (étapes 1→4) : création via l'option « Vitrine » du
+sélecteur de type (mappée en interne sur `_type='sculpture'` + `est_vitrine`),
+réglages (style, portes, couleur via color picker type 'vitrine', planches/places
+1–8), affectation des œuvres aux emplacements (grille planches×places + sélecteur
+de vignettes ; `contenu["PP"]=id`, PP=planche×10+place ; une œuvre = un seul
+emplacement ; élagage hors-grille). Section « Vitrines » dédiée dans l'onglet Œuvres
+(affichage seulement ; stockage toujours `sculpture.json`). Vignette liste/strip =
+icône meuble dorée (pas d'appareil-photo barré). Placement Arranger : rendu via
+`creerVitrine` (le placement incrémental `injectPositions` + `support-updated`
+appelaient à tort `creerSocle`). Support (socle/étagère/présentoir) INTERDIT pour
+les vitrines (`ouvrirPanneauSupport` court-circuité). Anti double-rendu : à la
+sauvegarde, les œuvres affectées sont retirées du sol (positions + positions_mobile
+des salles sculpture).
+
+**Orientation portrait/paysage : ABANDONNÉE (décision Alain).** Idée envisagée :
+paysage = vitrine face au visiteur ; portrait = à ~90° (quasi parallèle à un mur
+latéral) avec oblique légère (« / » à gauche, « \ » à droite) pour rester lisible.
+Conclusion du propriétaire : « ce ne sera pas beau » → non retenu. La vitrine reste
+toujours **face au visiteur**. Ne pas re-proposer.
