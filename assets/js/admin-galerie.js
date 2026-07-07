@@ -2006,10 +2006,13 @@ function afficherStripPlacement() {
   const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
     .filter(function(id) { return idsValides.has(id) && !enVitrine.has(id); });
 
-  /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
+  /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = ailleurs (autre salle ou vitrine) */
   const _rang = function(id) {
     if (poseeIds.has(id)) return 0;
-    return _salleDOrigine(id) ? 2 : 1;
+    if (_salleDOrigine(id)) return 2;
+    var _l = _localisationOeuvre(id);
+    if (_l && _l.type === 'vitrine') return 2;
+    return 1;
   };
   tousIds.sort(function(a, b) {
     var ra = _rang(a), rb = _rang(b);
@@ -2088,6 +2091,9 @@ function afficherStripPlacement() {
     /* Posée dans l'AUTRE vue (PC↔GSM) de la même salle ? */
     const autreVue = (_placementVue === 'gsm') ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
     const estAutreVue = autreVue.some(function(p) { return p.id === id; });
+    /* Sinon : dans une vitrine (n'importe où) ? */
+    const _locObj = (!estPlace && !estAutreVue && !estAutreSalle) ? _localisationOeuvre(id) : null;
+    const enVitrineAilleurs = (_locObj && _locObj.type === 'vitrine') ? _locObj : null;
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
     if (estPlace) {
@@ -2099,6 +2105,9 @@ function afficherStripPlacement() {
     } else if (estAutreSalle) {
       badge.textContent = '📦 ' + estAutreSalle.nom;
       badge.style.background = '#c0392b';
+    } else if (enVitrineAilleurs) {
+      badge.textContent = '🗄 ' + enVitrineAilleurs.nom;
+      badge.style.background = '#a06a1f';
     } else {
       badge.textContent = '+ à placer';
     }
@@ -2107,8 +2116,9 @@ function afficherStripPlacement() {
     /* Code couleur du cadre selon le statut, cohérent avec le badge.
        .pose (vert) et .sel (or) restent prioritaires via le garde. */
     if (!estPlace && !estSelMur && !estSelPlace) {
-      if (estAutreVue)        item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
-      else if (estAutreSalle) item.style.borderColor = '#c0392b';   /* autre salle */
+      if (estAutreVue)             item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
+      else if (estAutreSalle)      item.style.borderColor = '#c0392b';   /* autre salle */
+      else if (enVitrineAilleurs)  item.style.borderColor = '#a06a1f';   /* en vitrine */
       /* sinon : « à placer » → cadre gris par défaut (.pl-item) */
     }
 
