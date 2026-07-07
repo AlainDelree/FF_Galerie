@@ -207,9 +207,14 @@ function _ouvrirPickerVitrine(pp) {
         ';text-align:center;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       card.appendChild(nom);
       var statut = document.createElement('div');
-      statut.textContent = dejaPP ? 'déjà présent' : 'disponible';
-      statut.style.cssText = 'font-size:.62rem;text-align:center;line-height:1.1;' +
-        (dejaPP ? 'color:var(--gold);font-weight:600;' : 'color:var(--muted);');
+      var _loc = dejaPP ? null : _localisationOeuvre(t.id);
+      var _txt, _col;
+      if (dejaPP)                          { _txt = 'déjà présent';                         _col = 'color:var(--gold);font-weight:600;'; }
+      else if (_loc && _loc.type==='vitrine'){ _txt = 'en vitrine · ' + _loc.nom;             _col = 'color:#c88a3a;font-weight:600;'; }
+      else if (_loc && _loc.type==='sol')  { _txt = 'au sol · ' + (_loc.nom || ('Salle ' + _loc.salle)); _col = 'color:#c88a3a;font-weight:600;'; }
+      else                                 { _txt = 'disponible';                            _col = 'color:var(--muted);'; }
+      statut.textContent = _txt;
+      statut.style.cssText = 'font-size:.62rem;text-align:center;line-height:1.1;' + _col;
       card.appendChild(statut);
       card.addEventListener('click', function() {
         /* Un objet ne peut être qu'à UN seul endroit (comme dans la réalité).
@@ -384,6 +389,28 @@ function _retirerObjetDesVitrines(objId, salleCouranteId, vue) {
     }
   });
   return trouvee;
+}
+
+/* Localisation actuelle d'une œuvre : {type:'vitrine',nom,salle} |
+   {type:'sol',salle,nom} | null (disponible). */
+function _localisationOeuvre(id) {
+  var vit = null;
+  (Array.isArray(toiles) ? toiles : []).forEach(function(t) {
+    if (vit || !t.est_vitrine) return;
+    var inC = (t.contenu && Object.keys(t.contenu).some(function(k) { return t.contenu[k] === id; })) ||
+              (t.contenu_mobile && Object.keys(t.contenu_mobile).some(function(k) { return t.contenu_mobile[k] === id; }));
+    if (inC) vit = t;
+  });
+  if (vit) return { type: 'vitrine', nom: (vit.titre || ('#' + vit.id)) };
+  var sol = null;
+  (Array.isArray(salles) ? salles : []).forEach(function(s) {
+    if (sol) return;
+    if (s.type && s.type !== 'sculpture') return;
+    if ((s.positions || []).some(function(p) { return p.id === id; }) ||
+        (s.positions_mobile || []).some(function(p) { return p.id === id; })) sol = s;
+  });
+  if (sol) return { type: 'sol', salle: sol.id, nom: sol.nom };
+  return null;
 }
 
 /* Salle (id) où une vitrine est posée (positions ou positions_mobile). */
