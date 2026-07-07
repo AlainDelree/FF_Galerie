@@ -33,8 +33,17 @@
       "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": [],
+      "toiles": [
+        11
+      ],
+      "positions": [
+        {
+          "id": 11,
+          "x": 32,
+          "y": 25,
+          "gabarit": "M"
+        }
+      ],
       "positions_mobile": []
     }
   ]

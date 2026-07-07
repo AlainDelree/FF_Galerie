@@ -218,7 +218,12 @@
       "planches": 5,
       "places": 3,
       "visible": true,
-      "glb": ""
+      "glb": "",
+      "contenu": {
+        "51": 2,
+        "52": 3,
+        "53": 1
+      }
     }
   ]
 }
