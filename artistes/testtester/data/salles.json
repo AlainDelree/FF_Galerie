@@ -9,9 +9,58 @@
       "couleur_mur_bas": "#111111",
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": [],
-      "positions_mobile": []
+      "toiles": [
+        8,
+        5,
+        1,
+        2
+      ],
+      "positions": [
+        {
+          "id": 8,
+          "x": 29,
+          "y": 40,
+          "gabarit": "L"
+        },
+        {
+          "id": 5,
+          "x": 61,
+          "y": 70,
+          "gabarit": "M"
+        },
+        {
+          "id": 1,
+          "x": 77,
+          "y": 24,
+          "gabarit": "S"
+        },
+        {
+          "id": 2,
+          "x": 44,
+          "y": 39,
+          "gabarit": "L"
+        }
+      ],
+      "positions_mobile": [
+        {
+          "id": 8,
+          "x": 29,
+          "y": 40,
+          "gabarit": "L"
+        },
+        {
+          "id": 5,
+          "x": 61,
+          "y": 70,
+          "gabarit": "M"
+        },
+        {
+          "id": 1,
+          "x": 77,
+          "y": 24,
+          "gabarit": "S"
+        }
+      ]
     }
   ]
 }

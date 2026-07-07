@@ -41,8 +41,12 @@
       "visible": true,
       "socle": 43,
       "glb": "artistes/testtester/assets/models/piece-001.glb",
-      "support": null,
-      "sans_socle": false
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 2,
@@ -67,8 +71,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 3,
@@ -87,9 +90,7 @@
       },
       "visible": true,
       "socle": 49,
-      "glb": "artistes/testtester/assets/models/piece-003.glb",
-      "support": null,
-      "sans_socle": false
+      "glb": "artistes/testtester/assets/models/piece-003.glb"
     },
     {
       "id": 4,
@@ -114,8 +115,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 5,
@@ -140,8 +140,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 6,
@@ -166,8 +165,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 7,
@@ -192,8 +190,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     },
     {
       "id": 8,
@@ -218,8 +215,7 @@
         "couleur": "#eae6de",
         "texture": "marbre",
         "taille": 40
-      },
-      "sans_socle": false
+      }
     }
   ]
 }
