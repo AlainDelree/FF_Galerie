@@ -1,5 +1,5 @@
 {
-  "next_id": 5,
+  "next_id": 6,
   "gabarits": [
     {
       "code": "S",
@@ -98,6 +98,25 @@
       "visible": true,
       "socle": 69,
       "glb": "artistes/testtester/assets/models/piece-004.glb"
+    },
+    {
+      "id": 5,
+      "photo": "artistes/testtester/assets/images/toiles/piece-005.png",
+      "source_photo": "admin",
+      "titre": "Escargot",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 35,
+        "hauteur": 30,
+        "profondeur": 16
+      },
+      "visible": true,
+      "socle": 46,
+      "glb": "artistes/testtester/assets/models/piece-005.glb"
     }
   ]
 }
