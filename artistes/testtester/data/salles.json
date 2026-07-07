@@ -22,7 +22,14 @@
           "gabarit": "M"
         }
       ],
-      "positions_mobile": []
+      "positions_mobile": [
+        {
+          "id": 9,
+          "x": 22,
+          "y": 39,
+          "gabarit": "M"
+        }
+      ]
     },
     {
       "id": 2,
