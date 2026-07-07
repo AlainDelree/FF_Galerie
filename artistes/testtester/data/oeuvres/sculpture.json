@@ -1,5 +1,5 @@
 {
-  "next_id": 11,
+  "next_id": 12,
   "gabarits": [
     {
       "code": "S",
@@ -200,6 +200,20 @@
       "couleur": "#28386a",
       "planches": 3,
       "places": 4,
+      "visible": true,
+      "glb": ""
+    },
+    {
+      "id": 11,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "Vitrine Salle II",
+      "style": "vitree",
+      "portes": "ouvertes",
+      "couleur": "#f4b0a8",
+      "planches": 5,
+      "places": 3,
       "visible": true,
       "glb": ""
     }
