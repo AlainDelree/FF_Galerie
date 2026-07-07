@@ -327,6 +327,9 @@ async function _sauverPanneauVitrine() {
     });
   }
   fermerPanneauVitrine();
+  /* Rafraîchir le strip : une œuvre retirée de la vitrine (donc libérée) doit
+     réapparaître immédiatement dans la vue courante, sans changer de vue. */
+  if (typeof afficherStripPlacement === 'function') afficherStripPlacement();
   /* Le garnissage a pu retirer des œuvres du sol (positions) et vient d'être
      sauvegardé : réaligner le snapshot de l'arranger pour ne pas déclencher un
      faux « modifications non sauvegardées » à la navigation. Léger délai : laisser
