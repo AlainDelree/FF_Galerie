@@ -30,7 +30,7 @@
       "type": "sculpture",
       "couleur_mur": "#2a2520",
       "couleur_mur_piece": "#1a1a1a",
-      "couleur_mur_bas": "#111111",
+      "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
       "visible": true,
       "toiles": [],
