@@ -206,7 +206,11 @@
       "places": 4,
       "visible": true,
       "glb": "",
-      "contenu": {}
+      "contenu": {
+        "13": 8,
+        "31": 1,
+        "33": 3
+      }
     },
     {
       "id": 10,
