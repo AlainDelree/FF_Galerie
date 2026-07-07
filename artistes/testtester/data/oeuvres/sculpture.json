@@ -239,7 +239,9 @@
       "places": 3,
       "visible": true,
       "glb": "",
-      "contenu": {}
+      "contenu": {
+        "51": 2
+      }
     }
   ]
 }
