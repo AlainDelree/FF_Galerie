@@ -12,13 +12,20 @@
       "texture": "none",
       "visible": true,
       "toiles": [
-        9
+        9,
+        6
       ],
       "positions": [
         {
           "id": 9,
           "x": 22,
           "y": 39,
+          "gabarit": "M"
+        },
+        {
+          "id": 6,
+          "x": 63,
+          "y": 47,
           "gabarit": "M"
         }
       ],
