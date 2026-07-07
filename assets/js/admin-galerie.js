@@ -203,9 +203,15 @@ function _ouvrirPickerVitrine(pp) {
         (dejaPP ? 'color:var(--gold);font-weight:600;' : 'color:var(--muted);');
       card.appendChild(statut);
       card.addEventListener('click', function() {
-        /* Si l'œuvre est actuellement posée au sol (ici ou dans une autre salle),
-           confirmer — comme pour une peinture déjà placée ailleurs. La mettre en
-           vitrine la retirera du sol (à l'enregistrement). */
+        /* Un objet ne peut être qu'à UN seul endroit (comme dans la réalité).
+           S'il est déjà posé au sol OU dans une autre vitrine, on confirme —
+           le retrait effectif se fait à l'enregistrement. */
+        var autreVitrine = null;
+        (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+          if (autreVitrine) return;
+          if (v.est_vitrine && v.id !== _vitrineArrPieceId && v.contenu &&
+              Object.keys(v.contenu).some(function(k) { return v.contenu[k] === t.id; })) autreVitrine = v;
+        });
         var sallePosee = null;
         (Array.isArray(salles) ? salles : []).forEach(function(s) {
           if (sallePosee) return;
@@ -214,7 +220,9 @@ function _ouvrirPickerVitrine(pp) {
                      (s.positions_mobile || []).some(function(p) { return p.id === t.id; });
           if (dans) sallePosee = s;
         });
-        if (sallePosee && !confirm('\u00ab ' + (t.titre || ('#' + t.id)) + ' \u00bb est posée au sol dans \u00ab ' + (sallePosee.nom || 'une salle') + ' \u00bb.\n\nLa mettre en vitrine l\u2019en retirera.\n\nContinuer ?')) {
+        var lieu = autreVitrine ? ('la vitrine \u00ab ' + (autreVitrine.titre || ('#' + autreVitrine.id)) + ' \u00bb')
+                 : sallePosee   ? ('le sol de \u00ab ' + (sallePosee.nom || 'une salle') + ' \u00bb') : null;
+        if (lieu && !confirm('\u00ab ' + (t.titre || ('#' + t.id)) + ' \u00bb est déjà dans ' + lieu + '.\n\nLa mettre ici l\u2019en retirera.\n\nContinuer ?')) {
           return;
         }
         /* Une œuvre = un seul emplacement : la retirer d'un éventuel autre slot. */
@@ -297,6 +305,8 @@ async function _sauverPanneauVitrine() {
   });
   if (!piece) { fermerPanneauVitrine(); return; }
   piece.contenu = JSON.parse(JSON.stringify(_vitrineContenu || {}));
+  /* Une œuvre = un seul endroit : la retirer des autres vitrines et du sol. */
+  _vitrineRetirerContenuAutresVitrines(piece.id, piece.contenu);
   var retires = _vitrineRetirerContenuDuSol(piece.contenu);
   await sauvegarder('[admin] Garnissage vitrine #' + piece.id, '✓ Vitrine mise à jour');
   /* Mise à jour visuelle de l'Arranger sans re-fetch (données fraîches en mémoire) :
@@ -316,6 +326,22 @@ async function _sauverPanneauVitrine() {
   setTimeout(function() {
     if (typeof _refreshArrangerSnapshot === 'function') _refreshArrangerSnapshot();
   }, 200);
+}
+
+/* Retire les œuvres de `contenu` des AUTRES vitrines (une œuvre = une seule
+   vitrine). Modifie directement piece.contenu des autres vitrines. */
+function _vitrineRetirerContenuAutresVitrines(currentId, contenu) {
+  var ids = Object.keys(contenu || {}).map(function(k) { return contenu[k]; }).filter(function(v) { return v != null; });
+  if (!ids.length) return false;
+  var idSet = {}; ids.forEach(function(i) { idSet[i] = true; });
+  var change = false;
+  (Array.isArray(toiles) ? toiles : []).forEach(function(v) {
+    if (!v.est_vitrine || v.id === currentId || !v.contenu) return;
+    Object.keys(v.contenu).forEach(function(k) {
+      if (idSet[v.contenu[k]]) { delete v.contenu[k]; change = true; }
+    });
+  });
+  return change;
 }
 
 /* Retire du SOL (positions/positions_mobile de toutes les salles sculpture) les
