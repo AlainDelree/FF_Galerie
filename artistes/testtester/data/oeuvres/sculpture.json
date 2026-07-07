@@ -1,5 +1,5 @@
 {
-  "next_id": 4,
+  "next_id": 5,
   "gabarits": [
     {
       "code": "S",
@@ -79,6 +79,25 @@
       "visible": true,
       "socle": 49,
       "glb": "artistes/testtester/assets/models/piece-003.glb"
+    },
+    {
+      "id": 4,
+      "photo": "artistes/testtester/assets/images/toiles/piece-004.png",
+      "source_photo": "admin",
+      "titre": "dent",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 53,
+        "hauteur": 22,
+        "profondeur": 42
+      },
+      "visible": true,
+      "socle": 69,
+      "glb": "artistes/testtester/assets/models/piece-004.glb"
     }
   ]
 }
