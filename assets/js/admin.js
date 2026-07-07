@@ -1378,14 +1378,12 @@ $('inp-vitrine-couleur-btn')?.addEventListener('click', function() {
   if (typeof ouvrirPickerCouleur === 'function') ouvrirPickerCouleur('vitrine');
 });
 
-/* Dimensions de la vitrine : borne 1-8 puis reconstruit la grille d'affectation. */
+/* Dimensions de la vitrine : borne 1-8. (Le garnissage se fait dans l'Arranger.) */
 ['inp-vitrine-planches', 'inp-vitrine-places'].forEach(function(_vid) {
   var _vel = document.getElementById(_vid);
   if (!_vel) return;
   _vel.addEventListener('change', function() {
-    var v = Math.min(8, Math.max(1, parseInt(this.value, 10) || 1));
-    this.value = v;
-    if (typeof _construireGrilleVitrine === 'function') _construireGrilleVitrine();
+    this.value = Math.min(8, Math.max(1, parseInt(this.value, 10) || 1));
   });
 });
 

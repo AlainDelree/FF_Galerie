@@ -37,11 +37,14 @@ function _estSculptEdition() {
   return _typeEdition === 'sculpture';
 }
 
-/* ══ VITRINE — affectation des œuvres aux emplacements (étape 4) ══
+/* ══ VITRINE — garnissage (affectation des œuvres aux emplacements) ══
+   Le garnissage se fait dans l'ARRANGER : au clic sur une vitrine posée, un
+   panneau propose d'ajouter/changer/retirer les œuvres de chaque emplacement.
    _vitrineContenu = { "PP": idOeuvre } où PP = planche*10 + place (1-based).
-   Grille dans #vitrine-contenu-grille ; sélecteur d'œuvre en overlay. */
-var _vitrineContenu  = {};
-var _vitrinePickSlot = null;
+   _vitrineArrPieceId = id de la vitrine en cours de garnissage (contexte Arranger). */
+var _vitrineContenu    = {};
+var _vitrinePickSlot   = null;
+var _vitrineArrPieceId = null;
 
 function _vitrinePhotoSrc(t) {
   if (!t) return '';
@@ -53,9 +56,9 @@ function _vitrinePhotoSrc(t) {
   return base + t.photo + (t.photo.indexOf('?') < 0 ? '?' : '&') + 'v=' + tk;
 }
 
-/* Sculptures affectables : avec photo, hors vitrines, hors la vitrine éditée. */
+/* Sculptures affectables : avec photo, hors vitrines, hors la vitrine garnie. */
 function _vitrineOeuvresDispo() {
-  var selfId = (typeof toileEnEdition !== 'undefined' && toileEnEdition !== null) ? toileEnEdition : null;
+  var selfId = _vitrineArrPieceId;
   return (Array.isArray(toiles) ? toiles : []).filter(function(t) {
     return typeDeLOeuvre(t) === 'sculpture' && !t.est_vitrine && !!t.photo &&
            !(selfId !== null && t.id === selfId);
@@ -68,11 +71,11 @@ function _oeuvreParId(id) {
   }) || null;
 }
 
-function _construireGrilleVitrine() {
-  var host = document.getElementById('vitrine-contenu-grille');
+function _construireGrilleVitrine(host, nP, nS) {
+  host = host || document.getElementById('vitrine-panel-grille');
   if (!host) return;
-  var nP = Math.min(8, Math.max(1, parseInt($('inp-vitrine-planches').value, 10) || 3));
-  var nS = Math.min(8, Math.max(1, parseInt($('inp-vitrine-places').value,   10) || 4));
+  nP = Math.min(8, Math.max(1, nP || 3));
+  nS = Math.min(8, Math.max(1, nS || 4));
   /* Élagage : retirer les affectations hors de la grille courante (évite des
      entrées fantômes comptées dans « Vitrine · N pièces » au rendu). */
   Object.keys(_vitrineContenu).forEach(function(k) {
@@ -161,7 +164,7 @@ function _ouvrirPickerVitrine(pp) {
     btnDel.addEventListener('click', function() {
       delete _vitrineContenu['' + pp];
       _fermerPickerVitrine();
-      _construireGrilleVitrine();
+      _vitrineRebuildGrille();
     });
     panel.appendChild(btnDel);
   }
@@ -198,7 +201,7 @@ function _ouvrirPickerVitrine(pp) {
         Object.keys(_vitrineContenu).forEach(function(k) { if (_vitrineContenu[k] === t.id) delete _vitrineContenu[k]; });
         _vitrineContenu['' + _vitrinePickSlot] = t.id;
         _fermerPickerVitrine();
-        _construireGrilleVitrine();
+        _vitrineRebuildGrille();
       });
       grille.appendChild(card);
     });
@@ -213,25 +216,90 @@ function _fermerPickerVitrine() {
   _vitrinePickSlot = null;
 }
 
+/* Reconstruit la grille du panneau Arranger d'après la vitrine en cours. */
+function _vitrineRebuildGrille() {
+  var piece = _oeuvreParId(_vitrineArrPieceId);
+  var nP = piece ? piece.planches : 3;
+  var nS = piece ? piece.places   : 4;
+  _construireGrilleVitrine(document.getElementById('vitrine-panel-grille'), nP, nS);
+}
+
+/* Ouvre le panneau de garnissage d'une vitrine posée (clic dans l'Arranger). */
+function ouvrirPanneauVitrine(pieceId) {
+  var piece = (Array.isArray(toiles) ? toiles : []).find(function(t) {
+    return t.id === pieceId && ((t._type) || ADMIN_CFG.type) === 'sculpture' && t.est_vitrine;
+  });
+  if (!piece) return;
+  if (typeof fermerPanneauSupport === 'function') fermerPanneauSupport();
+  _vitrineArrPieceId = pieceId;
+  _vitrineContenu = (piece.contenu && typeof piece.contenu === 'object')
+    ? JSON.parse(JSON.stringify(piece.contenu)) : {};
+  var nom = document.getElementById('vitrine-panel-nom');
+  if (nom) nom.textContent = piece.titre || ('#' + pieceId);
+  _vitrineRebuildGrille();
+  var panel = document.getElementById('vitrine-panel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  if (!panel.dataset.bound) {
+    panel.dataset.bound = '1';
+    var bc = document.getElementById('vitrine-panel-close');
+    if (bc) bc.addEventListener('click', fermerPanneauVitrine);
+    var bs = document.getElementById('vitrine-panel-save');
+    if (bs) bs.addEventListener('click', _sauverPanneauVitrine);
+  }
+  /* Masquer le texte d'aide (recouvert par le panneau) */
+  var aide = document.getElementById('pl-aide');
+  if (aide) aide.style.visibility = 'hidden';
+}
+
+function fermerPanneauVitrine() {
+  var panel = document.getElementById('vitrine-panel');
+  if (panel) panel.style.display = 'none';
+  _vitrineArrPieceId = null;
+  var aide = document.getElementById('pl-aide');
+  if (aide) aide.style.visibility = '';
+}
+
+async function _sauverPanneauVitrine() {
+  var piece = (Array.isArray(toiles) ? toiles : []).find(function(t) {
+    return t.id === _vitrineArrPieceId && t.est_vitrine;
+  });
+  if (!piece) { fermerPanneauVitrine(); return; }
+  piece.contenu = JSON.parse(JSON.stringify(_vitrineContenu || {}));
+  var retires = _vitrineRetirerContenuDuSol(piece.contenu);
+  await sauvegarder('[admin] Garnissage vitrine #' + piece.id, '✓ Vitrine mise à jour');
+  /* Mise à jour visuelle de l'Arranger sans re-fetch (données fraîches en mémoire) :
+     retirer du sol les œuvres passées en vitrine, puis re-render la vitrine. */
+  var iframe = document.getElementById('edit-galerie-iframe');
+  if (iframe && iframe.contentWindow) {
+    retires.forEach(function(rid) {
+      iframe.contentWindow.postMessage({ type: 'retirer-piece', id: rid }, '*');
+    });
+    iframe.contentWindow.postMessage({ type: 'support-updated', piece: piece }, '*');
+  }
+  fermerPanneauVitrine();
+}
+
 /* Retire du SOL (positions/positions_mobile de toutes les salles sculpture) les
    œuvres affectées à une vitrine — évite le double rendu (socle + vitrine).
-   Retourne true si au moins une position a été retirée. */
+   Retourne la liste des ids effectivement retirés (au moins d'une position). */
 function _vitrineRetirerContenuDuSol(contenu) {
   var ids = Object.keys(contenu || {}).map(function(k) { return contenu[k]; }).filter(function(v) { return v != null; });
-  if (!ids.length) return false;
+  if (!ids.length) return [];
   var idSet = {}; ids.forEach(function(i) { idSet[i] = true; });
-  var retire = false;
+  var retires = {};
   (Array.isArray(salles) ? salles : []).forEach(function(s) {
     if (s.type && s.type !== 'sculpture') return;
     ['positions', 'positions_mobile'].forEach(function(key) {
       if (Array.isArray(s[key])) {
-        var avant = s[key].length;
-        s[key] = s[key].filter(function(p) { return !idSet[p.id]; });
-        if (s[key].length !== avant) retire = true;
+        s[key] = s[key].filter(function(p) {
+          if (idSet[p.id]) { retires[p.id] = true; return false; }
+          return true;
+        });
       }
     });
   });
-  return retire;
+  return Object.keys(retires).map(function(x) { return parseInt(x, 10); });
 }
 
 /* ── Snapshot de l'état initial (peinture) du formulaire ───────────
@@ -519,7 +587,6 @@ function _appliquerTypeFormulaire(type) {
     });
     /* Mode vitrine : masque les champs "pièce", montre le bloc vitrine (piloté par CSS). */
     form.classList.toggle('vitrine-mode', estVitrine);
-    if (estVitrine && typeof _construireGrilleVitrine === 'function') _construireGrilleVitrine();
     /* Code couleur peinture/sculpture sur le modal (repérage visuel) */
     var modal = form.querySelector('.modal');
     if (modal) {
@@ -2153,8 +2220,6 @@ function viderFormToile() {
   if ($('inp-vitrine-planches')) $('inp-vitrine-planches').value = 3;
   if ($('inp-vitrine-places'))   $('inp-vitrine-places').value   = 4;
   _majSwatchVitrine('#6a4b28');
-  _vitrineContenu = {};
-  _construireGrilleVitrine();
   $('inp-larg').value = ''; $('inp-haut').value = '';
   if ($('inp-diam-sculpt')) $('inp-diam-sculpt').value = '';
   if ($('inp-sans-socle')) { $('inp-sans-socle').checked = false; $('inp-sans-socle').dispatchEvent(new Event('change')); }
@@ -2190,8 +2255,6 @@ function remplirFormToile(t) {
     if ($('inp-vitrine-planches')) $('inp-vitrine-planches').value = Math.min(8, Math.max(1, t.planches || 3));
     if ($('inp-vitrine-places'))   $('inp-vitrine-places').value   = Math.min(8, Math.max(1, t.places   || 4));
     _majSwatchVitrine(t.couleur || '#6a4b28');
-    _vitrineContenu = (t.contenu && typeof t.contenu === 'object') ? JSON.parse(JSON.stringify(t.contenu)) : {};
-    _construireGrilleVitrine();
     salleCibleToile = _salleContenantOeuvre(t.id, typeDeLOeuvre(t))?.id || null;
     document.querySelectorAll('.salle-pill').forEach(p => {
       p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
@@ -2303,7 +2366,6 @@ function lireFormToile() {
       couleur:  _vitrineCouleur || '#6a4b28',
       planches: _nP,
       places:   _nS,
-      contenu:  _vitrineContenu || {},
       visible:  $('inp-visible').checked
     };
   }
@@ -2385,9 +2447,6 @@ async function sauverToile() {
         const s = salles.find(x => x.id === salleCibleToile);
         if (s && !s.toiles.includes(id)) s.toiles.push(id);
       }
-      if (donnees.est_vitrine && _vitrineRetirerContenuDuSol(donnees.contenu)) {
-        toast('Œuvres de la vitrine retirées du sol (elles s\u0027affichent dans la vitrine).', 'ok', 5000);
-      }
       const lbl2 = _estVitrineEdition ? 'vitrine' : (_estSculptEdition() ? 'pièce' : 'toile');
       await sauvegarder(`[admin] Ajout ${lbl2} #${id}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ ' + lbl2.charAt(0).toUpperCase() + lbl2.slice(1) + ' ajouté·e');
     } else {
@@ -2438,9 +2497,6 @@ async function sauverToile() {
       }
       /* sans_socle : retirer la clé si décochée (lireFormToile ne la met que si true) */
       if (!donnees.sans_socle) delete toiles[idx].sans_socle;
-      if (donnees.est_vitrine && _vitrineRetirerContenuDuSol(donnees.contenu)) {
-        toast('Œuvres de la vitrine retirées du sol (elles s\u0027affichent dans la vitrine).', 'ok', 5000);
-      }
       const lbl2 = _estVitrineEdition ? 'vitrine' : (_estSculptEdition() ? 'pièce' : 'toile');
       await sauvegarder(`[admin] Modification ${lbl2} #${toileEnEdition}${donnees.titre ? ' — ' + donnees.titre : ''}`, '✓ Modifications enregistrées');
     }
@@ -2768,14 +2824,20 @@ function afficherSolPlacement() {
     if (e.data.type === 'piece-removed') {
       afficherStripPlacement();
       fermerPanneauSupport();
+      if (typeof fermerPanneauVitrine === 'function') fermerPanneauVitrine();
     }
 
     if (e.data.type === 'piece-selected') {
-      ouvrirPanneauSupport(e.data.id);
+      var _selPiece = (Array.isArray(toiles) ? toiles : []).find(function(t) {
+        return t.id === e.data.id && ((t._type) || ADMIN_CFG.type) === 'sculpture';
+      });
+      if (_selPiece && _selPiece.est_vitrine) ouvrirPanneauVitrine(e.data.id);
+      else                                    ouvrirPanneauSupport(e.data.id);
     }
 
     if (e.data.type === 'piece-deselected') {
       fermerPanneauSupport();
+      if (typeof fermerPanneauVitrine === 'function') fermerPanneauVitrine();
     }
 
     if (e.data.type === 'sol-click') {
