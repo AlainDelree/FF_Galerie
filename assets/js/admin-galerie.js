@@ -192,10 +192,15 @@ function _ouvrirPickerVitrine(pp) {
       im.onerror = function() { this.style.display = 'none'; };
       card.appendChild(im);
       var nom = document.createElement('div');
-      nom.textContent = (t.titre || ('#' + t.id)) + (dejaPP ? ' ✓' : '');
+      nom.textContent = (t.titre || ('#' + t.id));
       nom.style.cssText = 'font-size:.68rem;color:' + (dejaPP ? 'var(--gold)' : 'var(--text)') +
         ';text-align:center;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       card.appendChild(nom);
+      var statut = document.createElement('div');
+      statut.textContent = dejaPP ? 'déjà présent' : 'disponible';
+      statut.style.cssText = 'font-size:.62rem;text-align:center;line-height:1.1;' +
+        (dejaPP ? 'color:var(--gold);font-weight:600;' : 'color:var(--muted);');
+      card.appendChild(statut);
       card.addEventListener('click', function() {
         /* Une œuvre = un seul emplacement : la retirer d'un éventuel autre slot. */
         Object.keys(_vitrineContenu).forEach(function(k) { if (_vitrineContenu[k] === t.id) delete _vitrineContenu[k]; });
