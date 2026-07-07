@@ -1,5 +1,5 @@
 {
-  "next_id": 8,
+  "next_id": 9,
   "gabarits": [
     {
       "code": "S",
@@ -155,6 +155,25 @@
       "visible": true,
       "socle": 24,
       "glb": "artistes/testtester/assets/models/piece-007.glb"
+    },
+    {
+      "id": 8,
+      "photo": "artistes/testtester/assets/images/toiles/piece-008.png",
+      "source_photo": "admin",
+      "titre": "maison",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 94,
+        "hauteur": 78,
+        "profondeur": 79
+      },
+      "visible": true,
+      "socle": 123,
+      "glb": "artistes/testtester/assets/models/piece-008.glb"
     }
   ]
 }
