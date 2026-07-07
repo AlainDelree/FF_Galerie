@@ -38,6 +38,8 @@
       "couleur_mur": "#e4a1c6",
       "couleur_mur_piece": "#f4cc9c",
       "couleur_mur_bas": "#f0f0f0",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
