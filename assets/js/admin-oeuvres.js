@@ -117,6 +117,11 @@ function afficherOeuvres() {
     });
   }
   var typesPresents = Object.keys(_typesSet);
+  /* Pseudo-type d'affichage 'vitrine' : présent dès qu'une vitrine existe.
+     Stockée en _type='sculpture' mais listée dans sa propre colonne. */
+  var _hasVitrine = (typeof toiles !== 'undefined' && Array.isArray(toiles)) &&
+                    toiles.some(function(t) { return t.est_vitrine; });
+  if (_hasVitrine && typesPresents.indexOf('vitrine') < 0) typesPresents.push('vitrine');
   if (typesPresents.length === 0) {
     typesPresents = [(typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture')];
   }
@@ -127,7 +132,7 @@ function afficherOeuvres() {
   if (btnAjt) btnAjt.style.display = (typesPresents.length > 1) ? 'none' : '';
   /* Ordre prévisible : peinture toujours à gauche, sculpture à droite */
   typesPresents.sort(function(a, b) {
-    var ORDRE = { peinture: 0, sculpture: 1 };
+    var ORDRE = { peinture: 0, sculpture: 1, vitrine: 2 };
     return (ORDRE[a] || 99) - (ORDRE[b] || 99);
   });
 
@@ -177,19 +182,20 @@ function afficherOeuvres() {
       col.dataset.type = type;
 
       var nbTotal = toiles.filter(function(t) {
-        return ((t._type) || ADMIN_CFG.type) === type;
+        if (type === 'vitrine') return t.est_vitrine;
+        return ((t._type) || ADMIN_CFG.type) === type && !t.est_vitrine;
       }).length;
 
       var hdr = document.createElement('div');
       hdr.className = 'oeuvres-col-hdr';
-      var lblType = (type === 'sculpture') ? 'Sculptures' : 'Peintures';
+      var lblType = (type === 'vitrine') ? 'Vitrines' : (type === 'sculpture') ? 'Sculptures' : 'Peintures';
       hdr.innerHTML = '<span class="oeuvres-col-titre">' + lblType +
         ' <span class="oeuvres-col-nb">(' + nbTotal + ')</span></span>';
       var btnPlus = document.createElement('button');
       btnPlus.className = 'oeuvres-col-add';
       btnPlus.type = 'button';
       btnPlus.textContent = '+';
-      btnPlus.title = 'Ajouter une ' + (type === 'sculpture' ? 'sculpture' : 'peinture');
+      btnPlus.title = 'Ajouter une ' + (type === 'vitrine' ? 'vitrine' : type === 'sculpture' ? 'sculpture' : 'peinture');
       btnPlus.addEventListener('click', function() {
         _oeuvresSelection.clear();
         _oeuvresSelectionType = null;

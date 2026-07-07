@@ -217,3 +217,91 @@ pour les flèches latérales) ; réserve `+80px` retirée avec lui.
 **Contraste UI** : les cases de placement (disponible/occupé) étaient à ~30 %
 d'opacité — le vert virait au teal délavé sur mur sombre, confusion possible en
 extérieur/mobile. Opacité relevée + contour vif.
+
+
+**Accès admin — token de Fred migré (05/07/2026)** : le GSM de Fred utilisait
+jusqu'ici un token GitHub *classic* (portée large) pour s'authentifier auprès de
+l'admin ; il a été remplacé par un token *fine-grained* limité au dépôt
+`FF_Galerie`. Réduit fortement la surface de risque en cas de perte/compromission
+du téléphone (un fine-grained scopé ne peut pas toucher aux autres dépôts du
+compte). **À finaliser côté serveur** : révoquer l'ancien token *classic* sur
+GitHub s'il ne l'est pas déjà — changer le token stocké sur l'appareil ne révoque
+pas l'ancien, qui reste valide tant qu'il n'est pas explicitement supprimé.
+
+
+---
+
+**Admin — introduction des vitrines (audit avant code, 06/07/2026)**
+
+Rappel du modèle (arrêté côté rendu, `galerie-sculpture.js`) : une **vitrine est
+une pièce sculpture** ordinaire portant `est_vitrine:true`, rangée dans
+`data/oeuvres/sculpture.json` (tableau `pieces`) et posée au sol via
+`positions`/`positions_mobile` comme n'importe quelle sculpture. Champs propres :
+`style` ('bois'|'vitree'), `portes` ('fermees'|'ouvertes'), `couleur` (une seule,
+pilote fond+parois+planches ; exception : étagères en verre restent glass),
+`planches` et `places` (bornés 1–8), et `contenu` = objet `{ "PP": idŒuvre }` où
+la clé = planche×10+place (1-based). Les œuvres contenues sont d'**autres pièces
+avec photo** de la même `sculpture.json`, référencées **par leur id** (`pieces[oid]`,
+`pieces` étant une map `{id→pièce}`).
+
+Conclusions de l'audit des 4 zones admin :
+1. **Whitelist `chargerTout()` — hors-sujet pour la vitrine.** Les pièces sont
+   chargées ENTIÈRES (`items.forEach(it => toiles.push(it))`, aucun tri par champ),
+   contrairement aux **salles** qui, elles, sont whitelistées (c'est à ELLES que
+   s'applique la règle "ajouter le champ à la whitelist"). Écriture idem : `pieces:
+   items` (objets entiers, filtrés seulement des clés `_*` par `_sansTemp`). Donc les
+   champs vitrine survivent load+save sans toucher à aucune whitelist.
+2. **Pivot réel = `lireFormToile()`/`remplirFormToile()` + le spread de `sauverToile`.**
+   Édition `{ ...toiles[idx], ...donnees }` préserve les champs absents de
+   `lireFormToile`. Création `{ id, photo, ...donnees, glb }` ne contient QUE ce que
+   `lireFormToile` renvoie → étendre `lireFormToile` en mode vitrine suffit à injecter
+   les champs.
+3. **Deux correctifs nécessaires dans `sauverToile` :** (a) exempter `est_vitrine`
+   du blocage "pièce visible sans photo" (une vitrine visible n'a pas de photo) ;
+   (b) ne pas appeler `uploaderPhoto`/`uploaderGLB` pour une vitrine.
+4. **Anti double-rendu :** une œuvre affectée à une vitrine doit être retirée des
+   `positions` au sol, sinon elle s'affiche deux fois (socle + dans la vitrine).
+
+**Décision d'archi (clé de voûte) :** dans le sélecteur "Type d'œuvre", l'option
+**Vitrine** ne devient PAS un 3e `_typeEdition`/fichier — elle mappe en interne sur
+`_typeEdition='sculpture'` + flag `_estVitrineEdition`. Sinon la vitrine partirait
+dans un `vitrine.json` séparé, avec sa propre map `pieces`, et `pieces[oid]` ne
+retrouverait jamais les sculptures qu'elle contient.
+
+**Rappel process :** quand la vitrine sera branchée sur de vraies données (rendu
+effectif modifié), BUMPER le cache-buster `?v=` des 3 `galerie-edit.html`
+(racine + dinso + daw).
+
+**Direction future — scénarios d'animation (idée d'Alain, 06/07) :** proposer au
+**propriétaire du site uniquement** (Fred/Dinso, réglage admin, zéro UI visiteur) un
+choix de scénarios de présentation (ex. vitrine affichée fermée → animation
+d'ouverture au clic → révélation des objets → bascule descriptive). À stocker au
+niveau **salle** (même nature que les `greffons` immersif/descriptif), PAS sur chaque
+vitrine : couche de séquençage AU-DESSUS des vitrines, qui ne touche pas leur contrat
+de données. Le renderer dessine déjà selon `portes` (fermées/ouvertes) → un futur
+scénario n'aura qu'à animer cette transition.
+
+
+---
+
+**Vitrine — admin complété (07/07/2026) + décision orientation ABANDONNÉE**
+
+Admin vitrine opérationnel (étapes 1→4) : création via l'option « Vitrine » du
+sélecteur de type (mappée en interne sur `_type='sculpture'` + `est_vitrine`),
+réglages (style, portes, couleur via color picker type 'vitrine', planches/places
+1–8), affectation des œuvres aux emplacements (grille planches×places + sélecteur
+de vignettes ; `contenu["PP"]=id`, PP=planche×10+place ; une œuvre = un seul
+emplacement ; élagage hors-grille). Section « Vitrines » dédiée dans l'onglet Œuvres
+(affichage seulement ; stockage toujours `sculpture.json`). Vignette liste/strip =
+icône meuble dorée (pas d'appareil-photo barré). Placement Arranger : rendu via
+`creerVitrine` (le placement incrémental `injectPositions` + `support-updated`
+appelaient à tort `creerSocle`). Support (socle/étagère/présentoir) INTERDIT pour
+les vitrines (`ouvrirPanneauSupport` court-circuité). Anti double-rendu : à la
+sauvegarde, les œuvres affectées sont retirées du sol (positions + positions_mobile
+des salles sculpture).
+
+**Orientation portrait/paysage : ABANDONNÉE (décision Alain).** Idée envisagée :
+paysage = vitrine face au visiteur ; portrait = à ~90° (quasi parallèle à un mur
+latéral) avec oblique légère (« / » à gauche, « \ » à droite) pour rester lisible.
+Conclusion du propriétaire : « ce ne sera pas beau » → non retenu. La vitrine reste
+toujours **face au visiteur**. Ne pas re-proposer.

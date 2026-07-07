@@ -1358,16 +1358,36 @@ $('inp-type-oeuvre')?.addEventListener('change', function() {
     if (tit) {
       var enEdit = (typeof toileEnEdition !== 'undefined' && toileEnEdition !== null);
       if (enEdit) {
-        tit.textContent = (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
+        tit.textContent = (this.value === 'vitrine') ? 'Modifier la vitrine'
+                        : (this.value === 'sculpture') ? 'Modifier la pièce' : 'Modifier la toile';
       } else {
-        tit.textContent = (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
+        tit.textContent = (this.value === 'vitrine') ? 'Nouvelle vitrine'
+                        : (this.value === 'sculpture') ? 'Nouvelle pièce' : 'Nouvelle toile';
       }
     }
   }
 });
 
-$('btn-annuler-toile').addEventListener('click', () => fermerModalToile());
-$('btn-sauver-toile').addEventListener('click', () => sauverToile());
+/* Couleur de la vitrine : ouvre le color picker (type 'vitrine') et applique le
+   retour via _majSwatchVitrine (admin-galerie.js). */
+$('inp-vitrine-couleur-btn')?.addEventListener('click', function() {
+  window._vitrinePickerCouleur = (typeof _vitrineCouleur !== 'undefined') ? _vitrineCouleur : '#6a4b28';
+  window._vitrinePickerOnConfirm = function(hex) {
+    if (typeof _majSwatchVitrine === 'function') _majSwatchVitrine(hex);
+  };
+  if (typeof ouvrirPickerCouleur === 'function') ouvrirPickerCouleur('vitrine');
+});
+
+/* Dimensions de la vitrine : borne 1-8. (Le garnissage se fait dans l'Arranger.) */
+['inp-vitrine-planches', 'inp-vitrine-places'].forEach(function(_vid) {
+  var _vel = document.getElementById(_vid);
+  if (!_vel) return;
+  _vel.addEventListener('change', function() {
+    this.value = Math.min(8, Math.max(1, parseInt(this.value, 10) || 1));
+  });
+});
+
+$('btn-annuler-toile').addEventListener('click', () => fermerModalToile());$('btn-sauver-toile').addEventListener('click', () => sauverToile());
 $('btn-supprimer-toile').addEventListener('click', () => supprimerToile());
 $('overlay-toile').addEventListener('click', e => { if (e.target === $('overlay-toile')) fermerModalToile(); });
 

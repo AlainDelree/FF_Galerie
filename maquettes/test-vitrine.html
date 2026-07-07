@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Test vitrine (dev)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/galerie.css">
+<link rel="stylesheet" href="../assets/css/invite.css">
+<style>
+  html,body{margin:0;background:#0c0906 !important;color:#e8dcc8;font-family:'Lato',system-ui,sans-serif;}
+  body{max-width:460px;margin:0 auto;min-height:100dvh;}
+  .mqhead{padding:12px 16px 4px;}
+  .mqhead h1{font-family:'Cinzel',serif;font-size:16px;color:#f0d080;margin:0 0 2px;}
+  .mqhead .sub{font-size:11px;color:#9a8b76;line-height:1.3;}
+  .ctrls{display:flex;gap:8px;align-items:center;padding:8px 16px 4px;flex-wrap:wrap;}
+  .ctrls b{font-size:11px;color:#c8a050;text-transform:uppercase;letter-spacing:.05em;}
+  .sw{width:24px;height:24px;border-radius:50%;border:2px solid #3a2e20;cursor:pointer;}
+  .sw.on{border-color:#f0d080;box-shadow:0 0 0 2px rgba(240,208,128,.35);}
+  .dims{font-size:12px;background:#1a130c;color:#e8dcc8;border:1px solid #3a2e20;border-radius:8px;padding:6px 8px;}
+  .tip{padding:6px 16px 0;font-size:11px;color:#c8a050;font-style:italic;}
+  .test-floor{position:relative;width:calc(100% - 24px);margin:6px 12px 0;height:54dvh;min-height:320px;overflow:hidden;
+    border-radius:10px;border:1px solid #2c2116;background:linear-gradient(180deg,#150e08 0%,#241a12 42%);}
+  .test-floor .sol{position:absolute;left:0;right:0;bottom:0;height:62%;
+    background:repeating-linear-gradient(to right,transparent 0,transparent 13%,rgba(0,0,0,.10) 13%,rgba(0,0,0,.10) 13.4%),
+      linear-gradient(180deg,#3a2a16 0%,#8a6228 78%);
+    clip-path:polygon(50% 0,100% 100%,0 100%);box-shadow:inset 0 20px 40px rgba(0,0,0,.55);}
+  .mqfoot{padding:10px 16px 20px;font-size:10.5px;color:#6b5f4e;line-height:1.4;}
+  .err{color:#e0564b;padding:12px 16px;font-size:12px;white-space:pre-wrap;}
+</style>
+</head>
+<body class="theme-sombre" data-page="galerie">
+<div class="mqhead">
+  <h1>Test vitrine — parcours réel</h1>
+  <div class="sub">Vrai code + galerie.css. Données injectées, rien de live touché.</div>
+</div>
+<div class="ctrls">
+  <select class="dims" id="style">
+    <option value="bois">Bois</option>
+    <option value="vitree">Vitrée</option>
+  </select>
+  <select class="dims" id="portes">
+    <option value="fermees">Portes fermées</option>
+    <option value="ouvertes">Portes ouvertes</option>
+  </select>
+  <select class="dims" id="dims">
+    <option value="3x4">3 × 4</option>
+    <option value="3x3">3 × 3</option>
+    <option value="2x3">2 × 3</option>
+    <option value="4x2">4 × 2</option>
+  </select>
+</div>
+<div class="ctrls">
+  <b>Couleur</b>
+  <span class="sw on" style="background:#6a4b28" data-c="#6a4b28"></span>
+  <span class="sw" style="background:#3f342a" data-c="#3f342a"></span>
+  <span class="sw" style="background:#8c8278" data-c="#8c8278"></span>
+  <span class="sw" style="background:#2a3340" data-c="#2a3340"></span>
+</div>
+<div class="tip">Tape l'étagère → vitrine. Style « vitrée » = montants noirs, verre, portes. Tape un objet → observation → « Vitrine » pour revenir.</div>
+<div class="test-floor" id="floor"><div class="sol"></div></div>
+<div id="err"></div>
+<div class="mqfoot">maquettes/test-vitrine.html — sur <b>dev</b> uniquement. noindex.</div>
+
+<script src="../assets/js/galerie-core.js?v=20260706e"></script>
+<script src="../assets/js/galerie-sculpture.js?v=20260706s"></script>
+<script>
+  try {
+    GALERIE_CFG.assetsBase = '../artistes/dinso/';
+    var V = { id:99, est_vitrine:true, titre:'Vitrine test', planches:3, places:4, couleur:'#6a4b28',
+              style:'bois', portes:'fermees',
+              contenu:{ '11':11,'12':13,'13':11,'14':13, '21':13,'22':11,'23':13, '31':11,'32':13 } };
+    var PIECES = {
+      99: V,
+      11: { id:11, titre:'Chaise Bureau', photo:'assets/images/toiles/piece-011.png',
+            materiaux:['métal'], dimensions:{largeur:42,profondeur:40,hauteur:88} },
+      13: { id:13, titre:'Papillon', photo:'assets/images/toiles/piece-013.png',
+            materiaux:['acier'], dimensions:{largeur:30,profondeur:12,hauteur:34} }
+    };
+    var POS = { id:99, x:50, y:30, gabarit:'XL' };
+
+    function rendre() {
+      var floor = document.getElementById('floor');
+      var old = floor.querySelector('.vitrine-wrapper'); if (old) old.remove();
+      floor.appendChild(creerVitrine(V, POS, PIECES, { immActif:false, descActif:true, immDecor:null, descDecor:null }));
+    }
+    rendre();
+
+    document.querySelectorAll('.sw').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.sw').forEach(function (x){ x.classList.remove('on'); });
+        b.classList.add('on'); V.couleur = b.dataset.c; rendre();
+      });
+    });
+    document.getElementById('style').addEventListener('change', function () { V.style = this.value; rendre(); });
+    document.getElementById('portes').addEventListener('change', function () { V.portes = this.value; rendre(); });
+    document.getElementById('dims').addEventListener('change', function () {
+      var v = this.value.split('x'); V.planches = +v[0]; V.places = +v[1]; rendre();
+    });
+  } catch (e) {
+    document.getElementById('err').className = 'err';
+    document.getElementById('err').textContent = 'Erreur : ' + (e && e.message ? e.message : e) + '\n' + (e && e.stack ? e.stack : '');
+  }
+</script>
+</body>
+</html>

@@ -1048,6 +1048,7 @@ function ouvrirPickerCouleur(type) {
   : (type === 'mur-piece')  ? 'Couleur de la pièce'
   : (type === 'mur-bas')    ? 'Couleur du mur du bas'
   : (type === 'support')    ? 'Couleur du support'
+  : (type === 'vitrine')    ? 'Couleur de la vitrine'
                             : 'Couleur des cadres';
 
   // Charger la couleur courante dans le picker
@@ -1056,6 +1057,7 @@ function ouvrirPickerCouleur(type) {
   : (type === 'mur-piece')  ? couleurMurPieceActuel
   : (type === 'mur-bas')    ? couleurMurBasActuel
   : (type === 'support')    ? (window._supportPickerCouleur || '#eae6de')
+  : (type === 'vitrine')    ? (window._vitrinePickerCouleur || '#6a4b28')
                             : couleurCadresActuel;
   var hsv = _hexToHsv(hex);
   if (hsv) { _picker.h = hsv.h; _picker.s = hsv.s; _picker.v = hsv.v; }
@@ -1094,6 +1096,7 @@ function _confirmerPickerCouleur() {
   else if (_pickerCouleurType === 'mur-bas') { pushColorHist('mur-bas', hex); setCouleurMurBas(hex); }
   else if (_pickerCouleurType === 'sol') { pushColorHist('sol', hex); setCouleurSol(hex); }
   else if (_pickerCouleurType === 'support') { if (typeof window._supportPickerOnConfirm === 'function') window._supportPickerOnConfirm(hex); }
+  else if (_pickerCouleurType === 'vitrine') { if (typeof window._vitrinePickerOnConfirm === 'function') window._vitrinePickerOnConfirm(hex); }
   else { pushColorHist('cadres', hex); setCouleurCadres(hex); }
   fermerPickerCouleur();
 }

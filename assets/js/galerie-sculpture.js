@@ -108,7 +108,7 @@ function _appliquerBandesObservation(chambre, decor) {
   }
 }
 
-function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance) {
   /* Éviter les doublons */
   if (document.querySelector('.obs-overlay')) return;
 
@@ -192,7 +192,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   overlay.appendChild(btnFermer);
 
   /* ── Porte gauche → retour salle immersive (si greffon actif) ── */
-  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const porteG = document.createElement('div');
     porteG.className = 'porte-nav porte-nav--gauche';
     porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
@@ -211,6 +211,22 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
     overlay.appendChild(porteG);
   }
 
+  /* ── Porte gauche → provenance (ex. retour vitrine) ── */
+  if (provenance && typeof provenance.retour === 'function') {
+    var _lblProv = provenance.label || 'Retour';
+    var porteGP = document.createElement('div');
+    porteGP.className = 'porte-nav porte-nav--gauche';
+    porteGP.innerHTML = '<div class="porte-nav__arche"></div><span class="porte-nav__fleche">\u2190</span>' +
+      '<span class="porte-nav__label">' + _lblProv + '</span>';
+    porteGP.addEventListener('click', function () { fermer(); setTimeout(provenance.retour, 350); });
+    overlay.appendChild(porteGP);
+    var plaqueGP = document.createElement('div');
+    plaqueGP.className = 'plaque-nav plaque-nav--gauche';
+    plaqueGP.innerHTML = '<span class="plaque-nav__label">\u2190 ' + _lblProv + '</span>';
+    plaqueGP.addEventListener('click', function () { fermer(); setTimeout(provenance.retour, 350); });
+    overlay.appendChild(plaqueGP);
+  }
+
   /* ── Porte droite → retour galerie ── */
   const porteD = document.createElement('div');
   porteD.className = 'porte-nav porte-nav--droite';
@@ -221,7 +237,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor) {
   overlay.appendChild(porteD);
 
   /* ── Pancartes mobiles ── */
-  if (avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const plaqueG = document.createElement('div');
     plaqueG.className = 'plaque-nav plaque-nav--gauche';
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
@@ -526,6 +542,401 @@ function creerSocle(piece, gabarit, pos, opts) {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   ÉCRAN VITRINE — clic sur une étagère → grille des œuvres qu'elle contient.
+   Immersif actif → objets 3D (model-viewer auto-rotate), sinon photos.
+   Clic sur un objet → salle d'observation (si descriptif), retour = vitrine.
+   ══════════════════════════════════════════════════════════════ */
+/* Subterfuge anti-lévitation : détecte le bas réel de l'objet (pixels opaques)
+   et descend l'image du vide transparent, pour qu'elle se pose sur la planche. */
+function _poserImg(img) {
+  var tries = 0;
+  function ground() {
+    if (++tries > 45) return;
+    try {
+      var nW = img.naturalWidth, nH = img.naturalHeight;
+      if (!nW || !nH) return;
+      var boxW = img.clientWidth || 0, boxH = img.clientHeight || 0;
+      if (boxH < 4) { requestAnimationFrame(ground); return; }
+      var sw = Math.min(nW, 100), sh = Math.max(1, Math.round(nH * sw / nW));
+      var c = document.createElement('canvas'); c.width = sw; c.height = sh;
+      var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, sw, sh);
+      var d;
+      try { d = ctx.getImageData(0, 0, sw, sh).data; } catch (e) { return; }
+      var last = sh - 1, y, x, op;
+      for (y = sh - 1; y >= 0; y--) {
+        op = false;
+        for (x = 0; x < sw; x += 2) { if (d[(y * sw + x) * 4 + 3] > 16) { op = true; break; } }
+        if (op) { last = y; break; }
+      }
+      var fBottom = (sh - 1 - last) / sh;
+      if (fBottom <= 0.01) return;
+      var scale = Math.min(boxW / nW, boxH / nH);
+      var dy = fBottom * (nH * scale);
+      if (dy > 1) img.style.transform = 'translateY(' + Math.round(dy) + 'px)';
+    } catch (e) {}
+  }
+  if (img.complete && img.naturalWidth) requestAnimationFrame(ground);
+  else img.addEventListener('load', function () { tries = 0; requestAnimationFrame(ground); });
+}
+
+function ouvrirVitrine(piece, pieces, opts) {
+  if (document.querySelector('.vitrine-overlay')) return;
+  var immActif  = !!(opts && opts.immActif);
+  var descActif = !!(opts && opts.descActif);
+  var immDecor  = (opts && opts.immDecor)  || null;
+  var descDecor = (opts && opts.descDecor) || null;
+  if (immActif && typeof chargerModelViewer === 'function') chargerModelViewer();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'vitrine-overlay';
+  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
+  overlay.style.cssText =
+    'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;' +
+    'background:linear-gradient(180deg,#0e0a06,#1c140c);opacity:0;transition:opacity .35s ease;';
+
+  var head = document.createElement('div');
+  head.style.cssText = 'display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #33271a;';
+  var titre = document.createElement('h2');
+  titre.textContent = piece.titre || 'Vitrine';
+  titre.style.cssText = 'flex:1;margin:0;font-family:Cinzel,serif;font-size:18px;color:#f0d080;';
+  var btnX = document.createElement('button');
+  btnX.setAttribute('aria-label', 'Fermer'); btnX.innerHTML = '\u2715';
+  btnX.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);' +
+    'background:rgba(0,0,0,.35);color:#fff;font-size:16px;cursor:pointer;';
+  head.appendChild(titre); head.appendChild(btnX);
+  overlay.appendChild(head);
+
+  /* Corps = GROS PLAN d'une vitrine en relief : objets (photos) posés sur des planches en bois */
+  var body = document.createElement('div');
+  body.style.cssText = 'position:relative;flex:1;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;' +
+    'padding:20px 14px 0;background:radial-gradient(ellipse at 50% 18%,rgba(240,208,128,.10),transparent 60%);';
+  /* sol chaud : la vitrine repose dessus (sinon elle flotte dans le noir) */
+  var solV = document.createElement('div');
+  solV.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:30%;pointer-events:none;z-index:0;' +
+    'background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,#4a3418 22%,#6a4c24 70%,#7e5c30 100%);' +
+    'box-shadow:inset 0 18px 30px rgba(0,0,0,.45);';
+
+  var contenu  = piece.contenu || {};
+  var couleurV = piece.couleur || '#6a4b28';
+  var nPv = Math.min(8, Math.max(1, piece.planches || 3));
+  var nSv = Math.min(8, Math.max(1, piece.places   || 4));
+  var maxW  = Math.min(window.innerWidth - 28, 620);
+  var postW = 14;
+  var slotW = Math.max(64, Math.floor((maxW - 2 * postW - (nSv + 1) * 10) / nSv));
+  var availH = Math.max(240, (window.innerHeight || 700) - 120);
+  var slotH = Math.max(40, Math.min(Math.round(slotW * 1.2), Math.floor((availH - 96) / nPv) - 50));
+
+  var styleV   = (piece.style === 'vitree') ? 'vitree' : 'bois';
+  var estBois  = (styleV === 'bois');
+  var portesOuv = (piece.portes === 'ouvertes');
+  var postCol  = estBois ? _teinte(couleurV, -0.30) : '#141414';
+  var topCol   = estBois ? _teinte(couleurV, -0.22) : '#141414';
+  var backCol  = estBois ? _teinte(couleurV, -0.16) : '#8a8a86';   /* gris souris */
+
+  var cabinet = document.createElement('div');
+  cabinet.style.cssText = 'position:relative;box-sizing:border-box;display:flex;flex-direction:column-reverse;' +
+    'max-width:' + maxW + 'px;border-radius:' + (estBois ? '6px' : '4px') + ';background:' + backCol + ';' +
+    'border-left:' + postW + 'px solid ' + postCol + ';border-right:' + postW + 'px solid ' + postCol + ';' +
+    'border-top:12px solid ' + topCol + ';border-bottom:14px solid ' + postCol + ';' +
+    (estBois ? 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 34px rgba(0,0,0,.5);'
+             : 'box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 26px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.06);');
+
+  /* Fond : 6 lattes verticales (bois) ; panneau gris uni (vitrée) */
+  /* Intérieur = vraie BOÎTE en perspective : fond UNI + parois + plafond + plancher
+     convergeant tous vers le même rectangle de fond (bois ET vitrée). */
+  (function () {
+    var IX = 16, IY = 9;                       /* retrait horizontal / vertical du fond */
+    var box = document.createElement('div');
+    box.style.cssText = 'position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;';
+
+    var fond = document.createElement('div');  /* fond uni = le plus loin, le plus sombre */
+    fond.style.cssText = 'position:absolute;inset:0;background:' +
+      (estBois ? _teinte(couleurV, -0.20)
+               : ('linear-gradient(180deg,' + _teinte(couleurV, -0.10) + ',' + _teinte(couleurV, -0.22) + ')')) + ';';
+    box.appendChild(fond);
+
+    var wL = document.createElement('div');    /* paroi gauche : claire dehors → ombre au fond */
+    wL.style.cssText = 'position:absolute;top:0;bottom:0;left:0;width:' + IX + '%;' +
+      'clip-path:polygon(0 0,100% ' + IY + '%,100% ' + (100 - IY) + '%,0 100%);' +
+      'background:linear-gradient(90deg,' + _teinte(couleurV, 0.10) + ',' + _teinte(couleurV, -0.32) + ');';
+    var wR = document.createElement('div');    /* paroi droite */
+    wR.style.cssText = 'position:absolute;top:0;bottom:0;right:0;width:' + IX + '%;' +
+      'clip-path:polygon(0 ' + IY + '%,100% 0,100% 100%,0 ' + (100 - IY) + '%);' +
+      'background:linear-gradient(270deg,' + _teinte(couleurV, 0.10) + ',' + _teinte(couleurV, -0.32) + ');';
+    var plaf = document.createElement('div');  /* plafond : en ombre, fuit vers le fond */
+    plaf.style.cssText = 'position:absolute;top:0;left:0;right:0;height:' + IY + '%;' +
+      'clip-path:polygon(0 0,100% 0,' + (100 - IX) + '% 100%,' + IX + '% 100%);' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, -0.30) + ',' + _teinte(couleurV, -0.12) + ');';
+    var sol = document.createElement('div');   /* plancher : éclairé */
+    sol.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:' + IY + '%;' +
+      'clip-path:polygon(' + IX + '% 0,' + (100 - IX) + '% 0,100% 100%,0 100%);' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, -0.14) + ',' + _teinte(couleurV, 0.07) + ');';
+    box.appendChild(wL); box.appendChild(wR); box.appendChild(plaf); box.appendChild(sol);
+
+    if (!estBois) {                            /* voile de verre translucide sur l'intérieur */
+      var sheen = document.createElement('div');
+      sheen.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+        'background:linear-gradient(120deg,rgba(255,255,255,.10),transparent 30%,rgba(255,255,255,.05) 60%,transparent);';
+      box.appendChild(sheen);
+    }
+    cabinet.appendChild(box);
+  })();
+
+  for (var plv = 1; plv <= nPv; plv++) {
+    var shelf = document.createElement('div');
+    shelf.style.cssText = 'position:relative;z-index:1;';
+
+    /* Zone objets — ils REPOSENT sur la planche (base collée au plateau) */
+    var niche = document.createElement('div');
+    niche.style.cssText = 'position:relative;display:flex;justify-content:space-evenly;align-items:flex-end;' +
+      'gap:10px;padding:20px 12px 0;' +
+      (estBois ? 'background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,0) 42%);'
+               : 'background:linear-gradient(180deg,rgba(0,0,0,.20) 0%,rgba(255,255,255,.03) 55%);');
+    var light = document.createElement('div');
+    light.style.cssText = 'position:absolute;top:0;left:50%;width:82%;height:52%;transform:translateX(-50%);' +
+      'background:radial-gradient(ellipse at center top,rgba(255,240,200,.18),transparent 70%);pointer-events:none;';
+    niche.appendChild(light);
+
+    for (var slv = 1; slv <= nSv; slv++) {
+      var cell = document.createElement('div');
+      cell.style.cssText = 'width:' + slotW + 'px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;';
+      var oev = pieces[contenu['' + (plv * 10 + slv)]];
+      if (oev && oev.photo) {
+        var img = document.createElement('img');
+        img.src = /^https?:\/\//.test(oev.photo) ? oev.photo : ((GALERIE_CFG.assetsBase || '') + oev.photo);
+        img.alt = oev.titre || ''; img.loading = 'lazy';
+        img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;object-position:center bottom;' +
+          'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
+        _poserImg(img);
+        if (descActif) {
+          img.style.cursor = 'pointer';
+          (function (oeu) {
+            img.addEventListener('click', function () {
+              fermer();
+              setTimeout(function () {
+                ouvrirSalleObservation(oeu, descDecor, false, immDecor,
+                  { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
+              }, 320);
+            });
+          })(oev);
+        }
+        cell.appendChild(img);
+        var contact = document.createElement('div');   /* ombre de contact sur le plateau */
+        contact.style.cssText = 'width:78%;height:9px;margin-top:-3px;border-radius:50%;z-index:1;' +
+          'background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 72%);';
+        cell.appendChild(contact);
+      } else {
+        cell.style.height = slotH + 'px';
+      }
+      niche.appendChild(cell);
+    }
+    shelf.appendChild(niche);
+
+    if (estBois) {
+      /* PLATEAU (dessus du bois, vu un peu de dessus, léger veinage) + TRANCHE (épaisseur) */
+      var plateau = document.createElement('div');
+      plateau.style.cssText = 'position:relative;z-index:3;height:16px;' +
+        'box-shadow:inset 0 3px 4px rgba(0,0,0,.30),inset 0 -1px 0 rgba(255,255,255,.38);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, -0.12) + ' 0%,' + _teinte(couleurV, 0.12) + ' 60%,' + _teinte(couleurV, 0.22) + ' 100%);';
+      var tranche = document.createElement('div');
+      tranche.style.cssText = 'position:relative;z-index:3;height:14px;border-radius:0 0 2px 2px;box-shadow:0 8px 12px rgba(0,0,0,.5);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, 0.00) + ',' + _teinte(couleurV, -0.22) + ');';
+      shelf.appendChild(plateau); shelf.appendChild(tranche);
+    } else {
+      /* étagère en VERRE : plateau translucide VISIBLE (objets posés dessus) + arête brillante */
+      var vplateau = document.createElement('div');
+      vplateau.style.cssText = 'position:relative;z-index:3;height:13px;' +
+        'background:linear-gradient(180deg,rgba(205,222,225,.30) 0%,rgba(234,245,247,.5) 100%);' +
+        'box-shadow:inset 0 2px 3px rgba(255,255,255,.32),inset 0 -1px 0 rgba(255,255,255,.7);';
+      var vedge = document.createElement('div');
+      vedge.style.cssText = 'position:relative;z-index:3;height:5px;border-radius:0 0 2px 2px;' +
+        'background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(140,158,162,.25));box-shadow:0 6px 10px rgba(0,0,0,.4);';
+      shelf.appendChild(vplateau); shelf.appendChild(vedge);
+    }
+    cabinet.appendChild(shelf);
+  }
+
+  /* Pieds — deux montants aux angles avant */
+  var pieds = document.createElement('div');
+  pieds.style.cssText = 'position:absolute;left:0;right:0;bottom:-24px;height:24px;z-index:0;pointer-events:none;' +
+    'display:flex;justify-content:space-between;';
+  [0, 1].forEach(function () {
+    var pied = document.createElement('div');
+    pied.style.cssText = estBois
+      ? 'width:20px;height:24px;border-radius:0 0 3px 3px;box-shadow:0 6px 7px rgba(0,0,0,.5);' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, -0.26) + ',' + _teinte(couleurV, -0.42) + ');'
+      : 'width:9px;height:26px;box-shadow:0 6px 7px rgba(0,0,0,.55);background:linear-gradient(180deg,#3a3a3a,#0a0a0a);';
+    pieds.appendChild(pied);
+  });
+  cabinet.appendChild(pieds);
+
+  /* Vitrée : doubles portes vitrées (côtés/fond gérés par la couche back) */
+  if (!estBois) {
+    var portes = document.createElement('div');
+    portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1400px;';
+    var makeDoor = function (sideLeft) {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - 15px);box-sizing:border-box;border:3px solid #0e0e0e;' +
+        (sideLeft ? 'left:15px;transform-origin:left center;border-right-width:1px;'
+                  : 'right:15px;transform-origin:right center;border-left-width:1px;') +
+        'background:linear-gradient(120deg,rgba(200,214,218,.15),rgba(200,214,218,.04) 40%,rgba(255,255,255,.06) 55%);' +
+        'box-shadow:inset 0 0 26px rgba(255,255,255,.07);' +
+        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-110deg' : '110deg') + ');') : '');
+      var refl = document.createElement('div');
+      refl.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
+        'background:linear-gradient(125deg,transparent 33%,rgba(255,255,255,.34) 46%,rgba(255,255,255,.06) 52%,transparent 62%);';
+      d.appendChild(refl);
+      var h = document.createElement('div');
+      h.style.cssText = 'position:absolute;' + (sideLeft ? 'right:6px;' : 'left:6px;') + 'top:50%;transform:translateY(-50%);' +
+        'width:5px;height:40px;border-radius:3px;background:linear-gradient(180deg,#eee,#8a8a8a);box-shadow:0 0 3px rgba(0,0,0,.5);';
+      d.appendChild(h);
+      [26, 74].forEach(function (topPct) {          /* 2 charnières inox sur l'axe (arête extérieure) */
+        var hinge = document.createElement('div');
+        hinge.style.cssText = 'position:absolute;' + (sideLeft ? 'left:-3px;' : 'right:-3px;') + 'top:' + topPct + '%;' +
+          'transform:translateY(-50%);width:8px;height:15px;border-radius:2px;z-index:2;' +
+          'background:linear-gradient(180deg,#dcdcdc,#8f8f8f,#c4c4c4);box-shadow:0 0 2px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.15);';
+        d.appendChild(hinge);
+      });
+      return d;
+    };
+    portes.appendChild(makeDoor(true));
+    portes.appendChild(makeDoor(false));
+    cabinet.appendChild(portes);
+  }
+  cabinet.style.zIndex = '2';
+  cabinet.style.marginBottom = '32px';   /* repose sur le sol */
+  var ombreV = document.createElement('div');
+  ombreV.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:1;pointer-events:none;' +
+    'width:' + Math.round(maxW * 0.92) + 'px;height:26px;border-radius:50%;' +
+    'background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,.22) 45%,transparent 72%);';
+  body.appendChild(solV);
+  body.appendChild(ombreV);
+  body.appendChild(cabinet);
+  overlay.appendChild(body);
+
+  function fermer() {
+    overlay.style.opacity = '0';
+    setTimeout(function () {
+      overlay.remove();
+      document.body.style.overflow = ''; document.documentElement.style.overflow = '';
+    }, 300);
+  }
+  btnX.addEventListener('click', fermer);
+  var onKey = function (e) { if (e.key === 'Escape') { fermer(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
+  requestAnimationFrame(function () { overlay.style.opacity = '1'; });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VITRINE (étagère) — pièce spéciale est_vitrine, rendu procédural.
+   Contenu = œuvres liées par index "planche*10+place" (bas→haut, gauche→droite).
+   La vitrine est un .socle-wrapper → héritage placement + anti-chevauchement.
+   ══════════════════════════════════════════════════════════════ */
+function creerVitrine(piece, pos, pieces, opts) {
+  var wrapper = document.createElement('div');
+  wrapper.className             = 'socle-wrapper vitrine-wrapper';
+  wrapper.style.position        = 'absolute';   /* autonome, ne dépend pas de galerie.css */
+  wrapper.style.left            = pos.x + '%';
+  wrapper.style.bottom          = pos.y + '%';
+  wrapper.style.transformOrigin = 'bottom center';
+  var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
+  wrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
+  wrapper.style.zIndex    = String(Math.round((100 - pos.y) * 10));
+  wrapper.dataset.pieceId = piece.id;
+
+  var couleur = piece.couleur || '#6a4b28';
+  var nP = Math.min(8, Math.max(1, piece.planches || 3));
+  var nS = Math.min(8, Math.max(1, piece.places   || 4));
+  var estBoisF = (piece.style !== 'vitree');
+  var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
+  var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
+  var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
+  var contenu = piece.contenu || {};
+
+  var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
+  var slotW = Math.round(15 * u);
+  var slotH = Math.round(17 * u);
+  var board = Math.max(4, Math.round(2.5 * u));
+  var pad   = Math.max(3, Math.round(3 * u));
+  var innerW = nS * slotW + (nS + 1) * pad;
+
+  /* Halo doré lent (attracteur) */
+  var halo = document.createElement('div');
+  halo.className = 'vitrine-halo';
+  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:172%;height:150%;' +
+    'transform:translate(-50%,-50%);border-radius:18px;pointer-events:none;z-index:0;' +
+    'background:radial-gradient(ellipse at center,rgba(240,208,128,.62),rgba(240,208,128,.16) 52%,transparent 72%);';
+  wrapper.appendChild(halo);
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    halo.animate(
+      [{ opacity: 0.45, transform: 'translate(-50%,-50%) scale(0.92)' },
+       { opacity: 1.00, transform: 'translate(-50%,-50%) scale(1.07)' },
+       { opacity: 0.45, transform: 'translate(-50%,-50%) scale(0.92)' }],
+      { duration: 4000, iterations: Infinity, easing: 'ease-in-out' });
+  }
+
+  /* Meuble : planches empilées, bas → haut (column-reverse) */
+  var meuble = document.createElement('div');
+  meuble.className = 'vitrine-meuble';
+  meuble.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column-reverse;' +
+    'width:' + innerW + 'px;background:' + backF + ';' +
+    'border:' + Math.max(2, Math.round(u)) + 'px solid ' + frameF + ';' +
+    'border-radius:3px;box-shadow:0 ' + Math.round(3 * u) + 'px ' + Math.round(6 * u) + 'px rgba(0,0,0,.55);';
+
+  for (var pl = 1; pl <= nP; pl++) {
+    var row = document.createElement('div');
+    row.className = 'vitrine-planche';
+    row.style.cssText = 'position:relative;display:flex;justify-content:space-around;align-items:flex-end;' +
+      'padding:' + pad + 'px ' + pad + 'px 0;' +
+      'border-bottom:' + board + 'px solid ' + boardF + ';';
+    for (var sl = 1; sl <= nS; sl++) {
+      var slot = document.createElement('div');
+      slot.className = 'vitrine-slot';
+      slot.style.cssText = 'width:' + slotW + 'px;height:' + slotH + 'px;display:flex;' +
+        'align-items:flex-end;justify-content:center;';
+      var oid = contenu['' + (pl * 10 + sl)];
+      var oe  = (oid != null) ? pieces[oid] : null;
+      if (oe && oe.photo) {
+        var im = document.createElement('img');
+        im.alt = oe.titre || ''; im.loading = 'lazy'; im.decoding = 'async';
+        im.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;' +
+          'filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));';
+        im.src = /^https?:\/\//.test(oe.photo) ? oe.photo : (GALERIE_CFG.assetsBase + oe.photo);
+        im.onerror = function () { this.style.display = 'none'; };
+        slot.appendChild(im);
+      }
+      row.appendChild(slot);
+    }
+    meuble.appendChild(row);
+  }
+  wrapper.appendChild(meuble);
+
+  /* Plaque façon musée */
+  var nOeuvres = Object.keys(contenu).length;
+  var plaque = document.createElement('div');
+  plaque.className = 'vitrine-plaque';
+  plaque.textContent = 'Vitrine · ' + nOeuvres + ' pièce' + (nOeuvres > 1 ? 's' : '');
+  plaque.style.cssText = 'position:absolute;bottom:-' + Math.round(6 * u) + 'px;left:50%;' +
+    'transform:translateX(-50%);font-family:Cinzel,serif;font-size:' + Math.max(8, Math.round(4 * u)) + 'px;' +
+    'color:#2a1d0a;white-space:nowrap;background:linear-gradient(180deg,#f0d080,#b58f3e);' +
+    'padding:1px 6px;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5);';
+  wrapper.appendChild(plaque);
+
+  /* Clic → écran vitrine (étape 2b, à brancher). En édition on arrange, pas d'ouverture. */
+  wrapper.style.cursor = 'pointer';
+  wrapper.addEventListener('click', function (e) {
+    if (window._GALERIE_EDIT) return;
+    e.stopPropagation();
+    if (typeof ouvrirVitrine === 'function') ouvrirVitrine(piece, pieces, opts);
+  });
+
+  return wrapper;
+}
+
+/* ══════════════════════════════════════════════════════════════
    RENDERER SCULPTURE — enregistré dans GALERIE_RENDERERS
    ══════════════════════════════════════════════════════════════ */
 GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
@@ -618,6 +1029,10 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
       const gabarit = gabarits[gCode] || gabarits['M'];
       if (!piece) return;
+      if (piece.est_vitrine) {
+        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
+        return;
+      }
       plancherSol.appendChild(creerSocle(piece, gabarit, pos, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
     });
   }
@@ -737,6 +1152,51 @@ if (window._GALERIE_EDIT) {
       if (best) wrap.dataset.pieceId = best.id;
     });
 
+    /* ── Anti-chevauchement au sol : empreinte elliptique + blocage dur ── */
+    var MARGIN = 1.12; /* l'ellipse déborde un peu l'encombrement de la pièce (réglable) */
+    /* Ellipse VERTICALE englobant toute la pièce (socle + objet), centrée dessus.
+       Renvoie centre + demi-axes en px, relatifs au plancher. */
+    function _boxOf(wrap, xPct, yPct) {
+      var pr = plancher.getBoundingClientRect();
+      var W = pr.width || 1, H = pr.height || 1;
+      var s = 1 - (yPct / 100) * 0.42;               /* perspective, identique au rendu */
+      var w = wrap.offsetWidth * s, h = wrap.offsetHeight * s;
+      var cx = (xPct / 100) * W;
+      var cy = (H - (yPct / 100) * H) - h / 2;       /* centre = demi-hauteur au-dessus de la base */
+      return { cx: cx, cy: cy, rx: (w / 2) * MARGIN, ry: (h / 2) * MARGIN };
+    }
+    function _overlap(a, b) {
+      var nx = (a.cx - b.cx) / (a.rx + b.rx);
+      var ny = (a.cy - b.cy) / (a.ry + b.ry);
+      return (nx * nx + ny * ny) < 1;                /* test ellipse vs ellipse normalisé */
+    }
+    function _autresBoxes(wrapExclu) {
+      var arr = [];
+      document.querySelectorAll('.socle-wrapper').forEach(function(w) {
+        if (w === wrapExclu) return;
+        var pid = w.dataset.pieceId;
+        var q = _editPositions.find(function(z) { return String(z.id) === String(pid); });
+        if (q) arr.push(_boxOf(w, q.x, q.y));
+      });
+      return arr;
+    }
+    function _mord(box, autres) {
+      return autres.some(function(o) { return _overlap(box, o); });
+    }
+    /* Halo elliptique autour de la pièce : vert = libre, rouge = mord une voisine */
+    var _foot = document.createElement('div');
+    _foot.style.cssText = 'position:absolute;pointer-events:none;border-radius:50%;' +
+      'transform:translate(-50%,-50%);display:none;z-index:9998;transition:background .1s,border-color .1s;';
+    plancher.appendChild(_foot);
+    function _halo(box, mord) {
+      _foot.style.left = box.cx + 'px'; _foot.style.top = box.cy + 'px';
+      _foot.style.width = (2 * box.rx) + 'px'; _foot.style.height = (2 * box.ry) + 'px';
+      _foot.style.border = '2px solid ' + (mord ? '#e0564b' : '#5ec46a');
+      _foot.style.background = mord ? 'rgba(224,86,75,.16)' : 'rgba(94,196,106,.14)';
+      _foot.style.display = 'block';
+    }
+    function _cacherHalo() { _foot.style.display = 'none'; }
+
     /* Variables drag */
     var _dragging = null; /* { el, pos, startX, startY } */
     var _moved = false;
@@ -752,7 +1212,8 @@ if (window._GALERIE_EDIT) {
       if (!pid) return;
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
-      _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+      _dragging = { el: wrap, pos: pos, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y,
+                    autres: _autresBoxes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.cursor = 'grabbing';
       wrap.style.zIndex = '9999';
@@ -769,8 +1230,14 @@ if (window._GALERIE_EDIT) {
       var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
       var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
       var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
-      _dragging.el.style.left = newX + '%';
-      _dragging.el.style.bottom = newY + '%';
+      var box = _boxOf(_dragging.el, newX, newY);
+      var mord = _mord(box, _dragging.autres);
+      if (!mord) {                       /* libre → on avance */
+        _dragging.el.style.left = newX + '%';
+        _dragging.el.style.bottom = newY + '%';
+        _dragging.lastX = newX; _dragging.lastY = newY;
+      }                                  /* sinon blocage dur : on reste à la dernière position valide */
+      _halo(_boxOf(_dragging.el, _dragging.lastX, _dragging.lastY), mord);
     });
 
     document.addEventListener('mouseup', function(e) {
@@ -778,14 +1245,12 @@ if (window._GALERIE_EDIT) {
       var wrap = _dragging.el;
       var pos = _dragging.pos;
       if (_moved) {
-        var rect = plancher.getBoundingClientRect();
-        var dx = ((e.clientX - _dragging.startX) / rect.width) * 100;
-        var dy = -((e.clientY - _dragging.startY) / rect.height) * 100;
-        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
-        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        pos.x = _dragging.lastX;   /* dernière position VALIDE (anti-chevauchement) */
+        pos.y = _dragging.lastY;
         /* Notifier le parent */
         _sendPositions();
       }
+      _cacherHalo();
       wrap.style.cursor = 'grab';
       var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
       wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
@@ -808,7 +1273,8 @@ if (window._GALERIE_EDIT) {
       var pid = _findPieceId(wrap);
       var pos = _editPositions.find(function(p) { return p.id === pid; });
       if (!pos) return;
-      _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y };
+      _dragging = { el: wrap, pos: pos, startX: touch.clientX, startY: touch.clientY, origX: pos.x, origY: pos.y,
+                    autres: _autresBoxes(wrap), lastX: pos.x, lastY: pos.y };
       _moved = false;
       wrap.style.zIndex = '9999';
     }, { passive: true });
@@ -822,22 +1288,27 @@ if (window._GALERIE_EDIT) {
       var rect = plancher.getBoundingClientRect();
       var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
       var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
-      _dragging.el.style.left = Math.max(5, Math.min(95, _dragging.origX + dx)) + '%';
-      _dragging.el.style.bottom = Math.max(5, Math.min(95, _dragging.origY + dy)) + '%';
+      var newX = Math.max(5, Math.min(95, _dragging.origX + dx));
+      var newY = Math.max(5, Math.min(95, _dragging.origY + dy));
+      var box = _boxOf(_dragging.el, newX, newY);
+      var mord = _mord(box, _dragging.autres);
+      if (!mord) {
+        _dragging.el.style.left = newX + '%';
+        _dragging.el.style.bottom = newY + '%';
+        _dragging.lastX = newX; _dragging.lastY = newY;
+      }
+      _halo(_boxOf(_dragging.el, _dragging.lastX, _dragging.lastY), mord);
     }, { passive: false });
     document.addEventListener('touchend', function(e) {
       if (!_dragging) return;
       var wrap = _dragging.el;
       var pos = _dragging.pos;
       if (_moved) {
-        var touch = e.changedTouches[0];
-        var rect = plancher.getBoundingClientRect();
-        var dx = ((touch.clientX - _dragging.startX) / rect.width) * 100;
-        var dy = -((touch.clientY - _dragging.startY) / rect.height) * 100;
-        pos.x = Math.max(5, Math.min(95, _dragging.origX + dx));
-        pos.y = Math.max(5, Math.min(95, _dragging.origY + dy));
+        pos.x = _dragging.lastX;   /* dernière position VALIDE (anti-chevauchement) */
+        pos.y = _dragging.lastY;
         _sendPositions();
       }
+      _cacherHalo();
       var scale = (1 - (pos.y / 100) * 0.42).toFixed(3);
       wrap.style.zIndex = String(Math.round((100 - pos.y) * 10));
       wrap.style.transform = 'translateX(-50%) scale(' + scale + ')';
@@ -931,9 +1402,14 @@ if (window._GALERIE_EDIT) {
               _editPositions.push(np);
               var piece = pieces[np.id];
               if (!piece) return;
-              var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
-              var gabarit = gabarits[gCode] || gabarits['M'];
-              var wrap    = creerSocle(piece, gabarit, np, null);
+              var wrap;
+              if (piece.est_vitrine) {
+                wrap = creerVitrine(piece, np, pieces, {});
+              } else {
+                var gCode   = np.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+                var gabarit = gabarits[gCode] || gabarits['M'];
+                wrap = creerSocle(piece, gabarit, np, null);
+              }
               wrap.style.cursor = "grab"; wrap.dataset.pieceId = piece.id;
               /* Bloquer clics immersifs sur le nouveau socle */
               wrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
@@ -969,9 +1445,16 @@ if (window._GALERIE_EDIT) {
         });
         var gabarits2 = {};
         (_editTData.gabarits || []).forEach(function(g) { gabarits2[g.code] = g; });
-        var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
-        var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
-        var newWrap  = creerSocle(piece, gabarit2, pos, null);
+        var newWrap;
+        if (piece.est_vitrine) {
+          var pieces2 = {};
+          (_editTData.pieces || []).forEach(function(p) { pieces2[p.id] = p; });
+          newWrap = creerVitrine(piece, pos, pieces2, {});
+        } else {
+          var gCode2   = pos.gabarit || gabaritDepuisHauteur(piece.dimensions && piece.dimensions.hauteur);
+          var gabarit2 = gabarits2[gCode2] || gabarits2['M'];
+          newWrap  = creerSocle(piece, gabarit2, pos, null);
+        }
         newWrap.style.cursor = "grab"; newWrap.dataset.pieceId = piece.id;
         newWrap.addEventListener('click', function(ev) { if (ev.target.closest('.edit-rm-btn')) return; ev.stopPropagation(); ev.preventDefault(); }, true);
         if (oldWrap) { oldWrap.parentNode.replaceChild(newWrap, oldWrap); }
