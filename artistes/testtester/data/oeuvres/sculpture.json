@@ -1,5 +1,5 @@
 {
-  "next_id": 13,
+  "next_id": 14,
   "gabarits": [
     {
       "code": "S",
@@ -234,6 +234,20 @@
       "couleur": "#6a4b28",
       "planches": 3,
       "places": 4,
+      "visible": true,
+      "glb": ""
+    },
+    {
+      "id": 13,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "",
+      "style": "vitree",
+      "portes": "ouvertes",
+      "couleur": "#ffa136",
+      "planches": 5,
+      "places": 3,
       "visible": true,
       "glb": ""
     }
