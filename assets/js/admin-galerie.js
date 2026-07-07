@@ -1983,20 +1983,20 @@ function afficherStripPlacement() {
   const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
   const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
-  /* Œuvres affectées à une vitrine POSÉE DANS LA VUE COURANTE : ne pas les
-     proposer au placement (elles s'affichent déjà via la vitrine, ici). Une
-     vitrine posée seulement côté PC n'impacte donc pas le strip côté GSM
-     (indépendance PC/GSM : un objet en vitrine PC peut être au sol GSM). */
+  /* Œuvres présentes dans une vitrine POSÉE DANS LA VUE COURANTE : on les GARDE
+     dans le strip et on les marque « présentes » (vert), comme posées au sol.
+     Indépendance PC/GSM : une vitrine posée seulement côté PC n'impacte pas le
+     strip côté GSM. Map id → vitrine (pour le nom). */
   const _vueCourante = (_sculptSalle ? _getPositions() : (salleActive.positions || []));
   const _vitrinesIci = new Set(_vueCourante.filter(function(p) {
     var pc = _oeuvreParId(p.id); return pc && pc.est_vitrine;
   }).map(function(p) { return p.id; }));
-  const enVitrine = new Set();
   const _vueStrip = (typeof _placementVue !== 'undefined' && _placementVue === 'gsm') ? 'gsm' : 'pc';
+  const enVitrineIci = new Map();
   toiles.forEach(function(t) {
     if (t.est_vitrine && _vitrinesIci.has(t.id)) {
       var c = _vitrineContenuVue(t, _vueStrip);
-      Object.keys(c).forEach(function(k) { if (c[k] != null) enVitrine.add(c[k]); });
+      Object.keys(c).forEach(function(k) { if (c[k] != null && !enVitrineIci.has(c[k])) enVitrineIci.set(c[k], t); });
     }
   });
 
@@ -2004,7 +2004,7 @@ function afficherStripPlacement() {
      pas seulement les placées ou sélectionnées : ça donne une vue d'ensemble du
      stock pour pouvoir glisser/placer librement, comme dans l'arrangeur sculpture. */
   const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
-    .filter(function(id) { return idsValides.has(id) && !enVitrine.has(id); });
+    .filter(function(id) { return idsValides.has(id); });
 
   /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = ailleurs (autre salle ou vitrine) */
   const _rang = function(id) {
@@ -2028,12 +2028,13 @@ function afficherStripPlacement() {
   tousIds.forEach(id => {
     const t = toilesType.find(x=>x.id===id); if(!t) return;
     const estPlace = poseeIds.has(id);
+    const estEnVitrineIci = enVitrineIci.has(id);   /* présent ici via une vitrine */
     const estSelMur = peintureSurMurSel === id;
     const estSelPlace = selectedToilePl?.id === id;
 
     const item = document.createElement('div');
     item.className = 'pl-item'
-      + (estPlace ? ' pose' : '')
+      + ((estPlace || estEnVitrineIci) ? ' pose' : '')
       + (estSelMur || estSelPlace ? ' sel' : '');
 
     const si = document.createElement('div'); si.className='simg';
@@ -2087,17 +2088,19 @@ function afficherStripPlacement() {
     }
 
     // Badge état
-    const estAutreSalle = _salleDOrigine(id);
+    const estAutreSalle = !estEnVitrineIci && _salleDOrigine(id);
     /* Posée dans l'AUTRE vue (PC↔GSM) de la même salle ? */
     const autreVue = (_placementVue === 'gsm') ? (salleActive.positions || []) : (salleActive.positions_mobile || []);
-    const estAutreVue = autreVue.some(function(p) { return p.id === id; });
-    /* Sinon : dans une vitrine (n'importe où) ? */
-    const _locObj = (!estPlace && !estAutreVue && !estAutreSalle) ? _localisationOeuvre(id) : null;
+    const estAutreVue = !estEnVitrineIci && autreVue.some(function(p) { return p.id === id; });
+    /* Sinon : dans une vitrine (ailleurs) ? */
+    const _locObj = (!estPlace && !estEnVitrineIci && !estAutreVue && !estAutreSalle) ? _localisationOeuvre(id) : null;
     const enVitrineAilleurs = (_locObj && _locObj.type === 'vitrine') ? _locObj : null;
     const badge = document.createElement('div');
     badge.style.cssText = 'font-size:7px;padding:1px 3px;background:rgba(0,0,0,.5);color:#fff;';
     if (estPlace) {
       badge.textContent = _sculptSalle ? '🔒 sur le sol' : '🔒 sur le mur';
+    } else if (estEnVitrineIci) {
+      badge.textContent = '🗄 ' + (enVitrineIci.get(id).titre || 'vitrine');
     } else if (estAutreVue) {
       /* Dans cette salle mais sur l'autre vue (ex: posée en PC, absente en GSM) */
       badge.textContent = (_placementVue === 'gsm') ? '🖥 posée en PC' : '📱 posée en GSM';
@@ -2115,10 +2118,10 @@ function afficherStripPlacement() {
 
     /* Code couleur du cadre selon le statut, cohérent avec le badge.
        .pose (vert) et .sel (or) restent prioritaires via le garde. */
-    if (!estPlace && !estSelMur && !estSelPlace) {
+    if (!estPlace && !estEnVitrineIci && !estSelMur && !estSelPlace) {
       if (estAutreVue)             item.style.borderColor = 'rgba(60,90,160,.85)';   /* autre vue PC↔GSM */
       else if (estAutreSalle)      item.style.borderColor = '#c0392b';   /* autre salle */
-      else if (enVitrineAilleurs)  item.style.borderColor = '#a06a1f';   /* en vitrine */
+      else if (enVitrineAilleurs)  item.style.borderColor = '#a06a1f';   /* en vitrine ailleurs */
       /* sinon : « à placer » → cadre gris par défaut (.pl-item) */
     }
 
