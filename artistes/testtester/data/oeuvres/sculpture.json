@@ -187,7 +187,10 @@
       "planches": 3,
       "places": 4,
       "visible": true,
-      "glb": ""
+      "glb": "",
+      "contenu": {
+        "31": 1
+      }
     },
     {
       "id": 10,
