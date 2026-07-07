@@ -195,7 +195,6 @@ document.getElementById("btn-ajouter-artiste").addEventListener("click", () => {
   document.getElementById("art-id").value    = "";
   document.getElementById("art-logo").value  = "";
   document.getElementById("art-genre").value = "f";
-  document.getElementById("art-type").value  = "peinture";
   document.getElementById("art-draft").checked = true;
   document.getElementById("art-id").removeAttribute("readonly");
   document.getElementById("art-id").style.opacity = "";
@@ -214,7 +213,6 @@ function ouvrirModifierArtiste(idx) {
   document.getElementById("art-id").value    = a.id    || "";
   document.getElementById("art-logo").value  = a.logo  || "";
   document.getElementById("art-genre").value = a.genre || "f";
-  document.getElementById("art-type").value  = a.type  || "peinture";
   document.getElementById("art-draft").checked = !!a.draft;
   /* id non modifiable en édition */
   document.getElementById("art-id").setAttribute("readonly", true);
@@ -249,7 +247,12 @@ async function creerArtiste() {
   const id    = document.getElementById("art-id").value.trim().toLowerCase();
   const logo  = document.getElementById("art-logo").value.trim().toUpperCase() || id.slice(0,4).toUpperCase();
   const genre = document.getElementById("art-genre").value;
-  const type  = document.getElementById("art-type").value;
+  /* Le « type de galerie » n'existe plus : un invité supporte les deux types
+     (dispatch par salle via galerie-core.js). On garde a.type en interne pour les
+     replis techniques (ADMIN_CFG.type) : 'peinture' par défaut, préservé en édition. */
+  const type  = (artisteEditIdx !== null && artistesData[artisteEditIdx])
+    ? (artistesData[artisteEditIdx].type || "peinture")
+    : "peinture";
   const draft = document.getElementById("art-draft").checked;
   const err   = document.getElementById("form-artiste-err");
   const prog  = document.getElementById("artiste-progress");
@@ -333,7 +336,7 @@ async function creerArtiste() {
 let _tplCache = null;
 async function chargerTemplates() {
   if (_tplCache) return _tplCache;
-  const noms = ['index', 'galerie', 'infos', 'contact', 'admin'];
+  const noms = ['index', 'galerie', 'galerie-edit', 'infos', 'contact', 'admin'];
   const resultats = await Promise.all(
     noms.map(n => fetch('templates/artiste-' + n + '.html?v=' + Date.now()).then(r => {
       if (!r.ok) throw new Error('Template introuvable : artiste-' + n + '.html');
@@ -352,7 +355,6 @@ async function genererFichiers(a) {
   const emailU = a.email ? a.email.split("@")[0] : "";
   const emailD = a.email ? a.email.split("@")[1] : "";
   const base   = "artistes/" + a.id + "/";
-  const renderer = (a.type === "sculpture") ? "galerie-sculpture.js" : "galerie-peinture.js";
 
   function r(tpl) {
     return tpl
@@ -362,8 +364,7 @@ async function genererFichiers(a) {
       .replace(/{{INVITE}}/g,           invite)
       .replace(/{{EMAIL_U}}/g,          emailU)
       .replace(/{{EMAIL_D}}/g,          emailD)
-      .replace(/{{GALERIE_RENDERER}}/g, renderer)
-      .replace(/{{TOILES_PATH}}/g,      "data/oeuvres/" + a.type + ".json");
+      .replace(/{{TOILES_PATH}}/g,      "data/oeuvres/peinture.json");
   }
 
   /* ── JSON peinture ── */
@@ -372,11 +373,6 @@ async function genererFichiers(a) {
               {code:"M",label:"Moyenne"},{code:"XL",label:"Grande"},
               {code:"XXL",label:"Très grande"},{code:"E",label:"Étirée"}],
     toiles: []
-  }, null, 2);
-
-  const sallesPeinture = JSON.stringify({
-    salles: [{id:1,nom:"Salle I",couleur_mur:"#1e1e1e",
-      couleur_cadres:"#3a3a3a",texture:"none",visible:true,toiles:[],positions:[]}]
   }, null, 2);
 
   /* ── JSON sculpture ── */
@@ -390,16 +386,10 @@ async function genererFichiers(a) {
     pieces: []
   }, null, 2);
 
-  const sallesSculpture = JSON.stringify({
-    salles: [{id:1,nom:"Salle I",couleur_mur:"#2a2520",
-      texture:"none",visible:true,pieces:[],positions:[],positions_mobile:[]}]
-  }, null, 2);
-
-  const estSculpture = a.type === "sculpture";
-  const toiles = estSculpture ? toilesScupture  : toilesPeinture;
-  const salles = estSculpture ? sallesSculpture : sallesPeinture;
-  /* Nouveau emplacement du stock (étape 3 cohabitation) : data/oeuvres/<type>.json */
-  const oeuvresFichier = "data/oeuvres/" + a.type + ".json";
+  /* Galerie multi-type : l'invité démarre SANS salle (le type se choisit à la
+     création de chaque salle depuis son admin ; galerie-core.js dispatche par
+     salle.type). Repli « travaux » côté public tant qu'aucune salle. */
+  const sallesVides = JSON.stringify({ salles: [] }, null, 2);
 
   const infos = JSON.stringify({ evenements: [], collegues: [] }, null, 2);
 
@@ -409,12 +399,14 @@ async function genererFichiers(a) {
   }, null, 2);
 
   return [
-    { chemin: base + oeuvresFichier,      contenu: toiles   },
-    { chemin: base + "data/salles.json",  contenu: salles   },
+    { chemin: base + "data/oeuvres/peinture.json",  contenu: toilesPeinture },
+    { chemin: base + "data/oeuvres/sculpture.json", contenu: toilesScupture },
+    { chemin: base + "data/salles.json",  contenu: sallesVides },
     { chemin: base + "data/infos.json",   contenu: infos    },
     { chemin: base + "data/contact.json", contenu: contact  },
     { chemin: base + "index.html",       contenu: r(tpls.index)   },
     { chemin: base + "galerie.html",     contenu: r(tpls.galerie) },
+    { chemin: base + "galerie-edit.html", contenu: r(tpls['galerie-edit']) },
     { chemin: base + "infos.html",       contenu: r(tpls.infos)   },
     { chemin: base + "contact.html",     contenu: r(tpls.contact) },
     { chemin: base + "admin.html",       contenu: r(tpls.admin)   },

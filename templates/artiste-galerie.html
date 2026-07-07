@@ -68,7 +68,13 @@
   </div>
   <footer class="pied"><span class="mention">&copy; {{NOM}}</span></footer>
   <script>
-    window.GALERIE_TOILES_PATH  = "{{TOILES_PATH}}";
+    /* Multi-types : l'invité peut avoir des salles peinture ET sculpture.
+       galerie-core.js charge les deux fichiers d'œuvres et passe à chaque salle
+       les données de son type via salle.type. */
+    window.GALERIE_OEUVRES_PATHS = [
+      "data/oeuvres/peinture.json",
+      "data/oeuvres/sculpture.json"
+    ];
     window.GALERIE_SALLES_PATH  = "data/salles.json";
     window.GALERIE_ASSETS_BASE  = "../../";
     window.PLAN_TOILES_PATH     = "{{TOILES_PATH}}";
@@ -77,8 +83,10 @@
     window.GALERIE_CONTACT_PATH = "contact.html";
   </script>
   <script src="../../assets/js/main.js"></script>
-  <script src="../../assets/js/galerie-core.js?v=20260627s"></script>
-  <script src="../../assets/js/{{GALERIE_RENDERER}}?v=20260614x"></script>
+  <script src="../../assets/js/galerie-core.js?v=20260707b"></script>
+  <script src="../../assets/js/galerie-peinture.js?v=20260707b"></script>
+  <script src="../../assets/js/galerie-sculpture.js?v=20260707b"></script>
+  <script src="../../assets/js/salle-immersive.js?v=20260707b"></script>
   <script>initGalerie();</script>
   <script src="../../assets/js/artiste-info.js"></script>
   <!-- TOILES-SEO:BEGIN -->
