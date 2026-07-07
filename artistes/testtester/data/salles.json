@@ -7,6 +7,8 @@
       "couleur_mur": "#2a2520",
       "couleur_mur_piece": "#1a1a1a",
       "couleur_mur_bas": "#111111",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -69,10 +71,35 @@
       "couleur_mur": "#2a2520",
       "couleur_mur_piece": "#1a1a1a",
       "couleur_mur_bas": "#111111",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
-      "toiles": [],
-      "positions": [],
+      "toiles": [
+        6,
+        3,
+        7
+      ],
+      "positions": [
+        {
+          "id": 6,
+          "x": 25,
+          "y": 59,
+          "gabarit": "M"
+        },
+        {
+          "id": 3,
+          "x": 34,
+          "y": 30,
+          "gabarit": "M"
+        },
+        {
+          "id": 7,
+          "x": 83.61643633177647,
+          "y": 63.97986396764471,
+          "gabarit": "L"
+        }
+      ],
       "positions_mobile": [
         {
           "id": 6,
