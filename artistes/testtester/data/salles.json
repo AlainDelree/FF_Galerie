@@ -7,6 +7,8 @@
       "couleur_mur": "#ffc183",
       "couleur_mur_piece": "#aaaaaa",
       "couleur_mur_bas": "#254470",
+      "couleur_cadres": "#3a3a3a",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [],

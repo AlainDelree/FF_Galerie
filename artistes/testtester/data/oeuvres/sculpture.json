@@ -1,5 +1,5 @@
 {
-  "next_id": 1,
+  "next_id": 2,
   "gabarits": [
     {
       "code": "S",
@@ -22,5 +22,25 @@
       "largeur_cm": 70
     }
   ],
-  "pieces": []
+  "pieces": [
+    {
+      "id": 1,
+      "photo": "artistes/testtester/assets/images/toiles/piece-001.png",
+      "source_photo": "admin",
+      "titre": "Cacahouette",
+      "date": "",
+      "style": "",
+      "materiaux": [],
+      "description": "",
+      "dimensions": {
+        "type": "paysage",
+        "largeur": 33,
+        "hauteur": 16,
+        "profondeur": 8
+      },
+      "visible": true,
+      "socle": 43,
+      "glb": "artistes/testtester/assets/models/piece-001.glb"
+    }
+  ]
 }
