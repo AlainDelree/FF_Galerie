@@ -1186,11 +1186,11 @@ $('btn-switch-vue')?.addEventListener('click', function() {
   this.style.background = _placementVue === 'gsm' ? 'var(--gold)' : '';
   this.style.color = _placementVue === 'gsm' ? '#fff' : '';
   peintureSurMurSel = null;
-  /* En GSM peinture : si pas encore de positions mobiles, partir d'une
-     copie des positions PC (cohérent avec ouvrirArrangerApresConfirm) */
-  if (_placementVue === 'gsm' && salleActive
-      && (!salleActive.positions_mobile || !salleActive.positions_mobile.length)) {
-    salleActive.positions_mobile = JSON.parse(JSON.stringify(salleActive.positions || []));
+  /* GSM-prime : en PC (surcouche), si pas encore de positions PC, partir d'une
+     copie des positions GSM (source, cohérent avec ouvrirArrangerApresConfirm) */
+  if (_placementVue === 'pc' && salleActive
+      && (!salleActive.positions || !salleActive.positions.length)) {
+    salleActive.positions = JSON.parse(JSON.stringify(salleActive.positions_mobile || []));
   }
   afficherMurPlacement(); /* dispatch interne vers afficherSolPlacement si sculpture */
   afficherStripPlacement();
@@ -1200,7 +1200,7 @@ $('btn-sauver-placement').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = 'En cours…';
   try {
     const lbl = (typeof _estSculptSalleActive === 'function' ? _estSculptSalleActive() : _isSculpt) ? 'pièces' : 'toiles';
-    salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
+    salles.forEach(s => { var _seen = {}, _out = []; (s.positions || []).concat(s.positions_mobile || []).forEach(function(p){ if (p && !_seen[p.id]) { _seen[p.id] = 1; _out.push(p.id); } }); s.toiles = _out; });
     await sauvegarder('[admin] Placement ' + lbl + ' — ' + (salleActive?.nom || 'salle'), null);
     toast('✓ Placement enregistré');
     /* Mettre à jour le snapshot → plus de "modifs non sauvegardées" après save */

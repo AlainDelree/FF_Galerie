@@ -616,7 +616,7 @@ function ouvrirVitrine(piece, pieces, opts) {
     'background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,#4a3418 22%,#6a4c24 70%,#7e5c30 100%);' +
     'box-shadow:inset 0 18px 30px rgba(0,0,0,.45);';
 
-  var contenu  = (_estMobile() && piece.contenu_mobile) ? piece.contenu_mobile : (piece.contenu || {});
+  var contenu  = (!_estMobile() && piece.contenu && Object.keys(piece.contenu).length) ? piece.contenu : (piece.contenu_mobile || {});
   var couleurV = piece.couleur || '#6a4b28';
   var nPv = Math.min(8, Math.max(1, piece.planches || 3));
   var nSv = Math.min(8, Math.max(1, piece.places   || 4));
@@ -854,7 +854,7 @@ function creerVitrine(piece, pos, pieces, opts) {
   var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
   var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
   var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
-  var contenu = (_estMobile() && piece.contenu_mobile) ? piece.contenu_mobile : (piece.contenu || {});
+  var contenu = (!_estMobile() && piece.contenu && Object.keys(piece.contenu).length) ? piece.contenu : (piece.contenu_mobile || {});
 
   var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
   var slotW = Math.round(15 * u);
@@ -1022,8 +1022,8 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       });
     }
     var isMobile = _estMobile();
-    var positions = (isMobile && salle.positions_mobile && salle.positions_mobile.length)
-      ? salle.positions_mobile : (salle.positions || []);
+    var positions = (!isMobile && salle.positions && salle.positions.length)
+      ? salle.positions : (salle.positions_mobile || []);
     positions.slice().sort((a, b) => b.y - a.y).forEach(pos => {
       const piece   = pieces[pos.id];
       const gCode   = pos.gabarit || gabaritDepuisHauteur(piece && piece.dimensions && piece.dimensions.hauteur);
@@ -1084,14 +1084,15 @@ if (window._GALERIE_EDIT) {
     _editTData  = tData;
     var salle = salles[0]; /* une seule salle visible */
     var isMobile = _estMobile();
-    if (isMobile) {
-      /* En GSM : si pas encore de positions mobiles, partir d'une copie des positions PC */
-      if (!salle.positions_mobile || !salle.positions_mobile.length) {
-        salle.positions_mobile = JSON.parse(JSON.stringify(salle.positions || []));
+    if (!isMobile) {
+      /* GSM-prime : en PC (surcouche), si pas encore de positions PC, copie depuis GSM (source) */
+      if (!salle.positions || !salle.positions.length) {
+        salle.positions = JSON.parse(JSON.stringify(salle.positions_mobile || []));
       }
-      _editPositions = salle.positions_mobile;
+      _editPositions = salle.positions;
     } else {
-      _editPositions = salle.positions || [];
+      if (!salle.positions_mobile) salle.positions_mobile = [];
+      _editPositions = salle.positions_mobile;
     }
 
     var plancher = document.querySelector('.plancher-sol');

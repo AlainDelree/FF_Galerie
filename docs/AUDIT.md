@@ -339,3 +339,49 @@ immersif/descriptif). Séquence type : vitrine fermée → animation d'ouverture
 existante). Couche d'animation AU-DESSUS des vitrines (ne touche pas leur contrat de
 données ; le renderer dessine déjà selon `portes` fermées/ouvertes). À cadrer :
 scénario par vitrine ou par salle ? déclencheur clic visiteur ou automatique ?
+
+
+---
+
+**GSM-prime — plan d'action arrêté + terrain dégagé (07/07/2026, suite)**
+
+*Met à jour le chantier (A) ci-dessus : la partie « DANGEREUSE / migration » est ANNULÉE.*
+
+Décisions prises avec Alain :
+- **Sémantique = déplacement / miroir strict** (pas copie). On échange les rôles :
+  `positions_mobile`/`contenu_mobile` deviennent la SOURCE éditée, `positions`/
+  `contenu` deviennent la surcouche qui hérite tant qu'elle est vide — symétrique
+  exact de l'existant. Conséquence assumée : masquer une œuvre devient une action
+  *PC* (surcouche), miroir du mécanisme GSM actuel.
+- **Périmètre = sculpture uniquement.** La peinture garde son arrangeur unique
+  responsive (un seul jeu `positions`, grille CSS) — INTOUCHÉE. Les `.panneau-nav`
+  (nav sur pied desktop-only, CSS `@media`) sont hors sujet.
+- **La migration est ANNULÉE.** Audit : aucune donnée sculpture nulle part. Prod
+  (main) : Fred = peinture, Dinso = `{salles:[]}`, Daw = peinture. Dev : Dinso +
+  Test Tester vidés le 07/07 (salles + vitrines supprimées ; œuvres non-vitrine
+  conservées). Balayage global dev+main : 0 salle `type=sculpture` avec positions.
+  Donc le renderer inversé n'a AUCUNE donnée pré-existante à manipuler → plus de
+  script de migration à écrire/tester.
+
+Points d'inversion (renderer `galerie-sculpture.js`) — 4 fallbacks :
+- l.619 & l.857 : `contenu` vitrine → `contenu_mobile` source, `contenu` héritage.
+- l.1024-1026 : `positions` salle (rendu public).
+- l.1086-1094 : matérialisation dans l'arrangeur admin embarqué (aujourd'hui GSM
+  matérialise depuis PC → inverser : PC matérialise depuis GSM).
+Côté admin : `admin.js` switch+matérialisation (1182-1193), défaut `_placementVue`
+(`admin-galerie.js` 1427 & 1533), `contenuVue` (54), règle un-objet-une-salle (471).
+
+Plan d'exécution :
+0. Terrain dégagé (FAIT).
+1. Partie A — défaut arrangeur GSM + init bouton switch + ordre des vues.
+2. Partie B renderer — inverser les 4 fallbacks.
+3. Partie B admin — symétriser matérialisation, `contenuVue`, un-objet-une-salle.
+4. Bump `?v=` dans les 3 `galerie-edit.html`.
+5. Banc de test neuf via compte test (natif GSM-prime), valider PC/GSM/vitrine.
+6. Déploiement `merge-code-to-main.sh` (exclure HTML compte test), feu vert Alain.
+   Prod sculpture vide → aucune migration prod.
+
+**Backlog (noté 07/07) — dépose de vitrine.** Aujourd'hui on ne peut que *déplacer*
+une vitrine vers une autre salle ou la *supprimer* : il manque un moyen de la
+**sortir d'une salle sans la détruire** (dépose). Même zone (`admin-galerie.js`,
+placement vitrine), indépendant de GSM-prime.
