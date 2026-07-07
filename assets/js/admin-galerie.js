@@ -97,7 +97,8 @@ function _construireGrilleVitrine(host, nP, nS) {
       var slot = document.createElement('button');
       slot.type = 'button';
       slot.dataset.pp = pp;
-      slot.style.cssText = 'flex:1 1 0;min-width:0;aspect-ratio:1/1;border:1px dashed var(--brd);' +
+      slot.style.cssText = 'flex:1 1 0;min-width:0;max-width:120px;aspect-ratio:1/1;max-height:120px;' +
+        'border:1px dashed var(--brd);' +
         'border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;' +
         'overflow:hidden;cursor:pointer;padding:2px;color:var(--muted);font-size:1.1rem;';
       var oid = _vitrineContenu['' + pp];
@@ -202,6 +203,20 @@ function _ouvrirPickerVitrine(pp) {
         (dejaPP ? 'color:var(--gold);font-weight:600;' : 'color:var(--muted);');
       card.appendChild(statut);
       card.addEventListener('click', function() {
+        /* Si l'œuvre est actuellement posée au sol (ici ou dans une autre salle),
+           confirmer — comme pour une peinture déjà placée ailleurs. La mettre en
+           vitrine la retirera du sol (à l'enregistrement). */
+        var sallePosee = null;
+        (Array.isArray(salles) ? salles : []).forEach(function(s) {
+          if (sallePosee) return;
+          if (s.type && s.type !== 'sculpture') return;
+          var dans = (s.positions || []).some(function(p) { return p.id === t.id; }) ||
+                     (s.positions_mobile || []).some(function(p) { return p.id === t.id; });
+          if (dans) sallePosee = s;
+        });
+        if (sallePosee && !confirm('\u00ab ' + (t.titre || ('#' + t.id)) + ' \u00bb est posée au sol dans \u00ab ' + (sallePosee.nom || 'une salle') + ' \u00bb.\n\nLa mettre en vitrine l\u2019en retirera.\n\nContinuer ?')) {
+          return;
+        }
         /* Une œuvre = un seul emplacement : la retirer d'un éventuel autre slot. */
         Object.keys(_vitrineContenu).forEach(function(k) { if (_vitrineContenu[k] === t.id) delete _vitrineContenu[k]; });
         _vitrineContenu['' + _vitrinePickSlot] = t.id;
