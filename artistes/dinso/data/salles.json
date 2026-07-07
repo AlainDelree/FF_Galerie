@@ -52,17 +52,8 @@
       "epaisseur_cadres": 2,
       "texture": "parquet",
       "visible": false,
-      "toiles": [
-        20
-      ],
-      "positions": [
-        {
-          "id": 20,
-          "x": 50,
-          "y": 47,
-          "gabarit": "M"
-        }
-      ],
+      "toiles": [],
+      "positions": [],
       "positions_mobile": [],
       "greffons": {
         "immersive": {

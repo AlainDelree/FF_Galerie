@@ -187,35 +187,6 @@
       "visible": true,
       "socle": 15,
       "glb": "artistes/dinso/assets/models/piece-019.glb"
-    },
-    {
-      "id": 20,
-      "photo": "",
-      "source_photo": "admin",
-      "est_vitrine": true,
-      "titre": "",
-      "style": "vitree",
-      "portes": "fermees",
-      "couleur": "#3d6040",
-      "planches": 4,
-      "places": 6,
-      "visible": true,
-      "glb": "",
-      "contenu": {
-        "16": 15,
-        "21": 16,
-        "24": 18,
-        "33": 11,
-        "35": 13,
-        "36": 17,
-        "42": 14
-      },
-      "support": {
-        "type": "socle",
-        "couleur": "#eae6de",
-        "texture": "marbre",
-        "taille": 40
-      }
     }
   ]
 }
