@@ -242,6 +242,10 @@ function ouvrirPanneauVitrine(pieceId) {
   var nom = document.getElementById('vitrine-panel-nom');
   if (nom) nom.textContent = piece.titre || ('#' + pieceId);
   _vitrineRebuildGrille();
+  /* Couper tout drag/sélection en cours dans l'iframe : sinon la vitrine
+     « suit » la souris pendant que le panneau est ouvert. */
+  var ifrV = document.getElementById('edit-galerie-iframe');
+  if (ifrV && ifrV.contentWindow) ifrV.contentWindow.postMessage({ type: 'annuler-drag-selection' }, '*');
   var panel = document.getElementById('vitrine-panel');
   if (!panel) return;
   panel.style.display = 'block';
@@ -290,6 +294,13 @@ async function _sauverPanneauVitrine() {
     iframe.contentWindow.postMessage({ type: 'support-updated', piece: piece }, '*');
   }
   fermerPanneauVitrine();
+  /* Le garnissage a pu retirer des œuvres du sol (positions) et vient d'être
+     sauvegardé : réaligner le snapshot de l'arranger pour ne pas déclencher un
+     faux « modifications non sauvegardées » à la navigation. Léger délai : laisser
+     le _sendPositions de retirer-piece se poser d'abord. */
+  setTimeout(function() {
+    if (typeof _refreshArrangerSnapshot === 'function') _refreshArrangerSnapshot();
+  }, 200);
 }
 
 /* Retire du SOL (positions/positions_mobile de toutes les salles sculpture) les
@@ -1810,11 +1821,20 @@ function afficherStripPlacement() {
   const idsValides = new Set(toilesType.map(function(t) { return t.id; }));
   const poseeIds = new Set((_sculptSalle ? _getPositions() : (salleActive.positions||[])).map(p=>p.id));
 
+  /* Œuvres déjà affectées à une vitrine (n'importe laquelle) : ne pas les proposer
+     au placement au sol — elles s'affichent dans la vitrine (anti double-rendu). */
+  const enVitrine = new Set();
+  toiles.forEach(function(t) {
+    if (t.est_vitrine && t.contenu) {
+      Object.keys(t.contenu).forEach(function(k) { if (t.contenu[k] != null) enVitrine.add(t.contenu[k]); });
+    }
+  });
+
   /* Le strip liste TOUTES les œuvres du type de la salle (peinture ou sculpture),
      pas seulement les placées ou sélectionnées : ça donne une vue d'ensemble du
      stock pour pouvoir glisser/placer librement, comme dans l'arrangeur sculpture. */
   const tousIds = [...new Set([...idsValides, ...poseeIds, ...toilesSelectionnees, ...(selectedToilePl ? [selectedToilePl.id] : [])])]
-    .filter(function(id) { return idsValides.has(id); });
+    .filter(function(id) { return idsValides.has(id) && !enVitrine.has(id); });
 
   /* Tri : 0 = sur le sol/mur, 1 = à placer (libre), 2 = dans une autre salle */
   const _rang = function(id) {

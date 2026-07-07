@@ -1369,6 +1369,22 @@ if (window._GALERIE_EDIT) {
         return;
       }
 
+      if (e.data.type === 'annuler-drag-selection') {
+        /* Demandé par l'admin à l'ouverture du panneau vitrine : couper tout
+           drag/sélection en cours pour que la pièce ne « suive » plus la souris. */
+        _dragging = null; _moved = false;
+        if (typeof _cacherHalo === 'function') _cacherHalo();
+        var selW = document.querySelector('.socle-wrapper.edit-selected');
+        if (selW) {
+          selW.classList.remove('edit-selected');
+          selW.style.outline = '';
+          var selBtn = selW.querySelector('.edit-rm-btn');
+          if (selBtn) selBtn.remove();
+        }
+        _selected = null;
+        return;
+      }
+
       if (e.data.type === 'retirer-piece') {
         /* Retrait demandé depuis le panneau Support (bouton 🗑) */
         var rid = e.data.id;
