@@ -28,7 +28,7 @@
       "id": 2,
       "nom": "Salle II",
       "type": "sculpture",
-      "couleur_mur": "#2a2520",
+      "couleur_mur": "#e4a1c6",
       "couleur_mur_piece": "#f4cc9c",
       "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
