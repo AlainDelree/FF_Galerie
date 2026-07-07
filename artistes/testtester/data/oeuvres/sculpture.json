@@ -59,7 +59,13 @@
       },
       "visible": true,
       "socle": 136,
-      "glb": "artistes/testtester/assets/models/piece-002.glb"
+      "glb": "artistes/testtester/assets/models/piece-002.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 3,
