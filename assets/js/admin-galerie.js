@@ -252,6 +252,11 @@ function ouvrirPanneauVitrine(pieceId) {
     var bs = document.getElementById('vitrine-panel-save');
     if (bs) bs.addEventListener('click', _sauverPanneauVitrine);
   }
+  /* Masquer le strip général : pendant le garnissage on n'y touche pas
+     (on choisit via l'emplacement), et le voir prête à confusion. */
+  var strip = document.getElementById('pl-strip');
+  if (strip) strip.style.display = 'none';
+  panel.style.bottom = '0';
   /* Masquer le texte d'aide (recouvert par le panneau) */
   var aide = document.getElementById('pl-aide');
   if (aide) aide.style.visibility = 'hidden';
@@ -259,8 +264,10 @@ function ouvrirPanneauVitrine(pieceId) {
 
 function fermerPanneauVitrine() {
   var panel = document.getElementById('vitrine-panel');
-  if (panel) panel.style.display = 'none';
+  if (panel) { panel.style.display = 'none'; panel.style.bottom = '96px'; }
   _vitrineArrPieceId = null;
+  var strip = document.getElementById('pl-strip');
+  if (strip) strip.style.display = '';
   var aide = document.getElementById('pl-aide');
   if (aide) aide.style.visibility = '';
 }
