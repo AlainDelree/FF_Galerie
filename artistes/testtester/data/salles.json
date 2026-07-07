@@ -73,7 +73,26 @@
       "visible": true,
       "toiles": [],
       "positions": [],
-      "positions_mobile": []
+      "positions_mobile": [
+        {
+          "id": 6,
+          "x": 25,
+          "y": 59,
+          "gabarit": "M"
+        },
+        {
+          "id": 3,
+          "x": 34,
+          "y": 30,
+          "gabarit": "M"
+        },
+        {
+          "id": 7,
+          "x": 68,
+          "y": 17,
+          "gabarit": "L"
+        }
+      ]
     }
   ]
 }

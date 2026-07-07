@@ -90,7 +90,13 @@
       },
       "visible": true,
       "socle": 49,
-      "glb": "artistes/testtester/assets/models/piece-003.glb"
+      "glb": "artistes/testtester/assets/models/piece-003.glb",
+      "support": {
+        "type": "socle",
+        "couleur": "#eae6de",
+        "texture": "marbre",
+        "taille": 40
+      }
     },
     {
       "id": 4,
