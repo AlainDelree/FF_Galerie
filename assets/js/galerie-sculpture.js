@@ -616,7 +616,7 @@ function ouvrirVitrine(piece, pieces, opts) {
     'background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,#4a3418 22%,#6a4c24 70%,#7e5c30 100%);' +
     'box-shadow:inset 0 18px 30px rgba(0,0,0,.45);';
 
-  var contenu  = piece.contenu || {};
+  var contenu  = (_estMobile() && piece.contenu_mobile) ? piece.contenu_mobile : (piece.contenu || {});
   var couleurV = piece.couleur || '#6a4b28';
   var nPv = Math.min(8, Math.max(1, piece.planches || 3));
   var nSv = Math.min(8, Math.max(1, piece.places   || 4));
@@ -854,7 +854,7 @@ function creerVitrine(piece, pos, pieces, opts) {
   var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
   var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
   var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
-  var contenu = piece.contenu || {};
+  var contenu = (_estMobile() && piece.contenu_mobile) ? piece.contenu_mobile : (piece.contenu || {});
 
   var u     = _getEchelle();                 /* px/cm ~ 1.5 GSM / 2.5 PC × vpFactor */
   var slotW = Math.round(15 * u);
