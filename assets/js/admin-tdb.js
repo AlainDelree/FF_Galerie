@@ -38,6 +38,23 @@ var TYPES_SALLE = {
   sculpture: { vues: ['galerie-gsm', 'galerie-pc'], greffons: ['immersive', 'descriptive'] }
 };
 
+/* Miroir admin du catalogue VITRINE_SCENARIOS (galerie-sculpture.js).
+   Les CLES et 'req' doivent rester synchronises avec ce fichier ; le libelle
+   est redige ici pour le proprietaire (Fred). */
+var VITRINE_SCENARIOS_ADMIN = [
+  { key:'imm_desc',    req:['imm','desc'], label:'Clic œuvre → immersive, puis Suivant → détail' },
+  { key:'imm_desc_2t', req:['imm','desc'], label:'Ouverture en 2 temps, œuvre → immersive, Suivant → détail' },
+  { key:'desc',        req:['desc'],       label:'Clic œuvre → détail' },
+  { key:'desc_imm',    req:['desc','imm'], label:'Clic œuvre → détail, puis Suivant → immersive' },
+  { key:'imm',         req:['imm'],        label:'Clic œuvre → immersive' },
+  { key:'vitrine',     req:[],             label:'Vitrine seule (pas de salle)' }
+];
+function _scenarioLabel(key) {
+  for (var i = 0; i < VITRINE_SCENARIOS_ADMIN.length; i++)
+    if (VITRINE_SCENARIOS_ADMIN[i].key === key) return VITRINE_SCENARIOS_ADMIN[i].label;
+  return key || '(aucun)';
+}
+
 /* ─── Méta-données par facette ─── */
 var FACETTES_META = {
   'galerie-pc': {
@@ -206,6 +223,9 @@ function _renderTDB() {
     });
     tdb.appendChild(gridG);
   }
+
+  /* ── Section scénario vitrine (sculpture uniquement) ── */
+  if (typeDef.greffons.length > 0) _renderSectionScenario(tdb, s);
 }
 
 /* Clone l'esthétique (apparence + greffons) d'une salle source vers la salle cible.
@@ -565,6 +585,80 @@ var _DECOR_CHAMPS = [
   { key: 'piquet', label: 'Piquet',    defaut: '#c8a050' },
   { key: 'corde',  label: 'Corde',     defaut: '#8b0020' }
 ];
+
+/* ── Section scénario vitrine (combobox + propagation) ── */
+function _renderSectionScenario(tdb, s) {
+  var titre = document.createElement('div');
+  titre.className = 'tdb-section-lbl';
+  titre.textContent = 'Scénario vitrine';
+  tdb.appendChild(titre);
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 2px 2px;';
+
+  var immOn  = !!(s.greffons && s.greffons.immersive  && s.greffons.immersive.actif);
+  var descOn = !!(s.greffons && s.greffons.descriptive && s.greffons.descriptive.actif);
+  function reqOk(req) { return (req || []).every(function (r) { return r === 'imm' ? immOn : (r === 'desc' ? descOn : true); }); }
+
+  var sel = document.createElement('select');
+  sel.style.cssText = 'width:100%;font-size:13px;background:#1a130c;color:#e8dcc8;border:1px solid #3a2e20;border-radius:8px;padding:8px;';
+  var o0 = document.createElement('option');
+  o0.value = ''; o0.textContent = 'Aucun (comportement par défaut)';
+  sel.appendChild(o0);
+
+  var courantVu = false;
+  VITRINE_SCENARIOS_ADMIN.forEach(function (sc) {
+    if (!reqOk(sc.req)) return;                 /* filtre par greffons actifs de la salle */
+    var o = document.createElement('option');
+    o.value = sc.key; o.textContent = sc.label;
+    if (s.scenario === sc.key) { o.selected = true; courantVu = true; }
+    sel.appendChild(o);
+  });
+  if (s.scenario && !courantVu) {              /* scenario present mais greffon requis eteint */
+    var oX = document.createElement('option');
+    oX.value = s.scenario; oX.selected = true;
+    oX.textContent = _scenarioLabel(s.scenario) + ' ⚠ (greffon requis éteint)';
+    sel.appendChild(oX);
+  }
+
+  sel.addEventListener('change', function () {
+    var v = this.value;
+    if (v) salleActive.scenario = v; else delete salleActive.scenario;
+    _renderTDB();
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Scénario vitrine — ' + (salleActive.nom || 'salle'), null)
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    }
+  });
+  wrap.appendChild(sel);
+
+  var note = document.createElement('div');
+  note.style.cssText = 'font-size:11px;color:#9a8b76;line-height:1.35;';
+  note.textContent = 'S’applique à toutes les vitrines de cette salle. Les objets posés au sol ne sont pas affectés.';
+  wrap.appendChild(note);
+
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Appliquer aux autres salles';
+  btn.style.cssText = 'align-self:flex-start;font-size:12px;background:#2a2016;color:#e8dcc8;border:1px solid #3a2e20;border-radius:8px;padding:7px 10px;cursor:pointer;';
+  btn.addEventListener('click', function () {
+    var typeDe = function (o) { return o.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture'); };
+    var cibles = (typeof salles !== 'undefined' ? salles : []).filter(function (o) { return o.id !== salleActive.id && typeDe(o) === 'sculpture'; });
+    if (!cibles.length) { if (typeof toast === 'function') toast('Aucune autre salle sculpture.'); return; }
+    var val = salleActive.scenario || '';
+    var lib = val ? _scenarioLabel(val) : 'Aucun (comportement par défaut)';
+    if (!confirm('Appliquer le scénario « ' + lib + ' » à toutes les autres salles sculpture (' + cibles.length + ') ?\n\nLes salles sans le greffon requis retomberont sur le comportement par défaut.')) return;
+    cibles.forEach(function (o) { if (val) o.scenario = val; else delete o.scenario; });
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Scénario vitrine propagé à toutes les salles sculpture', null)
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    }
+    if (typeof toast === 'function') toast('Scénario appliqué à ' + cibles.length + ' salle(s).');
+  });
+  wrap.appendChild(btn);
+
+  tdb.appendChild(wrap);
+}
 
 /* ── Toggle greffon on/off ── */
 function _toggleGreffon(greffon) {

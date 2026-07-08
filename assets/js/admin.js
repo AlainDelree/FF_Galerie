@@ -732,7 +732,8 @@ async function chargerTout() {
       toiles: s.toiles || [],
       positions: s.positions || [],
       positions_mobile: s.positions_mobile || [],
-      greffons: s.greffons || undefined
+      greffons: s.greffons || undefined,
+      scenario: s.scenario || undefined
     }));
     if (typeof afficherPlan === 'function') afficherPlan();
     if (typeof majAlertePhotoManquante === 'function') majAlertePhotoManquante();
