@@ -134,7 +134,8 @@
       },
       "scenario": [
         "fermee",
-        "ouverte"
+        "ouverte",
+        "fiche"
       ]
     }
   ]
