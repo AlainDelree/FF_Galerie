@@ -139,10 +139,7 @@
         }
       },
       "scenario": [
-        "fermee",
-        "ouverte",
-        "desc",
-        "imm"
+        "fermee"
       ]
     }
   ]
