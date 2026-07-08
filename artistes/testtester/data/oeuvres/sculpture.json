@@ -235,7 +235,10 @@
       "planches": 3,
       "places": 4,
       "visible": true,
-      "glb": ""
+      "glb": "",
+      "contenu_mobile": {
+        "31": 5
+      }
     },
     {
       "id": 13,
