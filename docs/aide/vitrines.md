@@ -11,25 +11,30 @@ Chaque vitrine a un style, réglé dans l'onglet **Galerie** quand vous éditez 
 
 Le réglage **Portes** (ouvertes / fermées) décide de l'état de départ de la vitrine. *(Voir plus bas : si vous utilisez un scénario, c'est lui qui commande les portes, et ce réglage se grise.)*
 
-## Les deux façons de présenter une œuvre
+## Les trois façons de présenter une œuvre
 
-Quand un visiteur clique sur une œuvre de la vitrine, vous pouvez l'emmener vers l'une ou l'autre de ces présentations (que vous activez dans le **Tableau de bord** de la salle, section « Présentation ») :
+Quand un visiteur clique sur une œuvre de la vitrine, vous pouvez l'emmener vers l'une de ces présentations :
 
+- **Écran détail (fiche)** : l'œuvre en grand avec son nom, ses dimensions et sa description — exactement comme au clic sur une peinture. Fonctionne **sans fichier 3D**, donc parfait pour une sculpture qui n'a pas encore de .glb.
+- **Salle descriptive** : l'œuvre présentée dans une petite salle avec décor — encadrée et mise en lumière. En 3D si un .glb existe, sinon avec sa photo.
 - **Vue immersive** : l'œuvre en 3D dans un décor de galerie (socle, éclairage, cordons). Nécessite un fichier 3D (.glb).
-- **Vue détaillée** : l'œuvre affichée **en grand avec sa fiche** — nom, dimensions, description. C'est la même vue que lorsqu'on clique sur une peinture. **Même sans fichier 3D**, elle rend très bien : la photo en grand et ses informations suffisent à faire une belle présentation.
 
-## Choisir un scénario
+L'écran détail est **toujours disponible** ; la salle descriptive et la vue immersive s'activent dans la section « Présentation » du tableau de bord de la salle.
 
-Dans le **Tableau de bord** d'une salle de sculptures, la section **« Scénario vitrine »** propose plusieurs parcours, illustrés par des **petites images** qui montrent chaque étape (vitrine fermée, vitrine ouverte, vue immersive, vue détaillée). Vous cochez celui qui vous plaît, il s'applique **à toutes les vitrines de la salle**.
+## Composer un scénario
 
-Quelques exemples de parcours proposés :
+Dans le **Tableau de bord** d'une salle de sculptures, la section **« Scénario vitrine »** vous laisse **composer le parcours** du visiteur, étape par étape. Une rangée de cases reliées par des flèches représente le trajet ; le bouton **+** ouvre les **miniatures** des étapes possibles et vous n'avez qu'à en choisir une.
 
-- La vitrine s'ouvre, un clic sur une œuvre l'affiche en vue immersive, et un bouton « Suivant » mène ensuite à la vue détaillée.
-- Même chose, mais la vitrine s'ouvre **en deux temps** : d'abord fermée, puis un clic ouvre les portes avant de révéler les œuvres — un petit effet d'entrée plein de prestance.
-- Un clic sur une œuvre mène directement à la vue détaillée.
-- La vitrine seule, sans aller vers aucune vue.
+On remplit **de gauche à droite**, et seules les suites **cohérentes** sont proposées : on commence toujours par la vitrine (fermée ou ouverte), puis on enchaîne les vues (écran détail, salle descriptive, vue immersive). L'écran détail, à plat, **termine** toujours le parcours. Le **×** en coin d'une case retire cette étape et celles qui suivent. Le scénario s'applique **à toutes les vitrines de la salle**.
 
-La liste s'adapte : seules apparaissent les combinaisons possibles avec les présentations que vous avez activées. Si aucune vitrine n'est encore posée dans la salle, la section est grisée.
+Quelques parcours possibles :
+
+- Vitrine ouverte → clic sur une œuvre → **vue immersive** → « Suivant » → **salle descriptive**.
+- Vitrine **en deux temps** (fermée, puis un clic ouvre les portes) → **vue immersive** → **salle descriptive** — un effet d'entrée plein de prestance.
+- Vitrine ouverte → **écran détail** directement (idéal sans .glb).
+- Vitrine seule, sans aller vers aucune vue.
+
+Les vues dont la présentation n'est pas activée n'apparaissent pas dans les choix. Si aucune vitrine n'est encore posée dans la salle, la section est grisée.
 
 ## Appliquer le même scénario partout
 
