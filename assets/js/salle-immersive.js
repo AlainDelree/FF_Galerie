@@ -172,6 +172,7 @@ async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
   document.documentElement.style.overflow = 'hidden';
   window.scrollTo(0, 0);
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
 
   /* ══ THREE.JS SCENE ══ */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });

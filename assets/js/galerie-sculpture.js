@@ -154,6 +154,7 @@ function _portesNavScenario(overlay, fermer, nav) {
 }
 /* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
 function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
+  if (typeof _poserVoile === 'function') _poserVoile();
   if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
   else if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
 }
@@ -174,6 +175,25 @@ function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor)
     };
   }
   _ouvrirSalle(cible, oeu, immDecor, descDecor, nav);
+}
+
+/* Voile de transition noir partage : pose des le clic, leve par la salle une
+   fois prete. Evite le flash du parquet pendant le chargement (Three.js async). */
+function _poserVoile() {
+  var v = document.getElementById('ff-voile-transition');
+  if (!v) {
+    v = document.createElement('div');
+    v.id = 'ff-voile-transition';
+    v.style.cssText = 'position:fixed;inset:0;z-index:10001;background:#000;opacity:1;transition:opacity .35s ease;pointer-events:none;';
+    document.body.appendChild(v);
+  }
+  return v;
+}
+function _leverVoile() {
+  var v = document.getElementById('ff-voile-transition');
+  if (!v) return;
+  requestAnimationFrame(function () { v.style.opacity = '0'; });
+  setTimeout(function () { if (v && v.parentNode) v.parentNode.removeChild(v); }, 420);
 }
 
 function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance, nav) {
@@ -350,6 +370,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   document.documentElement.style.overflow  = 'hidden';
   window.scrollTo(0, 0);
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
 }
 
 
@@ -844,6 +865,7 @@ function ouvrirVitrine(piece, pieces, opts) {
           img.style.cursor = 'pointer';
           (function (oeu) {
             img.addEventListener('click', function () {
+              if (typeof _poserVoile === 'function') _poserVoile();
               fermer();
               setTimeout(function () {
                 if (_sc) _ouvrirDepuisVitrine(oeu, _sc, piece, pieces, opts, immDecor, descDecor);
@@ -909,9 +931,9 @@ function ouvrirVitrine(piece, pieces, opts) {
     portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1400px;';
     var makeDoor = function (sideLeft) {
       var d = document.createElement('div');
-      d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - 15px);box-sizing:border-box;border:3px solid #0e0e0e;' +
-        (sideLeft ? 'left:15px;transform-origin:left center;border-right-width:1px;'
-                  : 'right:15px;transform-origin:right center;border-left-width:1px;') +
+      d.style.cssText = 'position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;border:3px solid #0e0e0e;' +
+        (sideLeft ? 'left:0;transform-origin:left center;border-right-width:1px;'
+                  : 'right:0;transform-origin:right center;border-left-width:1px;') +
         'background:linear-gradient(120deg,rgba(200,214,218,.15),rgba(200,214,218,.04) 40%,rgba(255,255,255,.06) 55%);' +
         'box-shadow:inset 0 0 26px rgba(255,255,255,.07);' +
         'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
@@ -939,7 +961,7 @@ function ouvrirVitrine(piece, pieces, opts) {
     cabinet.appendChild(portes);
   } else {
     /* Bois : vantaux opaques pleine hauteur (voir _vantauxBois) */
-    cabinet.appendChild(_vantauxBois(portesOuv, couleurV, {}));
+    cabinet.appendChild(_vantauxBois(portesOuv, couleurV, { edge: 0 }));
   }
   cabinet.style.zIndex = '2';
   cabinet.style.marginBottom = '32px';   /* repose sur le sol */
@@ -1068,7 +1090,7 @@ function creerVitrine(piece, pos, pieces, opts) {
   if (estBoisF) {
     /* Vantaux au sol : fermes -> objets caches (mystere) ; ouverts -> reveles */
     meuble.appendChild(_vantauxBois(portesOuvF, couleur, {
-      edge:    Math.max(2, Math.round(u * 0.6)),
+      edge:    0,
       openDeg: 104,
       bord:    Math.max(1, Math.round(u * 0.6)),
       panIns:  Math.max(4, Math.round(2 * u)),
