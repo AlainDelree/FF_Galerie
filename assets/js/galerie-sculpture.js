@@ -119,11 +119,36 @@ var VITRINE_SCENARIOS = {
   'imm':         { label:'Oeuvre -> immersive',                                          ouverture:'directe', cible:'imm',  suivant:null,   req:['imm'] },
   'vitrine':     { label:'Vitrine seule (pas de salle)',                                 ouverture:'directe', cible:null,   suivant:null,   req:[] }
 };
+/* Migration : ancienne cle de catalogue -> suite d'etapes ordonnee.
+   Le nouveau format de salle.scenario est directement un tableau d'etapes
+   parmi { 'fermee','ouverte','fiche','desc','imm' }. */
+function _normScenario(scn) {
+  if (Array.isArray(scn)) return scn.slice();
+  var sc = scn && VITRINE_SCENARIOS[scn];
+  if (!sc) return [];
+  var seq = [];
+  if (sc.ouverture === '2temps') { seq.push('fermee'); seq.push('ouverte'); }
+  else seq.push('ouverte');
+  if (sc.cible) seq.push(sc.cible);
+  if (sc.suivant && sc.suivant !== sc.cible) seq.push(sc.suivant);
+  return seq;
+}
+
+/* Resout salle.scenario -> { ouverture:'directe'|'2temps', chaine:[vues valides] }
+   ou null si aucun scenario. La fiche est toujours disponible ; desc/imm ne sont
+   gardees dans la chaine que si leur greffon est actif. */
 function _resoudreScenario(salle, immActif, descActif) {
-  var sc = salle && salle.scenario && VITRINE_SCENARIOS[salle.scenario];
-  if (!sc) return null;                       /* pas de scenario -> comportement historique */
-  var ok = (sc.req || []).every(function (r) { return r === 'imm' ? immActif : (r === 'desc' ? descActif : true); });
-  return ok ? sc : null;                       /* greffon requis eteint -> repli historique */
+  if (!salle || !salle.scenario) return null;
+  var etapes = _normScenario(salle.scenario);
+  if (!etapes.length) return null;
+  var ouverture = (etapes[0] === 'fermee') ? '2temps' : 'directe';
+  var chaine = [];
+  etapes.forEach(function (e) {
+    if (e === 'fiche') chaine.push('fiche');
+    else if (e === 'imm' && immActif) chaine.push('imm');
+    else if (e === 'desc' && descActif) chaine.push('desc');
+  });
+  return { ouverture: ouverture, chaine: chaine };
 }
 /* Portes de navigation d'une salle ouverte dans un scenario.
    nav = { retour:{label,fn}, suivant:{label,fn} } (gauche = retour, droite = suivant). */
@@ -155,26 +180,46 @@ function _portesNavScenario(overlay, fermer, nav) {
 /* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
 function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
   if (typeof _poserVoile === 'function') _poserVoile();
-  if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
-  else if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
+  if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') {
+    ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
+  } else if (kind === 'fiche' && typeof ouvrirModal === 'function') {
+    /* Fiche = ecran a plat (comme au clic sur une peinture). Terminale : la
+       fermeture (croix/swipe/clic hors) rejoue l'etape precedente via onClose. */
+    ouvrirModal(oeu, { onClose: (nav && nav.retour) ? nav.retour.fn : null });
+    if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
+  } else if (typeof ouvrirSalleObservation === 'function') {
+    ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
+  }
 }
 /* Chaine complete depuis une oeuvre en vitrine : cible + (Suivant -> autre salle). */
-function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor) {
-  var cible = sc.cible;
-  if (!cible) return;
-  var nav = { retour: { label: 'Vitrine', fn: function () { ouvrirVitrine(piece, pieces, opts); } } };
-  if (sc.suivant && sc.suivant !== cible) {
-    var autre = sc.suivant;
+function _labelVue(v) { return v === 'imm' ? 'Immersif' : (v === 'desc' ? 'Descriptif' : 'Détail'); }
+
+/* Ouvre l'etape i de la chaine avec nav avant/arriere.
+   i<0 -> retour vitrine. Retour = etape precedente (vitrine si 1re vue),
+   Suivant = etape suivante (si elle existe). */
+function _ouvrirEtape(oeu, chaine, i, piece, pieces, opts, immDecor, descDecor) {
+  if (i < 0) { if (typeof _poserVoile === 'function') _poserVoile(); ouvrirVitrine(piece, pieces, opts); if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60); return; }
+  if (i >= chaine.length) return;
+  var vue = chaine[i];
+  var nav = {
+    retour: {
+      label: (i > 0 ? _labelVue(chaine[i - 1]) : 'Vitrine'),
+      fn: function () { _ouvrirEtape(oeu, chaine, i - 1, piece, pieces, opts, immDecor, descDecor); }
+    }
+  };
+  if (i < chaine.length - 1) {
     nav.suivant = {
-      label: (autre === 'imm' ? 'Immersif' : 'Détail'),
-      fn: function () {
-        var navB = { retour: { label: (cible === 'imm' ? 'Immersif' : 'Détail'),
-          fn: function () { _ouvrirSalle(cible, oeu, immDecor, descDecor, nav); } } };
-        _ouvrirSalle(autre, oeu, immDecor, descDecor, navB);
-      }
+      label: _labelVue(chaine[i + 1]),
+      fn: function () { _ouvrirEtape(oeu, chaine, i + 1, piece, pieces, opts, immDecor, descDecor); }
     };
   }
-  _ouvrirSalle(cible, oeu, immDecor, descDecor, nav);
+  _ouvrirSalle(vue, oeu, immDecor, descDecor, nav);
+}
+
+function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor) {
+  var chaine = (sc && sc.chaine) || [];
+  if (!chaine.length) return;                 /* vitrine seule -> aucune salle */
+  _ouvrirEtape(oeu, chaine, 0, piece, pieces, opts, immDecor, descDecor);
 }
 
 /* Voile de transition noir partage : pose des le clic, leve par la salle une
@@ -860,7 +905,7 @@ function ouvrirVitrine(piece, pieces, opts) {
         img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;object-position:center bottom;' +
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         _poserImg(img);
-        var _cible = _sc ? _sc.cible : (descActif ? 'desc' : null);
+        var _cible = _sc ? (_sc.chaine[0] || null) : (descActif ? 'desc' : null);
         if (_cible) {
           img.style.cursor = 'pointer';
           (function (oeu) {
