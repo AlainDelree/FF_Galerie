@@ -103,6 +103,11 @@
           "gabarit": "M"
         }
       ],
+      "greffons": {
+        "immersive": {
+          "actif": true
+        }
+      },
       "scenario": "vitrine"
     }
   ]
