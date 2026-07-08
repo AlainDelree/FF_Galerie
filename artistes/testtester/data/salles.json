@@ -141,9 +141,7 @@
       "scenario": [
         "fermee",
         "ouverte",
-        "desc",
-        "imm",
-        "fiche"
+        "desc"
       ]
     }
   ]
