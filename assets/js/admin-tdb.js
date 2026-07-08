@@ -635,12 +635,15 @@ function _miniVitrine(etat) {
       '<path d="M10 36 Q27 42 44 36" stroke="#8b0020" stroke-width="1.5" fill="none"/></svg>',
     descriptive:
       '<svg width="54" height="44" viewBox="0 0 54 44">' +
-      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#2a2622"/>' +
-      '<rect x="14" y="7" width="26" height="26" rx="1" fill="#0d0d0d" stroke="#c8a050" stroke-width="2"/>' +
-      '<rect x="17" y="10" width="20" height="20" fill="#3a5a7a"/>' +
-      '<rect x="17" y="23" width="20" height="7" fill="#6a5a3a"/>' +
-      '<circle cx="24" cy="17" r="3" fill="#e8d070"/>' +
-      '<rect x="19" y="35" width="16" height="3" rx="1" fill="#c8a050"/></svg>'
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#f4efe6"/>' +
+      '<rect x="6" y="8" width="22" height="28" fill="#3a5a7a"/>' +
+      '<rect x="6" y="28" width="22" height="8" fill="#6a5a3a"/>' +
+      '<circle cx="12" cy="15" r="3" fill="#e8d070"/>' +
+      '<rect x="32" y="10" width="16" height="3" rx="1" fill="#3a2e20"/>' +
+      '<rect x="32" y="17" width="11" height="2" rx="1" fill="#9a8b76"/>' +
+      '<rect x="32" y="23" width="16" height="2" rx="1" fill="#cabfae"/>' +
+      '<rect x="32" y="27" width="16" height="2" rx="1" fill="#cabfae"/>' +
+      '<rect x="32" y="31" width="10" height="2" rx="1" fill="#cabfae"/></svg>'
   };
   var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', immersive:'immersive', descriptive:'d\u00e9tail' };
   var box = document.createElement('div');
