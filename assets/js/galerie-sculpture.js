@@ -987,16 +987,6 @@ function creerVitrine(piece, pos, pieces, opts) {
   }
   wrapper.appendChild(meuble);
 
-  /* Plaque façon musée */
-  var nOeuvres = Object.keys(contenu).length;
-  var plaque = document.createElement('div');
-  plaque.className = 'vitrine-plaque';
-  plaque.textContent = 'Vitrine · ' + nOeuvres + ' pièce' + (nOeuvres > 1 ? 's' : '');
-  plaque.style.cssText = 'position:absolute;bottom:-' + Math.round(6 * u) + 'px;left:50%;' +
-    'transform:translateX(-50%);font-family:Cinzel,serif;font-size:' + Math.max(8, Math.round(4 * u)) + 'px;' +
-    'color:#2a1d0a;white-space:nowrap;background:linear-gradient(180deg,#f0d080,#b58f3e);' +
-    'padding:1px 6px;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5);';
-  wrapper.appendChild(plaque);
 
   /* Clic → écran vitrine (étape 2b, à brancher). En édition on arrange, pas d'ouverture. */
   wrapper.style.cursor = 'pointer';
