@@ -80,7 +80,7 @@
           }
         },
         "immersive": {
-          "actif": false
+          "actif": true
         }
       },
       "scenario": [
