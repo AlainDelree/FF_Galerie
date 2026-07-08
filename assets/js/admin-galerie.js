@@ -2486,6 +2486,24 @@ function viderFormToile() {
   });
 }
 
+/* Note sous le selecteur Portes de la vitrine : visible seulement quand un
+   scenario de salle pilote l'ouverture (le reglage manuel devient sans effet). */
+function _majNoteVitrinePortes(actif) {
+  var sel = document.getElementById('inp-vitrine-portes');
+  if (!sel) return;
+  var note = document.getElementById('note-vitrine-portes-scenario');
+  if (!note) {
+    note = document.createElement('div');
+    note.id = 'note-vitrine-portes-scenario';
+    note.style.cssText = 'font-size:11px;color:#c8a050;line-height:1.3;margin-top:4px;';
+    sel.parentNode.insertBefore(note, sel.nextSibling);
+  }
+  note.textContent = actif
+    ? 'Ouverture pilot\u00e9e par le sc\u00e9nario de la salle \u2014 ce r\u00e9glage est ignor\u00e9 tant qu\u2019un sc\u00e9nario est actif.'
+    : '';
+  note.style.display = actif ? '' : 'none';
+}
+
 function remplirFormToile(t) {
   /* Vitrine : peupler uniquement les réglages vitrine + titre/visible.
      (Le passage en mode vitrine est fait par ouvrirFormulaireEdition, qui
@@ -2498,7 +2516,14 @@ function remplirFormToile(t) {
     if ($('inp-vitrine-planches')) $('inp-vitrine-planches').value = Math.min(8, Math.max(1, t.planches || 3));
     if ($('inp-vitrine-places'))   $('inp-vitrine-places').value   = Math.min(8, Math.max(1, t.places   || 4));
     _majSwatchVitrine(t.couleur || '#6a4b28');
-    salleCibleToile = _salleContenantOeuvre(t.id, typeDeLOeuvre(t))?.id || null;
+    var _salleVit = _salleContenantOeuvre(t.id, typeDeLOeuvre(t));
+    salleCibleToile = (_salleVit && _salleVit.id) || null;
+    /* Portes pilotees par le scenario de la salle -> griser le reglage manuel */
+    var _scenActif = !!(_salleVit && _salleVit.scenario);
+    var _selP = $('inp-vitrine-portes');
+    if (_selP) { _selP.disabled = _scenActif; _selP.style.opacity = _scenActif ? '.5' : '';
+                 _selP.title = _scenActif ? 'Pilote par le scenario de la salle' : ''; }
+    _majNoteVitrinePortes(_scenActif);
     document.querySelectorAll('.salle-pill').forEach(p => {
       p.classList.toggle('sel', parseInt(p.dataset.salle) === salleCibleToile);
     });
