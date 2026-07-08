@@ -613,14 +613,14 @@ function _normScenarioAdmin(scn) {
 }
 
 /* Options valides pour la PROCHAINE etape (filtre coherent). */
-function _optionsEtape(etapes, immOn, descOn) {
+function _optionsEtape(etapes) {
   var last = etapes.length ? etapes[etapes.length - 1] : null;
   if (!last) return ['fermee', 'ouverte'];       /* 1re case : etat de depart */
   if (last === 'fermee') return ['ouverte'];      /* 2 temps -> ouverte obligatoire */
   if (last === 'fiche') return [];                /* fiche = terminale */
   var opts = [];                                   /* apres 'ouverte' ou une vue : vues restantes */
-  if (etapes.indexOf('imm')  < 0 && immOn)  opts.push('imm');
-  if (etapes.indexOf('desc') < 0 && descOn) opts.push('desc');
+  if (etapes.indexOf('imm')  < 0) opts.push('imm');
+  if (etapes.indexOf('desc') < 0) opts.push('desc');
   if (etapes.indexOf('fiche') < 0)          opts.push('fiche');
   return opts;
 }
@@ -734,19 +734,35 @@ function _renderSectionScenario(tdb, s) {
     rangee.appendChild(caseEl);
   });
 
-  var options = _optionsEtape(etapes, immOn, descOn);
+  var options = _optionsEtape(etapes);
+  function estActive(opt) { return opt === 'imm' ? immOn : (opt === 'desc' ? descOn : true); }
 
-  /* Panneau d'options (miniatures a ajouter), revele par la case "+" */
+  /* Panneau d'options (miniatures a ajouter), revele par la case "+".
+     Les vues dont la presentation n'est pas activee sont AFFICHEES grisees. */
   var panneau = document.createElement('div');
   panneau.style.cssText = 'display:none;flex-wrap:wrap;gap:8px;padding:8px;border:1px dashed #3a2e20;border-radius:10px;background:#150f09;';
+  var yaGrise = false;
   options.forEach(function (opt) {
+    var actif = estActive(opt);
     var b = document.createElement('button');
     b.type = 'button';
-    b.style.cssText = 'background:none;border:1px solid #3a2e20;border-radius:8px;padding:4px;cursor:pointer;';
+    b.style.cssText = 'background:none;border:1px solid #3a2e20;border-radius:8px;padding:4px;' +
+      (actif ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:.4;');
     b.appendChild(_miniVitrine(opt));
-    b.addEventListener('click', function () { etapes = etapes.concat([opt]); sauver('[admin] Sc\u00e9nario vitrine \u2014 \u00e9tape ajout\u00e9e \u2014 ' + (salleActive.nom || 'salle')); });
+    if (actif) {
+      b.addEventListener('click', function () { etapes = etapes.concat([opt]); sauver('[admin] Sc\u00e9nario vitrine \u2014 \u00e9tape ajout\u00e9e \u2014 ' + (salleActive.nom || 'salle')); });
+    } else {
+      yaGrise = true; b.disabled = true;
+      b.title = 'Activez la pr\u00e9sentation \u00ab ' + (opt === 'imm' ? 'immersive' : 'descriptive') + ' \u00bb (section Pr\u00e9sentation) pour utiliser cette vue.';
+    }
     panneau.appendChild(b);
   });
+  if (yaGrise) {
+    var hint = document.createElement('div');
+    hint.style.cssText = 'flex-basis:100%;font-size:10px;color:#9a8b76;line-height:1.3;';
+    hint.textContent = 'Les vues gris\u00e9es demandent d\u2019activer leur pr\u00e9sentation dans la section \u00ab Pr\u00e9sentation \u00bb ci-dessus.';
+    panneau.appendChild(hint);
+  }
 
   if (aVitrine && options.length) {
     if (etapes.length) rangee.appendChild(fleche());

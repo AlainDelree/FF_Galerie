@@ -34,7 +34,7 @@ Quelques parcours possibles :
 - Vitrine ouverte → **écran détail** directement (idéal sans .glb).
 - Vitrine seule, sans aller vers aucune vue.
 
-Les vues dont la présentation n'est pas activée n'apparaissent pas dans les choix. Si aucune vitrine n'est encore posée dans la salle, la section est grisée.
+Les vues dont la présentation n'est pas activée apparaissent **grisées** dans les choix : activez-les d'abord dans la section « Présentation » du tableau de bord. Si aucune vitrine n'est encore posée dans la salle, la section entière est grisée.
 
 ## Appliquer le même scénario partout
 
