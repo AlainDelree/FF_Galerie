@@ -448,7 +448,7 @@ function _chargerOeuvres() {
         const el = document.getElementById(id);
         const ligne = el && el.closest('.modal-ligne');
         if (valeur) {
-          el.textContent = valeur;
+          if (el) el.textContent = valeur;
           if (ligne) ligne.style.display = '';
         } else {
           if (ligne) ligne.style.display = 'none';

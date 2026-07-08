@@ -188,10 +188,12 @@ function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
   if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') {
     ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
   } else if (kind === 'fiche' && typeof ouvrirModal === 'function') {
-    /* Fiche = ecran a plat (comme au clic sur une peinture). Terminale : la
-       fermeture (croix/swipe/clic hors) rejoue l'etape precedente via onClose. */
-    ouvrirModal(oeu, { onClose: (nav && nav.retour) ? nav.retour.fn : null });
-    if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
+    /* Fiche = ecran a plat (modale, comme au clic sur une peinture). Elle a sa
+       propre transition (z-index 200) : on LEVE le voile tout de suite, sinon il
+       la masque (z 10001). Terminale : la fermeture rejoue l'etape precedente. */
+    if (typeof _leverVoile === 'function') _leverVoile();
+    try { ouvrirModal(oeu, { onClose: (nav && nav.retour) ? nav.retour.fn : null }); }
+    catch (e) { if (nav && nav.retour && typeof nav.retour.fn === 'function') nav.retour.fn(); }
   } else if (typeof ouvrirSalleObservation === 'function') {
     ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
   }
