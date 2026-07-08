@@ -82,7 +82,10 @@
         "immersive": {
           "actif": true
         }
-      }
+      },
+      "scenario": [
+        "fermee"
+      ]
     },
     {
       "id": 2,
