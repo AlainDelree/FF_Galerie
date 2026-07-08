@@ -699,6 +699,17 @@ function _renderSectionScenario(tdb, s) {
   var immOn  = !!(s.greffons && s.greffons.immersive  && s.greffons.immersive.actif);
   var descOn = !!(s.greffons && s.greffons.descriptive && s.greffons.descriptive.actif);
   var etapes = _normScenarioAdmin(s.scenario);
+  /* Auto-nettoyage : une vue dont la presentation est desactivee est retiree du
+     scenario (couvre la desactivation ET les scenarios deja "sales"). Persiste. */
+  var etapesOk = etapes.filter(function (e) { return (e === 'imm') ? immOn : (e === 'desc') ? descOn : true; });
+  if (etapesOk.length !== etapes.length) {
+    etapes = etapesOk;
+    if (etapes.length) salleActive.scenario = etapes.slice(); else delete salleActive.scenario;
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Sc\u00e9nario vitrine \u2014 vue(s) retir\u00e9e(s) (pr\u00e9sentation d\u00e9sactiv\u00e9e) \u2014 ' + (salleActive.nom || 'salle'), null)
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    }
+  }
 
   function sauver(msg) {
     if (etapes.length) salleActive.scenario = etapes.slice();
@@ -818,17 +829,6 @@ function _toggleGreffon(greffon) {
   if (!g[greffon]) g[greffon] = { actif: false };
   g[greffon].actif = !g[greffon].actif;
   var etat = g[greffon].actif ? 'activé' : 'désactivé';
-  /* Desactivation d'une presentation -> retirer la vue correspondante du scenario. */
-  if (!g[greffon].actif && salleActive.scenario) {
-    var vue = (greffon === 'immersive') ? 'imm' : (greffon === 'descriptive') ? 'desc' : null;
-    if (vue) {
-      var etapes = _normScenarioAdmin(salleActive.scenario);
-      if (etapes.indexOf(vue) >= 0) {
-        etapes = etapes.filter(function (e) { return e !== vue; });
-        if (etapes.length) salleActive.scenario = etapes; else delete salleActive.scenario;
-      }
-    }
-  }
   _renderTDB();
   /* Sauvegarder immédiatement */
   if (typeof sauvegarder === 'function') {
