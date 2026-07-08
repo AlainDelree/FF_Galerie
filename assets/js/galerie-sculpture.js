@@ -158,6 +158,7 @@ function _resoudreScenario(salle, immActif, descActif) {
 /* Portes de navigation d'une salle ouverte dans un scenario.
    nav = { retour:{label,fn}, suivant:{label,fn} } (gauche = retour, droite = suivant). */
 function _portesNavScenario(overlay, fermer, nav) {
+  try { alert('DIAG C - _portesNavScenario\nretour  = ' + (nav && nav.retour ? nav.retour.label : 'ABSENT') + '\nsuivant = ' + (nav && nav.suivant ? nav.suivant.label : 'ABSENT')); } catch(e){}
   function transiter(fn) {
     var e = document.createElement('div');
     e.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
