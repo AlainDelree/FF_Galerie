@@ -148,6 +148,11 @@ function _resoudreScenario(salle, immActif, descActif) {
     else if (e === 'imm' && immActif) chaine.push('imm');
     else if (e === 'desc' && descActif) chaine.push('desc');
   });
+  /* Garde-fou : si le scenario prevoyait des vues mais qu'elles sont TOUTES
+     filtrees (greffons eteints), ne pas jouer une ouverture 2-temps qui ne mene
+     nulle part -> repli sur le comportement historique. */
+  var prevoyaitVues = etapes.some(function (e) { return e === 'imm' || e === 'desc' || e === 'fiche'; });
+  if (prevoyaitVues && chaine.length === 0) return null;
   return { ouverture: ouverture, chaine: chaine };
 }
 /* Portes de navigation d'une salle ouverte dans un scenario.
