@@ -70,7 +70,8 @@
         "immersive": {
           "actif": true
         }
-      }
+      },
+      "scenario": "imm_desc_2t"
     },
     {
       "id": 2,
