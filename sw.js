@@ -23,7 +23,7 @@
    ADMIN/aperçu/édition/invités/API : jamais interceptés ni mis en cache.
    =========================================================================== */
 
-const VERSION     = '2026-07-05b';     // identifiant du CODE du SW (force la détection de MAJ)
+const VERSION     = '2026-07-08a';     // identifiant du CODE du SW (force la détection de MAJ)
 const SHELL_CACHE = 'ff-shell';        // STABLE : le contenu ne change qu'à la demande (⟳)
 const MEDIA_CACHE = 'ff-media';        // STABLE : images + musique, persistant
 
