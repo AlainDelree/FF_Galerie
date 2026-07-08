@@ -139,7 +139,8 @@
         }
       },
       "scenario": [
-        "ouverte"
+        "ouverte",
+        "fiche"
       ]
     }
   ]
