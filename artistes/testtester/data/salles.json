@@ -71,7 +71,7 @@
       ],
       "greffons": {
         "descriptive": {
-          "actif": true,
+          "actif": false,
           "decor": {
             "pan_a": "#3a1042",
             "pan_b": "#8a4030",
