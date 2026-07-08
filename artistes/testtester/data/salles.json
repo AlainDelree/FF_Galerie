@@ -66,6 +66,9 @@
       "greffons": {
         "descriptive": {
           "actif": true
+        },
+        "immersive": {
+          "actif": true
         }
       }
     },
