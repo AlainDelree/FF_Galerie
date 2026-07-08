@@ -84,8 +84,7 @@
         }
       },
       "scenario": [
-        "fermee",
-        "ouverte"
+        "fermee"
       ]
     },
     {
