@@ -802,6 +802,48 @@ function ouvrirVitrine(piece, pieces, opts) {
     portes.appendChild(makeDoor(true));
     portes.appendChild(makeDoor(false));
     cabinet.appendChild(portes);
+  } else {
+    /* Bois : doubles vantaux OPAQUES — fermes -> interieur invisible ; ouverts -> pivotent */
+    var portesB = document.createElement('div');
+    portesB.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1500px;';
+    var boisFace  = _teinte(couleurV, -0.02);
+    var boisFonce = _teinte(couleurV, -0.30);
+    var boisClair = _teinte(couleurV, 0.06);
+    var makeDoorB = function (sideLeft) {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - 14px);box-sizing:border-box;' +
+        (sideLeft ? 'left:14px;transform-origin:left center;' : 'right:14px;transform-origin:right center;') +
+        'border:2px solid ' + boisFonce + ';border-radius:3px;' +
+        'background:linear-gradient(180deg,' + _teinte(couleurV, 0.02) + ',' + _teinte(couleurV, -0.10) + ');' +
+        'box-shadow:0 0 0 1px rgba(0,0,0,.25),inset 0 0 22px rgba(0,0,0,.35),0 8px 20px rgba(0,0,0,.45);' +
+        'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-108deg' : '108deg') + ');') : 'transform:rotateY(0deg);');
+      var pan = document.createElement('div');   /* panneau central en retrait (menuiserie) */
+      pan.style.cssText = 'position:absolute;inset:12px;border-radius:2px;' +
+        'background:linear-gradient(180deg,' + boisClair + ',' + boisFace + ');' +
+        'box-shadow:inset 0 0 0 1px ' + boisFonce + ',inset 0 3px 8px rgba(0,0,0,.45),inset 0 -2px 5px rgba(255,255,255,.05);';
+      var grain = document.createElement('div');  /* veinage vertical discret */
+      grain.style.cssText = 'position:absolute;inset:0;border-radius:2px;pointer-events:none;opacity:.5;' +
+        'background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 6px);';
+      pan.appendChild(grain);
+      d.appendChild(pan);
+      var kn = document.createElement('div');     /* poignee laiton, arete interieure */
+      kn.style.cssText = 'position:absolute;' + (sideLeft ? 'right:7px;' : 'left:7px;') + 'top:50%;transform:translateY(-50%);' +
+        'width:9px;height:9px;border-radius:50%;z-index:3;' +
+        'background:radial-gradient(circle at 35% 30%,#f6e2a0,#b58f3e 70%,#7a5c22);box-shadow:0 1px 3px rgba(0,0,0,.6);';
+      d.appendChild(kn);
+      [26, 74].forEach(function (topPct) {        /* 2 charnieres laiton, arete exterieure */
+        var hinge = document.createElement('div');
+        hinge.style.cssText = 'position:absolute;' + (sideLeft ? 'left:-3px;' : 'right:-3px;') + 'top:' + topPct + '%;' +
+          'transform:translateY(-50%);width:7px;height:16px;border-radius:2px;z-index:2;' +
+          'background:linear-gradient(180deg,#e8cf86,#a9822f,#d8bd72);box-shadow:0 0 2px rgba(0,0,0,.6);';
+        d.appendChild(hinge);
+      });
+      return d;
+    };
+    portesB.appendChild(makeDoorB(true));
+    portesB.appendChild(makeDoorB(false));
+    cabinet.appendChild(portesB);
   }
   cabinet.style.zIndex = '2';
   cabinet.style.marginBottom = '32px';   /* repose sur le sol */
