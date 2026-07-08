@@ -106,6 +106,9 @@
       "greffons": {
         "immersive": {
           "actif": true
+        },
+        "descriptive": {
+          "actif": true
         }
       },
       "scenario": "vitrine"
