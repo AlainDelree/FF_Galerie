@@ -129,7 +129,13 @@
           "actif": true
         },
         "descriptive": {
-          "actif": true
+          "actif": true,
+          "decor": {
+            "pan_a": "#f0c8d8",
+            "pan_b": "#b0ecf0",
+            "pan_c": "#f4e4a8",
+            "pan_d": "#f0c4e0"
+          }
         }
       },
       "scenario": [
