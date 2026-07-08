@@ -54,6 +54,15 @@ function _scenarioLabel(key) {
     if (VITRINE_SCENARIOS_ADMIN[i].key === key) return VITRINE_SCENARIOS_ADMIN[i].label;
   return key || '(aucun)';
 }
+/* Vrai si la salle contient au moins une vitrine (piece est_vitrine placee/affectee). */
+function _salleAUneVitrine(s) {
+  if (typeof toiles === 'undefined' || !toiles || !toiles.length) return false;
+  var ids = {};
+  (s.positions || []).forEach(function (p) { if (p && p.id != null) ids[p.id] = 1; });
+  (s.positions_mobile || []).forEach(function (p) { if (p && p.id != null) ids[p.id] = 1; });
+  (s.toiles || []).forEach(function (t) { var id = (t && typeof t === 'object') ? t.id : t; if (id != null) ids[id] = 1; });
+  return toiles.some(function (t) { return t && t.est_vitrine && ids[t.id]; });
+}
 
 /* ─── Méta-données par facette ─── */
 var FACETTES_META = {
@@ -656,6 +665,13 @@ function _renderSectionScenario(tdb, s) {
     if (typeof toast === 'function') toast('Scénario appliqué à ' + cibles.length + ' salle(s).');
   });
   wrap.appendChild(btn);
+
+  if (!_salleAUneVitrine(s)) {          /* pas de vitrine -> combobox grisee */
+    sel.disabled = true; btn.disabled = true;
+    sel.style.opacity = '.5'; sel.style.cursor = 'not-allowed';
+    btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+    note.textContent = 'Aucune vitrine dans cette salle — ajoutez-en une pour activer les scénarios.';
+  }
 
   tdb.appendChild(wrap);
 }

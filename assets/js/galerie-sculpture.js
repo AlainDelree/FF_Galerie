@@ -1000,7 +1000,10 @@ function creerVitrine(piece, pos, pieces, opts) {
   var nP = Math.min(8, Math.max(1, piece.planches || 3));
   var nS = Math.min(8, Math.max(1, piece.places   || 4));
   var estBoisF = (piece.style !== 'vitree');
-  var portesOuvF = (piece.portes === 'ouvertes');
+  var _scF = (opts && opts.scenario) || null;
+  /* Avec un scenario : la miniature au sol suit son ouverture (2temps -> fermee/mystere ;
+     directe -> ouverte). Sans scenario : reglage par vitrine piece.portes. */
+  var portesOuvF = _scF ? (_scF.ouverture !== '2temps') : (piece.portes === 'ouvertes');
   var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
   var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
   var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
