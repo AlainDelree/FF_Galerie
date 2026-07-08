@@ -818,6 +818,17 @@ function _toggleGreffon(greffon) {
   if (!g[greffon]) g[greffon] = { actif: false };
   g[greffon].actif = !g[greffon].actif;
   var etat = g[greffon].actif ? 'activé' : 'désactivé';
+  /* Desactivation d'une presentation -> retirer la vue correspondante du scenario. */
+  if (!g[greffon].actif && salleActive.scenario) {
+    var vue = (greffon === 'immersive') ? 'imm' : (greffon === 'descriptive') ? 'desc' : null;
+    if (vue) {
+      var etapes = _normScenarioAdmin(salleActive.scenario);
+      if (etapes.indexOf(vue) >= 0) {
+        etapes = etapes.filter(function (e) { return e !== vue; });
+        if (etapes.length) salleActive.scenario = etapes; else delete salleActive.scenario;
+      }
+    }
+  }
   _renderTDB();
   /* Sauvegarder immédiatement */
   if (typeof sauvegarder === 'function') {
