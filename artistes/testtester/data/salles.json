@@ -83,7 +83,13 @@
           "actif": true
         }
       },
-      "scenario": "imm_desc_2t"
+      "scenario": [
+        "fermee",
+        "ouverte",
+        "imm",
+        "desc",
+        "fiche"
+      ]
     },
     {
       "id": 2,
