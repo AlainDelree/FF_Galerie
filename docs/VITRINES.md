@@ -74,8 +74,11 @@ descriptif est actif), avec une porte gauche « **retour vitrine** ».
   de la salle. Bouton « **Appliquer aux autres salles** » pour uniformiser.
 - Ne pilote que les objets **en vitrine**. Les objets **posés au sol** gardent
   leur comportement (inchangé).
-- La combobox est **filtrée selon les greffons actifs** (immersive /
-  descriptive) et **grisée** si la salle ne contient aucune vitrine.
+- Le choix se fait par **liste de radios illustrés** : chaque scénario montre
+  sa séquence de **miniatures** (vitrine fermée / ouverte, salle immersive,
+  salle descriptive) dérivée de `ouverture/cible/suivant`. La liste est
+  **filtrée selon les greffons actifs** et **grisée** si la salle ne contient
+  aucune vitrine.
 - Stocké dans `salle.scenario` (une clé du catalogue). Whitelisté dans
   `chargerTout` (admin.js) ; persisté tel quel à la sauvegarde.
 
@@ -153,8 +156,9 @@ scénario, `piece.portes` reprend son rôle normal.
 ### À ne pas oublier lors des évolutions
 
 - **Synchroniser** `VITRINE_SCENARIOS` (renderer) et `VITRINE_SCENARIOS_ADMIN`
-  (admin) : les **clés** et les **`req`** doivent rester alignés (les libellés
-  peuvent différer — ceux de l'admin sont rédigés pour le propriétaire).
+  (admin) : **clés**, **`req`**, **`ouverture`/`cible`/`suivant`** doivent rester
+  alignés (ces derniers servent à dériver la séquence de miniatures). Les
+  libellés peuvent différer — ceux de l'admin sont rédigés pour le propriétaire.
 - **Cache-busters** : bumper le `?v=` de `galerie-sculpture.js` **et**
   `salle-immersive.js` dans **tous** les HTML à chaque modif de ces fichiers
   (`admin-tdb.js`, `admin-galerie.js` se chargent en `?v=Date.now()`, pas de

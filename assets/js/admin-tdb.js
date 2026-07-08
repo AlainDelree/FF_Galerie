@@ -42,12 +42,12 @@ var TYPES_SALLE = {
    Les CLES et 'req' doivent rester synchronises avec ce fichier ; le libelle
    est redige ici pour le proprietaire (Fred). */
 var VITRINE_SCENARIOS_ADMIN = [
-  { key:'imm_desc',    req:['imm','desc'], label:'Clic œuvre → immersive, puis Suivant → détail' },
-  { key:'imm_desc_2t', req:['imm','desc'], label:'Ouverture en 2 temps, œuvre → immersive, Suivant → détail' },
-  { key:'desc',        req:['desc'],       label:'Clic œuvre → détail' },
-  { key:'desc_imm',    req:['desc','imm'], label:'Clic œuvre → détail, puis Suivant → immersive' },
-  { key:'imm',         req:['imm'],        label:'Clic œuvre → immersive' },
-  { key:'vitrine',     req:[],             label:'Vitrine seule (pas de salle)' }
+  { key:'imm_desc',    req:['imm','desc'], ouverture:'directe', cible:'imm',  suivant:'desc', label:'Clic œuvre → immersive, puis Suivant → détail' },
+  { key:'imm_desc_2t', req:['imm','desc'], ouverture:'2temps',  cible:'imm',  suivant:'desc', label:'Ouverture en 2 temps, œuvre → immersive, Suivant → détail' },
+  { key:'desc',        req:['desc'],       ouverture:'directe', cible:'desc', suivant:null,   label:'Clic œuvre → détail' },
+  { key:'desc_imm',    req:['desc','imm'], ouverture:'directe', cible:'desc', suivant:'imm',  label:'Clic œuvre → détail, puis Suivant → immersive' },
+  { key:'imm',         req:['imm'],        ouverture:'directe', cible:'imm',  suivant:null,   label:'Clic œuvre → immersive' },
+  { key:'vitrine',     req:[],             ouverture:'directe', cible:null,   suivant:null,   label:'Vitrine seule (pas de salle)' }
 ];
 function _scenarioLabel(key) {
   for (var i = 0; i < VITRINE_SCENARIOS_ADMIN.length; i++)
@@ -596,10 +596,69 @@ var _DECOR_CHAMPS = [
 ];
 
 /* ── Section scénario vitrine (combobox + propagation) ── */
+function _sequenceScenario(sc) {
+  var seq = [];
+  if (sc.ouverture === '2temps') { seq.push('fermee'); seq.push('ouverte'); }
+  else seq.push('ouverte');
+  if (sc.cible === 'imm') seq.push('immersive');
+  else if (sc.cible === 'desc') seq.push('descriptive');
+  if (sc.suivant === 'imm') seq.push('immersive');
+  else if (sc.suivant === 'desc') seq.push('descriptive');
+  return seq;
+}
+
+/* Petite illustration SVG d'une etape du parcours vitrine. */
+function _miniVitrine(etat) {
+  var SVG = {
+    fermee:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="6" y="4" width="42" height="38" rx="2" fill="#6a4b28" stroke="#3a2817"/>' +
+      '<rect x="9" y="8" width="17" height="30" rx="1" fill="#7a5730" stroke="#4a3320"/>' +
+      '<rect x="28" y="8" width="17" height="30" rx="1" fill="#7a5730" stroke="#4a3320"/>' +
+      '<circle cx="24" cy="23" r="1.6" fill="#e8cf86"/><circle cx="30" cy="23" r="1.6" fill="#e8cf86"/></svg>',
+    ouverte:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="6" y="4" width="42" height="38" rx="2" fill="#5a3f22" stroke="#3a2817"/>' +
+      '<rect x="12" y="9" width="30" height="28" fill="#3a2a18"/>' +
+      '<rect x="15" y="14" width="7" height="8" fill="#c8b088"/><rect x="25" y="13" width="6" height="9" fill="#a89060"/><rect x="33" y="14" width="6" height="8" fill="#b8a070"/>' +
+      '<rect x="14" y="26" width="8" height="7" fill="#b0a078"/><rect x="30" y="25" width="7" height="8" fill="#c0a880"/>' +
+      '<path d="M6 4 L1 8 L1 38 L6 42 Z" fill="#6a4b28" stroke="#3a2817"/>' +
+      '<path d="M48 4 L53 8 L53 38 L48 42 Z" fill="#6a4b28" stroke="#3a2817"/></svg>',
+    immersive:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#12100c"/>' +
+      '<ellipse cx="27" cy="35" rx="20" ry="4" fill="#8a6228" opacity="0.5"/>' +
+      '<rect x="21" y="28" width="12" height="6" rx="1" fill="#f0ece4"/>' +
+      '<path d="M27 11 C21 18 24 27 27 28 C30 27 33 18 27 11 Z" fill="#c9b79c"/>' +
+      '<rect x="9" y="33" width="2" height="7" fill="#c8a050"/><rect x="43" y="33" width="2" height="7" fill="#c8a050"/>' +
+      '<circle cx="10" cy="33" r="1.8" fill="#e8cf86"/><circle cx="44" cy="33" r="1.8" fill="#e8cf86"/>' +
+      '<path d="M10 36 Q27 42 44 36" stroke="#8b0020" stroke-width="1.5" fill="none"/></svg>',
+    descriptive:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#2a2622"/>' +
+      '<rect x="14" y="7" width="26" height="26" rx="1" fill="#0d0d0d" stroke="#c8a050" stroke-width="2"/>' +
+      '<rect x="17" y="10" width="20" height="20" fill="#3a5a7a"/>' +
+      '<rect x="17" y="23" width="20" height="7" fill="#6a5a3a"/>' +
+      '<circle cx="24" cy="17" r="3" fill="#e8d070"/>' +
+      '<rect x="19" y="35" width="16" height="3" rx="1" fill="#c8a050"/></svg>'
+  };
+  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', immersive:'immersive', descriptive:'d\u00e9tail' };
+  var box = document.createElement('div');
+  box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
+  var frame = document.createElement('div');
+  frame.style.cssText = 'width:54px;height:44px;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.5);line-height:0;';
+  frame.innerHTML = SVG[etat] || '';
+  var cap = document.createElement('div');
+  cap.style.cssText = 'font-size:9px;color:#9a8b76;';
+  cap.textContent = CAP[etat] || '';
+  box.appendChild(frame); box.appendChild(cap);
+  return box;
+}
+
 function _renderSectionScenario(tdb, s) {
   var titre = document.createElement('div');
   titre.className = 'tdb-section-lbl';
-  titre.textContent = 'Scénario vitrine';
+  titre.textContent = 'Sc\u00e9nario vitrine';
   tdb.appendChild(titre);
 
   var wrap = document.createElement('div');
@@ -609,41 +668,75 @@ function _renderSectionScenario(tdb, s) {
   var descOn = !!(s.greffons && s.greffons.descriptive && s.greffons.descriptive.actif);
   function reqOk(req) { return (req || []).every(function (r) { return r === 'imm' ? immOn : (r === 'desc' ? descOn : true); }); }
 
-  var sel = document.createElement('select');
-  sel.style.cssText = 'width:100%;font-size:13px;background:#1a130c;color:#e8dcc8;border:1px solid #3a2e20;border-radius:8px;padding:8px;';
-  var o0 = document.createElement('option');
-  o0.value = ''; o0.textContent = 'Aucun (comportement par défaut)';
-  sel.appendChild(o0);
+  var aVitrine = _salleAUneVitrine(s);
 
-  var courantVu = false;
-  VITRINE_SCENARIOS_ADMIN.forEach(function (sc) {
-    if (!reqOk(sc.req)) return;                 /* filtre par greffons actifs de la salle */
-    var o = document.createElement('option');
-    o.value = sc.key; o.textContent = sc.label;
-    if (s.scenario === sc.key) { o.selected = true; courantVu = true; }
-    sel.appendChild(o);
-  });
-  if (s.scenario && !courantVu) {              /* scenario present mais greffon requis eteint */
-    var oX = document.createElement('option');
-    oX.value = s.scenario; oX.selected = true;
-    oX.textContent = _scenarioLabel(s.scenario) + ' ⚠ (greffon requis éteint)';
-    sel.appendChild(oX);
+  /* Construit une ligne radio. `sc` null = option "Aucun". */
+  function ligne(sc, avertie) {
+    var key = sc ? sc.key : '';
+    var choisi = (s.scenario || '') === key;
+    var lab = document.createElement('label');
+    lab.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;' +
+      'border:1px solid ' + (choisi ? '#c8a050' : '#3a2e20') + ';background:' + (choisi ? '#241a10' : '#1a130c') + ';';
+    var radio = document.createElement('input');
+    radio.type = 'radio'; radio.name = 'ff-scenario'; radio.value = key; radio.checked = choisi;
+    radio.style.cssText = 'flex:0 0 auto;accent-color:#c8a050;width:16px;height:16px;';
+    if (!aVitrine) radio.disabled = true;
+    radio.addEventListener('change', function () {
+      if (key) salleActive.scenario = key; else delete salleActive.scenario;
+      _renderTDB();
+      if (typeof sauvegarder === 'function') {
+        sauvegarder('[admin] Sc\u00e9nario vitrine \u2014 ' + (salleActive.nom || 'salle'), null)
+          .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+      }
+    });
+    lab.appendChild(radio);
+
+    if (!sc) {
+      var txt = document.createElement('div');
+      txt.style.cssText = 'font-size:13px;color:#e8dcc8;';
+      txt.textContent = 'Aucun \u2014 comportement par d\u00e9faut';
+      lab.appendChild(txt);
+      return lab;
+    }
+    var minis = document.createElement('div');
+    minis.style.cssText = 'display:flex;align-items:flex-start;gap:3px;flex-wrap:wrap;';
+    _sequenceScenario(sc).forEach(function (et, i) {
+      if (i > 0) {
+        var ar = document.createElement('span');
+        ar.textContent = '\u203a';
+        ar.style.cssText = 'align-self:center;color:#c8a050;font-size:16px;margin:0 1px;line-height:44px;';
+        minis.appendChild(ar);
+      }
+      minis.appendChild(_miniVitrine(et));
+    });
+    lab.appendChild(minis);
+    if (avertie) {
+      var w = document.createElement('span');
+      w.textContent = '\u26a0';
+      w.title = 'Greffon requis \u00e9teint';
+      w.style.cssText = 'color:#d8a030;font-size:14px;';
+      lab.appendChild(w);
+    }
+    return lab;
   }
 
-  sel.addEventListener('change', function () {
-    var v = this.value;
-    if (v) salleActive.scenario = v; else delete salleActive.scenario;
-    _renderTDB();
-    if (typeof sauvegarder === 'function') {
-      sauvegarder('[admin] Scénario vitrine — ' + (salleActive.nom || 'salle'), null)
-        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
-    }
+  wrap.appendChild(ligne(null, false));           /* Aucun */
+  var courantVu = ((s.scenario || '') === '');
+  VITRINE_SCENARIOS_ADMIN.forEach(function (sc) {
+    if (!reqOk(sc.req)) return;                     /* filtre selon greffons actifs */
+    if (s.scenario === sc.key) courantVu = true;
+    wrap.appendChild(ligne(sc, false));
   });
-  wrap.appendChild(sel);
+  if (s.scenario && !courantVu) {                   /* scenario present mais greffon requis eteint */
+    var scX = null;
+    for (var i = 0; i < VITRINE_SCENARIOS_ADMIN.length; i++)
+      if (VITRINE_SCENARIOS_ADMIN[i].key === s.scenario) scX = VITRINE_SCENARIOS_ADMIN[i];
+    if (scX) wrap.appendChild(ligne(scX, true));
+  }
 
   var note = document.createElement('div');
   note.style.cssText = 'font-size:11px;color:#9a8b76;line-height:1.35;';
-  note.textContent = 'S’applique à toutes les vitrines de cette salle. Les objets posés au sol ne sont pas affectés.';
+  note.textContent = 'S\u2019applique \u00e0 toutes les vitrines de cette salle. Les objets pos\u00e9s au sol ne sont pas affect\u00e9s.';
   wrap.appendChild(note);
 
   var btn = document.createElement('button');
@@ -655,22 +748,21 @@ function _renderSectionScenario(tdb, s) {
     var cibles = (typeof salles !== 'undefined' ? salles : []).filter(function (o) { return o.id !== salleActive.id && typeDe(o) === 'sculpture'; });
     if (!cibles.length) { if (typeof toast === 'function') toast('Aucune autre salle sculpture.'); return; }
     var val = salleActive.scenario || '';
-    var lib = val ? _scenarioLabel(val) : 'Aucun (comportement par défaut)';
-    if (!confirm('Appliquer le scénario « ' + lib + ' » à toutes les autres salles sculpture (' + cibles.length + ') ?\n\nLes salles sans le greffon requis retomberont sur le comportement par défaut.')) return;
+    var lib = val ? _scenarioLabel(val) : 'Aucun (comportement par d\u00e9faut)';
+    if (!confirm('Appliquer le sc\u00e9nario \u00ab ' + lib + ' \u00bb \u00e0 toutes les autres salles sculpture (' + cibles.length + ') ?\n\nLes salles sans le greffon requis retomberont sur le comportement par d\u00e9faut.')) return;
     cibles.forEach(function (o) { if (val) o.scenario = val; else delete o.scenario; });
     if (typeof sauvegarder === 'function') {
-      sauvegarder('[admin] Scénario vitrine propagé à toutes les salles sculpture', null)
+      sauvegarder('[admin] Sc\u00e9nario vitrine propag\u00e9 \u00e0 toutes les salles sculpture', null)
         .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
     }
-    if (typeof toast === 'function') toast('Scénario appliqué à ' + cibles.length + ' salle(s).');
+    if (typeof toast === 'function') toast('Sc\u00e9nario appliqu\u00e9 \u00e0 ' + cibles.length + ' salle(s).');
   });
+  if (!aVitrine) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed'; }
   wrap.appendChild(btn);
 
-  if (!_salleAUneVitrine(s)) {          /* pas de vitrine -> combobox grisee */
-    sel.disabled = true; btn.disabled = true;
-    sel.style.opacity = '.5'; sel.style.cursor = 'not-allowed';
-    btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
-    note.textContent = 'Aucune vitrine dans cette salle — ajoutez-en une pour activer les scénarios.';
+  if (!aVitrine) {
+    note.textContent = 'Aucune vitrine dans cette salle \u2014 ajoutez-en une pour activer les sc\u00e9narios.';
+    wrap.style.opacity = '.6';
   }
 
   tdb.appendChild(wrap);
