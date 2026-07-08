@@ -642,7 +642,7 @@ function _miniVitrine(etat) {
       '<rect x="14" y="26" width="8" height="7" fill="#b0a078"/><rect x="30" y="25" width="7" height="8" fill="#c0a880"/>' +
       '<path d="M6 4 L1 8 L1 38 L6 42 Z" fill="#6a4b28" stroke="#3a2817"/>' +
       '<path d="M48 4 L53 8 L53 38 L48 42 Z" fill="#6a4b28" stroke="#3a2817"/></svg>',
-    immersive:
+    imm:
       '<svg width="54" height="44" viewBox="0 0 54 44">' +
       '<rect x="2" y="2" width="50" height="40" rx="3" fill="#12100c"/>' +
       '<ellipse cx="27" cy="35" rx="20" ry="4" fill="#8a6228" opacity="0.5"/>' +
@@ -662,7 +662,7 @@ function _miniVitrine(etat) {
       '<rect x="32" y="23" width="16" height="2" rx="1" fill="#cabfae"/>' +
       '<rect x="32" y="27" width="16" height="2" rx="1" fill="#cabfae"/>' +
       '<rect x="32" y="31" width="10" height="2" rx="1" fill="#cabfae"/></svg>',
-    descriptive:
+    desc:
       '<svg width="54" height="44" viewBox="0 0 54 44">' +
       '<rect x="2" y="2" width="50" height="40" rx="3" fill="#3a3330"/>' +
       '<rect x="2" y="32" width="50" height="10" fill="#2a231e"/>' +
@@ -673,7 +673,7 @@ function _miniVitrine(etat) {
       '<circle cx="25" cy="15" r="2.3" fill="#e8d070"/>' +
       '<rect x="22" y="29" width="10" height="2" rx="1" fill="#9a8b76"/></svg>'
   };
-  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', fiche:'fiche', descriptive:'salle', immersive:'immersif' };
+  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', fiche:'fiche', desc:'salle', imm:'immersif' };
   var box = document.createElement('div');
   box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
   var frame = document.createElement('div');
