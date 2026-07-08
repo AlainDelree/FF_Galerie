@@ -184,6 +184,7 @@ function _portesNavScenario(overlay, fermer, nav) {
 }
 /* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
 function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
+  try { alert('DIAG B - _ouvrirSalle\nkind = ' + kind + '\nimmersiveFn = ' + (typeof ouvrirSalleImmersive) + '\nmodalFn = ' + (typeof ouvrirModal) + '\nobsFn = ' + (typeof ouvrirSalleObservation)); } catch(e){}
   if (typeof _poserVoile === 'function') _poserVoile();
   if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') {
     ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
@@ -913,10 +914,12 @@ function ouvrirVitrine(piece, pieces, opts) {
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         _poserImg(img);
         var _cible = _sc ? (_sc.chaine[0] || null) : (descActif ? 'desc' : null);
-        if (_cible) {
+        {
           img.style.cursor = 'pointer';
           (function (oeu) {
             img.addEventListener('click', function () {
+              try { alert('DIAG A - clic objet\ncible = ' + _cible + '\nsc.chaine = ' + (_sc ? JSON.stringify(_sc.chaine) : 'PAS DE SCENARIO')); } catch(e){}
+              if (!_cible) return;
               if (typeof _poserVoile === 'function') _poserVoile();
               fermer();
               setTimeout(function () {
