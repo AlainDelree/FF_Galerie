@@ -703,12 +703,12 @@ function _renderSectionScenario(tdb, s) {
      scenario (couvre la desactivation ET les scenarios deja "sales"). Persiste. */
   var etapesOk = etapes.filter(function (e) { return (e === 'imm') ? immOn : (e === 'desc') ? descOn : true; });
   if (etapesOk.length !== etapes.length) {
+    /* Nettoyage EN MEMOIRE seulement (affichage coherent). Pas de save ici : la
+       persistance suit le save deja declenche par l'action en cours (ex. toggle
+       greffon appelle _renderTDB PUIS sauvegarder). Sauver ici creerait un 2e
+       commit concurrent -> course sur commitMulti. */
     etapes = etapesOk;
     if (etapes.length) salleActive.scenario = etapes.slice(); else delete salleActive.scenario;
-    if (typeof sauvegarder === 'function') {
-      sauvegarder('[admin] Sc\u00e9nario vitrine \u2014 vue(s) retir\u00e9e(s) (pr\u00e9sentation d\u00e9sactiv\u00e9e) \u2014 ' + (salleActive.nom || 'salle'), null)
-        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
-    }
   }
 
   function sauver(msg) {
