@@ -165,9 +165,9 @@ function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor)
   if (sc.suivant && sc.suivant !== cible) {
     var autre = sc.suivant;
     nav.suivant = {
-      label: (autre === 'imm' ? 'Immersif' : 'Detail'),
+      label: (autre === 'imm' ? 'Immersif' : 'Détail'),
       fn: function () {
-        var navB = { retour: { label: (cible === 'imm' ? 'Immersif' : 'Detail'),
+        var navB = { retour: { label: (cible === 'imm' ? 'Immersif' : 'Détail'),
           fn: function () { _ouvrirSalle(cible, oeu, immDecor, descDecor, nav); } } };
         _ouvrirSalle(autre, oeu, immDecor, descDecor, navB);
       }

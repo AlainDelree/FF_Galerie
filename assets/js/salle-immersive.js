@@ -53,7 +53,7 @@ var DECOR_IMMERSIVE_DEFAUT = {
   corde:  '#8b0020'
 };
 
-async function ouvrirSalleImmersive(piece, decor, descDecor) {
+async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
   if (document.querySelector('.imm-overlay')) return;
   await chargerThreeJS();
 
@@ -113,6 +113,10 @@ async function ouvrirSalleImmersive(piece, decor, descDecor) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
+  if (nav && typeof _portesNavScenario === 'function') {
+    /* Mode scenario : portes retour(vitrine)/Suivant, pas les portes par defaut */
+    _portesNavScenario(overlay, fermer, nav);
+  } else {
   /* ── Porte gauche → retour galerie ── */
   const porteG = document.createElement('div');
   porteG.className = 'porte-nav porte-nav--gauche';
@@ -161,6 +165,7 @@ async function ouvrirSalleImmersive(piece, decor, descDecor) {
     }, 350);
   });
   overlay.appendChild(plaqueD2);
+  }
 
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
