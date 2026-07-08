@@ -84,7 +84,8 @@
         }
       },
       "scenario": [
-        "ouverte"
+        "ouverte",
+        "desc"
       ]
     },
     {
