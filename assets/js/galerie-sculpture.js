@@ -108,7 +108,75 @@ function _appliquerBandesObservation(chambre, decor) {
   }
 }
 
-function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance) {
+/* ══ Scenarios de vitrine (reglage proprietaire, par salle) ══════════
+   cible/suivant : 'imm' | 'desc' | null ; ouverture : 'directe' | '2temps'.
+   req = greffons requis. Le libelle est lu par le proprietaire dans l'admin. */
+var VITRINE_SCENARIOS = {
+  'imm_desc':    { label:'Oeuvre -> immersive, puis Suivant -> detail',                 ouverture:'directe', cible:'imm',  suivant:'desc', req:['imm','desc'] },
+  'imm_desc_2t': { label:'Ouverture en 2 temps, oeuvre -> immersive, Suivant -> detail', ouverture:'2temps',  cible:'imm',  suivant:'desc', req:['imm','desc'] },
+  'desc':        { label:'Oeuvre -> detail',                                             ouverture:'directe', cible:'desc', suivant:null,   req:['desc'] },
+  'desc_imm':    { label:'Oeuvre -> detail, puis Suivant -> immersive',                  ouverture:'directe', cible:'desc', suivant:'imm',  req:['desc','imm'] },
+  'imm':         { label:'Oeuvre -> immersive',                                          ouverture:'directe', cible:'imm',  suivant:null,   req:['imm'] },
+  'vitrine':     { label:'Vitrine seule (pas de salle)',                                 ouverture:'directe', cible:null,   suivant:null,   req:[] }
+};
+function _resoudreScenario(salle, immActif, descActif) {
+  var sc = salle && salle.scenario && VITRINE_SCENARIOS[salle.scenario];
+  if (!sc) return null;                       /* pas de scenario -> comportement historique */
+  var ok = (sc.req || []).every(function (r) { return r === 'imm' ? immActif : (r === 'desc' ? descActif : true); });
+  return ok ? sc : null;                       /* greffon requis eteint -> repli historique */
+}
+/* Portes de navigation d'une salle ouverte dans un scenario.
+   nav = { retour:{label,fn}, suivant:{label,fn} } (gauche = retour, droite = suivant). */
+function _portesNavScenario(overlay, fermer, nav) {
+  function transiter(fn) {
+    var e = document.createElement('div');
+    e.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
+    document.body.appendChild(e);
+    fermer();
+    setTimeout(function () { fn(); setTimeout(function () { e.remove(); }, 150); }, 350);
+  }
+  function poser(cote, fleche, label, fn) {
+    var p = document.createElement('div');
+    p.className = 'porte-nav porte-nav--' + cote;
+    p.innerHTML = '<div class="porte-nav__arche"></div><span class="porte-nav__fleche">' + fleche +
+      '</span><span class="porte-nav__label">' + label + '</span>';
+    p.addEventListener('click', function () { transiter(fn); });
+    overlay.appendChild(p);
+    var pl = document.createElement('div');
+    pl.className = 'plaque-nav plaque-nav--' + cote;
+    pl.innerHTML = '<span class="plaque-nav__label">' +
+      (cote === 'gauche' ? (fleche + ' ' + label) : (label + ' ' + fleche)) + '</span>';
+    pl.addEventListener('click', function () { transiter(fn); });
+    overlay.appendChild(pl);
+  }
+  if (nav.retour)  poser('gauche', '\u2190', nav.retour.label  || 'Retour',  nav.retour.fn);
+  if (nav.suivant) poser('droite', '\u2192', nav.suivant.label || 'Suivant', nav.suivant.fn);
+}
+/* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
+function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
+  if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
+  else if (typeof ouvrirSalleObservation === 'function') ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
+}
+/* Chaine complete depuis une oeuvre en vitrine : cible + (Suivant -> autre salle). */
+function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor) {
+  var cible = sc.cible;
+  if (!cible) return;
+  var nav = { retour: { label: 'Vitrine', fn: function () { ouvrirVitrine(piece, pieces, opts); } } };
+  if (sc.suivant && sc.suivant !== cible) {
+    var autre = sc.suivant;
+    nav.suivant = {
+      label: (autre === 'imm' ? 'Immersif' : 'Detail'),
+      fn: function () {
+        var navB = { retour: { label: (cible === 'imm' ? 'Immersif' : 'Detail'),
+          fn: function () { _ouvrirSalle(cible, oeu, immDecor, descDecor, nav); } } };
+        _ouvrirSalle(autre, oeu, immDecor, descDecor, navB);
+      }
+    };
+  }
+  _ouvrirSalle(cible, oeu, immDecor, descDecor, nav);
+}
+
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance, nav) {
   /* Éviter les doublons */
   if (document.querySelector('.obs-overlay')) return;
 
@@ -192,7 +260,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   overlay.appendChild(btnFermer);
 
   /* ── Porte gauche → retour salle immersive (si greffon actif) ── */
-  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!nav && !provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const porteG = document.createElement('div');
     porteG.className = 'porte-nav porte-nav--gauche';
     porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
@@ -212,7 +280,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   }
 
   /* ── Porte gauche → provenance (ex. retour vitrine) ── */
-  if (provenance && typeof provenance.retour === 'function') {
+  if (!nav && provenance && typeof provenance.retour === 'function') {
     var _lblProv = provenance.label || 'Retour';
     var porteGP = document.createElement('div');
     porteGP.className = 'porte-nav porte-nav--gauche';
@@ -227,6 +295,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     overlay.appendChild(plaqueGP);
   }
 
+  if (!nav) {
   /* ── Porte droite → retour galerie ── */
   const porteD = document.createElement('div');
   porteD.className = 'porte-nav porte-nav--droite';
@@ -235,9 +304,10 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     '<span class="porte-nav__label">Galerie</span>';
   porteD.addEventListener('click', fermer);
   overlay.appendChild(porteD);
+  }
 
   /* ── Pancartes mobiles ── */
-  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!nav && !provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const plaqueG = document.createElement('div');
     plaqueG.className = 'plaque-nav plaque-nav--gauche';
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
@@ -251,11 +321,14 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     overlay.appendChild(plaqueG);
   }
 
+  if (!nav) {
   const plaqueD = document.createElement('div');
   plaqueD.className = 'plaque-nav plaque-nav--droite';
   plaqueD.innerHTML = '<span class="plaque-nav__label">Galerie \u2192</span>';
   plaqueD.addEventListener('click', fermer);
   overlay.appendChild(plaqueD);
+  }
+  if (nav) _portesNavScenario(overlay, fermer, nav);
 
   function fermer() {
     overlay.style.opacity = '0';
@@ -607,6 +680,7 @@ function _vantauxBois(portesOuv, couleurV, o) {
       'box-shadow:0 0 0 1px rgba(0,0,0,.25),inset 0 0 22px rgba(0,0,0,.35),0 8px 20px rgba(0,0,0,.45);' +
       'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
       (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg);') : 'transform:rotateY(0deg);');
+    d.dataset.open = 'rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg)';
     var pan = document.createElement('div');   /* panneau central en retrait (menuiserie) */
     pan.style.cssText = 'position:absolute;inset:' + panIns + 'px;border-radius:2px;' +
       'background:linear-gradient(180deg,' + boisClair + ',' + boisFace + ');' +
@@ -684,7 +758,8 @@ function ouvrirVitrine(piece, pieces, opts) {
 
   var styleV   = (piece.style === 'vitree') ? 'vitree' : 'bois';
   var estBois  = (styleV === 'bois');
-  var portesOuv = (piece.portes === 'ouvertes');
+  var _sc = (opts && opts.scenario) || null;
+  var portesOuv = _sc ? (_sc.ouverture !== '2temps') : (piece.portes === 'ouvertes');
   var postCol  = estBois ? _teinte(couleurV, -0.30) : '#141414';
   var topCol   = estBois ? _teinte(couleurV, -0.22) : '#141414';
   var backCol  = estBois ? _teinte(couleurV, -0.16) : '#8a8a86';   /* gris souris */
@@ -764,13 +839,15 @@ function ouvrirVitrine(piece, pieces, opts) {
         img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;object-position:center bottom;' +
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         _poserImg(img);
-        if (descActif) {
+        var _cible = _sc ? _sc.cible : (descActif ? 'desc' : null);
+        if (_cible) {
           img.style.cursor = 'pointer';
           (function (oeu) {
             img.addEventListener('click', function () {
               fermer();
               setTimeout(function () {
-                ouvrirSalleObservation(oeu, descDecor, false, immDecor,
+                if (_sc) _ouvrirDepuisVitrine(oeu, _sc, piece, pieces, opts, immDecor, descDecor);
+                else ouvrirSalleObservation(oeu, descDecor, false, immDecor,
                   { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
               }, 320);
             });
@@ -837,7 +914,9 @@ function ouvrirVitrine(piece, pieces, opts) {
                   : 'right:15px;transform-origin:right center;border-left-width:1px;') +
         'background:linear-gradient(120deg,rgba(200,214,218,.15),rgba(200,214,218,.04) 40%,rgba(255,255,255,.06) 55%);' +
         'box-shadow:inset 0 0 26px rgba(255,255,255,.07);' +
-        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-110deg' : '110deg') + ');') : '');
+        'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-110deg' : '110deg') + ');') : 'transform:rotateY(0deg);');
+      d.dataset.open = 'rotateY(' + (sideLeft ? '-110deg' : '110deg') + ')';
       var refl = document.createElement('div');
       refl.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
         'background:linear-gradient(125deg,transparent 33%,rgba(255,255,255,.34) 46%,rgba(255,255,255,.06) 52%,transparent 62%);';
@@ -870,6 +949,17 @@ function ouvrirVitrine(piece, pieces, opts) {
     'background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,.22) 45%,transparent 72%);';
   body.appendChild(solV);
   body.appendChild(ombreV);
+  if (_sc && _sc.ouverture === '2temps') {
+    var _catch = document.createElement('div');
+    _catch.style.cssText = 'position:absolute;inset:0;z-index:6;cursor:pointer;';
+    _catch.setAttribute('aria-label', 'Ouvrir la vitrine');
+    _catch.addEventListener('click', function () {
+      var dz = cabinet.querySelectorAll('[data-open]');
+      for (var i = 0; i < dz.length; i++) dz[i].style.transform = dz[i].dataset.open;
+      _catch.remove();
+    });
+    cabinet.appendChild(_catch);
+  }
   body.appendChild(cabinet);
   overlay.appendChild(body);
 
@@ -1009,6 +1099,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   var _immDecor  = (_immActif  && salle.greffons.immersive.decor)  ? salle.greffons.immersive.decor  : null;
   var _descDecor = (_descActif && salle.greffons.descriptive && salle.greffons.descriptive.decor)
     ? salle.greffons.descriptive.decor : null;
+  var _scenario = _resoudreScenario(salle, _immActif, _descActif);
 
   const gabarits = {};
   const pieces   = {};
@@ -1093,7 +1184,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       const gabarit = gabarits[gCode] || gabarits['M'];
       if (!piece) return;
       if (piece.est_vitrine) {
-        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
+        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor, scenario: _scenario }));
         return;
       }
       plancherSol.appendChild(creerSocle(piece, gabarit, pos, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
