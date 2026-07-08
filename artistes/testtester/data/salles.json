@@ -62,7 +62,12 @@
           "y": 24,
           "gabarit": "S"
         }
-      ]
+      ],
+      "greffons": {
+        "descriptive": {
+          "actif": true
+        }
+      }
     },
     {
       "id": 2,
