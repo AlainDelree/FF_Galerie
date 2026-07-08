@@ -416,3 +416,12 @@ ou DevTools → Application → « Update on reload »), les données redevienne
 et le parcours est correct. **Ce n'est pas un bug de la fonctionnalité.** Décision
 (Alain, 08/07) : on laisse tel quel, juste cette mention. Piste si ça devient gênant :
 rendre la mise à jour du SW plus agressive (touche prod + app → prudence).
+
+## Backlog — libellé « Peintures » en dur (noté 08/07/2026)
+
+Le sous-titre et le `<title>` de la page d'accueil artiste affichent **« Peintures »
+en dur** (`templates/artiste-index.html` l.8 et l.35 → recopié dans chaque
+`artistes/*/index.html`). Faux pour un artiste **sculpteur** (Test Tester, Dinso).
+À rendre **dynamique** selon le type de l'artiste (peinture / sculpture / mixte),
+ou à neutraliser (« Galerie »). Non urgent, à traiter avec les autres libellés
+éventuellement en dur.
