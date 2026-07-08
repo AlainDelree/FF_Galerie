@@ -82,13 +82,7 @@
         "immersive": {
           "actif": true
         }
-      },
-      "scenario": [
-        "ouverte",
-        "desc",
-        "imm",
-        "fiche"
-      ]
+      }
     },
     {
       "id": 2,
