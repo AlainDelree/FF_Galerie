@@ -158,7 +158,6 @@ function _resoudreScenario(salle, immActif, descActif) {
 /* Portes de navigation d'une salle ouverte dans un scenario.
    nav = { retour:{label,fn}, suivant:{label,fn} } (gauche = retour, droite = suivant). */
 function _portesNavScenario(overlay, fermer, nav) {
-  try { alert('DIAG C - _portesNavScenario\nretour  = ' + (nav && nav.retour ? nav.retour.label : 'ABSENT') + '\nsuivant = ' + (nav && nav.suivant ? nav.suivant.label : 'ABSENT')); } catch(e){}
   function transiter(fn) {
     var e = document.createElement('div');
     e.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
@@ -185,7 +184,6 @@ function _portesNavScenario(overlay, fermer, nav) {
 }
 /* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
 function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
-  try { alert('DIAG B - _ouvrirSalle\nkind = ' + kind + '\nimmersiveFn = ' + (typeof ouvrirSalleImmersive) + '\nmodalFn = ' + (typeof ouvrirModal) + '\nobsFn = ' + (typeof ouvrirSalleObservation)); } catch(e){}
   if (typeof _poserVoile === 'function') _poserVoile();
   if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') {
     ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
@@ -252,7 +250,10 @@ function _leverVoile() {
 
 function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance, nav) {
   /* Éviter les doublons */
-  if (document.querySelector('.obs-overlay')) return;
+  /* Repartir propre : retirer tout overlay de salle qui trainerait, sinon un ancien
+     rendu (ex. sans bouton Suivant) serait reutilise au lieu du scenario courant. */
+  var _vx = document.querySelectorAll('.obs-overlay, .imm-overlay');
+  for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
 
   chargerModelViewer();
 
@@ -915,12 +916,10 @@ function ouvrirVitrine(piece, pieces, opts) {
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         _poserImg(img);
         var _cible = _sc ? (_sc.chaine[0] || null) : (descActif ? 'desc' : null);
-        {
+        if (_cible) {
           img.style.cursor = 'pointer';
           (function (oeu) {
             img.addEventListener('click', function () {
-              try { alert('DIAG A - clic objet\ncible = ' + _cible + '\nsc.chaine = ' + (_sc ? JSON.stringify(_sc.chaine) : 'PAS DE SCENARIO')); } catch(e){}
-              if (!_cible) return;
               if (typeof _poserVoile === 'function') _poserVoile();
               fermer();
               setTimeout(function () {
