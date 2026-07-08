@@ -673,7 +673,7 @@ function _miniVitrine(etat) {
       '<circle cx="25" cy="15" r="2.3" fill="#e8d070"/>' +
       '<rect x="22" y="29" width="10" height="2" rx="1" fill="#9a8b76"/></svg>'
   };
-  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', fiche:'fiche', desc:'salle', imm:'immersif' };
+  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', fiche:'fiche', desc:'descriptive', imm:'immersif' };
   var box = document.createElement('div');
   box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
   var frame = document.createElement('div');
