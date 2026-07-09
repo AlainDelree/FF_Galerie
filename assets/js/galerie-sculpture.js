@@ -252,7 +252,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   /* Éviter les doublons */
   /* Repartir propre : retirer tout overlay de salle qui trainerait, sinon un ancien
      rendu (ex. sans bouton Suivant) serait reutilise au lieu du scenario courant. */
-  var _vx = document.querySelectorAll('.obs-overlay, .imm-overlay');
+  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay, .imm-overlay');
   for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
 
   chargerModelViewer();
@@ -786,7 +786,10 @@ function _vantauxBois(portesOuv, couleurV, o) {
 }
 
 function ouvrirVitrine(piece, pieces, opts) {
-  if (document.querySelector('.vitrine-overlay')) return;
+  /* Repartir propre : retirer toute scene (vitrine/salle) qui trainerait, sinon un
+     ancien overlay serait reutilise avec un scenario perime (clic inerte). */
+  var _sc0 = document.querySelectorAll('.vitrine-overlay, .obs-overlay, .imm-overlay');
+  for (var _si0 = 0; _si0 < _sc0.length; _si0++) _sc0[_si0].remove();
   var immActif  = !!(opts && opts.immActif);
   var descActif = !!(opts && opts.descActif);
   var immDecor  = (opts && opts.immDecor)  || null;

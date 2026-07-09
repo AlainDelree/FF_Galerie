@@ -56,7 +56,7 @@ var DECOR_IMMERSIVE_DEFAUT = {
 async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
   /* Repartir propre : retirer tout overlay de salle qui trainerait (evite la
      reutilisation d'un ancien rendu sans le bon bouton Suivant). */
-  var _vx = document.querySelectorAll('.obs-overlay, .imm-overlay');
+  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay, .imm-overlay');
   for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
   await chargerThreeJS();
 
