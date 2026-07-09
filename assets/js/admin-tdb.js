@@ -686,6 +686,7 @@ function _miniVitrine(etat) {
   return box;
 }
 
+var _scenDirtySalleId = null;   /* salle dont le scenario est modifie mais pas encore enregistre */
 function _renderSectionScenario(tdb, s) {
   var titre = document.createElement('div');
   titre.className = 'tdb-section-lbl';
@@ -711,13 +712,13 @@ function _renderSectionScenario(tdb, s) {
     if (etapes.length) salleActive.scenario = etapes.slice(); else delete salleActive.scenario;
   }
 
-  function sauver(msg) {
+  /* Compositeur : on modifie le scenario EN MEMOIRE (marque "non enregistre").
+     La persistance ne se fait qu'au clic sur "Enregistrer" -> un seul commit/deploiement. */
+  function appliquer() {
     if (etapes.length) salleActive.scenario = etapes.slice();
     else delete salleActive.scenario;
+    _scenDirtySalleId = salleActive.id;
     _renderTDB();
-    if (typeof sauvegarder === 'function') {
-      sauvegarder(msg, null).catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
-    }
   }
   function fleche() {
     var a = document.createElement('span');
@@ -739,7 +740,7 @@ function _renderSectionScenario(tdb, s) {
       x.type = 'button'; x.textContent = '\u00d7'; x.title = 'Retirer \u00e0 partir d\u2019ici';
       x.style.cssText = 'position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;' +
         'border:1px solid #6a2020;background:#3a1414;color:#f0c0c0;font-size:12px;line-height:1;cursor:pointer;padding:0;';
-      x.addEventListener('click', function () { etapes = etapes.slice(0, i); sauver('[admin] Sc\u00e9nario vitrine \u2014 \u00e9tape retir\u00e9e \u2014 ' + (salleActive.nom || 'salle')); });
+      x.addEventListener('click', function () { etapes = etapes.slice(0, i); appliquer(); });
       caseEl.appendChild(x);
     }
     rangee.appendChild(caseEl);
@@ -761,7 +762,7 @@ function _renderSectionScenario(tdb, s) {
       (actif ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:.4;');
     b.appendChild(_miniVitrine(opt));
     if (actif) {
-      b.addEventListener('click', function () { etapes = etapes.concat([opt]); sauver('[admin] Sc\u00e9nario vitrine \u2014 \u00e9tape ajout\u00e9e \u2014 ' + (salleActive.nom || 'salle')); });
+      b.addEventListener('click', function () { etapes = etapes.concat([opt]); appliquer(); });
     } else {
       yaGrise = true; b.disabled = true;
       b.title = 'Activez la pr\u00e9sentation \u00ab ' + (opt === 'imm' ? 'immersive' : 'descriptive') + ' \u00bb (section Pr\u00e9sentation) pour utiliser cette vue.';
@@ -794,6 +795,31 @@ function _renderSectionScenario(tdb, s) {
     : 'Composez le parcours en ajoutant des \u00e9tapes (vitrine \u2192 vues). Vide = comportement par d\u00e9faut.';
   wrap.appendChild(note);
 
+  /* Bouton ENREGISTRER : persiste la composition (un seul commit). */
+  if (aVitrine) {
+    var dirty = (_scenDirtySalleId === s.id);
+    var btnSave = document.createElement('button');
+    btnSave.type = 'button';
+    btnSave.textContent = dirty ? '\ud83d\udcbe Enregistrer le sc\u00e9nario' : 'Sc\u00e9nario enregistr\u00e9 \u2713';
+    btnSave.disabled = !dirty;
+    btnSave.style.cssText = 'align-self:flex-start;font-size:13px;font-weight:600;border-radius:8px;padding:9px 14px;' +
+      'cursor:' + (dirty ? 'pointer' : 'default') + ';border:1px solid ' + (dirty ? '#c8a050' : '#3a2e20') + ';' +
+      'background:' + (dirty ? '#3a2c12' : '#1a130c') + ';color:' + (dirty ? '#f0d890' : '#7a6f5e') + ';';
+    btnSave.addEventListener('click', function () {
+      if (typeof sauvegarder !== 'function') return;
+      sauvegarder('[admin] Sc\u00e9nario vitrine \u2014 ' + (salleActive.nom || 'salle'), null)
+        .then(function () { _scenDirtySalleId = null; _renderTDB(); if (typeof toast === 'function') toast('Sc\u00e9nario enregistr\u00e9.'); })
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    });
+    wrap.appendChild(btnSave);
+    if (dirty) {
+      var warn = document.createElement('div');
+      warn.style.cssText = 'font-size:11px;color:#e0b040;';
+      warn.textContent = '\u26a0 Modifications non enregistr\u00e9es \u2014 cliquez sur \u00ab Enregistrer \u00bb.';
+      wrap.appendChild(warn);
+    }
+  }
+
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.textContent = 'Appliquer aux autres salles';
@@ -808,6 +834,7 @@ function _renderSectionScenario(tdb, s) {
       sauvegarder('[admin] Sc\u00e9nario vitrine propag\u00e9 \u00e0 toutes les salles sculpture', null)
         .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
     }
+    _scenDirtySalleId = null;
     if (typeof toast === 'function') toast('Sc\u00e9nario appliqu\u00e9 \u00e0 ' + cibles.length + ' salle(s).');
   });
   if (!aVitrine) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed'; }
