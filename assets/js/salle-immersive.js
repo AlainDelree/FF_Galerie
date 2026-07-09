@@ -6,6 +6,7 @@
 
 let _threeLoaded = false;
 let _immRAF = null;
+let _immRenderer = null;
 
 /* ── Charger Three.js + GLTFLoader ── */
 function chargerThreeJS() {
@@ -53,10 +54,19 @@ var DECOR_IMMERSIVE_DEFAUT = {
   corde:  '#8b0020'
 };
 
+/* Nettoyage propre de la salle immersive : annule la boucle d'animation et LIBERE
+   le renderer WebGL avant de retirer l'overlay (sinon renderers/loops zombie -> lenteurs). */
+function _disposeImmersive() {
+  if (_immRAF) { cancelAnimationFrame(_immRAF); _immRAF = null; }
+  if (_immRenderer) { try { _immRenderer.dispose(); } catch (e) {} _immRenderer = null; }
+  var o = document.querySelector('.imm-overlay');
+  if (o) o.remove();
+}
+
 async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
-  /* Repartir propre : retirer tout overlay de salle qui trainerait (evite la
-     reutilisation d'un ancien rendu sans le bon bouton Suivant). */
-  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay, .imm-overlay');
+  /* Repartir propre : disposer l'ancienne immersive (renderer) + retirer autres scenes. */
+  _disposeImmersive();
+  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay');
   for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
   await chargerThreeJS();
 
@@ -179,6 +189,7 @@ async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
 
   /* ══ THREE.JS SCENE ══ */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  _immRenderer = renderer;
   renderer.setSize(VW, VH);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -455,7 +466,7 @@ async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
   function fermer() {
     if (_immRAF) { cancelAnimationFrame(_immRAF); _immRAF = null; }
     window.removeEventListener('resize', onResize);
-    renderer.dispose();
+    renderer.dispose(); _immRenderer = null;
     overlay.style.opacity = '0';
     setTimeout(() => {
       overlay.remove();
