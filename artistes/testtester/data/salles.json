@@ -139,7 +139,8 @@
         }
       },
       "scenario": [
-        "fermee"
+        "fermee",
+        "ouverte"
       ]
     }
   ]
