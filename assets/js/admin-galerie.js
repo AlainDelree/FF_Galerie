@@ -1155,6 +1155,7 @@ function selectSalle(id) {
     s.classList.toggle('sel', s.dataset.val === solTypeActuel);
   });
   if (typeof appliquerApparence === 'function') appliquerApparence();
+  if (typeof _resetApparenceDirty === 'function') _resetApparenceDirty();
   selectedToile = null;
   selectedToilePl = null;
   // Tableau de bord (navigation étoile)

@@ -122,6 +122,8 @@ function renderColorSwatches(type) {
 }
 
 function initSwatches() {
+  var _bs = document.getElementById('btn-save-apparence');
+  if (_bs && !_bs._wired) { _bs._wired = true; _bs.addEventListener('click', _enregistrerApparence); }
   renderColorSwatches('mur');
   renderColorSwatches('mur-piece');
   renderColorSwatches('mur-bas');
@@ -217,12 +219,38 @@ function _autoSaveApparence(label) {
   }, 1500);
 }
 
+/* -- Apparence : bouton \u00ab Enregistrer \u00bb (remplace le save auto debounce) --
+   Les reglages modifient la salle EN MEMOIRE + apercu. La persistance se fait au
+   clic sur le bouton d'enregistrement -> un seul commit/deploiement par ambiance. */
+var _apparenceDirty = false;
+function _majBtnSaveApparence() {
+  var b = document.getElementById('btn-save-apparence');
+  if (!b) return;
+  b.style.display = _apparenceDirty ? '' : 'none';
+  if (_apparenceDirty) { b.style.background = 'var(--gold)'; b.style.color = '#fff'; }
+}
+function _marquerApparenceModifiee() { _apparenceDirty = true; _majBtnSaveApparence(); }
+function _resetApparenceDirty() { _apparenceDirty = false; _majBtnSaveApparence(); }
+function _enregistrerApparence() {
+  if (typeof sauvegarder !== 'function' || !_apparenceDirty) return;
+  var b = document.getElementById('btn-save-apparence');
+  if (b) b.disabled = true;
+  sauvegarder('[admin] Apparence salle', null).then(function() {
+    if (b) b.disabled = false;
+    _resetApparenceDirty();
+    if (typeof toast === 'function') toast('Apparence enregistr\u00e9e', 'ok', 1500);
+  }).catch(function(e) {
+    if (b) b.disabled = false;
+    if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err', 4000);
+  });
+}
+
 function setCouleurMur(col) {
   couleurMurActuel = col;
   if (salleActive) { salleActive.couleur_mur = col; }
   appliquerApparence();
   _rafraichirApercusTDB();
-  _autoSaveApparence('Couleurs sauvegardées ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -235,7 +263,7 @@ function setCouleurMurPiece(col) {
   if (salleActive) { salleActive.couleur_mur_piece = col; }
   document.documentElement.style.setProperty('--mur-piece-col', col);
   _rafraichirApercusTDB();
-  _autoSaveApparence('Couleurs sauvegardées ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -247,7 +275,7 @@ function setCouleurMurBas(col) {
   if (salleActive) { salleActive.couleur_mur_bas = col; }
   document.documentElement.style.setProperty('--mur-bas-col', col);
   _rafraichirApercusTDB();
-  _autoSaveApparence('Couleurs sauvegardées ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -257,7 +285,7 @@ function setCouleurCadres(col) {
   appliquerApparence();
   afficherMur();
   _rafraichirApercusTDB();
-  _autoSaveApparence('Couleurs sauvegardées ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -269,7 +297,7 @@ function setEpaisseurCadres(ep) {
     if (!el.classList.contains('reserve-posee')) el.style.borderWidth = ep + 'px';
   });
   _rafraichirApercusTDB();
-  _autoSaveApparence('Épaisseur des cadres sauvegardée ✓');
+  _marquerApparenceModifiee();
   /* Pas de fermerPopover ici : le slider doit rester ouvert pendant l'ajustement */
 }
 
@@ -278,7 +306,7 @@ function setTexture(val) {
   if (salleActive) { salleActive.texture = val; }
   appliquerApparence();
   _rafraichirApercusTDB();
-  _autoSaveApparence('Texture sauvegardée ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -303,7 +331,7 @@ function setCouleurSol(col) {
   if (salleActive) { salleActive.couleur_sol = col; }
   _propagerSol();
   _rafraichirApercusTDB();
-  _autoSaveApparence('Couleur du sol sauvegardée ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
@@ -315,7 +343,7 @@ function setSolType(val) {
   });
   _propagerSol();
   _rafraichirApercusTDB();
-  _autoSaveApparence('Type de sol sauvegardé ✓');
+  _marquerApparenceModifiee();
   if (typeof fermerPopover === 'function') fermerPopover();
 }
 
