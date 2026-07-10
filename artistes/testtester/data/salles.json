@@ -84,9 +84,8 @@
         }
       },
       "scenario": [
-        "fermee",
         "ouverte",
-        "fiche"
+        "imm"
       ]
     },
     {
