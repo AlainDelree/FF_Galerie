@@ -85,7 +85,8 @@
       },
       "scenario": [
         "ouverte",
-        "fiche"
+        "imm",
+        "desc"
       ]
     },
     {
