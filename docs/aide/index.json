@@ -27,6 +27,13 @@
       "titre": "Se connecter : mot de passe et jeton, appareil par appareil",
       "concerne": "tous",
       "maj": "2026-06-30"
+    },
+    {
+      "id": "vitrines",
+      "fichier": "vitrines.md",
+      "titre": "Les vitrines et leurs scénarios",
+      "concerne": "sculpteurs",
+      "maj": "2026-07-08"
     }
   ]
 }

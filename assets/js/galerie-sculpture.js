@@ -108,9 +108,152 @@ function _appliquerBandesObservation(chambre, decor) {
   }
 }
 
-function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance) {
+/* ══ Scenarios de vitrine (reglage proprietaire, par salle) ══════════
+   cible/suivant : 'imm' | 'desc' | null ; ouverture : 'directe' | '2temps'.
+   req = greffons requis. Le libelle est lu par le proprietaire dans l'admin. */
+var VITRINE_SCENARIOS = {
+  'imm_desc':    { label:'Oeuvre -> immersive, puis Suivant -> detail',                 ouverture:'directe', cible:'imm',  suivant:'desc', req:['imm','desc'] },
+  'imm_desc_2t': { label:'Ouverture en 2 temps, oeuvre -> immersive, Suivant -> detail', ouverture:'2temps',  cible:'imm',  suivant:'desc', req:['imm','desc'] },
+  'desc':        { label:'Oeuvre -> detail',                                             ouverture:'directe', cible:'desc', suivant:null,   req:['desc'] },
+  'desc_imm':    { label:'Oeuvre -> detail, puis Suivant -> immersive',                  ouverture:'directe', cible:'desc', suivant:'imm',  req:['desc','imm'] },
+  'imm':         { label:'Oeuvre -> immersive',                                          ouverture:'directe', cible:'imm',  suivant:null,   req:['imm'] },
+  'vitrine':     { label:'Vitrine seule (pas de salle)',                                 ouverture:'directe', cible:null,   suivant:null,   req:[] }
+};
+/* Migration : ancienne cle de catalogue -> suite d'etapes ordonnee.
+   Le nouveau format de salle.scenario est directement un tableau d'etapes
+   parmi { 'fermee','ouverte','fiche','desc','imm' }. */
+function _normScenario(scn) {
+  if (Array.isArray(scn)) return scn.slice();
+  var sc = scn && VITRINE_SCENARIOS[scn];
+  if (!sc) return [];
+  var seq = [];
+  if (sc.ouverture === '2temps') { seq.push('fermee'); seq.push('ouverte'); }
+  else seq.push('ouverte');
+  if (sc.cible) seq.push(sc.cible);
+  if (sc.suivant && sc.suivant !== sc.cible) seq.push(sc.suivant);
+  return seq;
+}
+
+/* Resout salle.scenario -> { ouverture:'directe'|'2temps', chaine:[vues valides] }
+   ou null si aucun scenario. La fiche est toujours disponible ; desc/imm ne sont
+   gardees dans la chaine que si leur greffon est actif. */
+function _resoudreScenario(salle, immActif, descActif) {
+  if (!salle || !salle.scenario) return null;
+  var etapes = _normScenario(salle.scenario);
+  if (!etapes.length) return null;
+  var ouverture = (etapes[0] === 'fermee') ? '2temps' : 'directe';
+  var chaine = [];
+  etapes.forEach(function (e) {
+    if (e === 'fiche') chaine.push('fiche');
+    else if (e === 'imm' && immActif) chaine.push('imm');
+    else if (e === 'desc' && descActif) chaine.push('desc');
+  });
+  /* Garde-fou : si le scenario prevoyait des vues mais qu'elles sont TOUTES
+     filtrees (greffons eteints), ne pas jouer une ouverture 2-temps qui ne mene
+     nulle part -> repli sur le comportement historique. */
+  var prevoyaitVues = etapes.some(function (e) { return e === 'imm' || e === 'desc' || e === 'fiche'; });
+  if (prevoyaitVues && chaine.length === 0) return null;
+  return { ouverture: ouverture, chaine: chaine };
+}
+/* Portes de navigation d'une salle ouverte dans un scenario.
+   nav = { retour:{label,fn}, suivant:{label,fn} } (gauche = retour, droite = suivant). */
+function _portesNavScenario(overlay, fermer, nav) {
+  function transiter(fn) {
+    var e = document.createElement('div');
+    e.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#000;';
+    document.body.appendChild(e);
+    fermer();
+    setTimeout(function () { fn(); setTimeout(function () { e.remove(); }, 150); }, 350);
+  }
+  function poser(cote, fleche, label, fn) {
+    var p = document.createElement('div');
+    p.className = 'porte-nav porte-nav--' + cote;
+    p.innerHTML = '<div class="porte-nav__arche"></div><span class="porte-nav__fleche">' + fleche +
+      '</span><span class="porte-nav__label">' + label + '</span>';
+    p.addEventListener('click', function () { transiter(fn); });
+    overlay.appendChild(p);
+    var pl = document.createElement('div');
+    pl.className = 'plaque-nav plaque-nav--' + cote;
+    pl.innerHTML = '<span class="plaque-nav__label">' +
+      (cote === 'gauche' ? (fleche + ' ' + label) : (label + ' ' + fleche)) + '</span>';
+    pl.addEventListener('click', function () { transiter(fn); });
+    overlay.appendChild(pl);
+  }
+  if (nav.retour)  poser('gauche', '\u2190', nav.retour.label  || 'Retour',  nav.retour.fn);
+  if (nav.suivant) poser('droite', '\u2192', nav.suivant.label || 'Suivant', nav.suivant.fn);
+}
+/* Ouvre une salle (imm|desc) avec un descripteur nav de scenario. */
+function _ouvrirSalle(kind, oeu, immDecor, descDecor, nav) {
+  if (typeof _poserVoile === 'function') _poserVoile();
+  if (kind === 'imm' && typeof ouvrirSalleImmersive === 'function') {
+    ouvrirSalleImmersive(oeu, immDecor, descDecor, nav);
+  } else if (kind === 'fiche' && typeof ouvrirModal === 'function') {
+    /* Fiche = ecran a plat (modale, comme au clic sur une peinture). Elle a sa
+       propre transition (z-index 200) : on LEVE le voile tout de suite, sinon il
+       la masque (z 10001). Terminale : la fermeture rejoue l'etape precedente. */
+    if (typeof _leverVoile === 'function') _leverVoile();
+    try { ouvrirModal(oeu, { onClose: (nav && nav.retour) ? nav.retour.fn : null }); }
+    catch (e) { if (nav && nav.retour && typeof nav.retour.fn === 'function') nav.retour.fn(); }
+  } else if (typeof ouvrirSalleObservation === 'function') {
+    ouvrirSalleObservation(oeu, descDecor, false, immDecor, null, nav);
+  }
+}
+/* Chaine complete depuis une oeuvre en vitrine : cible + (Suivant -> autre salle). */
+function _labelVue(v) { return v === 'imm' ? 'Immersif' : (v === 'desc' ? 'Descriptif' : 'Détail'); }
+
+/* Ouvre l'etape i de la chaine avec nav avant/arriere.
+   i<0 -> retour vitrine. Retour = etape precedente (vitrine si 1re vue),
+   Suivant = etape suivante (si elle existe). */
+function _ouvrirEtape(oeu, chaine, i, piece, pieces, opts, immDecor, descDecor) {
+  if (i < 0) { if (typeof _poserVoile === 'function') _poserVoile(); ouvrirVitrine(piece, pieces, opts); if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60); return; }
+  if (i >= chaine.length) return;
+  var vue = chaine[i];
+  var nav = {
+    retour: {
+      label: (i > 0 ? _labelVue(chaine[i - 1]) : 'Vitrine'),
+      fn: function () { _ouvrirEtape(oeu, chaine, i - 1, piece, pieces, opts, immDecor, descDecor); }
+    }
+  };
+  if (i < chaine.length - 1) {
+    nav.suivant = {
+      label: _labelVue(chaine[i + 1]),
+      fn: function () { _ouvrirEtape(oeu, chaine, i + 1, piece, pieces, opts, immDecor, descDecor); }
+    };
+  }
+  _ouvrirSalle(vue, oeu, immDecor, descDecor, nav);
+}
+
+function _ouvrirDepuisVitrine(oeu, sc, piece, pieces, opts, immDecor, descDecor) {
+  var chaine = (sc && sc.chaine) || [];
+  if (!chaine.length) return;                 /* vitrine seule -> aucune salle */
+  _ouvrirEtape(oeu, chaine, 0, piece, pieces, opts, immDecor, descDecor);
+}
+
+/* Voile de transition noir partage : pose des le clic, leve par la salle une
+   fois prete. Evite le flash du parquet pendant le chargement (Three.js async). */
+function _poserVoile() {
+  var v = document.getElementById('ff-voile-transition');
+  if (!v) {
+    v = document.createElement('div');
+    v.id = 'ff-voile-transition';
+    v.style.cssText = 'position:fixed;inset:0;z-index:10001;background:#000;opacity:1;transition:opacity .35s ease;pointer-events:none;';
+    document.body.appendChild(v);
+  }
+  return v;
+}
+function _leverVoile() {
+  var v = document.getElementById('ff-voile-transition');
+  if (!v) return;
+  requestAnimationFrame(function () { v.style.opacity = '0'; });
+  setTimeout(function () { if (v && v.parentNode) v.parentNode.removeChild(v); }, 420);
+}
+
+function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, provenance, nav) {
   /* Éviter les doublons */
-  if (document.querySelector('.obs-overlay')) return;
+  /* Repartir propre : disposer la salle immersive (renderer WebGL) puis retirer les autres scenes. */
+  if (typeof _disposeImmersive === 'function') _disposeImmersive();
+  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay');
+  for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
 
   chargerModelViewer();
 
@@ -192,7 +335,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   overlay.appendChild(btnFermer);
 
   /* ── Porte gauche → retour salle immersive (si greffon actif) ── */
-  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!nav && !provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const porteG = document.createElement('div');
     porteG.className = 'porte-nav porte-nav--gauche';
     porteG.innerHTML = '<div class="porte-nav__arche"></div>' +
@@ -212,7 +355,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   }
 
   /* ── Porte gauche → provenance (ex. retour vitrine) ── */
-  if (provenance && typeof provenance.retour === 'function') {
+  if (!nav && provenance && typeof provenance.retour === 'function') {
     var _lblProv = provenance.label || 'Retour';
     var porteGP = document.createElement('div');
     porteGP.className = 'porte-nav porte-nav--gauche';
@@ -227,6 +370,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     overlay.appendChild(plaqueGP);
   }
 
+  if (!nav) {
   /* ── Porte droite → retour galerie ── */
   const porteD = document.createElement('div');
   porteD.className = 'porte-nav porte-nav--droite';
@@ -235,9 +379,10 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     '<span class="porte-nav__label">Galerie</span>';
   porteD.addEventListener('click', fermer);
   overlay.appendChild(porteD);
+  }
 
   /* ── Pancartes mobiles ── */
-  if (!provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
+  if (!nav && !provenance && avecPorteImmersive && typeof ouvrirSalleImmersive === 'function') {
     const plaqueG = document.createElement('div');
     plaqueG.className = 'plaque-nav plaque-nav--gauche';
     plaqueG.innerHTML = '<span class="plaque-nav__label">\u2190 Salle</span>';
@@ -251,11 +396,14 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
     overlay.appendChild(plaqueG);
   }
 
+  if (!nav) {
   const plaqueD = document.createElement('div');
   plaqueD.className = 'plaque-nav plaque-nav--droite';
   plaqueD.innerHTML = '<span class="plaque-nav__label">Galerie \u2192</span>';
   plaqueD.addEventListener('click', fermer);
   overlay.appendChild(plaqueD);
+  }
+  if (nav) _portesNavScenario(overlay, fermer, nav);
 
   function fermer() {
     overlay.style.opacity = '0';
@@ -277,6 +425,7 @@ function ouvrirSalleObservation(piece, decor, avecPorteImmersive, immDecor, prov
   document.documentElement.style.overflow  = 'hidden';
   window.scrollTo(0, 0);
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
 }
 
 
@@ -579,8 +728,106 @@ function _poserImg(img) {
   else img.addEventListener('load', function () { tries = 0; requestAnimationFrame(ground); });
 }
 
+/* Doubles vantaux BOIS opaques (fermes -> interieur cache ; ouverts -> pivotes).
+   Partage entre la miniature (creerVitrine) et le plein-ecran (ouvrirVitrine).
+   o: { edge, openDeg, bord, panIns, knob, hingeW, hingeH, z } — defauts = plein-ecran. */
+function _vantauxBois(portesOuv, couleurV, o) {
+  o = o || {};
+  var edge   = (o.edge   != null) ? o.edge   : 14;
+  var openD  = (o.openDeg!= null) ? o.openDeg : 108;
+  var bord   = (o.bord   != null) ? o.bord   : 2;
+  var panIns = (o.panIns != null) ? o.panIns : 12;
+  var knob   = (o.knob   != null) ? o.knob   : 9;
+  var hW     = (o.hingeW != null) ? o.hingeW : 7;
+  var hH     = (o.hingeH != null) ? o.hingeH : 16;
+  var zc     = (o.z      != null) ? o.z      : 4;
+  var kOff   = Math.max(3, Math.round(knob * 0.7));
+  var boisFace  = _teinte(couleurV, -0.02);
+  var boisFonce = _teinte(couleurV, -0.30);
+  var boisClair = _teinte(couleurV, 0.06);
+  var portesB = document.createElement('div');
+  portesB.style.cssText = 'position:absolute;inset:0;z-index:' + zc + ';pointer-events:none;perspective:1500px;';
+  var makeDoorB = function (sideLeft) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - ' + edge + 'px);box-sizing:border-box;' +
+      (sideLeft ? 'left:' + edge + 'px;transform-origin:left center;' : 'right:' + edge + 'px;transform-origin:right center;') +
+      'border:' + bord + 'px solid ' + boisFonce + ';border-radius:3px;' +
+      'background:linear-gradient(180deg,' + _teinte(couleurV, 0.02) + ',' + _teinte(couleurV, -0.10) + ');' +
+      'box-shadow:0 0 0 1px rgba(0,0,0,.25),inset 0 0 22px rgba(0,0,0,.35),0 8px 20px rgba(0,0,0,.45);' +
+      'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+      (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg);') : 'transform:rotateY(0deg);');
+    d.dataset.open = 'rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg)';
+    var pan = document.createElement('div');   /* panneau central en retrait (menuiserie) */
+    pan.style.cssText = 'position:absolute;inset:' + panIns + 'px;border-radius:2px;' +
+      'background:linear-gradient(180deg,' + boisClair + ',' + boisFace + ');' +
+      'box-shadow:inset 0 0 0 1px ' + boisFonce + ',inset 0 3px 8px rgba(0,0,0,.45),inset 0 -2px 5px rgba(255,255,255,.05);';
+    var grain = document.createElement('div');  /* veinage vertical discret */
+    grain.style.cssText = 'position:absolute;inset:0;border-radius:2px;pointer-events:none;opacity:.5;' +
+      'background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 6px);';
+    pan.appendChild(grain);
+    d.appendChild(pan);
+    var kn = document.createElement('div');     /* poignee laiton, arete interieure */
+    kn.style.cssText = 'position:absolute;' + (sideLeft ? ('right:' + kOff + 'px;') : ('left:' + kOff + 'px;')) + 'top:50%;transform:translateY(-50%);' +
+      'width:' + knob + 'px;height:' + knob + 'px;border-radius:50%;z-index:3;' +
+      'background:radial-gradient(circle at 35% 30%,#f6e2a0,#b58f3e 70%,#7a5c22);box-shadow:0 1px 3px rgba(0,0,0,.6);';
+    d.appendChild(kn);
+    [26, 74].forEach(function (topPct) {        /* 2 charnieres laiton, arete exterieure */
+      var hinge = document.createElement('div');
+      hinge.style.cssText = 'position:absolute;' + (sideLeft ? 'left:-3px;' : 'right:-3px;') + 'top:' + topPct + '%;' +
+        'transform:translateY(-50%);width:' + hW + 'px;height:' + hH + 'px;border-radius:2px;z-index:2;' +
+        'background:linear-gradient(180deg,#e8cf86,#a9822f,#d8bd72);box-shadow:0 0 2px rgba(0,0,0,.6);';
+      d.appendChild(hinge);
+    });
+    return d;
+  };
+  portesB.appendChild(makeDoorB(true));
+  portesB.appendChild(makeDoorB(false));
+  return portesB;
+}
+
+/* Vantaux VERRE (miniature au sol) : deux vantaux translucides qui pivotent selon
+   portesOuv, comme le bois. Meme mecanique (rotateY + data-open pour le 2-temps). */
+function _vantauxVerre(portesOuv, o) {
+  o = o || {};
+  var edge  = (o.edge    != null) ? o.edge    : 0;
+  var openD = (o.openDeg != null) ? o.openDeg : 104;
+  var bord  = (o.bord    != null) ? o.bord    : 2;
+  var knob  = (o.knob    != null) ? o.knob    : 6;
+  var zc    = (o.z       != null) ? o.z       : 4;
+  var kOff  = Math.max(3, Math.round(knob * 0.7));
+  var portes = document.createElement('div');
+  portes.style.cssText = 'position:absolute;inset:0;z-index:' + zc + ';pointer-events:none;perspective:1500px;';
+  var makeDoor = function (sideLeft) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - ' + edge + 'px);box-sizing:border-box;' +
+      (sideLeft ? 'left:' + edge + 'px;transform-origin:left center;' : 'right:' + edge + 'px;transform-origin:right center;') +
+      'border:' + bord + 'px solid #141414;border-radius:3px;' +
+      'background:linear-gradient(120deg,rgba(205,222,235,.16),rgba(205,222,235,.05) 45%,rgba(255,255,255,.11));' +
+      'box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.4);' +
+      'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+      (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg);') : 'transform:rotateY(0deg);');
+    d.dataset.open = 'rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg)';
+    var refl = document.createElement('div');
+    refl.style.cssText = 'position:absolute;inset:0;border-radius:2px;pointer-events:none;opacity:.55;' +
+      'background:linear-gradient(120deg,transparent 32%,rgba(255,255,255,.16) 48%,transparent 58%);';
+    d.appendChild(refl);
+    var kn = document.createElement('div');
+    kn.style.cssText = 'position:absolute;' + (sideLeft ? ('right:' + kOff + 'px;') : ('left:' + kOff + 'px;')) + 'top:50%;transform:translateY(-50%);' +
+      'width:' + knob + 'px;height:' + knob + 'px;border-radius:50%;z-index:3;' +
+      'background:radial-gradient(circle at 35% 30%,#f6e2a0,#b58f3e 70%,#7a5c22);box-shadow:0 1px 3px rgba(0,0,0,.6);';
+    d.appendChild(kn);
+    return d;
+  };
+  portes.appendChild(makeDoor(true));
+  portes.appendChild(makeDoor(false));
+  return portes;
+}
+
 function ouvrirVitrine(piece, pieces, opts) {
-  if (document.querySelector('.vitrine-overlay')) return;
+  /* Repartir propre : disposer la salle immersive (renderer WebGL) puis retirer les autres scenes. */
+  if (typeof _disposeImmersive === 'function') _disposeImmersive();
+  var _sc0 = document.querySelectorAll('.vitrine-overlay, .obs-overlay');
+  for (var _si0 = 0; _si0 < _sc0.length; _si0++) _sc0[_si0].remove();
   var immActif  = !!(opts && opts.immActif);
   var descActif = !!(opts && opts.descActif);
   var immDecor  = (opts && opts.immDecor)  || null;
@@ -628,7 +875,8 @@ function ouvrirVitrine(piece, pieces, opts) {
 
   var styleV   = (piece.style === 'vitree') ? 'vitree' : 'bois';
   var estBois  = (styleV === 'bois');
-  var portesOuv = (piece.portes === 'ouvertes');
+  var _sc = (opts && opts.scenario) || null;
+  var portesOuv = _sc ? (_sc.ouverture !== '2temps') : (piece.portes === 'ouvertes');
   var postCol  = estBois ? _teinte(couleurV, -0.30) : '#141414';
   var topCol   = estBois ? _teinte(couleurV, -0.22) : '#141414';
   var backCol  = estBois ? _teinte(couleurV, -0.16) : '#8a8a86';   /* gris souris */
@@ -708,13 +956,16 @@ function ouvrirVitrine(piece, pieces, opts) {
         img.style.cssText = 'max-width:100%;max-height:' + slotH + 'px;object-fit:contain;object-position:center bottom;' +
           'position:relative;z-index:2;filter:drop-shadow(0 4px 3px rgba(0,0,0,.5));';
         _poserImg(img);
-        if (descActif) {
+        var _cible = _sc ? (_sc.chaine[0] || null) : (descActif ? 'desc' : null);
+        if (_cible) {
           img.style.cursor = 'pointer';
           (function (oeu) {
             img.addEventListener('click', function () {
+              if (typeof _poserVoile === 'function') _poserVoile();
               fermer();
               setTimeout(function () {
-                ouvrirSalleObservation(oeu, descDecor, false, immDecor,
+                if (_sc) _ouvrirDepuisVitrine(oeu, _sc, piece, pieces, opts, immDecor, descDecor);
+                else ouvrirSalleObservation(oeu, descDecor, false, immDecor,
                   { label: 'Vitrine', retour: function () { ouvrirVitrine(piece, pieces, opts); } });
               }, 320);
             });
@@ -776,12 +1027,14 @@ function ouvrirVitrine(piece, pieces, opts) {
     portes.style.cssText = 'position:absolute;inset:0;z-index:4;pointer-events:none;perspective:1400px;';
     var makeDoor = function (sideLeft) {
       var d = document.createElement('div');
-      d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - 15px);box-sizing:border-box;border:3px solid #0e0e0e;' +
-        (sideLeft ? 'left:15px;transform-origin:left center;border-right-width:1px;'
-                  : 'right:15px;transform-origin:right center;border-left-width:1px;') +
+      d.style.cssText = 'position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;border:3px solid #0e0e0e;' +
+        (sideLeft ? 'left:0;transform-origin:left center;border-right-width:1px;'
+                  : 'right:0;transform-origin:right center;border-left-width:1px;') +
         'background:linear-gradient(120deg,rgba(200,214,218,.15),rgba(200,214,218,.04) 40%,rgba(255,255,255,.06) 55%);' +
         'box-shadow:inset 0 0 26px rgba(255,255,255,.07);' +
-        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-110deg' : '110deg') + ');') : '');
+        'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+        (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-110deg' : '110deg') + ');') : 'transform:rotateY(0deg);');
+      d.dataset.open = 'rotateY(' + (sideLeft ? '-110deg' : '110deg') + ')';
       var refl = document.createElement('div');
       refl.style.cssText = 'position:absolute;inset:0;pointer-events:none;' +
         'background:linear-gradient(125deg,transparent 33%,rgba(255,255,255,.34) 46%,rgba(255,255,255,.06) 52%,transparent 62%);';
@@ -802,6 +1055,9 @@ function ouvrirVitrine(piece, pieces, opts) {
     portes.appendChild(makeDoor(true));
     portes.appendChild(makeDoor(false));
     cabinet.appendChild(portes);
+  } else {
+    /* Bois : vantaux opaques pleine hauteur (voir _vantauxBois) */
+    cabinet.appendChild(_vantauxBois(portesOuv, couleurV, { edge: 0 }));
   }
   cabinet.style.zIndex = '2';
   cabinet.style.marginBottom = '32px';   /* repose sur le sol */
@@ -811,6 +1067,17 @@ function ouvrirVitrine(piece, pieces, opts) {
     'background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,.22) 45%,transparent 72%);';
   body.appendChild(solV);
   body.appendChild(ombreV);
+  if (_sc && _sc.ouverture === '2temps') {
+    var _catch = document.createElement('div');
+    _catch.style.cssText = 'position:absolute;inset:0;z-index:6;cursor:pointer;';
+    _catch.setAttribute('aria-label', 'Ouvrir la vitrine');
+    _catch.addEventListener('click', function () {
+      var dz = cabinet.querySelectorAll('[data-open]');
+      for (var i = 0; i < dz.length; i++) dz[i].style.transform = dz[i].dataset.open;
+      _catch.remove();
+    });
+    cabinet.appendChild(_catch);
+  }
   body.appendChild(cabinet);
   overlay.appendChild(body);
 
@@ -851,6 +1118,10 @@ function creerVitrine(piece, pos, pieces, opts) {
   var nP = Math.min(8, Math.max(1, piece.planches || 3));
   var nS = Math.min(8, Math.max(1, piece.places   || 4));
   var estBoisF = (piece.style !== 'vitree');
+  var _scF = (opts && opts.scenario) || null;
+  /* Avec un scenario : la miniature au sol suit son ouverture (2temps -> fermee/mystere ;
+     directe -> ouverte). Sans scenario : reglage par vitrine piece.portes. */
+  var portesOuvF = _scF ? (_scF.ouverture !== '2temps') : (piece.portes === 'ouvertes');
   var backF  = estBoisF ? _teinte(couleur, -0.10) : '#8a8a86';
   var frameF = estBoisF ? _teinte(couleur, -0.28) : '#141414';
   var boardF = estBoisF ? _teinte(couleur, 0.06)  : '#3a3a3a';
@@ -912,18 +1183,29 @@ function creerVitrine(piece, pos, pieces, opts) {
     }
     meuble.appendChild(row);
   }
+  if (estBoisF) {
+    /* Vantaux au sol : fermes -> objets caches (mystere) ; ouverts -> reveles */
+    meuble.appendChild(_vantauxBois(portesOuvF, couleur, {
+      edge:    0,
+      openDeg: 104,
+      bord:    Math.max(1, Math.round(u * 0.6)),
+      panIns:  Math.max(4, Math.round(2 * u)),
+      knob:    Math.max(4, Math.round(2.2 * u)),
+      hingeW:  Math.max(3, Math.round(1.4 * u)),
+      hingeH:  Math.max(6, Math.round(3.2 * u)),
+      z: 4
+    }));
+  } else {
+    /* Vitrine verre : vantaux translucides qui pivotent aussi selon le scenario. */
+    meuble.appendChild(_vantauxVerre(portesOuvF, {
+      edge: 0, openDeg: 104,
+      bord: Math.max(1, Math.round(u * 0.6)),
+      knob: Math.max(4, Math.round(2 * u)),
+      z: 4
+    }));
+  }
   wrapper.appendChild(meuble);
 
-  /* Plaque façon musée */
-  var nOeuvres = Object.keys(contenu).length;
-  var plaque = document.createElement('div');
-  plaque.className = 'vitrine-plaque';
-  plaque.textContent = 'Vitrine · ' + nOeuvres + ' pièce' + (nOeuvres > 1 ? 's' : '');
-  plaque.style.cssText = 'position:absolute;bottom:-' + Math.round(6 * u) + 'px;left:50%;' +
-    'transform:translateX(-50%);font-family:Cinzel,serif;font-size:' + Math.max(8, Math.round(4 * u)) + 'px;' +
-    'color:#2a1d0a;white-space:nowrap;background:linear-gradient(180deg,#f0d080,#b58f3e);' +
-    'padding:1px 6px;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5);';
-  wrapper.appendChild(plaque);
 
   /* Clic → écran vitrine (étape 2b, à brancher). En édition on arrange, pas d'ouverture. */
   wrapper.style.cursor = 'pointer';
@@ -946,6 +1228,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
   var _immDecor  = (_immActif  && salle.greffons.immersive.decor)  ? salle.greffons.immersive.decor  : null;
   var _descDecor = (_descActif && salle.greffons.descriptive && salle.greffons.descriptive.decor)
     ? salle.greffons.descriptive.decor : null;
+  var _scenario = _resoudreScenario(salle, _immActif, _descActif);
 
   const gabarits = {};
   const pieces   = {};
@@ -1030,7 +1313,7 @@ GALERIE_RENDERERS['sculpture'] = function(salleDiv, salle, si, salles, tData) {
       const gabarit = gabarits[gCode] || gabarits['M'];
       if (!piece) return;
       if (piece.est_vitrine) {
-        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));
+        plancherSol.appendChild(creerVitrine(piece, pos, pieces, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor, scenario: _scenario }));
         return;
       }
       plancherSol.appendChild(creerSocle(piece, gabarit, pos, { immActif: _immActif, descActif: _descActif, immDecor: _immDecor, descDecor: _descDecor }));

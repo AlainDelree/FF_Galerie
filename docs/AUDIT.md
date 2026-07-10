@@ -391,3 +391,37 @@ panneau de garnissage (`_retirerVitrineDeLaSalle`). Retire la vitrine des DEUX
 vues (positions + positions_mobile) + liste maître ; conserve la pièce et son
 garnissage (contenu/contenu_mobile) → dépose, pas suppression. Confirmation +
 commit arrière-plan.
+
+## Addendum — 08/07/2026 (scénarios de vitrine + piège SW en test)
+
+**Chantier scénarios de vitrine — FAIT (dev).** `salle.scenario` = suite ordonnée
+d'étapes `[fermee?, ouverte, <vues…>]` parmi `fiche | desc | imm`. Renderer :
+`_resoudreScenario` → `{ouverture, chaine}` (fiche toujours dispo ; desc/imm gardées
+seulement si greffon actif), `_ouvrirEtape` parcourt la chaîne avec nav avant/arrière
+(← étape précédente ou vitrine, → étape suivante). 3e vue `fiche` = `ouvrirModal`
+(exposé + `onClose` pour rejouer l'étape précédente). Migration auto des anciennes
+clés via `_normScenario`. Admin : **compositeur** (cases + flèches, options filtrées
+par cohérence, vues sans greffon affichées **grisées**). Doc utilisateur :
+`docs/aide/vitrines.md`. Garde-fou : si toutes les vues sont filtrées (greffons
+éteints), la chaîne vide **annule** l'ouverture 2-temps (repli historique) plutôt
+qu'un parcours qui ne mène à rien.
+
+**⚠️ À SURVEILLER — piège de test lié au service worker.** En testant sur dev,
+après une sauvegarde admin, la galerie peut afficher un **état périmé** (ex. scénario
+présent mais chaîne tronquée → ouverture 2-temps mais clic/Suivant inertes). Cause :
+un **ancien service worker** enregistré sert le `salles.json` en cache-first en
+**ignorant le `?v=`** (cf. `cacheFirst` + `ignoreSearch:true`). Le site web est en
+`networkFirst`, donc dès que le SW à jour prend la main (redémarrage du navigateur,
+ou DevTools → Application → « Update on reload »), les données redeviennent fraîches
+et le parcours est correct. **Ce n'est pas un bug de la fonctionnalité.** Décision
+(Alain, 08/07) : on laisse tel quel, juste cette mention. Piste si ça devient gênant :
+rendre la mise à jour du SW plus agressive (touche prod + app → prudence).
+
+## Backlog — libellé « Peintures » en dur (noté 08/07/2026)
+
+Le sous-titre et le `<title>` de la page d'accueil artiste affichent **« Peintures »
+en dur** (`templates/artiste-index.html` l.8 et l.35 → recopié dans chaque
+`artistes/*/index.html`). Faux pour un artiste **sculpteur** (Test Tester, Dinso).
+À rendre **dynamique** selon le type de l'artiste (peinture / sculpture / mixte),
+ou à neutraliser (« Galerie »). Non urgent, à traiter avec les autres libellés
+éventuellement en dur.

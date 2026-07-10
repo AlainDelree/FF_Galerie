@@ -438,7 +438,9 @@ function _chargerOeuvres() {
     }
 
 
-    function ouvrirModal(toile) {
+    var _modalOnClose = null;
+    function ouvrirModal(toile, opts) {
+      _modalOnClose = (opts && opts.onClose) || null;
       document.getElementById('modalTitre').textContent = toile.titre || 'Sans titre';
 
       // Affiche un champ ou masque toute la ligne si valeur vide
@@ -446,7 +448,7 @@ function _chargerOeuvres() {
         const el = document.getElementById(id);
         const ligne = el && el.closest('.modal-ligne');
         if (valeur) {
-          el.textContent = valeur;
+          if (el) el.textContent = valeur;
           if (ligne) ligne.style.display = '';
         } else {
           if (ligne) ligne.style.display = 'none';
@@ -500,10 +502,13 @@ function _chargerOeuvres() {
       if (modalOverlay) modalOverlay.classList.add('visible');
       document.body.style.overflow = 'hidden';
     }
+    try { window.ouvrirModal = ouvrirModal; } catch (e) {}
 
     function fermerModal() {
       if (modalOverlay) modalOverlay.classList.remove('visible');
       document.body.style.overflow = '';
+      var cb = _modalOnClose; _modalOnClose = null;
+      if (typeof cb === 'function') cb();
     }
 
     var _mf = document.getElementById('modalFermer'); if (_mf) _mf.addEventListener('click', fermerModal);

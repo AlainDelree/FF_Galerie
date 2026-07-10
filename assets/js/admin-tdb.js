@@ -38,6 +38,32 @@ var TYPES_SALLE = {
   sculpture: { vues: ['galerie-gsm', 'galerie-pc'], greffons: ['immersive', 'descriptive'] }
 };
 
+/* Miroir admin du catalogue VITRINE_SCENARIOS (galerie-sculpture.js).
+   Les CLES et 'req' doivent rester synchronises avec ce fichier ; le libelle
+   est redige ici pour le proprietaire (Fred). */
+var VITRINE_SCENARIOS_ADMIN = [
+  { key:'imm_desc',    req:['imm','desc'], ouverture:'directe', cible:'imm',  suivant:'desc', label:'Clic œuvre → immersive, puis Suivant → détail' },
+  { key:'imm_desc_2t', req:['imm','desc'], ouverture:'2temps',  cible:'imm',  suivant:'desc', label:'Ouverture en 2 temps, œuvre → immersive, Suivant → détail' },
+  { key:'desc',        req:['desc'],       ouverture:'directe', cible:'desc', suivant:null,   label:'Clic œuvre → détail' },
+  { key:'desc_imm',    req:['desc','imm'], ouverture:'directe', cible:'desc', suivant:'imm',  label:'Clic œuvre → détail, puis Suivant → immersive' },
+  { key:'imm',         req:['imm'],        ouverture:'directe', cible:'imm',  suivant:null,   label:'Clic œuvre → immersive' },
+  { key:'vitrine',     req:[],             ouverture:'directe', cible:null,   suivant:null,   label:'Vitrine seule (pas de salle)' }
+];
+function _scenarioLabel(key) {
+  for (var i = 0; i < VITRINE_SCENARIOS_ADMIN.length; i++)
+    if (VITRINE_SCENARIOS_ADMIN[i].key === key) return VITRINE_SCENARIOS_ADMIN[i].label;
+  return key || '(aucun)';
+}
+/* Vrai si la salle contient au moins une vitrine (piece est_vitrine placee/affectee). */
+function _salleAUneVitrine(s) {
+  if (typeof toiles === 'undefined' || !toiles || !toiles.length) return false;
+  var ids = {};
+  (s.positions || []).forEach(function (p) { if (p && p.id != null) ids[p.id] = 1; });
+  (s.positions_mobile || []).forEach(function (p) { if (p && p.id != null) ids[p.id] = 1; });
+  (s.toiles || []).forEach(function (t) { var id = (t && typeof t === 'object') ? t.id : t; if (id != null) ids[id] = 1; });
+  return toiles.some(function (t) { return t && t.est_vitrine && ids[t.id]; });
+}
+
 /* ─── Méta-données par facette ─── */
 var FACETTES_META = {
   'galerie-pc': {
@@ -206,6 +232,9 @@ function _renderTDB() {
     });
     tdb.appendChild(gridG);
   }
+
+  /* ── Section scénario vitrine (sculpture uniquement) ── */
+  if (typeDef.greffons.length > 0) _renderSectionScenario(tdb, s);
 }
 
 /* Clone l'esthétique (apparence + greffons) d'une salle source vers la salle cible.
@@ -565,6 +594,259 @@ var _DECOR_CHAMPS = [
   { key: 'piquet', label: 'Piquet',    defaut: '#c8a050' },
   { key: 'corde',  label: 'Corde',     defaut: '#8b0020' }
 ];
+
+/* ── Section scénario vitrine (combobox + propagation) ── */
+/* Ancien format (cle string) -> suite d'etapes. Le nouveau format est deja un tableau. */
+function _normScenarioAdmin(scn) {
+  if (Array.isArray(scn)) return scn.slice();
+  if (!scn) return [];
+  var sc = null;
+  for (var i = 0; i < VITRINE_SCENARIOS_ADMIN.length; i++)
+    if (VITRINE_SCENARIOS_ADMIN[i].key === scn) sc = VITRINE_SCENARIOS_ADMIN[i];
+  if (!sc) return [];
+  var seq = [];
+  if (sc.ouverture === '2temps') { seq.push('fermee'); seq.push('ouverte'); }
+  else seq.push('ouverte');
+  if (sc.cible) seq.push(sc.cible);
+  if (sc.suivant && sc.suivant !== sc.cible) seq.push(sc.suivant);
+  return seq;
+}
+
+/* Options valides pour la PROCHAINE etape (filtre coherent). */
+function _optionsEtape(etapes) {
+  var last = etapes.length ? etapes[etapes.length - 1] : null;
+  if (!last) return ['fermee', 'ouverte'];       /* 1re case : etat de depart */
+  if (last === 'fermee') return ['ouverte'];      /* 2 temps -> ouverte obligatoire */
+  if (last === 'fiche') return [];                /* fiche = terminale */
+  var opts = [];                                   /* apres 'ouverte' ou une vue : vues restantes */
+  if (etapes.indexOf('imm')  < 0) opts.push('imm');
+  if (etapes.indexOf('desc') < 0) opts.push('desc');
+  if (etapes.indexOf('fiche') < 0)          opts.push('fiche');
+  return opts;
+}
+
+/* Petite illustration SVG d'une etape du parcours vitrine. */
+function _miniVitrine(etat) {
+  var SVG = {
+    fermee:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="6" y="4" width="42" height="38" rx="2" fill="#6a4b28" stroke="#3a2817"/>' +
+      '<rect x="9" y="8" width="17" height="30" rx="1" fill="#7a5730" stroke="#4a3320"/>' +
+      '<rect x="28" y="8" width="17" height="30" rx="1" fill="#7a5730" stroke="#4a3320"/>' +
+      '<circle cx="24" cy="23" r="1.6" fill="#e8cf86"/><circle cx="30" cy="23" r="1.6" fill="#e8cf86"/></svg>',
+    ouverte:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="6" y="4" width="42" height="38" rx="2" fill="#5a3f22" stroke="#3a2817"/>' +
+      '<rect x="12" y="9" width="30" height="28" fill="#3a2a18"/>' +
+      '<rect x="15" y="14" width="7" height="8" fill="#c8b088"/><rect x="25" y="13" width="6" height="9" fill="#a89060"/><rect x="33" y="14" width="6" height="8" fill="#b8a070"/>' +
+      '<rect x="14" y="26" width="8" height="7" fill="#b0a078"/><rect x="30" y="25" width="7" height="8" fill="#c0a880"/>' +
+      '<path d="M6 4 L1 8 L1 38 L6 42 Z" fill="#6a4b28" stroke="#3a2817"/>' +
+      '<path d="M48 4 L53 8 L53 38 L48 42 Z" fill="#6a4b28" stroke="#3a2817"/></svg>',
+    imm:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#12100c"/>' +
+      '<ellipse cx="27" cy="35" rx="20" ry="4" fill="#8a6228" opacity="0.5"/>' +
+      '<rect x="21" y="28" width="12" height="6" rx="1" fill="#f0ece4"/>' +
+      '<path d="M27 11 C21 18 24 27 27 28 C30 27 33 18 27 11 Z" fill="#c9b79c"/>' +
+      '<rect x="9" y="33" width="2" height="7" fill="#c8a050"/><rect x="43" y="33" width="2" height="7" fill="#c8a050"/>' +
+      '<circle cx="10" cy="33" r="1.8" fill="#e8cf86"/><circle cx="44" cy="33" r="1.8" fill="#e8cf86"/>' +
+      '<path d="M10 36 Q27 42 44 36" stroke="#8b0020" stroke-width="1.5" fill="none"/></svg>',
+    fiche:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#f4efe6"/>' +
+      '<rect x="6" y="8" width="22" height="28" fill="#3a5a7a"/>' +
+      '<rect x="6" y="28" width="22" height="8" fill="#6a5a3a"/>' +
+      '<circle cx="12" cy="15" r="3" fill="#e8d070"/>' +
+      '<rect x="32" y="10" width="16" height="3" rx="1" fill="#3a2e20"/>' +
+      '<rect x="32" y="17" width="11" height="2" rx="1" fill="#9a8b76"/>' +
+      '<rect x="32" y="23" width="16" height="2" rx="1" fill="#cabfae"/>' +
+      '<rect x="32" y="27" width="16" height="2" rx="1" fill="#cabfae"/>' +
+      '<rect x="32" y="31" width="10" height="2" rx="1" fill="#cabfae"/></svg>',
+    desc:
+      '<svg width="54" height="44" viewBox="0 0 54 44">' +
+      '<rect x="2" y="2" width="50" height="40" rx="3" fill="#3a3330"/>' +
+      '<rect x="2" y="32" width="50" height="10" fill="#2a231e"/>' +
+      '<path d="M27 3 L20 10 L34 10 Z" fill="#f0e0a0" opacity="0.16"/>' +
+      '<rect x="17" y="8" width="20" height="18" rx="1" fill="#c8a050"/>' +
+      '<rect x="19" y="10" width="16" height="14" fill="#3a5a7a"/>' +
+      '<rect x="19" y="19" width="16" height="5" fill="#6a5a3a"/>' +
+      '<circle cx="25" cy="15" r="2.3" fill="#e8d070"/>' +
+      '<rect x="22" y="29" width="10" height="2" rx="1" fill="#9a8b76"/></svg>'
+  };
+  var CAP = { fermee:'ferm\u00e9e', ouverte:'ouverte', fiche:'fiche', desc:'descriptive', imm:'immersif' };
+  var box = document.createElement('div');
+  box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
+  var frame = document.createElement('div');
+  frame.style.cssText = 'width:54px;height:44px;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.5);line-height:0;';
+  frame.innerHTML = SVG[etat] || '';
+  var cap = document.createElement('div');
+  cap.style.cssText = 'font-size:9px;color:#9a8b76;';
+  cap.textContent = CAP[etat] || '';
+  box.appendChild(frame); box.appendChild(cap);
+  return box;
+}
+
+var _scenDirtySalleId = null;   /* salle dont le scenario est modifie mais pas encore enregistre */
+function _renderSectionScenario(tdb, s) {
+  var titre = document.createElement('div');
+  titre.className = 'tdb-section-lbl';
+  titre.textContent = 'Sc\u00e9nario vitrine';
+  tdb.appendChild(titre);
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:4px 2px 2px;';
+
+  var aVitrine = _salleAUneVitrine(s);
+  var immOn  = !!(s.greffons && s.greffons.immersive  && s.greffons.immersive.actif);
+  var descOn = !!(s.greffons && s.greffons.descriptive && s.greffons.descriptive.actif);
+  var etapes = _normScenarioAdmin(s.scenario);
+  /* Auto-nettoyage : une vue dont la presentation est desactivee est retiree du
+     scenario (couvre la desactivation ET les scenarios deja "sales"). Persiste. */
+  var etapesOk = etapes.filter(function (e) { return (e === 'imm') ? immOn : (e === 'desc') ? descOn : true; });
+  if (etapesOk.length !== etapes.length) {
+    /* Nettoyage EN MEMOIRE seulement (affichage coherent). Pas de save ici : la
+       persistance suit le save deja declenche par l'action en cours (ex. toggle
+       greffon appelle _renderTDB PUIS sauvegarder). Sauver ici creerait un 2e
+       commit concurrent -> course sur commitMulti. */
+    etapes = etapesOk;
+    if (etapes.length) salleActive.scenario = etapes.slice(); else delete salleActive.scenario;
+  }
+
+  /* Compositeur : on modifie le scenario EN MEMOIRE (marque "non enregistre").
+     La persistance ne se fait qu'au clic sur "Enregistrer" -> un seul commit/deploiement. */
+  function appliquer() {
+    if (etapes.length) salleActive.scenario = etapes.slice();
+    else delete salleActive.scenario;
+    _scenDirtySalleId = salleActive.id;
+    _renderTDB();
+  }
+  function fleche() {
+    var a = document.createElement('span');
+    a.textContent = '\u203a';
+    a.style.cssText = 'align-self:center;color:#c8a050;font-size:18px;line-height:44px;';
+    return a;
+  }
+
+  /* Rangee des etapes composees */
+  var rangee = document.createElement('div');
+  rangee.style.cssText = 'display:flex;align-items:flex-start;gap:4px;flex-wrap:wrap;';
+  etapes.forEach(function (et, i) {
+    if (i > 0) rangee.appendChild(fleche());
+    var caseEl = document.createElement('div');
+    caseEl.style.cssText = 'position:relative;';
+    caseEl.appendChild(_miniVitrine(et));
+    if (aVitrine) {
+      var x = document.createElement('button');
+      x.type = 'button'; x.textContent = '\u00d7'; x.title = 'Retirer \u00e0 partir d\u2019ici';
+      x.style.cssText = 'position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;' +
+        'border:1px solid #6a2020;background:#3a1414;color:#f0c0c0;font-size:12px;line-height:1;cursor:pointer;padding:0;';
+      x.addEventListener('click', function () { etapes = etapes.slice(0, i); appliquer(); });
+      caseEl.appendChild(x);
+    }
+    rangee.appendChild(caseEl);
+  });
+
+  var options = _optionsEtape(etapes);
+  function estActive(opt) { return opt === 'imm' ? immOn : (opt === 'desc' ? descOn : true); }
+
+  /* Panneau d'options (miniatures a ajouter), revele par la case "+".
+     Les vues dont la presentation n'est pas activee sont AFFICHEES grisees. */
+  var panneau = document.createElement('div');
+  panneau.style.cssText = 'display:none;flex-wrap:wrap;gap:8px;padding:8px;border:1px dashed #3a2e20;border-radius:10px;background:#150f09;';
+  var yaGrise = false;
+  options.forEach(function (opt) {
+    var actif = estActive(opt);
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.style.cssText = 'background:none;border:1px solid #3a2e20;border-radius:8px;padding:4px;' +
+      (actif ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:.4;');
+    b.appendChild(_miniVitrine(opt));
+    if (actif) {
+      b.addEventListener('click', function () { etapes = etapes.concat([opt]); appliquer(); });
+    } else {
+      yaGrise = true; b.disabled = true;
+      b.title = 'Activez la pr\u00e9sentation \u00ab ' + (opt === 'imm' ? 'immersive' : 'descriptive') + ' \u00bb (section Pr\u00e9sentation) pour utiliser cette vue.';
+    }
+    panneau.appendChild(b);
+  });
+  if (yaGrise) {
+    var hint = document.createElement('div');
+    hint.style.cssText = 'flex-basis:100%;font-size:10px;color:#9a8b76;line-height:1.3;';
+    hint.textContent = 'Les vues gris\u00e9es demandent d\u2019activer leur pr\u00e9sentation dans la section \u00ab Pr\u00e9sentation \u00bb ci-dessus.';
+    panneau.appendChild(hint);
+  }
+
+  if (aVitrine && options.length) {
+    if (etapes.length) rangee.appendChild(fleche());
+    var plus = document.createElement('button');
+    plus.type = 'button'; plus.textContent = '+';
+    plus.title = 'Ajouter une \u00e9tape';
+    plus.style.cssText = 'width:54px;height:44px;border-radius:4px;border:2px dashed #c8a050;background:#1a130c;color:#c8a050;font-size:22px;cursor:pointer;';
+    plus.addEventListener('click', function () { panneau.style.display = (panneau.style.display === 'none') ? 'flex' : 'none'; });
+    rangee.appendChild(plus);
+  }
+  wrap.appendChild(rangee);
+  if (options.length) wrap.appendChild(panneau);
+
+  var note = document.createElement('div');
+  note.style.cssText = 'font-size:11px;color:#9a8b76;line-height:1.35;';
+  note.textContent = etapes.length
+    ? 'S\u2019applique \u00e0 toutes les vitrines de cette salle. Les objets pos\u00e9s au sol ne sont pas affect\u00e9s.'
+    : 'Composez le parcours en ajoutant des \u00e9tapes (vitrine \u2192 vues). Vide = comportement par d\u00e9faut.';
+  wrap.appendChild(note);
+
+  /* Bouton ENREGISTRER : persiste la composition (un seul commit). */
+  if (aVitrine) {
+    var dirty = (_scenDirtySalleId === s.id);
+    var btnSave = document.createElement('button');
+    btnSave.type = 'button';
+    btnSave.textContent = dirty ? '\ud83d\udcbe Enregistrer le sc\u00e9nario' : 'Sc\u00e9nario enregistr\u00e9 \u2713';
+    btnSave.disabled = !dirty;
+    btnSave.style.cssText = 'align-self:flex-start;font-size:13px;font-weight:600;border-radius:8px;padding:9px 14px;' +
+      'cursor:' + (dirty ? 'pointer' : 'default') + ';border:1px solid ' + (dirty ? '#c8a050' : '#3a2e20') + ';' +
+      'background:' + (dirty ? '#3a2c12' : '#1a130c') + ';color:' + (dirty ? '#f0d890' : '#7a6f5e') + ';';
+    btnSave.addEventListener('click', function () {
+      if (typeof sauvegarder !== 'function') return;
+      sauvegarder('[admin] Sc\u00e9nario vitrine \u2014 ' + (salleActive.nom || 'salle'), null)
+        .then(function () { _scenDirtySalleId = null; _renderTDB(); if (typeof toast === 'function') toast('Sc\u00e9nario enregistr\u00e9.'); })
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    });
+    wrap.appendChild(btnSave);
+    if (dirty) {
+      var warn = document.createElement('div');
+      warn.style.cssText = 'font-size:11px;color:#e0b040;';
+      warn.textContent = '\u26a0 Modifications non enregistr\u00e9es \u2014 cliquez sur \u00ab Enregistrer \u00bb.';
+      wrap.appendChild(warn);
+    }
+  }
+
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Appliquer aux autres salles';
+  btn.style.cssText = 'align-self:flex-start;font-size:12px;background:#2a2016;color:#e8dcc8;border:1px solid #3a2e20;border-radius:8px;padding:7px 10px;cursor:pointer;';
+  btn.addEventListener('click', function () {
+    var typeDe = function (o) { return o.type || (typeof ADMIN_CFG !== 'undefined' ? ADMIN_CFG.type : 'peinture'); };
+    var cibles = (typeof salles !== 'undefined' ? salles : []).filter(function (o) { return o.id !== salleActive.id && typeDe(o) === 'sculpture'; });
+    if (!cibles.length) { if (typeof toast === 'function') toast('Aucune autre salle sculpture.'); return; }
+    if (!confirm('Appliquer ce sc\u00e9nario \u00e0 toutes les autres salles sculpture (' + cibles.length + ') ?\n\nLes salles sans le greffon requis ignoreront les vues concern\u00e9es.')) return;
+    cibles.forEach(function (o) { if (etapes.length) o.scenario = etapes.slice(); else delete o.scenario; });
+    if (typeof sauvegarder === 'function') {
+      sauvegarder('[admin] Sc\u00e9nario vitrine propag\u00e9 \u00e0 toutes les salles sculpture', null)
+        .catch(function (e) { if (typeof toast === 'function') toast('Erreur : ' + e.message, 'err'); });
+    }
+    _scenDirtySalleId = null;
+    if (typeof toast === 'function') toast('Sc\u00e9nario appliqu\u00e9 \u00e0 ' + cibles.length + ' salle(s).');
+  });
+  if (!aVitrine) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed'; }
+  wrap.appendChild(btn);
+
+  if (!aVitrine) {
+    note.textContent = 'Aucune vitrine dans cette salle \u2014 ajoutez-en une pour activer les sc\u00e9narios.';
+    wrap.style.opacity = '.6';
+  }
+
+  tdb.appendChild(wrap);
+}
 
 /* ── Toggle greffon on/off ── */
 function _toggleGreffon(greffon) {

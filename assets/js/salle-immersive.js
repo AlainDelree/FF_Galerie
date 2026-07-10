@@ -5,11 +5,14 @@
    ============================================================= */
 
 let _threeLoaded = false;
+let _threePromise = null;
 let _immRAF = null;
+let _immRenderer = null;
 
 /* ── Charger Three.js + GLTFLoader ── */
 function chargerThreeJS() {
-  return new Promise((resolve) => {
+  if (_threePromise) return _threePromise;
+  _threePromise = new Promise((resolve) => {
     if (_threeLoaded) return resolve();
     const s1 = document.createElement('script');
     s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -27,6 +30,7 @@ function chargerThreeJS() {
     };
     document.head.appendChild(s1);
   });
+  return _threePromise;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -53,8 +57,20 @@ var DECOR_IMMERSIVE_DEFAUT = {
   corde:  '#8b0020'
 };
 
-async function ouvrirSalleImmersive(piece, decor, descDecor) {
-  if (document.querySelector('.imm-overlay')) return;
+/* Nettoyage propre de la salle immersive : annule la boucle d'animation et LIBERE
+   le renderer WebGL avant de retirer l'overlay (sinon renderers/loops zombie -> lenteurs). */
+function _disposeImmersive() {
+  if (_immRAF) { cancelAnimationFrame(_immRAF); _immRAF = null; }
+  if (_immRenderer) { try { _immRenderer.dispose(); } catch (e) {} _immRenderer = null; }
+  var o = document.querySelector('.imm-overlay');
+  if (o) o.remove();
+}
+
+async function ouvrirSalleImmersive(piece, decor, descDecor, nav) {
+  /* Repartir propre : disposer l'ancienne immersive (renderer) + retirer autres scenes. */
+  _disposeImmersive();
+  var _vx = document.querySelectorAll('.vitrine-overlay, .obs-overlay');
+  for (var _i = 0; _i < _vx.length; _i++) _vx[_i].remove();
   await chargerThreeJS();
 
   /* Fusion décor reçu + valeurs par défaut */
@@ -113,6 +129,10 @@ async function ouvrirSalleImmersive(piece, decor, descDecor) {
   btnFermer.innerHTML = '\u2715';
   overlay.appendChild(btnFermer);
 
+  if (nav && typeof _portesNavScenario === 'function') {
+    /* Mode scenario : portes retour(vitrine)/Suivant, pas les portes par defaut */
+    _portesNavScenario(overlay, fermer, nav);
+  } else {
   /* ── Porte gauche → retour galerie ── */
   const porteG = document.createElement('div');
   porteG.className = 'porte-nav porte-nav--gauche';
@@ -161,15 +181,18 @@ async function ouvrirSalleImmersive(piece, decor, descDecor) {
     }, 350);
   });
   overlay.appendChild(plaqueD2);
+  }
 
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
   window.scrollTo(0, 0);
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  if (typeof _leverVoile === 'function') setTimeout(_leverVoile, 60);
 
   /* ══ THREE.JS SCENE ══ */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  _immRenderer = renderer;
   renderer.setSize(VW, VH);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -446,7 +469,7 @@ async function ouvrirSalleImmersive(piece, decor, descDecor) {
   function fermer() {
     if (_immRAF) { cancelAnimationFrame(_immRAF); _immRAF = null; }
     window.removeEventListener('resize', onResize);
-    renderer.dispose();
+    renderer.dispose(); _immRenderer = null;
     overlay.style.opacity = '0';
     setTimeout(() => {
       overlay.remove();
