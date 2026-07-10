@@ -5,12 +5,14 @@
    ============================================================= */
 
 let _threeLoaded = false;
+let _threePromise = null;
 let _immRAF = null;
 let _immRenderer = null;
 
 /* ── Charger Three.js + GLTFLoader ── */
 function chargerThreeJS() {
-  return new Promise((resolve) => {
+  if (_threePromise) return _threePromise;
+  _threePromise = new Promise((resolve) => {
     if (_threeLoaded) return resolve();
     const s1 = document.createElement('script');
     s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -28,6 +30,7 @@ function chargerThreeJS() {
     };
     document.head.appendChild(s1);
   });
+  return _threePromise;
 }
 
 /* ══════════════════════════════════════════════════════════════

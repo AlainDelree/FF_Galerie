@@ -785,6 +785,44 @@ function _vantauxBois(portesOuv, couleurV, o) {
   return portesB;
 }
 
+/* Vantaux VERRE (miniature au sol) : deux vantaux translucides qui pivotent selon
+   portesOuv, comme le bois. Meme mecanique (rotateY + data-open pour le 2-temps). */
+function _vantauxVerre(portesOuv, o) {
+  o = o || {};
+  var edge  = (o.edge    != null) ? o.edge    : 0;
+  var openD = (o.openDeg != null) ? o.openDeg : 104;
+  var bord  = (o.bord    != null) ? o.bord    : 2;
+  var knob  = (o.knob    != null) ? o.knob    : 6;
+  var zc    = (o.z       != null) ? o.z       : 4;
+  var kOff  = Math.max(3, Math.round(knob * 0.7));
+  var portes = document.createElement('div');
+  portes.style.cssText = 'position:absolute;inset:0;z-index:' + zc + ';pointer-events:none;perspective:1500px;';
+  var makeDoor = function (sideLeft) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:absolute;top:0;bottom:0;width:calc(50% - ' + edge + 'px);box-sizing:border-box;' +
+      (sideLeft ? 'left:' + edge + 'px;transform-origin:left center;' : 'right:' + edge + 'px;transform-origin:right center;') +
+      'border:' + bord + 'px solid #141414;border-radius:3px;' +
+      'background:linear-gradient(120deg,rgba(205,222,235,.16),rgba(205,222,235,.05) 45%,rgba(255,255,255,.11));' +
+      'box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.4);' +
+      'transition:transform .55s cubic-bezier(.5,0,.2,1);' +
+      (portesOuv ? ('transform:rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg);') : 'transform:rotateY(0deg);');
+    d.dataset.open = 'rotateY(' + (sideLeft ? '-' + openD : '' + openD) + 'deg)';
+    var refl = document.createElement('div');
+    refl.style.cssText = 'position:absolute;inset:0;border-radius:2px;pointer-events:none;opacity:.55;' +
+      'background:linear-gradient(120deg,transparent 32%,rgba(255,255,255,.16) 48%,transparent 58%);';
+    d.appendChild(refl);
+    var kn = document.createElement('div');
+    kn.style.cssText = 'position:absolute;' + (sideLeft ? ('right:' + kOff + 'px;') : ('left:' + kOff + 'px;')) + 'top:50%;transform:translateY(-50%);' +
+      'width:' + knob + 'px;height:' + knob + 'px;border-radius:50%;z-index:3;' +
+      'background:radial-gradient(circle at 35% 30%,#f6e2a0,#b58f3e 70%,#7a5c22);box-shadow:0 1px 3px rgba(0,0,0,.6);';
+    d.appendChild(kn);
+    return d;
+  };
+  portes.appendChild(makeDoor(true));
+  portes.appendChild(makeDoor(false));
+  return portes;
+}
+
 function ouvrirVitrine(piece, pieces, opts) {
   /* Repartir propre : disposer la salle immersive (renderer WebGL) puis retirer les autres scenes. */
   if (typeof _disposeImmersive === 'function') _disposeImmersive();
@@ -1155,6 +1193,14 @@ function creerVitrine(piece, pos, pieces, opts) {
       knob:    Math.max(4, Math.round(2.2 * u)),
       hingeW:  Math.max(3, Math.round(1.4 * u)),
       hingeH:  Math.max(6, Math.round(3.2 * u)),
+      z: 4
+    }));
+  } else {
+    /* Vitrine verre : vantaux translucides qui pivotent aussi selon le scenario. */
+    meuble.appendChild(_vantauxVerre(portesOuvF, {
+      edge: 0, openDeg: 104,
+      bord: Math.max(1, Math.round(u * 0.6)),
+      knob: Math.max(4, Math.round(2 * u)),
       z: 4
     }));
   }
