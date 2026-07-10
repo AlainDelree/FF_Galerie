@@ -226,8 +226,7 @@ var _apparenceDirty = false;
 function _majBtnSaveApparence() {
   var b = document.getElementById('btn-save-apparence');
   if (!b) return;
-  b.style.display = _apparenceDirty ? '' : 'none';
-  if (_apparenceDirty) { b.style.background = 'var(--gold)'; b.style.color = '#fff'; }
+  b.style.display = _apparenceDirty ? 'block' : 'none';
 }
 function _marquerApparenceModifiee() { _apparenceDirty = true; _majBtnSaveApparence(); }
 function _resetApparenceDirty() { _apparenceDirty = false; _majBtnSaveApparence(); }
