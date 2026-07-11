@@ -10,7 +10,7 @@ compatibility_date = "2026-07-11"
 # La commande affiche un id à coller ici.
 [[kv_namespaces]]
 binding = "FF_DATA"
-id = "À_REMPLIR_APRES_CREATION_NAMESPACE"
+id = "5f20dc12c6da46f4b2de603085792a5b"
 
 # Route à ajouter plus tard si le worker doit répondre sur un sous-domaine
 # dédié (ex. data.frederiqueferette.be) plutôt que sur workers.dev :
