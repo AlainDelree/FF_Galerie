@@ -119,3 +119,69 @@ quelques secondes, c'est un `ctx.waitUntil` en tâche de fond).
 Reste pour plus tard (hors Phase 1) : interface de restauration Ctrl+Z,
 indicateur d'état d'archive dans l'admin, extension de `CLE_VERS_CHEMIN` aux
 autres artistes/fichiers (Phase 2+).
+
+## Auth par personne (un token par personne, restitué par mot de passe)
+
+Résout le problème « chaque personne qui change d'appareil redemande son
+token » : chacun se connecte avec un nom d'utilisateur + mot de passe, et
+l'admin va chercher le bon token tout seul. Le token GitHub, lui, reste créé
+à la main sur github.com comme avant (impossible autrement).
+
+### Créer/mettre à jour un compte
+
+```bash
+export FF_DATA_URL="https://ff-data.alain-delree.workers.dev"
+FF_DATA_SECRET="colle-ici-la-valeur-de-bitwarden"
+export FF_DATA_SECRET
+
+cd data-worker
+./gerer-utilisateurs.sh creer fred
+# → demande le mot de passe et le token (rien ne s'affiche à l'écran)
+# → si le nom est "fred" ou "ferette", demande aussi la clé ff-data (optionnel)
+```
+
+### Supprimer un compte (ex. token fuité par cette personne)
+
+```bash
+./gerer-utilisateurs.sh supprimer fred
+```
+
+### Tests à la main
+
+```bash
+# Créer un compte de test
+./gerer-utilisateurs.sh creer test1
+# (mot de passe : test1234, token : n'importe quelle chaîne pour le test)
+
+# Login avec le bon mot de passe → doit renvoyer {"token":"..."}
+curl -s -X POST "$FF_DATA_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"utilisateur":"test1","mot_de_passe":"test1234"}'
+
+# Login avec un mauvais mot de passe → doit renvoyer 401 "Identifiants invalides"
+curl -s -X POST "$FF_DATA_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"utilisateur":"test1","mot_de_passe":"faux"}'
+
+# Après 5 échecs → doit renvoyer 429 "Trop de tentatives..."
+for i in 1 2 3 4 5; do
+  curl -s -X POST "$FF_DATA_URL/api/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"utilisateur":"test1","mot_de_passe":"faux"}'
+  echo
+done
+
+# Lecture directe du compte via le GET générique → doit renvoyer 401
+# (auth/* est bloqué en lecture publique, contrairement au reste de KV)
+curl -s "$FF_DATA_URL/api/auth/utilisateurs/test1"
+
+# Nettoyage
+./gerer-utilisateurs.sh supprimer test1
+```
+
+### Pas encore fait
+
+Le branchement dans `admin.html`/`admin.js` (écran de connexion avec nom
+d'utilisateur + mot de passe, qui appelle `/api/auth/login` au lieu de
+demander de coller le token à la main) — prévu une fois ces endpoints
+validés au `curl`.

@@ -24,6 +24,20 @@
    restauration Ctrl+Z (§3.4, Phase 4 du plan global), validation de schéma
    par type de clé.
 
+   Auth par personne (token restitué après utilisateur/mot de passe) :
+     - POST /api/auth/creer-utilisateur (protégé par FF_DATA_SECRET) :
+       {nom, mot_de_passe, token, ff_secret?} → hache (PBKDF2) et stocke.
+       Voir data-worker/gerer-utilisateurs.sh (utilitaire Alain).
+     - POST /api/auth/login (PUBLIC, forcément — c'est le point d'entrée
+       sans token) : {utilisateur, mot_de_passe} → {token, ff_secret?}.
+       Anti brute-force : bloqué 15 min après 5 échecs sur le même nom.
+     - Suppression d'un utilisateur (fuite d'un token) : DELETE générique
+       sur auth/utilisateurs/<nom> (protégé par FF_DATA_SECRET, rien de
+       spécifique à coder).
+     - auth/* est bloqué en lecture publique (GET générique) même si le
+       reste de KV est public par conception — ces enregistrements
+       contiennent les tokens en clair.
+
    Convention de clé KV = miroir du chemin fichier actuel, préfixé par
    artiste : ex. "ferette/salles", "dinso/oeuvres/sculpture" (voir §3.6 du
    plan). Le worker ne connaît pas la liste des artistes : tout chemin
@@ -41,7 +55,7 @@ const REPO_GITHUB = 'AlainDelree/FF_Galerie';
 
 const EN_TETES_CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-FF-Branch, X-FF-Message',
   'Access-Control-Max-Age': '86400'
 };
@@ -150,6 +164,111 @@ async function archiverVersGitHub(cle, contenuTexte, branche, message, env) {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   AUTH PAR PERSONNE — un token GitHub par personne, restitué après un
+   couple utilisateur/mot de passe, pour ne plus avoir à distribuer/faire
+   retrouver le token brut à chaque perte d'appareil.
+
+   Stockage KV :
+     auth/utilisateurs/<nom>  → { hash, sel, iterations, token, ff_secret? }
+     auth/tentatives/<nom>    → { echecs }  (TTL 15 min, anti brute-force)
+
+   - POST /api/auth/creer-utilisateur  (protégé par FF_DATA_SECRET, comme
+     PUT/DELETE) : { nom, mot_de_passe, token, ff_secret? } → hache le mot
+     de passe et stocke l'enregistrement. Écrase si <nom> existe déjà
+     (permet de changer un mot de passe ou faire tourner un token).
+   - POST /api/auth/login  (PUBLIC, par nécessité — c'est le point d'entrée
+     sans token) : { utilisateur, mot_de_passe } → { token, ff_secret? } si
+     valide. Bloqué 15 min après 5 échecs sur le même nom (KV expirationTtl).
+   - Suppression d'un utilisateur (ex. fuite d'un token) : PAS de nouvel
+     endpoint, réutilise le DELETE générique existant sur la clé
+     auth/utilisateurs/<nom> (déjà protégé par FF_DATA_SECRET).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function hexVersBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return bytes;
+}
+function bytesVersHex(bytes) {
+  return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+/* PBKDF2-SHA256, 100 000 itérations par défaut. selHex null → génère un sel
+   aléatoire (création) ; fourni → redérive avec ce sel (vérification). */
+async function hacherMotDePasse(motDePasse, selHex, iterations) {
+  iterations = iterations || 100000;
+  const selBytes = selHex ? hexVersBytes(selHex) : crypto.getRandomValues(new Uint8Array(16));
+  const materiau = await crypto.subtle.importKey('raw', new TextEncoder().encode(motDePasse), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: selBytes, iterations: iterations },
+    materiau, 256
+  );
+  return { hash: bytesVersHex(new Uint8Array(bits)), sel: bytesVersHex(selBytes) };
+}
+
+/* Normalise un nom d'utilisateur en identifiant de clé KV sûr (minuscules,
+   alphanumérique + tiret/underscore uniquement). */
+function normaliserNomUtilisateur(nom) {
+  return (nom || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+}
+
+async function gererCreationUtilisateur(request, env) {
+  if (!estAutorise(request, env)) return reponseJSON({ erreur: 'Non autorisé' }, 401);
+  let corps;
+  try { corps = await request.json(); } catch { return reponseJSON({ erreur: 'Corps JSON invalide' }, 400); }
+  const nom = normaliserNomUtilisateur(corps.nom);
+  const motDePasse = corps.mot_de_passe || '';
+  const token = corps.token || '';
+  if (!nom || !motDePasse || !token) {
+    return reponseJSON({ erreur: 'nom, mot_de_passe et token sont requis' }, 400);
+  }
+  const iterations = 100000;
+  const { hash, sel } = await hacherMotDePasse(motDePasse, null, iterations);
+  const enregistrement = { hash: hash, sel: sel, iterations: iterations, token: token };
+  if (corps.ff_secret) enregistrement.ff_secret = corps.ff_secret;
+  await env.FF_DATA.put('auth/utilisateurs/' + nom, JSON.stringify(enregistrement));
+  return reponseJSON({ ok: true, utilisateur: nom });
+}
+
+async function gererLogin(request, env) {
+  let corps;
+  try { corps = await request.json(); } catch { return reponseJSON({ erreur: 'Corps JSON invalide' }, 400); }
+  const nom = normaliserNomUtilisateur(corps.utilisateur);
+  const motDePasse = corps.mot_de_passe || '';
+  if (!nom || !motDePasse) return reponseJSON({ erreur: 'Identifiants manquants' }, 400);
+
+  const cleTentatives = 'auth/tentatives/' + nom;
+  const brutTentatives = await env.FF_DATA.get(cleTentatives);
+  const echecsActuels = brutTentatives ? (JSON.parse(brutTentatives).echecs || 0) : 0;
+  if (echecsActuels >= 5) {
+    return reponseJSON({ erreur: 'Trop de tentatives échouées, réessayez dans 15 minutes' }, 429);
+  }
+
+  const brutUtilisateur = await env.FF_DATA.get('auth/utilisateurs/' + nom);
+  let valide = false, enregistrement = null;
+  if (brutUtilisateur) {
+    enregistrement = JSON.parse(brutUtilisateur);
+    const { hash } = await hacherMotDePasse(motDePasse, enregistrement.sel, enregistrement.iterations);
+    valide = secretsEgaux(hash, enregistrement.hash);
+  } else {
+    /* Utilisateur inconnu : on hache quand même contre un sel factice pour
+       limiter (approximativement) la fuite d'info par timing — pas
+       parfait, mais mieux que de répondre instantanément. */
+    await hacherMotDePasse(motDePasse, '00000000000000000000000000000000', 100000);
+  }
+
+  if (!valide) {
+    await env.FF_DATA.put(cleTentatives, JSON.stringify({ echecs: echecsActuels + 1 }), { expirationTtl: 900 });
+    return reponseJSON({ erreur: 'Identifiants invalides' }, 401);
+  }
+
+  await env.FF_DATA.delete(cleTentatives).catch(function() {});
+  const reponse = { token: enregistrement.token };
+  if (enregistrement.ff_secret) reponse.ff_secret = enregistrement.ff_secret;
+  return reponseJSON(reponse);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -162,14 +281,28 @@ export default {
       return reponseJSON({ ok: true, worker: 'ff-data', phase: '1 (3+4)' });
     }
 
-    const cle = extraireCle(url.pathname);
-    if (!cle) return reponseJSON({ erreur: 'Clé invalide ou absente' }, 400);
-
     if (!env.FF_DATA) {
       return reponseJSON({ erreur: 'Namespace KV FF_DATA non lié à ce worker' }, 500);
     }
 
+    if (url.pathname === '/api/auth/creer-utilisateur' && request.method === 'POST') {
+      return gererCreationUtilisateur(request, env);
+    }
+    if (url.pathname === '/api/auth/login' && request.method === 'POST') {
+      return gererLogin(request, env);
+    }
+
+    const cle = extraireCle(url.pathname);
+    if (!cle) return reponseJSON({ erreur: 'Clé invalide ou absente' }, 400);
+
     if (request.method === 'GET') {
+      /* auth/* contient des tokens en clair (hash+sel+TOKEN+ff_secret) —
+         JAMAIS public, même si le reste de KV l'est par conception.
+         Personne n'a besoin de lire ces enregistrements directement : le
+         login (gererLogin) les lit lui-même côté serveur. */
+      if (cle.startsWith('auth/')) {
+        return reponseJSON({ erreur: 'Non autorisé' }, 401);
+      }
       const valeur = await env.FF_DATA.get(cle);
       if (valeur === null) return reponseJSON({ erreur: 'Clé introuvable', cle }, 404);
       // On stocke du JSON brut en valeur → on le renvoie tel quel, pas de ré-encapsulation.
