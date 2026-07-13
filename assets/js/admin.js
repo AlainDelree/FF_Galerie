@@ -883,6 +883,11 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
         console.warn('[ff-data] écriture KV échouée, repli commit Git pour salles.json:', eKV);
         fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
         toast('⚠ Sync directe indisponible (' + eKV.message + '), sauvegarde via Git', 'err', 4500);
+        /* Pas de perte de données (repli Git ci-dessus), mais un échec KV
+           répété casserait silencieusement le bénéfice de la migration —
+           alerte email/Issue comme les autres erreurs admin (priorité
+           'bug', pas 'bloquant' : rien n'est perdu, juste dégradé). */
+        rapporterErreur('Écriture KV ff-data échouée pour salles.json (repli Git effectué) : ' + eKV.message, 'bug', eKV.stack || '');
       }
     } else {
       fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
