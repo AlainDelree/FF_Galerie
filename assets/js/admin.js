@@ -946,10 +946,13 @@ function prochainId(typeOpt) {
 async function connexionParMotDePasse() {
   /* Si un artiste invité est sélectionné → redirection immédiate vers son
      admin, sans même tenter de login (chaque admin invité a son propre
-     écran de connexion). */
+     écran de connexion). sel.value contient déjà le chemin complet
+     ("admin.html?artiste=xxx", voir admin-artistes.js) — PAS besoin de
+     concaténer 'admin.html' (bug pré-existant, jamais déclenché avant
+     : donnait "admin.html?artiste=dinsoadmin.html"). */
   const sel = $('sel-artiste');
   if (sel && sel.value) {
-    window.location.href = sel.value + 'admin.html';
+    window.location.href = sel.value;
     return;
   }
   const nom = $('inp-auth-nom').value.trim();
