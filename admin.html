@@ -58,7 +58,7 @@
 
     <p style="margin-top:1.2rem;"><a href="#" id="lien-token-manuel" style="font-size:13px;color:var(--muted);">Entrer le token manuellement à la place</a></p>
 
-    <div id="bloc-token-manuel" style="display:none;margin-top:1rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
+    <div id="bloc-token-manuel" style="display:none;margin-top:1rem;padding-top:1.2rem;border-top:1px solid var(--brd);">
       <p style="font-size:13px;color:var(--muted);line-height:1.7;">Un token GitHub permet de sauvegarder directement sur le site. Il reste sur cet appareil uniquement.</p>
       <div class="steps">
         <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Obtenir un token</p>
@@ -78,7 +78,7 @@
       <div class="err-txt" id="token-err"></div>
       <button class="btn btn-or" id="btn-token">Vérifier et enregistrer</button>
 
-      <div id="bloc-ff-secret" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
+      <div id="bloc-ff-secret" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--brd);">
         <p style="font-size:13px;color:var(--muted);line-height:1.7;">Clé de synchronisation directe des salles (Cloudflare KV). Optionnelle : sans elle, la sauvegarde des salles repasse automatiquement par Git (plus lente, mais rien n'est perdu).</p>
         <label class="lbl" for="inp-ff-secret">Clé ff-data (Bitwarden)</label>
         <input class="inp" type="password" id="inp-ff-secret" placeholder="colle la clé ici">
