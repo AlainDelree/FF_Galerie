@@ -40,8 +40,17 @@ const ADMIN_CFG = {
   prefix:   window.ADMIN_PREFIX    || 'ff',
   nom:      window.ADMIN_NOM       || 'Frédérique Ferette',
   logo:     window.ADMIN_LOGO      || 'FF',
-  type:     window.ADMIN_TYPE      || 'peinture'
+  type:     window.ADMIN_TYPE      || 'peinture',
+  /* Migration KV Phase 1 (étape 3) : true uniquement pour Fred (voir
+     admin.html). Les invités gardent l'écriture Git classique. */
+  sallesViaKV: window.ADMIN_SALLES_VIA_KV === true
 };
+
+/* Endpoint ff-data pour la clé « salles » de Fred. Utilisé en lecture (avec
+   repli Git) et en écriture (avec repli Git si l'appel échoue) — voir
+   _fetchSallesAdmin() / _sauvegarderSallesKV(). Sans effet si sallesViaKV
+   est false. */
+const FF_DATA_SALLES_API = window.FF_DATA_SALLES_API || 'https://ff-data.alain-delree.workers.dev/api/ferette/salles';
 
 /* Appliquer le nom/logo dès le chargement */
 (function () {
@@ -66,12 +75,18 @@ const ADMIN_CFG = {
     const ejs = document.getElementById('bloc-emailjs');
     if (ejs) ejs.style.display = 'none';
   }
+  /* Bloc secret ff-data : uniquement pertinent pour Fred (sallesViaKV) */
+  if (!ADMIN_CFG.sallesViaKV) {
+    const bloc = document.getElementById('bloc-ff-secret');
+    if (bloc) bloc.style.display = 'none';
+  }
 })();
 /* Clés de stockage dérivées du prefix */
 const K = {
   pw:       ADMIN_CFG.prefix + '_pw_hash',
   auth:     ADMIN_CFG.prefix + '_auth',
   token:    'ff_gh_token',          /* token partagé — même repo */
+  ffSecret: 'ff_data_secret',       /* secret ff-data — partagé, Fred uniquement */
   mur_hist: ADMIN_CFG.prefix + '_mur_hist',
   cad_hist: ADMIN_CFG.prefix + '_cad_hist'
 };
@@ -205,6 +220,7 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 // ÉTAT
 // ═══════════════════════════════════════════════
 let token = '';
+let ffSecret = localStorage.getItem(K.ffSecret) || '';
 let tailles = []; // codes de taille {code, label}
 let toiles = [], salles = [];
 let nextId = 1; // ID plancher monotone — ne redescend jamais après suppression
@@ -432,6 +448,54 @@ async function lireRaw(chemin) {
   const r = await apiGH("/repos/" + REPO + "/contents/" + chemin + "?ref=" + BRANCH);
   const bytes = Uint8Array.from(atob(r.content.replace(/\n/g, '')), function(c) { return c.charCodeAt(0); });
   return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ═══ Migration KV Phase 1 (étape 3) — lecture/écriture des salles de Fred ═══
+   Principe : KV fait autorité (instantané), Git reste l'archive (commitée
+   par le worker ff-data en arrière-plan). Repli automatique sur Git dans
+   les deux sens si KV est indisponible, pour ne jamais perdre de données
+   ni bloquer l'admin. Sans effet si ADMIN_CFG.sallesViaKV est false
+   (invités) : comportement Git classique inchangé. */
+
+/* Lecture : API ff-data en priorité (timeout 4s), repli lireRaw() (Git) si
+   erreur/timeout/HTTP non-ok. */
+async function _fetchSallesAdmin() {
+  if (!ADMIN_CFG.sallesViaKV) return lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+  try {
+    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const minuteur = ctrl ? setTimeout(function() { ctrl.abort(); }, 4000) : null;
+    const rep = await fetch(FF_DATA_SALLES_API, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+    if (minuteur) clearTimeout(minuteur);
+    if (rep.ok) return await rep.json();
+    console.warn('[ff-data] admin: lecture salles HTTP ' + rep.status + ', repli Git');
+  } catch (e) {
+    console.warn('[ff-data] admin: lecture salles indisponible, repli Git:', e);
+  }
+  return lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+}
+
+/* Écriture : PUT direct vers ff-data (le worker archive sur Git en tâche de
+   fond). Lève une erreur si ça échoue (secret manquant/invalide, réseau,
+   worker down) — c'est à l'appelant (sauvegarder()) de décider du repli
+   Git, PAS cette fonction : elle ne doit jamais faire semblant d'avoir
+   réussi. */
+async function _sauvegarderSallesKV(payloadTexte, message) {
+  if (!ffSecret) throw new Error('clé ff-data non configurée sur cet appareil');
+  const rep = await fetch(FF_DATA_SALLES_API, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + ffSecret,
+      'Content-Type': 'application/json',
+      'X-FF-Branch': BRANCH,
+      'X-FF-Message': message || 'Admin : sauvegarde salles'
+    },
+    body: payloadTexte
+  });
+  if (!rep.ok) {
+    const e = await rep.json().catch(function() { return { message: rep.statusText }; });
+    throw new Error(e.erreur || e.message || ('HTTP ' + rep.status));
+  }
+  return rep.json();
 }
 
 /* File d'attente : garantit que les commits s'exécutent
@@ -684,7 +748,7 @@ async function chargerTout() {
   try {
     const [oeuvresParType, sData] = await Promise.all([
       _lireToutesOeuvres(),
-      lireRaw(ADMIN_CFG.repoPath + 'salles.json')
+      _fetchSallesAdmin()
     ]);
     _imgCacheToken = Date.now();
 
@@ -805,11 +869,30 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
     var typePrincipal = ADMIN_CFG.type || 'peinture';
     if (_nextIdParType[typePrincipal]) nextId = _nextIdParType[typePrincipal];
 
-    fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) });
-    await commitMulti(fichiers, 'Admin : ' + message);
+    var sallesTexte = JSON.stringify({ salles }, _sansTemp, 2);
+    var _kvEchec = false;
+    if (ADMIN_CFG.sallesViaKV) {
+      /* Fred : KV en priorité (instantané, archivé sur Git par le worker
+         ff-data en arrière-plan). Si la KV échoue (secret manquant/invalide,
+         réseau, worker down), on retombe sur un commit Git classique dans
+         CE MÊME appel — jamais de sauvegarde perdue, juste plus lente. */
+      try {
+        await _sauvegarderSallesKV(sallesTexte, 'Admin : ' + message);
+      } catch (eKV) {
+        _kvEchec = true;
+        console.warn('[ff-data] écriture KV échouée, repli commit Git pour salles.json:', eKV);
+        fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
+        toast('⚠ Sync directe indisponible (' + eKV.message + '), sauvegarde via Git', 'err', 4500);
+      }
+    } else {
+      fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
+    }
+    if (fichiers.length) await commitMulti(fichiers, 'Admin : ' + message);
     _imgCacheToken = Date.now();
     syncBadge('ok');
-    if (toastMsg) toast(toastMsg);
+    /* Le toast d'échec KV ci-dessus reste affiché : un succès générique par-
+       dessus masquerait un vrai avertissement (sync directe indisponible). */
+    if (toastMsg && !_kvEchec) toast(toastMsg);
     /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
     if (typeof _arrangerSnapshot !== 'undefined' && _arrangerSnapshot && salleActive) {
       _arrangerSnapshot = {
@@ -875,6 +958,20 @@ async function validerToken() {
   finally { btn.disabled = false; btn.textContent = 'Vérifier et enregistrer'; }
 }
 
+/* Secret ff-data (Migration KV Phase 1, étape 3) : pas de vérification
+   réseau ici (contrairement au token GitHub) — un secret erroné sera de
+   toute façon détecté au premier PUT réel et déclenchera le repli Git
+   automatique dans sauvegarder(), sans bloquer l'admin. */
+function enregistrerFfSecret() {
+  const s = $('inp-ff-secret').value.trim();
+  if (!s) { $('ff-secret-err').textContent = 'Entrez une clé.'; return; }
+  ffSecret = s;
+  localStorage.setItem(K.ffSecret, s);
+  $('inp-ff-secret').value = '';
+  $('ff-secret-err').textContent = '';
+  toast('✓ Clé ff-data enregistrée');
+}
+
 // ═══════════════════════════════════════════════
 // INIT ÉVÉNEMENTS
 // ═══════════════════════════════════════════════
@@ -893,6 +990,10 @@ $('btn-oeil').addEventListener('click', () => {
 // Token
 $('inp-token').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-token').click(); });
 $('btn-token').addEventListener('click', validerToken);
+
+// Secret ff-data (Migration KV Phase 1, étape 3)
+$('inp-ff-secret')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-ff-secret').click(); });
+$('btn-ff-secret')?.addEventListener('click', enregistrerFfSecret);
 
 // Logout
 $('btn-logout').addEventListener('click', () => { if (confirm('Se déconnecter ?')) deconnecter(); });
@@ -1065,9 +1166,10 @@ $('btn-rename').addEventListener('click', async () => {
   finally { btnRn.disabled = false; }
 });
 
-/* Lit la valeur `visible` RÉELLE d'une salle sur GitHub (source de vérité). */
+/* Lit la valeur `visible` RÉELLE — source de vérité actuelle (KV pour Fred
+   depuis la migration Phase 1 étape 3, Git pour les invités). */
 async function _visibleSalleServeur(salleId) {
-  const data = await lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+  const data = await _fetchSallesAdmin();
   const s = (data.salles || []).find(function(x) { return x.id === salleId; });
   return s ? (s.visible !== false) : null;
 }

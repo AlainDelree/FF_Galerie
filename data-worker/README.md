@@ -1,21 +1,27 @@
-# ff-data — Worker Phase 0
+# ff-data — Worker
 
-API minimaliste devant un namespace KV. Remplace, à terme, les commits GitHub
-comme mécanisme de sauvegarde des données. Voir
-`docs/PLAN_MIGRATION_CLOUDFLARE_KV.md` pour le plan complet — ce dossier
-correspond à la **Phase 0** uniquement (fondations, à tester à la main).
+API devant un namespace KV. Remplace, pour les clés migrées, les commits
+GitHub comme mécanisme de sauvegarde des données. Voir
+`docs/PLAN_MIGRATION_CLOUDFLARE_KV.md` pour le plan complet.
 
-## Ce que fait ce worker aujourd'hui
+## Ce que fait ce worker aujourd'hui (Phase 1, étapes 1 à 4 pour `ferette/salles`)
 
 - `GET /api/<cle>` → lit la clé KV `<cle>`, publique, pas d'auth.
 - `PUT /api/<cle>` → écrit `<cle>`, protégé par un secret (header `Authorization: Bearer <secret>`).
-- `DELETE /api/<cle>` → supprime `<cle>`, protégé pareil.
+  Si `<cle>` est dans `CLE_VERS_CHEMIN` (aujourd'hui : seule `ferette/salles`
+  → `data/salles.json`) et que `GITHUB_TOKEN` est configuré, un commit
+  d'archive est poussé sur GitHub **en arrière-plan** (`ctx.waitUntil`, ne
+  retarde jamais la réponse). Entêtes optionnelles :
+  - `X-FF-Branch` : branche cible (`dev` ou `main`), défaut `dev`.
+  - `X-FF-Message` : message de commit, défaut `Archive KV : <cle>`.
+- `DELETE /api/<cle>` → supprime `<cle>`, protégé pareil (pas d'archive).
 - `GET /api/_health` → ping.
 - CORS ouvert en lecture (données publiques).
 
-Ce qu'il ne fait **pas** encore : archive Git en arrière-plan, validation de
-schéma par type de donnée, interface de restauration. Ça viendra aux phases
-suivantes.
+Ce qu'il ne fait **pas** encore : interface de restauration Ctrl+Z,
+validation de schéma par type de donnée, archive pour d'autres clés que
+`ferette/salles` (à étendre quand les phases suivantes migrent oeuvres/infos/
+autres artistes).
 
 ## Mise en place (une seule fois)
 
@@ -31,10 +37,27 @@ wrangler kv namespace create FF_DATA
 #   "À_REMPLIR_APRES_CREATION_NAMESPACE"
 
 # 2. Poser le secret d'écriture (à générer, ex. openssl rand -hex 32,
-#    et à stocker dans Bitwarden comme le PAT GitHub)
-wrangler secret put FF_DATA_SECRET
+#    et à stocker dans Bitwarden comme le PAT GitHub).
+#    IMPORTANT : ne jamais taper/coller le secret directement au prompt
+#    interactif — toujours passer par une variable shell + un pipe, sinon
+#    risque de caractères parasites (vécu en Phase 0) :
+SECRET=$(openssl rand -hex 32)
+echo -n "$SECRET" | wc -c   # doit afficher 64
+printf '%s' "$SECRET" | wrangler secret put FF_DATA_SECRET
+echo "$SECRET"   # copie IMMÉDIATEMENT dans Bitwarden
 
-# 3. Déployer
+# 3. Poser le token GitHub pour l'archive (étape 4)
+#    Créer un PAT FINE-GRAINED dédié à CE worker (PAS le token admin
+#    habituel) : github.com → avatar → Settings → Developer settings →
+#    Fine-grained tokens → Generate new token
+#      - Repository access : Only select repositories → AlainDelree/FF_Galerie
+#      - Permissions : Contents → Read and write (RIEN d'autre)
+#    Puis, toujours via variable shell + pipe :
+GH_TOKEN="colle_le_token_ici_puis_efface_cette_ligne_de_l_historique"
+printf '%s' "$GH_TOKEN" | wrangler secret put GITHUB_TOKEN
+unset GH_TOKEN
+
+# 4. Déployer
 wrangler deploy
 ```
 
@@ -44,13 +67,14 @@ wrangler deploy
 ## Tests à la main
 
 Remplacer `<URL>` par l'URL affichée au déploiement, et `<SECRET>` par la
-valeur posée à l'étape 2.
+valeur posée à l'étape 2 (le secret `FF_DATA_SECRET`, pas le token GitHub).
 
 ```bash
 # Ping
 curl -s <URL>/api/_health
 
-# Écrire une clé de test (PUT protégé)
+# Écrire une clé de test (PUT protégé) — PAS archivable (pas dans
+# CLE_VERS_CHEMIN), donc aucun commit GitHub ne doit apparaître
 curl -s -X PUT <URL>/api/test/ping \
   -H "Authorization: Bearer <SECRET>" \
   -H "Content-Type: application/json" \
@@ -74,9 +98,24 @@ curl -s -X DELETE <URL>/api/test/ping -H "Authorization: Bearer <SECRET>"
 curl -s <URL>/api/test/ping
 ```
 
+### Test spécifique de l'archive (étape 4)
+
+```bash
+# PUT sur ferette/salles, EST archivable → doit déclencher un commit sur
+# GitHub dans les secondes qui suivent (vérifier sur github.com, branche dev)
+curl -s -X PUT <URL>/api/ferette/salles \
+  -H "Authorization: Bearer <SECRET>" \
+  -H "Content-Type: application/json" \
+  -H "X-FF-Branch: dev" \
+  -H "X-FF-Message: Test archive Phase 1 étape 4" \
+  --data-binary @../data/salles.json
+```
+Puis vérifier sur `https://github.com/AlainDelree/FF_Galerie/commits/dev` —
+un commit « Test archive Phase 1 étape 4 » doit apparaître (peut prendre
+quelques secondes, c'est un `ctx.waitUntil` en tâche de fond).
+
 ## Une fois validé
 
-On passe à la Phase 1 (voir le plan) : migrer `data/salles.json` de Fred vers
-KV, brancher la lecture publique du site dessus (avec repli fichier tant que
-non validé), brancher l'écriture admin, et ajouter l'archive Git en
-arrière-plan.
+Reste pour plus tard (hors Phase 1) : interface de restauration Ctrl+Z,
+indicateur d'état d'archive dans l'admin, extension de `CLE_VERS_CHEMIN` aux
+autres artistes/fichiers (Phase 2+).

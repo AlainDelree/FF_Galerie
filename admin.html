@@ -62,6 +62,14 @@
     </div>
     <div class="err-txt" id="token-err"></div>
     <button class="btn btn-or" id="btn-token">Vérifier et enregistrer</button>
+
+    <div id="bloc-ff-secret" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Clé de synchronisation directe des salles (Cloudflare KV). Optionnelle : sans elle, la sauvegarde des salles repasse automatiquement par Git (plus lente, mais rien n'est perdu).</p>
+      <label class="lbl" for="inp-ff-secret">Clé ff-data (Bitwarden)</label>
+      <input class="inp" type="password" id="inp-ff-secret" placeholder="colle la clé ici">
+      <div class="err-txt" id="ff-secret-err"></div>
+      <button class="btn" id="btn-ff-secret" style="margin-top:.6rem;">Enregistrer la clé</button>
+    </div>
   </div>
 </div>
 
@@ -1138,6 +1146,12 @@
   <script>
     (async function () {
       const id = new URLSearchParams(location.search).get("artiste");
+      /* Migration KV Phase 1 (étape 3) : écriture des salles via ff-data
+         UNIQUEMENT pour Fred (pas de ?artiste= dans l'URL — elle n'a pas
+         d'entrée dans artistes.json, contrairement aux invités). Les
+         invités (dinso/daw/testtester) continuent de sauver salles.json
+         via un commit Git classique, inchangé. */
+      window.ADMIN_SALLES_VIA_KV = !id;
       if (id) {
         try {
           const artistes = await fetch("data/artistes.json?v=" + Date.now()).then(r => r.json());
