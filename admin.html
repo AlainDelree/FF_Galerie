@@ -1169,17 +1169,31 @@
          via un commit Git classique, inchangé. */
       window.ADMIN_SALLES_VIA_KV = !id;
       if (id) {
+        let a = null;
         try {
           const artistes = await fetch("data/artistes.json?v=" + Date.now()).then(r => r.json());
-          const a = artistes.find(x => x.id === id);
-          if (a) {
-            window.ADMIN_REPO_PATH = a.repoPath;
-            window.ADMIN_PREFIX    = a.prefix;
-            window.ADMIN_NOM       = a.nom;
-            window.ADMIN_LOGO      = a.logo || id.slice(0, 2).toUpperCase();
-            window.ADMIN_TYPE      = a.type || 'peinture';
-          }
+          a = artistes.find(x => x.id === id);
         } catch (e) {}
+        if (!a) {
+          /* SÉCURITÉ : ?artiste= invalide/inconnu — NE JAMAIS retomber
+             silencieusement sur les valeurs par défaut de Fred (on
+             éditerait ses vraies données sans le savoir, avec en plus
+             sallesViaKV=false alors qu'on croit être ailleurs). On arrête
+             tout net avec un message clair plutôt qu'un comportement
+             surprenant. `alain` par exemple N'EST PAS un artiste : c'est
+             une identité de connexion (auth par personne), à utiliser sur
+             /admin SANS ?artiste=, pas ?artiste=alain. */
+          document.body.innerHTML = '<div style="max-width:520px;margin:15vh auto;padding:2rem;font-family:sans-serif;line-height:1.6;">'
+            + '<h2 style="margin-top:0;">Artiste inconnu : « ' + id.replace(/[<>&"]/g, '') + ' »</h2>'
+            + '<p>Cet identifiant ne correspond à aucun artiste invité. Si tu voulais juste te connecter avec ton propre compte, va sur <code>/admin</code> (sans <code>?artiste=</code>) et connecte-toi là avec ton nom d\'utilisateur — le nom d\'utilisateur n\'a pas besoin d\'apparaître dans l\'URL.</p>'
+            + '<p><a href="admin.html">← Retour à l\'admin</a></p></div>';
+          return;
+        }
+        window.ADMIN_REPO_PATH = a.repoPath;
+        window.ADMIN_PREFIX    = a.prefix;
+        window.ADMIN_NOM       = a.nom;
+        window.ADMIN_LOGO      = a.logo || id.slice(0, 2).toUpperCase();
+        window.ADMIN_TYPE      = a.type || 'peinture';
       }
       /* Charge admin.js une fois la config prête */
       await new Promise(resolve => {
