@@ -3,9 +3,9 @@
     {
       "id": 1,
       "nom": "Portraits",
-      "theme": "",
       "couleur_mur": "#1a1410",
       "couleur_cadres": "#c8a050",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
@@ -43,21 +43,22 @@
           "w": 5,
           "h": 2
         }
-      ]
+      ],
+      "positions_mobile": []
     },
     {
       "id": 2,
       "nom": "Paysages",
-      "theme": "",
       "couleur_mur": "#0a1420",
       "couleur_cadres": "#6090b0",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
-        5,
-        6,
         7,
         8,
+        5,
+        6,
         9
       ],
       "positions": [
@@ -96,21 +97,22 @@
           "w": 4,
           "h": 2
         }
-      ]
+      ],
+      "positions_mobile": []
     },
     {
       "id": 3,
       "nom": "Floraison",
-      "theme": "",
       "couleur_mur": "#0e1a08",
       "couleur_cadres": "#907850",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
-        10,
-        11,
         12,
         13,
+        10,
+        11,
         14
       ],
       "positions": [
@@ -149,19 +151,20 @@
           "w": 3,
           "h": 3
         }
-      ]
+      ],
+      "positions_mobile": []
     },
     {
       "id": 4,
       "nom": "Couleurs vives",
-      "theme": "",
       "couleur_mur": "#1a0a14",
       "couleur_cadres": "#b0a0c0",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
-        15,
         16,
+        15,
         17,
         18
       ],
@@ -189,25 +192,26 @@
         },
         {
           "id": 18,
-          "col": 7,
+          "col": 9,
           "row": 6,
           "w": 4,
           "h": 3
         }
-      ]
+      ],
+      "positions_mobile": []
     },
     {
       "id": 5,
       "nom": "Atmosphères",
-      "theme": "",
       "couleur_mur": "#141414",
       "couleur_cadres": "#a09070",
+      "epaisseur_cadres": 2,
       "texture": "none",
       "visible": true,
       "toiles": [
+        21,
         19,
         20,
-        21,
         22
       ],
       "positions": [
@@ -239,7 +243,8 @@
           "w": 3,
           "h": 3
         }
-      ]
+      ],
+      "positions_mobile": []
     }
   ]
 }
