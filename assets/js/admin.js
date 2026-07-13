@@ -52,6 +52,11 @@ const ADMIN_CFG = {
    est false. */
 const FF_DATA_SALLES_API = window.FF_DATA_SALLES_API || 'https://ff-data.alain-delree.workers.dev/api/ferette/salles';
 
+/* Auth par personne : disponible pour TOUT LE MONDE (Fred + invités), pas
+   seulement sallesViaKV — c'est le mécanisme de récupération du token, pas
+   la sauvegarde des salles. */
+const FF_DATA_LOGIN_API = window.FF_DATA_LOGIN_API || 'https://ff-data.alain-delree.workers.dev/api/auth/login';
+
 /* Appliquer le nom/logo dès le chargement */
 (function () {
   const logoEl = document.querySelector('.login-logo');
@@ -943,6 +948,48 @@ function prochainId(typeOpt) {
 // ═══════════════════════════════════════════════
 // TOKEN SETUP
 // ═══════════════════════════════════════════════
+/* Auth par personne : récupère le token (+ clé ff-data éventuelle) via le
+   worker, à partir d'un nom d'utilisateur + mot de passe — plus besoin de
+   connaître/retrouver la valeur brute du token. Le compte est créé côté
+   worker par Alain (data-worker/gerer-utilisateurs.sh) ; voir
+   data-worker/README.md. Repli : lien "Entrer le token manuellement" pour
+   l'ancien flux (validerToken() ci-dessous), toujours disponible. */
+async function connexionParMotDePasse() {
+  const nom = $('inp-auth-nom').value.trim();
+  const mdp = $('inp-auth-mdp').value;
+  if (!nom || !mdp) { $('auth-err').textContent = "Entrez un nom d'utilisateur et un mot de passe."; return; }
+  const btn = $('btn-auth-login');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  $('auth-err').textContent = '';
+  try {
+    const rep = await fetch(FF_DATA_LOGIN_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ utilisateur: nom, mot_de_passe: mdp })
+    });
+    if (!rep.ok) {
+      const e = await rep.json().catch(function() { return {}; });
+      $('auth-err').textContent = e.erreur || ('Erreur HTTP ' + rep.status);
+      return;
+    }
+    const data = await rep.json();
+    token = data.token;
+    localStorage.setItem(K.token, token);
+    if (data.ff_secret) {
+      ffSecret = data.ff_secret;
+      localStorage.setItem(K.ffSecret, ffSecret);
+    }
+    $('inp-auth-mdp').value = '';
+    afficherEcran('ecran-principal');
+    chargerTout();
+    initTexturesUI();
+  } catch (e) {
+    $('auth-err').textContent = 'Réseau indisponible, réessayez.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
 async function validerToken() {
   const t = $('inp-token').value.trim();
   if (!t) { $('token-err').textContent = 'Entrez un token.'; return; }
@@ -990,6 +1037,16 @@ $('btn-oeil').addEventListener('click', () => {
   $('oeil-svg').innerHTML = v
     ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
     : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+});
+
+// Auth par personne (login utilisateur/mot de passe)
+$('inp-auth-nom')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('inp-auth-mdp').focus(); });
+$('inp-auth-mdp')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-auth-login').click(); });
+$('btn-auth-login')?.addEventListener('click', connexionParMotDePasse);
+$('lien-token-manuel')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  $('bloc-token-manuel').style.display = 'block';
+  this.style.display = 'none';
 });
 
 // Token

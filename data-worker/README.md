@@ -179,9 +179,11 @@ curl -s "$FF_DATA_URL/api/auth/utilisateurs/test1"
 ./gerer-utilisateurs.sh supprimer test1
 ```
 
-### Pas encore fait
+### Branché dans l'admin
 
-Le branchement dans `admin.html`/`admin.js` (écran de connexion avec nom
-d'utilisateur + mot de passe, qui appelle `/api/auth/login` au lieu de
-demander de coller le token à la main) — prévu une fois ces endpoints
-validés au `curl`.
+L'écran de connexion (`admin.html`/`assets/js/admin.js`) affiche désormais
+en premier un formulaire nom d'utilisateur + mot de passe, qui appelle
+`/api/auth/login` et enregistre automatiquement le token (+ clé ff-data si
+renvoyée) dans `localStorage`. Un lien « Entrer le token manuellement à la
+place » garde l'ancien flux disponible en repli (utile si l'endpoint est
+indisponible, ou pour Alain en debug).

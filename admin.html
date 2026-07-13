@@ -43,32 +43,48 @@
 <!-- ══ ÉCRAN TOKEN ══ -->
 <div id="ecran-token" class="ecran">
   <div class="token-card">
-    <div class="token-titre">Connexion à GitHub</div>
-    <p style="font-size:13px;color:var(--muted);line-height:1.7;">Un token GitHub permet de sauvegarder directement sur le site. Il reste sur cet appareil uniquement.</p>
-    <div class="steps">
-      <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Obtenir un token</p>
-      <ol>
-        <li>github.com → ton avatar → <code>Settings</code></li>
-        <li>Bas de page → <code>Developer settings</code></li>
-        <li><code>Personal access tokens</code> → <code>Tokens (classic)</code></li>
-        <li><code>Generate new token (classic)</code></li>
-        <li>Note : <em>FF Galerie admin</em> — coche <code>repo</code></li>
-        <li>Génère et <strong>copie immédiatement</strong></li>
-      </ol>
+    <div class="token-titre">Connexion</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;">Identifie-toi avec ton compte — ton accès de sauvegarde est retrouvé automatiquement.</p>
+    <div>
+      <label class="lbl" for="inp-auth-nom">Nom d'utilisateur</label>
+      <input class="inp" type="text" id="inp-auth-nom" autocomplete="username" placeholder="ex. fred">
     </div>
     <div>
-      <label class="lbl" for="inp-token">Token GitHub</label>
-      <input class="inp" type="password" id="inp-token" placeholder="ghp_xxxxxxxxxxxx">
+      <label class="lbl" for="inp-auth-mdp">Mot de passe</label>
+      <input class="inp" type="password" id="inp-auth-mdp" autocomplete="current-password" placeholder="••••••••">
     </div>
-    <div class="err-txt" id="token-err"></div>
-    <button class="btn btn-or" id="btn-token">Vérifier et enregistrer</button>
+    <div class="err-txt" id="auth-err"></div>
+    <button class="btn btn-or" id="btn-auth-login">Se connecter</button>
 
-    <div id="bloc-ff-secret" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
-      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Clé de synchronisation directe des salles (Cloudflare KV). Optionnelle : sans elle, la sauvegarde des salles repasse automatiquement par Git (plus lente, mais rien n'est perdu).</p>
-      <label class="lbl" for="inp-ff-secret">Clé ff-data (Bitwarden)</label>
-      <input class="inp" type="password" id="inp-ff-secret" placeholder="colle la clé ici">
-      <div class="err-txt" id="ff-secret-err"></div>
-      <button class="btn" id="btn-ff-secret" style="margin-top:.6rem;">Enregistrer la clé</button>
+    <p style="margin-top:1.2rem;"><a href="#" id="lien-token-manuel" style="font-size:13px;color:var(--muted);">Entrer le token manuellement à la place</a></p>
+
+    <div id="bloc-token-manuel" style="display:none;margin-top:1rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Un token GitHub permet de sauvegarder directement sur le site. Il reste sur cet appareil uniquement.</p>
+      <div class="steps">
+        <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Obtenir un token</p>
+        <ol>
+          <li>github.com → ton avatar → <code>Settings</code></li>
+          <li>Bas de page → <code>Developer settings</code></li>
+          <li><code>Personal access tokens</code> → <code>Tokens (classic)</code></li>
+          <li><code>Generate new token (classic)</code></li>
+          <li>Note : <em>FF Galerie admin</em> — coche <code>repo</code></li>
+          <li>Génère et <strong>copie immédiatement</strong></li>
+        </ol>
+      </div>
+      <div>
+        <label class="lbl" for="inp-token">Token GitHub</label>
+        <input class="inp" type="password" id="inp-token" placeholder="ghp_xxxxxxxxxxxx">
+      </div>
+      <div class="err-txt" id="token-err"></div>
+      <button class="btn btn-or" id="btn-token">Vérifier et enregistrer</button>
+
+      <div id="bloc-ff-secret" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--bord,#3a3a3a);">
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Clé de synchronisation directe des salles (Cloudflare KV). Optionnelle : sans elle, la sauvegarde des salles repasse automatiquement par Git (plus lente, mais rien n'est perdu).</p>
+        <label class="lbl" for="inp-ff-secret">Clé ff-data (Bitwarden)</label>
+        <input class="inp" type="password" id="inp-ff-secret" placeholder="colle la clé ici">
+        <div class="err-txt" id="ff-secret-err"></div>
+        <button class="btn" id="btn-ff-secret" style="margin-top:.6rem;">Enregistrer la clé</button>
+      </div>
     </div>
   </div>
 </div>
