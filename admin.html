@@ -12,37 +12,15 @@
 </head>
 <body>
 
-<!-- ══ ÉCRAN LOGIN ══ -->
-<div id="ecran-login" class="ecran actif">
-  <div class="login-logo">FF</div>
-  <div class="login-sous">Administration</div>
-  <div class="login-card">
+<!-- ══ ÉCRAN CONNEXION ══ -->
+<div id="ecran-token" class="ecran actif">
+  <div class="token-card">
     <div id="div-sel-artiste">
       <label class="lbl" for="sel-artiste">Gérer la galerie de</label>
       <select class="inp" id="sel-artiste" style="cursor:pointer;">
         <option value="">Frédérique Ferette</option>
       </select>
     </div>
-    <div>
-      <label class="lbl" for="inp-mdp">Mot de passe</label>
-      <div class="mdp-wrap">
-        <input class="inp" type="password" id="inp-mdp" autocomplete="current-password" placeholder="••••••••">
-        <button class="btn-oeil" id="btn-oeil" type="button" aria-label="Voir/masquer">
-          <svg id="oeil-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div class="err-txt" id="login-err"></div>
-    <button class="btn btn-or" id="btn-login">Entrer</button>
-    <p class="aide-txt" id="login-aide">Premier accès ? <a href="#" id="lien-creer" style="color:var(--gold)">Créer un mot de passe</a></p>
-  </div>
-</div>
-
-<!-- ══ ÉCRAN TOKEN ══ -->
-<div id="ecran-token" class="ecran">
-  <div class="token-card">
     <div class="token-titre">Connexion</div>
     <p style="font-size:13px;color:var(--muted);line-height:1.7;">Identifie-toi avec ton compte — ton accès de sauvegarde est retrouvé automatiquement.</p>
     <div>
@@ -51,7 +29,14 @@
     </div>
     <div>
       <label class="lbl" for="inp-auth-mdp">Mot de passe</label>
-      <input class="inp" type="password" id="inp-auth-mdp" autocomplete="current-password" placeholder="••••••••">
+      <div class="mdp-wrap">
+        <input class="inp" type="password" id="inp-auth-mdp" autocomplete="current-password" placeholder="••••••••">
+        <button class="btn-oeil" id="btn-oeil" type="button" aria-label="Voir/masquer">
+          <svg id="oeil-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="err-txt" id="auth-err"></div>
     <button class="btn btn-or" id="btn-auth-login">Se connecter</button>

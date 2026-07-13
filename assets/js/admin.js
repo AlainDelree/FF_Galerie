@@ -8,8 +8,8 @@
 // ║  SECTIONS (chercher les marqueurs ═══ pour naviguer)         ║
 // ║   ~  48  RAPPORT D'ERREURS    rapporterErreur()              ║
 // ║   ~ 155  VARIABLES GLOBALES   token, toiles, salles...       ║
-// ║   ~ 224  UI HELPERS           toast, syncBadge, sha256...    ║
-// ║   ~ 263  AUTH                 verifierLogin, apresLogin...   ║
+// ║   ~ 224  UI HELPERS           toast, syncBadge, formaterDate  ║
+// ║   ~ 263  AUTH                 connexionParMotDePasse, validerToken... ║
 // ║   ~ 313  GITHUB API           apiGH, commitMulti, lireRaw... ║
 // ║   ~ 423  DONNÉES              chargerTout, sauvegarder...    ║
 // ║   ~ 514  PLAN                 afficherPlan, selectSalle...   ║
@@ -88,7 +88,6 @@ const FF_DATA_LOGIN_API = window.FF_DATA_LOGIN_API || 'https://ff-data.alain-del
 })();
 /* Clés de stockage dérivées du prefix */
 const K = {
-  pw:       ADMIN_CFG.prefix + '_pw_hash',
   auth:     ADMIN_CFG.prefix + '_auth',
   token:    'ff_gh_token',          /* token partagé — même repo */
   ffSecret: 'ff_data_secret',       /* secret ff-data — partagé, Fred uniquement */
@@ -328,11 +327,6 @@ function afficherEcran(id) {
   $(id).classList.add('actif');
 }
 
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 function formaterDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('fr-BE', { day:'numeric', month:'long', year:'numeric' })
@@ -342,37 +336,35 @@ function formaterDate(iso) {
 // ═══════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════
-async function verifierLogin() {
-  /* Si un artiste invité est sélectionné → redirection vers son admin */
-  const sel = $('sel-artiste');
-  if (sel && sel.value) {
-    window.location.href = sel.value + 'admin.html';
-    return;
-  }
-  /* Afficher le champ mdp si caché */
-  const mdp = $('inp-mdp').value.trim();
-  if (!mdp) { $('login-err').textContent = 'Entrez un mot de passe.'; return; }
-  const hash = await sha256(mdp);
-  const stocke = localStorage.getItem(K.pw);
-  if (!stocke) { $('login-err').textContent = 'Aucun mot de passe configuré. Cliquez sur "Créer un mot de passe".'; return; }
-  if (hash !== stocke) { $('login-err').textContent = 'Mot de passe incorrect.'; $('inp-mdp').value = ''; return; }
-  sessionStorage.setItem(K.auth, '1');
-  apresLogin();
+/* Simplification (13/07/2026, retour d'Alain) : le mot de passe local
+   d'appareil (non vérifié serveur, K.pw) a été retiré — il faisait double
+   emploi et confusait la connexion (deux "mots de passe" différents à la
+   suite sans lien entre eux). L'auth par personne (nom d'utilisateur +
+   mot de passe VÉRIFIÉ CÔTÉ SERVEUR, voir connexionParMotDePasse) est
+   maintenant l'unique porte d'entrée, et sert aussi de garde-fou par
+   session (sessionStorage K.auth), comme le faisait l'ancien mot de passe
+   local. */
+
+/* Point d'entrée commun une fois `token` (et éventuellement `ffSecret`)
+   en mémoire et K.auth déjà positionné par l'appelant. */
+function entrerDansAdmin() {
+  afficherEcran('ecran-principal');
+  chargerTout();
+  initTexturesUI();
+  // chargerConfigEmailJS() appelé après chargement de admin-emailjs.js (admin.html)
 }
 
-async function creerMotDePasse() {
-  const mdp = $('inp-mdp').value.trim();
-  if (mdp.length < 6) { $('login-err').textContent = 'Minimum 6 caractères.'; return; }
-  if (localStorage.getItem(K.pw)) { $('login-err').textContent = 'Un mot de passe existe déjà.'; return; }
-  localStorage.setItem(K.pw, await sha256(mdp));
-  sessionStorage.setItem(K.auth, '1');
-  apresLogin();
-}
-
-async function apresLogin() {
+/* Reprise d'une session déjà authentifiée (sessionStorage K.auth='1'
+   encore valide, ex. simple rechargement de page) : revalide le token
+   stocké avant d'afficher l'écran principal, sans redemander les
+   identifiants. NE PAS appeler chargerTout()/initTexturesUI() ici : ce
+   code tourne pendant le chargement synchrone d'admin.js, AVANT que les
+   autres modules (admin-emailjs.js, etc.) ne soient chargés — le hook
+   dédié dans admin.html (après le chargement de tous les modules) s'en
+   charge déjà pour ce cas précis, exactement pour éviter cette course. */
+async function reprendreSessionExistante() {
   token = localStorage.getItem(K.token) || '';
   if (!token) { afficherEcran('ecran-token'); return; }
-  // Vérifie que le token stocké est encore valide avant de lancer les appels API
   try {
     const rep = await fetch('https://api.github.com/user', {
       headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
@@ -386,9 +378,6 @@ async function apresLogin() {
     }
   } catch (e) { /* réseau indisponible — on tente quand même */ }
   afficherEcran('ecran-principal');
-  chargerTout();
-  initTexturesUI();
-  // chargerConfigEmailJS() appelé après chargement de admin-emailjs.js (admin.html)
 }
 
 function initTexturesUI() {
@@ -398,8 +387,8 @@ function initTexturesUI() {
 
 function deconnecter() {
   sessionStorage.removeItem(K.auth);
-  afficherEcran('ecran-login');
-  $('inp-mdp').value = '';
+  afficherEcran('ecran-token');
+  $('inp-auth-mdp').value = '';
 }
 
 // ═══════════════════════════════════════════════
@@ -955,6 +944,14 @@ function prochainId(typeOpt) {
    data-worker/README.md. Repli : lien "Entrer le token manuellement" pour
    l'ancien flux (validerToken() ci-dessous), toujours disponible. */
 async function connexionParMotDePasse() {
+  /* Si un artiste invité est sélectionné → redirection immédiate vers son
+     admin, sans même tenter de login (chaque admin invité a son propre
+     écran de connexion). */
+  const sel = $('sel-artiste');
+  if (sel && sel.value) {
+    window.location.href = sel.value + 'admin.html';
+    return;
+  }
   const nom = $('inp-auth-nom').value.trim();
   const mdp = $('inp-auth-mdp').value;
   if (!nom || !mdp) { $('auth-err').textContent = "Entrez un nom d'utilisateur et un mot de passe."; return; }
@@ -979,10 +976,9 @@ async function connexionParMotDePasse() {
       ffSecret = data.ff_secret;
       localStorage.setItem(K.ffSecret, ffSecret);
     }
+    sessionStorage.setItem(K.auth, '1');
     $('inp-auth-mdp').value = '';
-    afficherEcran('ecran-principal');
-    chargerTout();
-    initTexturesUI();
+    entrerDansAdmin();
   } catch (e) {
     $('auth-err').textContent = 'Réseau indisponible, réessayez.';
   } finally {
@@ -1004,8 +1000,8 @@ async function validerToken() {
     });
     if (rep.status === 401) throw new Error('token révoqué ou invalide');
     localStorage.setItem(K.token, t);
-    afficherEcran('ecran-principal');
-    chargerTout();
+    sessionStorage.setItem(K.auth, '1');
+    entrerDansAdmin();
   } catch (e) { $('token-err').textContent = 'Token invalide : ' + e.message; token = ''; }
   finally { btn.disabled = false; btn.textContent = 'Vérifier et enregistrer'; }
 }
@@ -1027,12 +1023,8 @@ function enregistrerFfSecret() {
 // ═══════════════════════════════════════════════
 // INIT ÉVÉNEMENTS
 // ═══════════════════════════════════════════════
-// Login
-$('inp-mdp').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-login').click(); });
-$('btn-login').addEventListener('click', verifierLogin);
-$('lien-creer').addEventListener('click', e => { e.preventDefault(); creerMotDePasse(); });
 $('btn-oeil').addEventListener('click', () => {
-  const i = $('inp-mdp'); const v = i.type === 'text';
+  const i = $('inp-auth-mdp'); const v = i.type === 'text';
   i.type = v ? 'password' : 'text';
   $('oeil-svg').innerHTML = v
     ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
@@ -1580,27 +1572,6 @@ $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e 
 // DÉMARRAGE
 // ═══════════════════════════════════════════════
 if (sessionStorage.getItem(K.auth) === '1') {
-  token = localStorage.getItem(K.token) || '';
-  if (!token) { afficherEcran('ecran-token'); }
-  else {
-    // Valide le token stocké avant de lancer les appels API
-    (async () => {
-      try {
-        const rep = await fetch('https://api.github.com/user', {
-          headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
-        });
-        if (rep.status === 401) {
-          localStorage.removeItem(K.token); token = '';
-          afficherEcran('ecran-token');
-          document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
-          return;
-        }
-      } catch (e) { /* réseau — on tente quand même */ }
-      afficherEcran('ecran-principal');
-      // chargerTout() et initTexturesUI() sont appelés dans le post-load d'admin.html
-      // après que tous les modules soient chargés (évite race condition galerie)
-    })();
-  }
-} else {
-  if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
+  reprendreSessionExistante();
 }
+// Sinon : ecran-token est déjà affiché par défaut (class="ecran actif")
