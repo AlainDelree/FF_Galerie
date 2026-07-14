@@ -7,10 +7,26 @@
 
 (function(){
   var SALLES_PATH  = window.PLAN_SALLES_PATH  || 'data/salles.json';
+  var SALLES_API   = window.PLAN_SALLES_API   || null; /* Migration KV Phase 1,
+    voir galerie-core.js pour le détail du mécanisme de repli. */
   var GALERIE_PATH = window.PLAN_GALERIE_PATH || 'galerie.html';
 
-    fetch(SALLES_PATH + '?v=' + Date.now())
-      .then(r => r.json())
+  function _fetchSallesPlan() {
+    var cheminFichier = SALLES_PATH + '?v=' + Date.now();
+    function depuisFichier() { return fetch(cheminFichier).then(r => r.json()); }
+    if (!SALLES_API) return depuisFichier();
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var minuteur = ctrl ? setTimeout(function(){ ctrl.abort(); }, 4000) : null;
+    return fetch(SALLES_API, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+      .then(function(r) { if (minuteur) clearTimeout(minuteur); if (!r.ok) throw new Error('API ff-data: HTTP ' + r.status); return r.json(); })
+      .catch(function(erreurApi) {
+        if (minuteur) clearTimeout(minuteur);
+        console.warn('[ff-data] plan: API salles indisponible, repli sur le fichier local:', erreurApi);
+        return depuisFichier();
+      });
+  }
+
+    _fetchSallesPlan()
       .then(data => {
         /* Filtre visibilite : le plan SVG ne montre que les salles visibles
            (visible !== false), coherent avec la galerie publique. */
@@ -108,19 +124,30 @@
           });
         }
 
-        /* Préchargement des toiles pendant que l'utilisateur consulte le plan */
-        const toilesPath = window.PLAN_TOILES_PATH || 'data/toiles.json';
+        /* Préchargement des œuvres pendant que l'utilisateur consulte le plan.
+           Architecture actuelle : data/oeuvres/{peinture,sculpture}.json —
+           il n'y a plus de data/toiles.json (bug latent trouvé le 13/07/2026 :
+           le fetch pointait encore dessus, 404 silencieux car catch() vide,
+           préchargement cassé sans casse visible). window.PLAN_OEUVRES_PATHS
+           (tableau) est prioritaire ; window.PLAN_TOILES_PATH (ancien,
+           mono-fichier, encore utilisé par ex. par Daw) reste supporté pour
+           compat ; par défaut on tente les deux fichiers multi-type. */
+        const oeuvresPaths = window.PLAN_OEUVRES_PATHS
+          || (window.PLAN_TOILES_PATH ? [window.PLAN_TOILES_PATH] : ['data/oeuvres/peinture.json', 'data/oeuvres/sculpture.json']);
         const assetsBase = window.GALERIE_ASSETS_BASE || '';
-        fetch(toilesPath + '?v=' + Date.now())
-          .then(function(r) { return r.json(); })
-          .then(function(td) {
-            (td.toiles || []).forEach(function(t) {
-              if (!t.photo) return;
-              var img = new Image();
-              img.src = /^https?:\/\//.test(t.photo) ? t.photo : assetsBase + t.photo;
-            });
-          })
-          .catch(function() {});
+        oeuvresPaths.forEach(function(path) {
+          fetch(path + '?v=' + Date.now())
+            .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .then(function(d) {
+              var items = d.toiles || d.pieces || [];
+              items.forEach(function(t) {
+                if (!t.photo) return;
+                var img = new Image();
+                img.src = /^https?:\/\//.test(t.photo) ? t.photo : assetsBase + t.photo;
+              });
+            })
+            .catch(function() {});
+        });
       })
       .catch(() => {});
 

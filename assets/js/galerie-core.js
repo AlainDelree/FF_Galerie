@@ -14,6 +14,10 @@ const GALERIE_CFG = {
   toiles:     window.GALERIE_TOILES_PATH  || 'data/toiles.json',
   oeuvresPaths: window.GALERIE_OEUVRES_PATHS || null, /* tableau ou null */
   salles:     window.GALERIE_SALLES_PATH  || 'data/salles.json',
+  sallesAPI:  window.GALERIE_SALLES_API   || null, /* URL complète ff-data, ex.
+                 'https://ff-data.<compte>.workers.dev/api/ferette/salles'.
+                 Absent (null) pour tout artiste non encore migré → lecture
+                 fichier uniquement, comportement inchangé. */
   home:       window.GALERIE_HOME         || 'index.html',
   infos:      window.GALERIE_INFOS_PATH   || 'infos.html',
   contact:    window.GALERIE_CONTACT_PATH || 'contact.html',
@@ -43,6 +47,34 @@ function _chargerOeuvres() {
     .then(function(data) {
       var type = (data && data.pieces) ? 'sculpture' : 'peinture';
       var dict = {}; dict[type] = data; return dict;
+    });
+}
+
+/* Lecture de salles.json — Migration KV (Phase 1) : si GALERIE_CFG.sallesAPI
+   est défini, on tente l'API ff-data en premier (timeout 4s), et on ne
+   retombe sur le fichier Git QUE si l'API échoue (erreur réseau, HTTP non-ok,
+   ou timeout) — jamais sur simple péremption, l'API fait autorité tant
+   qu'elle répond. Si sallesAPI est absent (artiste non migré), comportement
+   strictement inchangé : fetch du fichier uniquement. */
+function _fetchSallesData() {
+  var cheminFichier = GALERIE_CFG.salles + '?v=' + Date.now();
+  function depuisFichier() {
+    return fetch(cheminFichier).then(function(r) { if (!r.ok) throw new Error('fichier: HTTP ' + r.status); return r.json(); });
+  }
+  if (!GALERIE_CFG.sallesAPI) return depuisFichier();
+
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var minuteur = ctrl ? setTimeout(function() { ctrl.abort(); }, 4000) : null;
+  return fetch(GALERIE_CFG.sallesAPI, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+    .then(function(r) {
+      if (minuteur) clearTimeout(minuteur);
+      if (!r.ok) throw new Error('API ff-data: HTTP ' + r.status);
+      return r.json();
+    })
+    .catch(function(erreurApi) {
+      if (minuteur) clearTimeout(minuteur);
+      console.warn('[ff-data] API salles indisponible, repli sur le fichier local:', erreurApi);
+      return depuisFichier();
     });
 }
 
@@ -654,7 +686,7 @@ function initGalerie() {
   } else {
     _dataPromise = Promise.all([
       _chargerOeuvres(),
-      fetch(GALERIE_CFG.salles + '?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      _fetchSallesData()
     ]);
   }
 

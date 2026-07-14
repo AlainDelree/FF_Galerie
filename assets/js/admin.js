@@ -8,8 +8,8 @@
 // ║  SECTIONS (chercher les marqueurs ═══ pour naviguer)         ║
 // ║   ~  48  RAPPORT D'ERREURS    rapporterErreur()              ║
 // ║   ~ 155  VARIABLES GLOBALES   token, toiles, salles...       ║
-// ║   ~ 224  UI HELPERS           toast, syncBadge, sha256...    ║
-// ║   ~ 263  AUTH                 verifierLogin, apresLogin...   ║
+// ║   ~ 224  UI HELPERS           toast, syncBadge, formaterDate  ║
+// ║   ~ 263  AUTH                 connexionParMotDePasse, validerToken... ║
 // ║   ~ 313  GITHUB API           apiGH, commitMulti, lireRaw... ║
 // ║   ~ 423  DONNÉES              chargerTout, sauvegarder...    ║
 // ║   ~ 514  PLAN                 afficherPlan, selectSalle...   ║
@@ -40,8 +40,22 @@ const ADMIN_CFG = {
   prefix:   window.ADMIN_PREFIX    || 'ff',
   nom:      window.ADMIN_NOM       || 'Frédérique Ferette',
   logo:     window.ADMIN_LOGO      || 'FF',
-  type:     window.ADMIN_TYPE      || 'peinture'
+  type:     window.ADMIN_TYPE      || 'peinture',
+  /* Migration KV Phase 1 (étape 3) : true uniquement pour Fred (voir
+     admin.html). Les invités gardent l'écriture Git classique. */
+  sallesViaKV: window.ADMIN_SALLES_VIA_KV === true
 };
+
+/* Endpoint ff-data pour la clé « salles » de Fred. Utilisé en lecture (avec
+   repli Git) et en écriture (avec repli Git si l'appel échoue) — voir
+   _fetchSallesAdmin() / _sauvegarderSallesKV(). Sans effet si sallesViaKV
+   est false. */
+const FF_DATA_SALLES_API = window.FF_DATA_SALLES_API || 'https://ff-data.alain-delree.workers.dev/api/ferette/salles';
+
+/* Auth par personne : disponible pour TOUT LE MONDE (Fred + invités), pas
+   seulement sallesViaKV — c'est le mécanisme de récupération du token, pas
+   la sauvegarde des salles. */
+const FF_DATA_LOGIN_API = window.FF_DATA_LOGIN_API || 'https://ff-data.alain-delree.workers.dev/api/auth/login';
 
 /* Appliquer le nom/logo dès le chargement */
 (function () {
@@ -66,12 +80,17 @@ const ADMIN_CFG = {
     const ejs = document.getElementById('bloc-emailjs');
     if (ejs) ejs.style.display = 'none';
   }
+  /* Bloc secret ff-data : uniquement pertinent pour Fred (sallesViaKV) */
+  if (!ADMIN_CFG.sallesViaKV) {
+    const bloc = document.getElementById('bloc-ff-secret');
+    if (bloc) bloc.style.display = 'none';
+  }
 })();
 /* Clés de stockage dérivées du prefix */
 const K = {
-  pw:       ADMIN_CFG.prefix + '_pw_hash',
   auth:     ADMIN_CFG.prefix + '_auth',
   token:    'ff_gh_token',          /* token partagé — même repo */
+  ffSecret: 'ff_data_secret',       /* secret ff-data — partagé, Fred uniquement */
   mur_hist: ADMIN_CFG.prefix + '_mur_hist',
   cad_hist: ADMIN_CFG.prefix + '_cad_hist'
 };
@@ -205,6 +224,7 @@ const CM_PAR_CASE = 15;    // 1 case ≈ 15 cm
 // ÉTAT
 // ═══════════════════════════════════════════════
 let token = '';
+let ffSecret = localStorage.getItem(K.ffSecret) || '';
 let tailles = []; // codes de taille {code, label}
 let toiles = [], salles = [];
 let nextId = 1; // ID plancher monotone — ne redescend jamais après suppression
@@ -307,11 +327,6 @@ function afficherEcran(id) {
   $(id).classList.add('actif');
 }
 
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 function formaterDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('fr-BE', { day:'numeric', month:'long', year:'numeric' })
@@ -321,37 +336,35 @@ function formaterDate(iso) {
 // ═══════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════
-async function verifierLogin() {
-  /* Si un artiste invité est sélectionné → redirection vers son admin */
-  const sel = $('sel-artiste');
-  if (sel && sel.value) {
-    window.location.href = sel.value + 'admin.html';
-    return;
-  }
-  /* Afficher le champ mdp si caché */
-  const mdp = $('inp-mdp').value.trim();
-  if (!mdp) { $('login-err').textContent = 'Entrez un mot de passe.'; return; }
-  const hash = await sha256(mdp);
-  const stocke = localStorage.getItem(K.pw);
-  if (!stocke) { $('login-err').textContent = 'Aucun mot de passe configuré. Cliquez sur "Créer un mot de passe".'; return; }
-  if (hash !== stocke) { $('login-err').textContent = 'Mot de passe incorrect.'; $('inp-mdp').value = ''; return; }
-  sessionStorage.setItem(K.auth, '1');
-  apresLogin();
+/* Simplification (13/07/2026, retour d'Alain) : le mot de passe local
+   d'appareil (non vérifié serveur, K.pw) a été retiré — il faisait double
+   emploi et confusait la connexion (deux "mots de passe" différents à la
+   suite sans lien entre eux). L'auth par personne (nom d'utilisateur +
+   mot de passe VÉRIFIÉ CÔTÉ SERVEUR, voir connexionParMotDePasse) est
+   maintenant l'unique porte d'entrée, et sert aussi de garde-fou par
+   session (sessionStorage K.auth), comme le faisait l'ancien mot de passe
+   local. */
+
+/* Point d'entrée commun une fois `token` (et éventuellement `ffSecret`)
+   en mémoire et K.auth déjà positionné par l'appelant. */
+function entrerDansAdmin() {
+  afficherEcran('ecran-principal');
+  chargerTout();
+  initTexturesUI();
+  // chargerConfigEmailJS() appelé après chargement de admin-emailjs.js (admin.html)
 }
 
-async function creerMotDePasse() {
-  const mdp = $('inp-mdp').value.trim();
-  if (mdp.length < 6) { $('login-err').textContent = 'Minimum 6 caractères.'; return; }
-  if (localStorage.getItem(K.pw)) { $('login-err').textContent = 'Un mot de passe existe déjà.'; return; }
-  localStorage.setItem(K.pw, await sha256(mdp));
-  sessionStorage.setItem(K.auth, '1');
-  apresLogin();
-}
-
-async function apresLogin() {
+/* Reprise d'une session déjà authentifiée (sessionStorage K.auth='1'
+   encore valide, ex. simple rechargement de page) : revalide le token
+   stocké avant d'afficher l'écran principal, sans redemander les
+   identifiants. NE PAS appeler chargerTout()/initTexturesUI() ici : ce
+   code tourne pendant le chargement synchrone d'admin.js, AVANT que les
+   autres modules (admin-emailjs.js, etc.) ne soient chargés — le hook
+   dédié dans admin.html (après le chargement de tous les modules) s'en
+   charge déjà pour ce cas précis, exactement pour éviter cette course. */
+async function reprendreSessionExistante() {
   token = localStorage.getItem(K.token) || '';
   if (!token) { afficherEcran('ecran-token'); return; }
-  // Vérifie que le token stocké est encore valide avant de lancer les appels API
   try {
     const rep = await fetch('https://api.github.com/user', {
       headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
@@ -365,9 +378,6 @@ async function apresLogin() {
     }
   } catch (e) { /* réseau indisponible — on tente quand même */ }
   afficherEcran('ecran-principal');
-  chargerTout();
-  initTexturesUI();
-  // chargerConfigEmailJS() appelé après chargement de admin-emailjs.js (admin.html)
 }
 
 function initTexturesUI() {
@@ -377,8 +387,8 @@ function initTexturesUI() {
 
 function deconnecter() {
   sessionStorage.removeItem(K.auth);
-  afficherEcran('ecran-login');
-  $('inp-mdp').value = '';
+  afficherEcran('ecran-token');
+  $('inp-auth-mdp').value = '';
 }
 
 // ═══════════════════════════════════════════════
@@ -432,6 +442,54 @@ async function lireRaw(chemin) {
   const r = await apiGH("/repos/" + REPO + "/contents/" + chemin + "?ref=" + BRANCH);
   const bytes = Uint8Array.from(atob(r.content.replace(/\n/g, '')), function(c) { return c.charCodeAt(0); });
   return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ═══ Migration KV Phase 1 (étape 3) — lecture/écriture des salles de Fred ═══
+   Principe : KV fait autorité (instantané), Git reste l'archive (commitée
+   par le worker ff-data en arrière-plan). Repli automatique sur Git dans
+   les deux sens si KV est indisponible, pour ne jamais perdre de données
+   ni bloquer l'admin. Sans effet si ADMIN_CFG.sallesViaKV est false
+   (invités) : comportement Git classique inchangé. */
+
+/* Lecture : API ff-data en priorité (timeout 4s), repli lireRaw() (Git) si
+   erreur/timeout/HTTP non-ok. */
+async function _fetchSallesAdmin() {
+  if (!ADMIN_CFG.sallesViaKV) return lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+  try {
+    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const minuteur = ctrl ? setTimeout(function() { ctrl.abort(); }, 4000) : null;
+    const rep = await fetch(FF_DATA_SALLES_API, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+    if (minuteur) clearTimeout(minuteur);
+    if (rep.ok) return await rep.json();
+    console.warn('[ff-data] admin: lecture salles HTTP ' + rep.status + ', repli Git');
+  } catch (e) {
+    console.warn('[ff-data] admin: lecture salles indisponible, repli Git:', e);
+  }
+  return lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+}
+
+/* Écriture : PUT direct vers ff-data (le worker archive sur Git en tâche de
+   fond). Lève une erreur si ça échoue (secret manquant/invalide, réseau,
+   worker down) — c'est à l'appelant (sauvegarder()) de décider du repli
+   Git, PAS cette fonction : elle ne doit jamais faire semblant d'avoir
+   réussi. */
+async function _sauvegarderSallesKV(payloadTexte, message) {
+  if (!ffSecret) throw new Error('clé ff-data non configurée sur cet appareil');
+  const rep = await fetch(FF_DATA_SALLES_API, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + ffSecret,
+      'Content-Type': 'application/json',
+      'X-FF-Branch': BRANCH,
+      'X-FF-Message': message || 'Admin : sauvegarde salles'
+    },
+    body: payloadTexte
+  });
+  if (!rep.ok) {
+    const e = await rep.json().catch(function() { return { message: rep.statusText }; });
+    throw new Error(e.erreur || e.message || ('HTTP ' + rep.status));
+  }
+  return rep.json();
 }
 
 /* File d'attente : garantit que les commits s'exécutent
@@ -684,7 +742,7 @@ async function chargerTout() {
   try {
     const [oeuvresParType, sData] = await Promise.all([
       _lireToutesOeuvres(),
-      lireRaw(ADMIN_CFG.repoPath + 'salles.json')
+      _fetchSallesAdmin()
     ]);
     _imgCacheToken = Date.now();
 
@@ -805,11 +863,35 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
     var typePrincipal = ADMIN_CFG.type || 'peinture';
     if (_nextIdParType[typePrincipal]) nextId = _nextIdParType[typePrincipal];
 
-    fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: JSON.stringify({ salles }, _sansTemp, 2) });
-    await commitMulti(fichiers, 'Admin : ' + message);
+    var sallesTexte = JSON.stringify({ salles }, _sansTemp, 2);
+    var _kvEchec = false;
+    if (ADMIN_CFG.sallesViaKV) {
+      /* Fred : KV en priorité (instantané, archivé sur Git par le worker
+         ff-data en arrière-plan). Si la KV échoue (secret manquant/invalide,
+         réseau, worker down), on retombe sur un commit Git classique dans
+         CE MÊME appel — jamais de sauvegarde perdue, juste plus lente. */
+      try {
+        await _sauvegarderSallesKV(sallesTexte, 'Admin : ' + message);
+      } catch (eKV) {
+        _kvEchec = true;
+        console.warn('[ff-data] écriture KV échouée, repli commit Git pour salles.json:', eKV);
+        fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
+        toast('⚠ Sync directe indisponible (' + eKV.message + '), sauvegarde via Git', 'err', 4500);
+        /* Pas de perte de données (repli Git ci-dessus), mais un échec KV
+           répété casserait silencieusement le bénéfice de la migration —
+           alerte email/Issue comme les autres erreurs admin (priorité
+           'bug', pas 'bloquant' : rien n'est perdu, juste dégradé). */
+        rapporterErreur('Écriture KV ff-data échouée pour salles.json (repli Git effectué) : ' + eKV.message, 'bug', eKV.stack || '');
+      }
+    } else {
+      fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
+    }
+    if (fichiers.length) await commitMulti(fichiers, 'Admin : ' + message);
     _imgCacheToken = Date.now();
     syncBadge('ok');
-    if (toastMsg) toast(toastMsg);
+    /* Le toast d'échec KV ci-dessus reste affiché : un succès générique par-
+       dessus masquerait un vrai avertissement (sync directe indisponible). */
+    if (toastMsg && !_kvEchec) toast(toastMsg);
     /* Snapshot mis à jour — retour après save ne restaure plus l'ancien état */
     if (typeof _arrangerSnapshot !== 'undefined' && _arrangerSnapshot && salleActive) {
       _arrangerSnapshot = {
@@ -855,6 +937,58 @@ function prochainId(typeOpt) {
 // ═══════════════════════════════════════════════
 // TOKEN SETUP
 // ═══════════════════════════════════════════════
+/* Auth par personne : récupère le token (+ clé ff-data éventuelle) via le
+   worker, à partir d'un nom d'utilisateur + mot de passe — plus besoin de
+   connaître/retrouver la valeur brute du token. Le compte est créé côté
+   worker par Alain (data-worker/gerer-utilisateurs.sh) ; voir
+   data-worker/README.md. Repli : lien "Entrer le token manuellement" pour
+   l'ancien flux (validerToken() ci-dessous), toujours disponible. */
+async function connexionParMotDePasse() {
+  /* Si un artiste invité est sélectionné → redirection immédiate vers son
+     admin, sans même tenter de login (chaque admin invité a son propre
+     écran de connexion). sel.value contient déjà le chemin complet
+     ("admin.html?artiste=xxx", voir admin-artistes.js) — PAS besoin de
+     concaténer 'admin.html' (bug pré-existant, jamais déclenché avant
+     : donnait "admin.html?artiste=dinsoadmin.html"). */
+  const sel = $('sel-artiste');
+  if (sel && sel.value) {
+    window.location.href = sel.value;
+    return;
+  }
+  const nom = $('inp-auth-nom').value.trim();
+  const mdp = $('inp-auth-mdp').value;
+  if (!nom || !mdp) { $('auth-err').textContent = "Entrez un nom d'utilisateur et un mot de passe."; return; }
+  const btn = $('btn-auth-login');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  $('auth-err').textContent = '';
+  try {
+    const rep = await fetch(FF_DATA_LOGIN_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ utilisateur: nom, mot_de_passe: mdp })
+    });
+    if (!rep.ok) {
+      const e = await rep.json().catch(function() { return {}; });
+      $('auth-err').textContent = e.erreur || ('Erreur HTTP ' + rep.status);
+      return;
+    }
+    const data = await rep.json();
+    token = data.token;
+    localStorage.setItem(K.token, token);
+    if (data.ff_secret) {
+      ffSecret = data.ff_secret;
+      localStorage.setItem(K.ffSecret, ffSecret);
+    }
+    sessionStorage.setItem(K.auth, '1');
+    $('inp-auth-mdp').value = '';
+    entrerDansAdmin();
+  } catch (e) {
+    $('auth-err').textContent = 'Réseau indisponible, réessayez.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
 async function validerToken() {
   const t = $('inp-token').value.trim();
   if (!t) { $('token-err').textContent = 'Entrez un token.'; return; }
@@ -869,30 +1003,54 @@ async function validerToken() {
     });
     if (rep.status === 401) throw new Error('token révoqué ou invalide');
     localStorage.setItem(K.token, t);
-    afficherEcran('ecran-principal');
-    chargerTout();
+    sessionStorage.setItem(K.auth, '1');
+    entrerDansAdmin();
   } catch (e) { $('token-err').textContent = 'Token invalide : ' + e.message; token = ''; }
   finally { btn.disabled = false; btn.textContent = 'Vérifier et enregistrer'; }
+}
+
+/* Secret ff-data (Migration KV Phase 1, étape 3) : pas de vérification
+   réseau ici (contrairement au token GitHub) — un secret erroné sera de
+   toute façon détecté au premier PUT réel et déclenchera le repli Git
+   automatique dans sauvegarder(), sans bloquer l'admin. */
+function enregistrerFfSecret() {
+  const s = $('inp-ff-secret').value.trim();
+  if (!s) { $('ff-secret-err').textContent = 'Entrez une clé.'; return; }
+  ffSecret = s;
+  localStorage.setItem(K.ffSecret, s);
+  $('inp-ff-secret').value = '';
+  $('ff-secret-err').textContent = '';
+  toast('✓ Clé ff-data enregistrée');
 }
 
 // ═══════════════════════════════════════════════
 // INIT ÉVÉNEMENTS
 // ═══════════════════════════════════════════════
-// Login
-$('inp-mdp').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-login').click(); });
-$('btn-login').addEventListener('click', verifierLogin);
-$('lien-creer').addEventListener('click', e => { e.preventDefault(); creerMotDePasse(); });
 $('btn-oeil').addEventListener('click', () => {
-  const i = $('inp-mdp'); const v = i.type === 'text';
+  const i = $('inp-auth-mdp'); const v = i.type === 'text';
   i.type = v ? 'password' : 'text';
   $('oeil-svg').innerHTML = v
     ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
     : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
 });
 
+// Auth par personne (login utilisateur/mot de passe)
+$('inp-auth-nom')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('inp-auth-mdp').focus(); });
+$('inp-auth-mdp')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-auth-login').click(); });
+$('btn-auth-login')?.addEventListener('click', connexionParMotDePasse);
+$('lien-token-manuel')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  $('bloc-token-manuel').style.display = 'block';
+  this.style.display = 'none';
+});
+
 // Token
 $('inp-token').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-token').click(); });
 $('btn-token').addEventListener('click', validerToken);
+
+// Secret ff-data (Migration KV Phase 1, étape 3)
+$('inp-ff-secret')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-ff-secret').click(); });
+$('btn-ff-secret')?.addEventListener('click', enregistrerFfSecret);
 
 // Logout
 $('btn-logout').addEventListener('click', () => { if (confirm('Se déconnecter ?')) deconnecter(); });
@@ -1065,9 +1223,10 @@ $('btn-rename').addEventListener('click', async () => {
   finally { btnRn.disabled = false; }
 });
 
-/* Lit la valeur `visible` RÉELLE d'une salle sur GitHub (source de vérité). */
+/* Lit la valeur `visible` RÉELLE — source de vérité actuelle (KV pour Fred
+   depuis la migration Phase 1 étape 3, Git pour les invités). */
 async function _visibleSalleServeur(salleId) {
-  const data = await lireRaw(ADMIN_CFG.repoPath + 'salles.json');
+  const data = await _fetchSallesAdmin();
   const s = (data.salles || []).find(function(x) { return x.id === salleId; });
   return s ? (s.visible !== false) : null;
 }
@@ -1416,27 +1575,6 @@ $('overlay-fiche').querySelector('.fiche-modal').addEventListener('touchend', e 
 // DÉMARRAGE
 // ═══════════════════════════════════════════════
 if (sessionStorage.getItem(K.auth) === '1') {
-  token = localStorage.getItem(K.token) || '';
-  if (!token) { afficherEcran('ecran-token'); }
-  else {
-    // Valide le token stocké avant de lancer les appels API
-    (async () => {
-      try {
-        const rep = await fetch('https://api.github.com/user', {
-          headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'FF-Admin' }
-        });
-        if (rep.status === 401) {
-          localStorage.removeItem(K.token); token = '';
-          afficherEcran('ecran-token');
-          document.getElementById('token-err').textContent = 'Token révoqué ou expiré. Entrez votre nouveau token.';
-          return;
-        }
-      } catch (e) { /* réseau — on tente quand même */ }
-      afficherEcran('ecran-principal');
-      // chargerTout() et initTexturesUI() sont appelés dans le post-load d'admin.html
-      // après que tous les modules soient chargés (évite race condition galerie)
-    })();
-  }
-} else {
-  if (localStorage.getItem(K.pw)) $('login-aide').style.display = 'none';
+  reprendreSessionExistante();
 }
+// Sinon : ecran-token est déjà affiché par défaut (class="ecran actif")

@@ -1,0 +1,17 @@
+# Config du Worker « ff-data » — API devant le namespace KV FF_DATA.
+# Voir docs/PLAN_MIGRATION_CLOUDFLARE_KV.md (§3.2, §3.6) et data-worker/README.md
+# pour les étapes de mise en place (création du namespace, secret, déploiement).
+
+name = "ff-data"
+main = "worker.js"
+compatibility_date = "2026-07-11"
+
+# À remplir après `wrangler kv namespace create FF_DATA` (voir README).
+# La commande affiche un id à coller ici.
+[[kv_namespaces]]
+binding = "FF_DATA"
+id = "5f20dc12c6da46f4b2de603085792a5b"
+
+# Route à ajouter plus tard si le worker doit répondre sur un sous-domaine
+# dédié (ex. data.frederiqueferette.be) plutôt que sur workers.dev :
+# routes = [ { pattern = "data.frederiqueferette.be", custom_domain = true } ]
