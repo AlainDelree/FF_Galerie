@@ -56,7 +56,7 @@
         {
           "id": 8,
           "col": 10,
-          "row": 4,
+          "row": 3,
           "w": 3,
           "h": 3
         }
@@ -72,7 +72,7 @@
       "couleur_cadres": "#3a3a3a",
       "epaisseur_cadres": 2,
       "texture": "assets/images/textures/ecorce-grosse.jpg",
-      "visible": false,
+      "visible": true,
       "toiles": [
         14,
         17,
@@ -107,7 +107,7 @@
       "id": 7,
       "nom": "Salle fluo",
       "couleur_mur": "#b718de",
-      "couleur_mur_piece": "#0044ff",
+      "couleur_mur_piece": "#f0f0f0",
       "couleur_mur_bas": "#0d0d0d",
       "couleur_sol": "#ffee00",
       "sol_type": "uni",
@@ -194,8 +194,8 @@
         },
         {
           "id": 25,
-          "col": 9,
-          "row": 3,
+          "col": 10,
+          "row": 1,
           "w": 3,
           "h": 3
         }
@@ -206,7 +206,7 @@
       "id": 9,
       "nom": "Buanderie",
       "couleur_mur": "#25dbdb",
-      "couleur_sol": "#c8a050",
+      "couleur_sol": "#160303",
       "sol_type": "uni",
       "couleur_cadres": "#1c1c1c",
       "epaisseur_cadres": 2,
@@ -340,13 +340,14 @@
       "visible": true,
       "toiles": [
         18,
-        12
+        12,
+        15
       ],
       "positions": [
         {
           "id": 18,
-          "col": 1,
-          "row": 1,
+          "col": 3,
+          "row": 3,
           "w": 3,
           "h": 3
         },
@@ -354,6 +355,13 @@
           "id": 12,
           "col": 8,
           "row": 4,
+          "w": 3,
+          "h": 3
+        },
+        {
+          "id": 15,
+          "col": 10,
+          "row": 1,
           "w": 3,
           "h": 3
         }
