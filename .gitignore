@@ -9,3 +9,7 @@ Site Fred.md
 *.old.*
 node_modules
 COMPTE_PERSO.md
+.wrangler/
+data-worker/.wrangler/
+CONTEXTE.md
+docs/aide/test-tailles.pdf
