@@ -8,6 +8,11 @@
       "couleur_mur_piece": "#c8a050",
       "couleur_mur_bas": "#985050",
       "texture": "none",
+      "greffons": {
+        "descriptive": {
+          "actif": true
+        }
+      },
       "visible": true,
       "toiles": [
         11
