@@ -44,6 +44,11 @@
           "y": 64,
           "gabarit": "M"
         }
+      ],
+      "scenario": [
+        "fermee",
+        "ouverte",
+        "desc"
       ]
     }
   ]
