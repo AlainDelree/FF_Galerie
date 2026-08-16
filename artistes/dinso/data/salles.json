@@ -11,6 +11,9 @@
       "greffons": {
         "immersive": {
           "actif": true
+        },
+        "descriptive": {
+          "actif": true
         }
       },
       "visible": true,
