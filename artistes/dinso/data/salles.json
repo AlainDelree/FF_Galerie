@@ -8,6 +8,11 @@
       "couleur_mur_piece": "#5c3d2e",
       "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
+      "greffons": {
+        "immersive": {
+          "actif": true
+        }
+      },
       "visible": true,
       "toiles": [],
       "positions": [],
