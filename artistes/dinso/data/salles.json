@@ -4,14 +4,27 @@
       "id": 1,
       "nom": "Salle A",
       "type": "sculpture",
-      "couleur_mur": "#2a2520",
-      "couleur_mur_piece": "#1a1a1a",
-      "couleur_mur_bas": "#111111",
+      "couleur_mur": "#c8a050",
+      "couleur_mur_piece": "#5c3d2e",
+      "couleur_mur_bas": "#f0f0f0",
       "texture": "none",
       "visible": true,
       "toiles": [],
       "positions": [],
-      "positions_mobile": []
+      "positions_mobile": [
+        {
+          "id": 11,
+          "x": 66,
+          "y": 40,
+          "gabarit": "M"
+        },
+        {
+          "id": 13,
+          "x": 38,
+          "y": 27,
+          "gabarit": "M"
+        }
+      ]
     }
   ]
 }
