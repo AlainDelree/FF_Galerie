@@ -1,5 +1,5 @@
 {
-  "next_id": 12,
+  "next_id": 13,
   "gabarits": [
     {
       "code": "S",
@@ -48,6 +48,20 @@
         "taille": 50,
         "hauteur": 135
       }
+    },
+    {
+      "id": 12,
+      "photo": "",
+      "source_photo": "admin",
+      "est_vitrine": true,
+      "titre": "Vitrine",
+      "style": "vitree",
+      "portes": "fermees",
+      "couleur": "#6a4b28",
+      "planches": 3,
+      "places": 4,
+      "visible": true,
+      "glb": ""
     }
   ]
 }
