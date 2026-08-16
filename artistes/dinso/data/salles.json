@@ -13,7 +13,13 @@
           "actif": true
         },
         "descriptive": {
-          "actif": true
+          "actif": true,
+          "decor": {
+            "pan_a": "#d4ae60",
+            "pan_b": "#c9681a",
+            "pan_c": "#1a1abd",
+            "pan_d": "#8ec497"
+          }
         }
       },
       "visible": true,
