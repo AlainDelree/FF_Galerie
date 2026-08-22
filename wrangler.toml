@@ -1,5 +1,12 @@
 name = 'ffgalerie'
+main = "worker.js"
 compatibility_date = "2026-06-08"
 
+# Le Worker (worker.js) est invoqué pour TOUTES les requêtes (run_worker_first)
+# afin d'ajouter X-Robots-Tag: noindex sur dev. Il délègue le service des
+# fichiers à env.ASSETS.fetch() (binding "ASSETS"), qui conserve html_handling
+# (redirect /x.html → /x) et not_found_handling. Voir worker.js pour le détail.
 [assets]
 directory = "./"
+binding = "ASSETS"
+run_worker_first = true
