@@ -8,3 +8,6 @@ Notes perso/
 Site Fred.md
 *.old.*
 node_modules
+.wrangler/
+COMPTE_PERSO.md
+CONTEXTE.md
