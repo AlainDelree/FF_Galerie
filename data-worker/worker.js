@@ -367,7 +367,18 @@ export default {
       }
       await env.FF_DATA.put(cle, corpsTexte);
       const branche = request.headers.get('X-FF-Branch') || 'dev';
-      const messageCommit = request.headers.get('X-FF-Message') || null;
+      /* X-FF-Message est percent-encodé côté admin (encodeURIComponent) car les
+         en-têtes HTTP sont du Latin-1 strict et refusent les caractères > 0xFF
+         (tiret cadratin, guillemets courbes, emoji…). On le décode ici pour que
+         le message de commit reste lisible en clair dans l'historique Git.
+         try/catch : un client non à jour (ou un « % » littéral non échappé)
+         enverrait une valeur non/malencodée → on garde alors le brut plutôt que
+         de perdre le message sur une URIError. */
+      let messageCommit = request.headers.get('X-FF-Message') || null;
+      if (messageCommit) {
+        try { messageCommit = decodeURIComponent(messageCommit); }
+        catch { /* valeur non percent-encodée : on la conserve telle quelle */ }
+      }
       ctx.waitUntil(archiverVersGitHub(cle, corpsTexte, branche, messageCommit, env));
       return reponseJSON({ ok: true, cle });
     }
