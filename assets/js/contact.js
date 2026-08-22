@@ -5,6 +5,25 @@
 
   var PATH = window.CONTACT_DATA_PATH || 'data/contact.json';
 
+  /* ── Échappement HTML pour toute donnée interpolée dans du innerHTML ── */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* Renvoie l'URL si son schéma est http/https, sinon null (écarte javascript:, data:, …) */
+  function urlSure(url) {
+    try {
+      var u = new URL(url, window.location.href);
+      if (u.protocol === 'http:' || u.protocol === 'https:') return url;
+    } catch (e) {}
+    return null;
+  }
+
   /* ── Icônes SVG minimalistes ── */
   var SVG = {
     instagram: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
@@ -58,7 +77,7 @@
         '<div class="contact-item">' +
           '<span class="contact-label">📧 Courrier électronique</span>' +
           '<div class="contact-email-wrap">' +
-            '<a class="lien-email" href="mailto:' + data.email + '">' + data.email + '</a>' +
+            '<a class="lien-email" href="mailto:' + esc(data.email) + '">' + esc(data.email) + '</a>' +
             '<button class="btn-copier" id="btnCopier" title="Copier">' +
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
               '<span class="copie-ok">Copié !</span>' +
@@ -81,7 +100,7 @@
       bloc.innerHTML +=
         '<div class="contact-item">' +
           '<span class="contact-label">📞 Téléphone</span>' +
-          '<a class="lien-email" href="tel:' + data.telephone.replace(/\s/g,'') + '">' + data.telephone + '</a>' +
+          '<a class="lien-email" href="tel:' + esc(data.telephone.replace(/\s/g,'')) + '">' + esc(data.telephone) + '</a>' +
         '</div>';
     }
 
@@ -91,6 +110,9 @@
       var valeur = data[r.id];
       if (!valeur) return;
       var url = valeur.indexOf('http') === 0 ? valeur : 'https://' + r.id + '.com/' + valeur;
+      /* Schéma refusé (javascript:, data:, …) → lien omis, on n'affiche pas ce réseau */
+      var lienSur = urlSure(url);
+      if (!lienSur) return;
       /* Nom affiché : champ _nom en priorité, sinon extraction auto depuis URL */
       var nom = data[r.id + '_nom'] || extraireNom(r.id, url);
       reseauxHTML +=
@@ -99,7 +121,7 @@
             '<span class="reseau-icone">' + (SVG[r.id] || '') + '</span>' +
             r.label +
           '</span>' +
-          '<a class="reseau-lien" href="' + url + '" target="_blank" rel="noopener">' + nom + '</a>' +
+          '<a class="reseau-lien" href="' + esc(lienSur) + '" target="_blank" rel="noopener">' + esc(nom) + '</a>' +
         '</div>';
     });
     if (reseauxHTML) {

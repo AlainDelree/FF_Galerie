@@ -4,6 +4,15 @@
 (function(){
   var INFOS_PATH = window.INFOS_DATA_PATH || 'data/infos.json';
 
+  /* Renvoie l'URL si son schéma est http/https, sinon null (écarte javascript:, data:, …) */
+  function urlSure(url) {
+    try {
+      var u = new URL(url, window.location.href);
+      if (u.protocol === 'http:' || u.protocol === 'https:') return url;
+    } catch (e) {}
+    return null;
+  }
+
   /* ── Tri des événements par date croissante ── */
   var MOIS = ['janvier','février','mars','avril','mai','juin',
               'juillet','août','septembre','octobre','novembre','décembre'];
@@ -97,10 +106,11 @@
             desc.textContent = e.description;
             corps.appendChild(desc);
           }
-          if (e.lien) {
+          var lienEvtSur = e.lien ? urlSure(e.lien) : null;
+          if (lienEvtSur) {
             var lien = document.createElement('a');
             lien.className = 'evt-lien';
-            lien.href = e.lien;
+            lien.href = lienEvtSur;
             lien.target = '_blank';
             lien.rel = 'noopener';
             lien.textContent = 'En savoir plus';
@@ -133,7 +143,7 @@
         cols.forEach(function(c){
           var a = document.createElement('a');
           a.className = 'collegue';
-          a.href = c.lien || '#';
+          a.href = (c.lien && urlSure(c.lien)) || '#';
           a.target = '_blank';
           a.rel = 'noopener';
           var info = document.createElement('div');
