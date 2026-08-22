@@ -64,7 +64,6 @@ const SHELL = [
   '/data/artistes.json',
   '/data/infos.json',
   '/data/contact.json',
-  '/data/emailjs.json',
 
   '/favicon.ico',
   '/assets/images/icons/icon-192.png',

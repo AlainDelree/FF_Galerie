@@ -171,7 +171,8 @@ async function archiverVersGitHub(cle, contenuTexte, branche, message, env) {
 
    Stockage KV :
      auth/utilisateurs/<nom>  → { hash, sel, iterations, token, ff_secret? }
-     auth/tentatives/<nom>    → { echecs }  (TTL 15 min, anti brute-force)
+     auth/tentatives/<nom>    → { echecs }  (TTL 15 min, anti brute-force par NOM : 5 échecs)
+     auth/tentatives-ip/<ip>  → { echecs }  (TTL 1 h, anti brute-force par IP : 30 échecs)
 
    - POST /api/auth/creer-utilisateur  (protégé par FF_DATA_SECRET, comme
      PUT/DELETE) : { nom, mot_de_passe, token, ff_secret? } → hache le mot
@@ -213,6 +214,15 @@ function normaliserNomUtilisateur(nom) {
   return (nom || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
 }
 
+/* Normalise une adresse IP (en-tête CF-Connecting-IP) en identifiant de clé
+   KV sûr : on garde chiffres/lettres (IPv6), point, deux-points, tiret,
+   underscore. Renvoie '' si l'en-tête est absent/vide — l'appelant
+   n'applique alors AUCUN comptage par IP (cas des tests locaux au curl, où
+   Cloudflare ne pose pas cet en-tête). */
+function normaliserIp(ip) {
+  return (ip || '').trim().toLowerCase().replace(/[^a-z0-9.:_-]/g, '');
+}
+
 async function gererCreationUtilisateur(request, env) {
   if (!estAutorise(request, env)) return reponseJSON({ erreur: 'Non autorisé' }, 401);
   let corps;
@@ -238,6 +248,27 @@ async function gererLogin(request, env) {
   const motDePasse = corps.mot_de_passe || '';
   if (!nom || !motDePasse) return reponseJSON({ erreur: 'Identifiants manquants' }, 400);
 
+  /* Anti brute-force PAR IP (durcissement en profondeur, CUMULÉ avec le
+     compteur par nom ci-dessous — les deux blocages sont indépendants). Il
+     couvre l'angle mort du compteur par nom : une attaque essayant un mot
+     de passe courant contre de nombreux noms différents ne déclenche jamais
+     le blocage par nom. Seuil volontairement PERMISSIF (30 échecs par
+     heure, toutes cibles confondues), pour ne pas gêner un utilisateur
+     légitime maladroit tout en cassant un balayage massif.
+     CF-Connecting-IP est posé par Cloudflare, non falsifiable côté worker.
+     S'il est absent (tests locaux au curl), normaliserIp renvoie '' et on
+     ne compte simplement pas — le login n'échoue jamais pour cette raison. */
+  const ip = normaliserIp(request.headers.get('CF-Connecting-IP'));
+  const cleTentativesIp = ip ? 'auth/tentatives-ip/' + ip : null;
+  let echecsIp = 0;
+  if (cleTentativesIp) {
+    const brutIp = await env.FF_DATA.get(cleTentativesIp);
+    echecsIp = brutIp ? (JSON.parse(brutIp).echecs || 0) : 0;
+    if (echecsIp >= 30) {
+      return reponseJSON({ erreur: 'Trop de tentatives échouées depuis cette adresse, réessayez plus tard' }, 429);
+    }
+  }
+
   const cleTentatives = 'auth/tentatives/' + nom;
   const brutTentatives = await env.FF_DATA.get(cleTentatives);
   const echecsActuels = brutTentatives ? (JSON.parse(brutTentatives).echecs || 0) : 0;
@@ -260,6 +291,12 @@ async function gererLogin(request, env) {
 
   if (!valide) {
     await env.FF_DATA.put(cleTentatives, JSON.stringify({ echecs: echecsActuels + 1 }), { expirationTtl: 900 });
+    /* Incrémente aussi le compteur par IP (TTL 1 h) quand l'en-tête est
+       présent. On ne le remet PAS à zéro sur un login réussi : il agrège
+       plusieurs noms, le laisser expirer naturellement est plus prudent. */
+    if (cleTentativesIp) {
+      await env.FF_DATA.put(cleTentativesIp, JSON.stringify({ echecs: echecsIp + 1 }), { expirationTtl: 3600 });
+    }
     return reponseJSON({ erreur: 'Identifiants invalides' }, 401);
   }
 
@@ -330,7 +367,18 @@ export default {
       }
       await env.FF_DATA.put(cle, corpsTexte);
       const branche = request.headers.get('X-FF-Branch') || 'dev';
-      const messageCommit = request.headers.get('X-FF-Message') || null;
+      /* X-FF-Message est percent-encodé côté admin (encodeURIComponent) car les
+         en-têtes HTTP sont du Latin-1 strict et refusent les caractères > 0xFF
+         (tiret cadratin, guillemets courbes, emoji…). On le décode ici pour que
+         le message de commit reste lisible en clair dans l'historique Git.
+         try/catch : un client non à jour (ou un « % » littéral non échappé)
+         enverrait une valeur non/malencodée → on garde alors le brut plutôt que
+         de perdre le message sur une URIError. */
+      let messageCommit = request.headers.get('X-FF-Message') || null;
+      if (messageCommit) {
+        try { messageCommit = decodeURIComponent(messageCommit); }
+        catch { /* valeur non percent-encodée : on la conserve telle quelle */ }
+      }
       ctx.waitUntil(archiverVersGitHub(cle, corpsTexte, branche, messageCommit, env));
       return reponseJSON({ ok: true, cle });
     }

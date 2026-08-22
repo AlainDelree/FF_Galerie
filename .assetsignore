@@ -3,6 +3,7 @@
 node_modules
 node_modules/**
 wrangler.toml
+worker.js
 _headers
 *.md
 .gitignore

@@ -481,7 +481,14 @@ async function _sauvegarderSallesKV(payloadTexte, message) {
       'Authorization': 'Bearer ' + ffSecret,
       'Content-Type': 'application/json',
       'X-FF-Branch': BRANCH,
-      'X-FF-Message': message || 'Admin : sauvegarde salles'
+      /* Les en-têtes HTTP sont des ByteString (Latin-1 strict) : tout caractère
+         > 0xFF (tiret cadratin —, guillemets courbes, accents composés, emoji…)
+         fait planter fetch() AVANT l'envoi (« character has value 8212 »).
+         On percent-encode donc le message libre — encodeURIComponent() ne
+         produit que de l'ASCII, quel que soit le texte fourni par l'appelant.
+         Le worker ff-data le decodeURIComponent() avant de l'utiliser comme
+         message de commit, pour qu'il reste lisible en clair côté Git. */
+      'X-FF-Message': encodeURIComponent(message || 'Admin : sauvegarde salles')
     },
     body: payloadTexte
   });
