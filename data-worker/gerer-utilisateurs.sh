@@ -55,8 +55,18 @@ echo "Création/mise à jour du compte « $NOM »"
 echo "(le mot de passe et le token ne s'afficheront pas à l'écran)"
 echo
 
-read -r -s -p "Mot de passe pour $NOM : " MOT_DE_PASSE
-echo
+# Le mot de passe doit faire au moins 12 caractères : en deçà, le PBKDF2
+# du worker ne protège plus grand-chose. On redemande la saisie plutôt que
+# de sortir en erreur.
+while true; do
+  read -r -s -p "Mot de passe pour $NOM (12 caractères minimum) : " MOT_DE_PASSE
+  echo
+  if [[ "${#MOT_DE_PASSE}" -lt 12 ]]; then
+    echo "  → trop court (${#MOT_DE_PASSE} caractère(s)), il en faut au moins 12. Recommence."
+    continue
+  fi
+  break
+done
 read -r -s -p "Token GitHub pour $NOM (celui qu'il/elle utilisera) : " TOKEN
 echo
 
