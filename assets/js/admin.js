@@ -757,6 +757,60 @@ function _stockParType(type) {
 var _taillesParType = {};
 var _nextIdParType  = {};
 
+/* Replacer JSON commun : ne jamais persister les champs temporaires
+   (_preview, _photo_backup, _type…). Toute clé commençant par '_' est omise.
+   Défini au niveau module (et plus en local dans sauvegarder) pour que le
+   snapshot de référence et le payload à committer soient sérialisés à
+   l'IDENTIQUE — condition sine qua non d'une comparaison de chaînes fiable. */
+function _sansTemp(key, val) { return key.charAt(0) === '_' ? undefined : val; }
+
+/* Snapshot {type: <JSON sérialisé de oeuvres/<type>.json>} de la dernière
+   version connue côté client : peuplé au chargement (chargerTout) et après
+   chaque commit réussi (sauvegarder). Sert à détecter un fichier œuvres
+   strictement inchangé pour NE PAS le committer inutilement — cf. #100 :
+   un placement de toile ne modifie que salles.json (positions), jamais le
+   contenu des œuvres, mais sauvegarder() reconstruisait quand même
+   oeuvres/<type>.json à l'identique et l'envoyait à commitMulti(), créant un
+   commit à arbre inchangé qui entrait en collision avec l'archive KV. */
+var _oeuvresSnapshot = {};
+
+/* Liste des types à sérialiser : tous ceux présents dans _taillesParType OU
+   dans le toiles[] mémoire (même vides), pour ne JAMAIS perdre un type chargé.
+   Même règle exacte que sauvegarder() historiquement (admin.js:899-901). */
+function _typesPresents() {
+  var tp = {};
+  Object.keys(_taillesParType).forEach(function(t) { tp[t] = true; });
+  toiles.forEach(function(t) { tp[typeDeLOeuvre(t)] = true; });
+  return Object.keys(tp);
+}
+
+/* Sérialise oeuvres/<type>.json EXACTEMENT comme sauvegarder() l'écrira
+   (mêmes clés, même ordre, mêmes champs temporaires filtrés, même next_id
+   recalculé). Utilisé pour construire le payload à committer ET le snapshot
+   de référence → une simple égalité de chaînes détecte alors "aucun
+   changement des œuvres". Mutation idempotente de _nextIdParType[type]
+   conservée à l'identique du comportement d'origine (admin.js:908-909). */
+function _serialiserOeuvresType(type) {
+  var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
+  var codes = _taillesParType[type] || [];
+  var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
+  var nid   = Math.max(_nextIdParType[type] || 0, maxId + 1);
+  _nextIdParType[type] = nid;
+  var payload = (type === 'sculpture')
+    ? { next_id: nid, gabarits: codes, pieces: items }
+    : { next_id: nid, tailles:  codes, toiles: items };
+  return JSON.stringify(payload, _sansTemp, 2);
+}
+
+/* (Re)construit le snapshot de référence des œuvres depuis l'état mémoire
+   courant. Appelé au chargement (baseline) et après chaque commit réussi. */
+function _rafraichirSnapshotOeuvres() {
+  _oeuvresSnapshot = {};
+  _typesPresents().forEach(function(type) {
+    _oeuvresSnapshot[type] = _serialiserOeuvresType(type);
+  });
+}
+
 /* Lit tous les fichiers data/oeuvres/<type>.json présents pour cet artiste
    et retourne un dict {type: contenu}. Fallback transparent vers l'ancien
    data/toiles.json si le répertoire oeuvres/ n'existe pas. */
@@ -825,6 +879,10 @@ async function chargerTout() {
     var typePrincipal = ADMIN_CFG.type || 'peinture';
     tailles = _taillesParType[typePrincipal] || [];
     nextId  = _nextIdParType[typePrincipal]  || 1;
+    /* Baseline du snapshot œuvres : ce qui vient d'être chargé fait foi.
+       Toute sauvegarde ultérieure comparera son payload œuvres à cette
+       référence pour éviter un commitMulti à arbre inchangé (#100). */
+    _rafraichirSnapshotOeuvres();
     // Migre l'ancien format salles → nouveau format
     salles = (sData.salles || []).map(s => ({
       id: s.id, nom: s.nom,
@@ -890,29 +948,34 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
   syncBadge('...');
   // Synchronise toiles[] depuis positions[] avant chaque sauvegarde
   salles.forEach(s => { s.toiles = (s.positions || []).map(p => p.id); });
-  /* Replacer : ne jamais persister les champs temporaires (_preview, _photo_backup, _type…) */
-  var _sansTemp = function(key, val) { return key.charAt(0) === '_' ? undefined : val; };
   try {
     /* Dispatch des œuvres par _type → un fichier data/oeuvres/<type>.json par type.
        Tous les types présents dans _taillesParType OU dans le toiles[] mémoire sont
        inclus (même vides), pour ne JAMAIS perdre un type qui aurait été chargé. */
-    var typesPresents = {};
-    Object.keys(_taillesParType).forEach(function(t) { typesPresents[t] = true; });
-    toiles.forEach(function(t) { typesPresents[typeDeLOeuvre(t)] = true; });
+    var typesPresents = _typesPresents();
 
+    /* On sérialise TOUS les types (pour rafraîchir le snapshot après succès),
+       mais on ne pousse dans `fichiers` (donc vers commitMulti) que ceux dont
+       le payload œuvres DIFFÈRE de la dernière version connue côté client.
+       Cf. #100 : un placement de toile ne change que salles.json ; réémettre
+       oeuvres/<type>.json à l'identique créait un commit à arbre inchangé qui
+       entrait en collision avec l'archive KV. Le filtrage est réservé au cas
+       sallesViaKV (Fred) : pour les invités, comportement Git classique
+       inchangé (voir la branche else plus bas). */
+    var oeuvresSerialisees = {};
     var fichiers = [];
-    Object.keys(typesPresents).forEach(function(type) {
-      var items = toiles.filter(function(t) { return typeDeLOeuvre(t) === type; });
-      var codes = _taillesParType[type] || [];
-      var maxId = items.length ? Math.max.apply(null, items.map(function(t) { return t.id; })) : 0;
-      var nid   = Math.max(_nextIdParType[type] || 0, maxId + 1);
-      _nextIdParType[type] = nid;
-      var payload = (type === 'sculpture')
-        ? { next_id: nid, gabarits: codes, pieces: items }
-        : { next_id: nid, tailles:  codes, toiles: items };
+    typesPresents.forEach(function(type) {
+      var contenu = _serialiserOeuvresType(type);
+      oeuvresSerialisees[type] = contenu;
+      /* Inchangé depuis le dernier chargement/commit ET on est en mode KV
+         (salles.json part par un autre canal) → inutile de le committer. */
+      var inchange = ADMIN_CFG.sallesViaKV
+        && _oeuvresSnapshot[type] !== undefined
+        && _oeuvresSnapshot[type] === contenu;
+      if (inchange) return;
       fichiers.push({
         chemin:  ADMIN_CFG.repoPath + 'oeuvres/' + type + '.json',
-        contenu: JSON.stringify(payload, _sansTemp, 2)
+        contenu: contenu
       });
     });
     /* Sync nextId compat avec le type principal */
@@ -943,6 +1006,14 @@ async function sauvegarder(message, toastMsg = '✓ Sauvegardé') {
       fichiers.push({ chemin: ADMIN_CFG.repoPath+'salles.json', contenu: sallesTexte });
     }
     if (fichiers.length) await commitMulti(fichiers, 'Admin : ' + message);
+    /* Commit réussi (ou rien à committer) : la version connue côté client des
+       œuvres est désormais celle qu'on vient de sérialiser. On mémorise le
+       payload EXACT calculé plus haut (et non un re-calcul post-await, l'état
+       mémoire ayant pu bouger pendant le commit) pour que la prochaine
+       sauvegarde compare à la bonne référence. */
+    Object.keys(oeuvresSerialisees).forEach(function(type) {
+      _oeuvresSnapshot[type] = oeuvresSerialisees[type];
+    });
     _imgCacheToken = Date.now();
     syncBadge('ok');
     /* Le toast d'échec KV ci-dessus reste affiché : un succès générique par-
