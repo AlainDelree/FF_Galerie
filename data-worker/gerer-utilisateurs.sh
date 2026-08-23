@@ -70,10 +70,10 @@ echo
 # du worker ne protège plus grand-chose. On redemande la saisie plutôt que
 # de sortir en erreur.
 while true; do
-  read -r -s -p "Mot de passe pour $NOM (12 caractères minimum) : " MOT_DE_PASSE
+  read -r -s -p "Mot de passe pour $NOM (6 caractères minimum) : " MOT_DE_PASSE
   echo
-  if [[ "${#MOT_DE_PASSE}" -lt 12 ]]; then
-    echo "  → trop court (${#MOT_DE_PASSE} caractère(s)), il en faut au moins 12. Recommence."
+  if [[ "${#MOT_DE_PASSE}" -lt 6 ]]; then
+    echo "  → trop court (${#MOT_DE_PASSE} caractère(s)), il en faut au moins 6. Recommence."
     continue
   fi
   break
