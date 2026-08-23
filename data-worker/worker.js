@@ -7,14 +7,19 @@
 
      - GET  /api/<cle>   → lecture publique (pas d'auth : c'est ce que sert
                             aujourd'hui un fetch('/data/salles.json') public)
-     - PUT  /api/<cle>   → écriture protégée par secret (env.FF_DATA_SECRET) ;
-                            si <cle> est archivable (CLE_VERS_CHEMIN) et
+     - PUT  /api/<cle>   → écriture protégée. Clé de DONNÉES (hors auth/) :
+                            secret maître (env.FF_DATA_SECRET) OU secret
+                            d'écriture (env.FF_DATA_SECRET_ECRITURE). Clé
+                            auth/* : secret maître SEUL. Voir estAutoriseMaitre
+                            / estAutoriseEcriture / peutEcrire ci-dessous.
+                            Si <cle> est archivable (CLE_VERS_CHEMIN) et
                             env.GITHUB_TOKEN est configuré, un commit
                             d'archive est poussé sur GitHub EN ARRIÈRE-PLAN
                             (ctx.waitUntil, ne retarde pas la réponse).
                             Entêtes optionnelles : X-FF-Branch (def. 'dev'),
                             X-FF-Message (message de commit).
-     - DELETE /api/<cle> → suppression protégée (rare, prévu pour tests/admin)
+     - DELETE /api/<cle> → suppression protégée par le secret MAÎTRE seul
+                            (opération destructive ; rare, tests/admin)
      - CORS ouvert en lecture (données publiques, pas de cookies → pas de
        risque à autoriser toute origine) ; l'écriture est protégée par le
        secret, pas par CORS (CORS n'est jamais une frontière de sécurité).
@@ -25,11 +30,15 @@
    par type de clé.
 
    Auth par personne (token restitué après utilisateur/mot de passe) :
-     - POST /api/auth/creer-utilisateur (protégé par FF_DATA_SECRET) :
+     - POST /api/auth/creer-utilisateur (protégé par FF_DATA_SECRET maître) :
        {nom, mot_de_passe, token, ff_secret?} → hache (PBKDF2) et stocke.
-       Voir data-worker/gerer-utilisateurs.sh (utilitaire Alain).
+       Le champ ff_secret stocké DOIT être le secret d'ÉCRITURE
+       (FF_DATA_SECRET_ECRITURE), jamais le maître : c'est cette valeur qui
+       finira dans le navigateur au login. Voir gerer-utilisateurs.sh.
      - POST /api/auth/login (PUBLIC, forcément — c'est le point d'entrée
        sans token) : {utilisateur, mot_de_passe} → {token, ff_secret?}.
+       ff_secret renvoyé = le secret d'écriture stocké sur le compte (jamais
+       le maître, qui ne quitte pas le serveur).
        Anti brute-force : bloqué 15 min après 5 échecs sur le même nom.
      - Suppression d'un utilisateur (fuite d'un token) : DELETE générique
        sur auth/utilisateurs/<nom> (protégé par FF_DATA_SECRET, rien de
@@ -86,11 +95,55 @@ function secretsEgaux(a, b) {
   return diff === 0;
 }
 
-function estAutorise(request, env) {
-  if (!env.FF_DATA_SECRET) return false; // secret non configuré → tout refuser
+/* ── Deux secrets, deux portées (voir README §« Deux secrets ») ───────────
+   FF_DATA_SECRET           = secret MAÎTRE. Ne quitte JAMAIS le serveur (ni
+                              Bitwarden). Autorise TOUT : création de compte,
+                              DELETE, et PUT (y compris les clés auth/).
+   FF_DATA_SECRET_ECRITURE  = secret d'ÉCRITURE. C'est LUI, et lui seul, qui
+                              est renvoyé au navigateur par /api/auth/login
+                              (champ ff_secret). Autorise UNIQUEMENT le PUT
+                              sur des clés de DONNÉES (tout ce qui n'est PAS
+                              sous le préfixe auth/). Jamais de création de
+                              compte, jamais de DELETE, jamais d'écriture
+                              sous auth/.
+
+   Règle de partage appliquée par les points d'appel :
+     - creer-utilisateur : maître SEUL          → estAutoriseMaitre()
+     - DELETE (toute clé) : maître SEUL          → estAutoriseMaitre()
+     - PUT clé auth/*     : maître SEUL          → estAutoriseMaitre()
+     - PUT clé données    : maître OU écriture   → estAutoriseMaitre() || estAutoriseEcriture()
+
+   Rationale : une fuite du secret d'écriture (il vit dans localStorage d'un
+   navigateur, donc exposé XSS/appareil perdu) ne permet plus QUE d'écraser
+   des données hors auth/ — ennuyeux mais récupérable via l'archive Git —,
+   sans escalade vers la création de comptes ni la lecture des tokens. Le
+   DELETE reste maître-seul même sur une clé de données : la suppression est
+   destructive sans repli automatique (contrairement au PUT, tracé par
+   l'archive Git), elle mérite le même niveau de confiance que creer. */
+
+function estAutoriseMaitre(request, env) {
+  if (!env.FF_DATA_SECRET) return false; // secret maître non configuré → tout refuser
   const entete = request.headers.get('Authorization') || '';
   const attendu = `Bearer ${env.FF_DATA_SECRET}`;
   return secretsEgaux(entete, attendu);
+}
+
+/* Vrai si l'en-tête porte le secret d'écriture. Ne donne accès qu'au PUT sur
+   des clés de données (jamais auth/, jamais DELETE, jamais creer). Renvoie
+   false si le secret n'est pas configuré (repli : seul le maître fonctionne). */
+function estAutoriseEcriture(request, env) {
+  if (!env.FF_DATA_SECRET_ECRITURE) return false;
+  const entete = request.headers.get('Authorization') || '';
+  const attendu = `Bearer ${env.FF_DATA_SECRET_ECRITURE}`;
+  return secretsEgaux(entete, attendu);
+}
+
+/* Un PUT sur une clé de données accepte le maître OU le secret d'écriture ;
+   un PUT sur une clé auth/* n'accepte que le maître. */
+function peutEcrire(request, env, cle) {
+  if (estAutoriseMaitre(request, env)) return true;
+  if (cle.startsWith('auth/')) return false; // auth/ : écriture réservée au maître
+  return estAutoriseEcriture(request, env);
 }
 
 /* Encode une chaîne UTF-8 en base64 (équivalent worker de
@@ -174,13 +227,15 @@ async function archiverVersGitHub(cle, contenuTexte, branche, message, env) {
      auth/tentatives/<nom>    → { echecs }  (TTL 15 min, anti brute-force par NOM : 5 échecs)
      auth/tentatives-ip/<ip>  → { echecs }  (TTL 1 h, anti brute-force par IP : 30 échecs)
 
-   - POST /api/auth/creer-utilisateur  (protégé par FF_DATA_SECRET, comme
-     PUT/DELETE) : { nom, mot_de_passe, token, ff_secret? } → hache le mot
-     de passe et stocke l'enregistrement. Écrase si <nom> existe déjà
-     (permet de changer un mot de passe ou faire tourner un token).
+   - POST /api/auth/creer-utilisateur  (protégé par FF_DATA_SECRET maître —
+     PLUS le secret d'écriture n'y donne PAS accès) : { nom, mot_de_passe,
+     token, ff_secret? } → hache le mot de passe et stocke l'enregistrement.
+     Écrase si <nom> existe déjà (permet de changer un mot de passe ou faire
+     tourner un token). Le ff_secret stocké est le secret d'ÉCRITURE.
    - POST /api/auth/login  (PUBLIC, par nécessité — c'est le point d'entrée
      sans token) : { utilisateur, mot_de_passe } → { token, ff_secret? } si
-     valide. Bloqué 15 min après 5 échecs sur le même nom (KV expirationTtl).
+     valide ; ff_secret = le secret d'écriture stocké sur le compte, jamais
+     le maître. Bloqué 15 min après 5 échecs sur le même nom (KV expirationTtl).
    - Suppression d'un utilisateur (ex. fuite d'un token) : PAS de nouvel
      endpoint, réutilise le DELETE générique existant sur la clé
      auth/utilisateurs/<nom> (déjà protégé par FF_DATA_SECRET).
@@ -224,7 +279,8 @@ function normaliserIp(ip) {
 }
 
 async function gererCreationUtilisateur(request, env) {
-  if (!estAutorise(request, env)) return reponseJSON({ erreur: 'Non autorisé' }, 401);
+  // Création de compte : secret MAÎTRE seul (jamais le secret d'écriture).
+  if (!estAutoriseMaitre(request, env)) return reponseJSON({ erreur: 'Non autorisé' }, 401);
   let corps;
   try { corps = await request.json(); } catch { return reponseJSON({ erreur: 'Corps JSON invalide' }, 400); }
   const nom = normaliserNomUtilisateur(corps.nom);
@@ -350,7 +406,8 @@ export default {
     }
 
     if (request.method === 'PUT') {
-      if (!estAutorise(request, env)) {
+      // Données (hors auth/) : maître OU secret d'écriture. auth/* : maître seul.
+      if (!peutEcrire(request, env, cle)) {
         return reponseJSON({ erreur: 'Non autorisé' }, 401);
       }
       let corpsTexte;
@@ -384,7 +441,9 @@ export default {
     }
 
     if (request.method === 'DELETE') {
-      if (!estAutorise(request, env)) {
+      // Suppression (destructive, sans repli auto) : secret MAÎTRE seul,
+      // quelle que soit la clé — y compris une clé de données hors auth/.
+      if (!estAutoriseMaitre(request, env)) {
         return reponseJSON({ erreur: 'Non autorisé' }, 401);
       }
       await env.FF_DATA.delete(cle);

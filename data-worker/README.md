@@ -7,16 +7,43 @@ GitHub comme mécanisme de sauvegarde des données. Voir
 ## Ce que fait ce worker aujourd'hui (Phase 1, étapes 1 à 4 pour `ferette/salles`)
 
 - `GET /api/<cle>` → lit la clé KV `<cle>`, publique, pas d'auth.
-- `PUT /api/<cle>` → écrit `<cle>`, protégé par un secret (header `Authorization: Bearer <secret>`).
+- `PUT /api/<cle>` → écrit `<cle>` (header `Authorization: Bearer <secret>`).
+  Portée selon la clé (voir [Deux secrets](#deux-secrets-maître--écriture)) :
+  clé de **données** (hors `auth/`) → secret maître **ou** secret d'écriture ;
+  clé sous `auth/` → secret **maître seul**.
   Si `<cle>` est dans `CLE_VERS_CHEMIN` (aujourd'hui : seule `ferette/salles`
   → `data/salles.json`) et que `GITHUB_TOKEN` est configuré, un commit
   d'archive est poussé sur GitHub **en arrière-plan** (`ctx.waitUntil`, ne
   retarde jamais la réponse). Entêtes optionnelles :
   - `X-FF-Branch` : branche cible (`dev` ou `main`), défaut `dev`.
   - `X-FF-Message` : message de commit, défaut `Archive KV : <cle>`.
-- `DELETE /api/<cle>` → supprime `<cle>`, protégé pareil (pas d'archive).
+- `DELETE /api/<cle>` → supprime `<cle>`, **secret maître seul** (opération
+  destructive, sans repli d'archive — donc plus stricte que le PUT).
+- `POST /api/auth/creer-utilisateur` → crée/écrase un compte, **secret maître
+  seul**.
 - `GET /api/_health` → ping.
 - CORS ouvert en lecture (données publiques).
+
+## Deux secrets (maître / écriture)
+
+Le worker connaît **deux** secrets aux portées volontairement inégales, pour
+que la valeur exposée dans un navigateur soit la moins puissante possible :
+
+| Secret | Variable wrangler | Autorise | Va dans un navigateur ? |
+|--------|-------------------|----------|--------------------------|
+| **Maître** | `FF_DATA_SECRET` | Tout : `creer-utilisateur`, `DELETE`, `PUT` (y compris clés `auth/`) | **Jamais.** Reste dans Bitwarden + les secrets wrangler. Sert à Alain (script `gerer-utilisateurs.sh`, tests curl). |
+| **Écriture** | `FF_DATA_SECRET_ECRITURE` | `PUT` sur des clés de **données** uniquement (tout ce qui n'est PAS sous `auth/`) | **Oui.** C'est LUI, et lui seul, que `/api/auth/login` renvoie dans `ff_secret` ; `admin.js` le stocke dans `localStorage`. |
+
+Pourquoi : le secret d'écriture vit dans le `localStorage` du navigateur de
+Fred — donc exposé en cas d'appareil perdu, de poste partagé ou de XSS. En le
+séparant du maître, une fuite ne permet plus QUE d'écraser des données hors
+`auth/` (ennuyeux mais récupérable via l'archive Git), **sans** escalade vers
+la création de comptes, le `DELETE`, ni la lecture des tokens GitHub des
+utilisateurs. Le principe de moindre privilège est rétabli : le compte le
+moins technique ne détient plus la clé la plus puissante.
+
+Si `FF_DATA_SECRET_ECRITURE` n'est pas configuré, seul le maître fonctionne
+(repli sûr, pas d'ouverture accidentelle).
 
 Ce qu'il ne fait **pas** encore : interface de restauration Ctrl+Z,
 validation de schéma par type de donnée, archive pour d'autres clés que
@@ -36,15 +63,23 @@ wrangler kv namespace create FF_DATA
 # → copier l'id affiché dans wrangler.toml, à la place de
 #   "À_REMPLIR_APRES_CREATION_NAMESPACE"
 
-# 2. Poser le secret d'écriture (à générer, ex. openssl rand -hex 32,
-#    et à stocker dans Bitwarden comme le PAT GitHub).
-#    IMPORTANT : ne jamais taper/coller le secret directement au prompt
-#    interactif — toujours passer par une variable shell + un pipe, sinon
-#    risque de caractères parasites (vécu en Phase 0) :
+# 2a. Poser le secret MAÎTRE FF_DATA_SECRET (à générer, ex. openssl rand
+#     -hex 32, et à stocker dans Bitwarden comme le PAT GitHub).
+#     IMPORTANT : ne jamais taper/coller le secret directement au prompt
+#     interactif — toujours passer par une variable shell + un pipe, sinon
+#     risque de caractères parasites (vécu en Phase 0) :
 SECRET=$(openssl rand -hex 32)
 echo -n "$SECRET" | wc -c   # doit afficher 64
 printf '%s' "$SECRET" | wrangler secret put FF_DATA_SECRET
 echo "$SECRET"   # copie IMMÉDIATEMENT dans Bitwarden
+
+# 2b. Poser le secret d'ÉCRITURE FF_DATA_SECRET_ECRITURE (valeur DIFFÉRENTE
+#     du maître ! le générer séparément). C'est celui qui finira dans le
+#     navigateur de Fred via le login — voir « Deux secrets » ci-dessus.
+#     Même règle : variable shell + pipe, jamais de saisie interactive.
+SECRET_ECRITURE=$(openssl rand -hex 32)
+printf '%s' "$SECRET_ECRITURE" | wrangler secret put FF_DATA_SECRET_ECRITURE
+echo "$SECRET_ECRITURE"   # copie IMMÉDIATEMENT dans Bitwarden (entrée distincte)
 
 # 3. Poser le token GitHub pour l'archive (étape 4)
 #    Créer un PAT FINE-GRAINED dédié à CE worker (PAS le token admin
@@ -66,8 +101,10 @@ wrangler deploy
 
 ## Tests à la main
 
-Remplacer `<URL>` par l'URL affichée au déploiement, et `<SECRET>` par la
-valeur posée à l'étape 2 (le secret `FF_DATA_SECRET`, pas le token GitHub).
+Remplacer `<URL>` par l'URL affichée au déploiement, `<SECRET>` par le
+secret **maître** `FF_DATA_SECRET` (étape 2a, pas le token GitHub) et
+`<SECRET_ECRITURE>` par le secret **d'écriture** `FF_DATA_SECRET_ECRITURE`
+(étape 2b).
 
 ```bash
 # Ping
@@ -96,6 +133,33 @@ curl -s -X DELETE <URL>/api/test/ping -H "Authorization: Bearer <SECRET>"
 
 # Relire → doit renvoyer 404
 curl -s <URL>/api/test/ping
+```
+
+### Portée du secret d'écriture (vérifie la séparation des privilèges)
+
+```bash
+# PUT données avec le secret d'ÉCRITURE → doit RÉUSSIR (200)
+curl -s -X PUT <URL>/api/test/ping \
+  -H "Authorization: Bearer <SECRET_ECRITURE>" \
+  -H "Content-Type: application/json" -d '{"ok":1}'
+
+# PUT sous auth/ avec le secret d'écriture → doit ÉCHOUER (401)
+curl -s -X PUT <URL>/api/auth/test-refus \
+  -H "Authorization: Bearer <SECRET_ECRITURE>" \
+  -H "Content-Type: application/json" -d '{"x":1}'
+
+# DELETE (même sur une clé de données) avec le secret d'écriture → 401
+curl -s -X DELETE <URL>/api/test/ping \
+  -H "Authorization: Bearer <SECRET_ECRITURE>"
+
+# creer-utilisateur avec le secret d'écriture → 401
+curl -s -X POST <URL>/api/auth/creer-utilisateur \
+  -H "Authorization: Bearer <SECRET_ECRITURE>" \
+  -H "Content-Type: application/json" \
+  -d '{"nom":"x","mot_de_passe":"aaaaaaaaaaaa","token":"t"}'
+
+# Nettoyage (avec le maître)
+curl -s -X DELETE <URL>/api/test/ping -H "Authorization: Bearer <SECRET>"
 ```
 
 ### Test spécifique de l'archive (étape 4)
@@ -137,7 +201,9 @@ export FF_DATA_SECRET
 cd data-worker
 ./gerer-utilisateurs.sh creer fred
 # → demande le mot de passe et le token (rien ne s'affiche à l'écran)
-# → si le nom est "fred" ou "ferette", demande aussi la clé ff-data (optionnel)
+# → si le nom est "fred" ou "ferette", demande aussi le SECRET D'ÉCRITURE
+#   (= FF_DATA_SECRET_ECRITURE, PAS le maître) : c'est cette valeur qui sera
+#   renvoyée au navigateur au login. Voir « Deux secrets » ci-dessus.
 ```
 
 ### Supprimer un compte (ex. token fuité par cette personne)
